@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+/* ============================================================
+   MOTOBOX ANGOLA — Design System
+   Inspirado na linguagem visual da Formula 1: fundo escuro,
+   vermelho de marca como acento único, tipografia condensada
+   em caixa alta, e cartões de alto contraste.
+   ============================================================ */
+
+@theme {
+  /* Marca */
+  --color-mb-red: #e10600;
+  --color-mb-red-dark: #b30500;
+  --color-mb-red-light: #ff2b1f;
+
+  /* Neutros — escala escura */
+  --color-ink-950: #0a0a0c;
+  --color-ink-900: #121216;
+  --color-ink-850: #17171c;
+  --color-ink-800: #1e1e24;
+  --color-ink-700: #2a2a32;
+  --color-ink-600: #3d3d47;
+  --color-ink-500: #5c5c68;
+  --color-ink-400: #8b8b96;
+  --color-ink-300: #b9b9c2;
+  --color-ink-200: #dcdce2;
+  --color-ink-100: #f2f2f5;
+
+  /* Semânticos */
+  --color-gold: #ffb800;
+  --color-silver: #c8ccd4;
+  --color-bronze: #cd7f32;
+  --color-live: #ff2b1f;
+  --color-ok: #16a34a;
+
+  --font-display: var(--font-display), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-body), system-ui, sans-serif;
+
+  --radius-card: 4px;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: var(--color-ink-950);
+  --fg: var(--color-ink-100);
+}
+
+* {
+  border-color: color-mix(in srgb, var(--color-ink-700) 60%, transparent);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ---------- Tipografia utilitária ---------- */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.title-xl {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.6875rem;
+}
+
+/* ---------- Barra de acento vermelha (marca F1-like) ---------- */
+.accent-bar::before {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 4px;
+  background: var(--color-mb-red);
+  margin-bottom: 0.875rem;
+}
+
+/* ---------- Corte diagonal característico ---------- */
+.clip-slant {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 1.75rem 100%, 0 calc(100% - 1.75rem));
+}
+
+.clip-tab {
+  clip-path: polygon(0 0, calc(100% - 0.875rem) 0, 100% 100%, 0 100%);
+}
+
+/* ---------- Efeito de velocidade (linhas do logo) ---------- */
+.speed-lines {
+  background-image: repeating-linear-gradient(
+    100deg,
+    transparent 0 6px,
+    color-mix(in srgb, var(--color-mb-red) 22%, transparent) 6px 7px,
+    transparent 7px 26px
+  );
+}
+
+/* ---------- Grelha de fundo ---------- */
+.grid-bg {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-ink-700) 40%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-ink-700) 40%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* ---------- Cartões ---------- */
+.card {
+  background: var(--color-ink-900);
+  border: 1px solid color-mix(in srgb, var(--color-ink-700) 70%, transparent);
+  border-radius: var(--radius-card);
+  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.card-hover:hover {
+  border-color: color-mix(in srgb, var(--color-mb-red) 70%, transparent);
+  background: var(--color-ink-850);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink-950);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-700);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-mb-red);
+}
+
+/* ---------- Scroll horizontal sem barra ---------- */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Animações ---------- */
+@keyframes mb-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.live-dot {
+  animation: mb-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes mb-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: mb-marquee 38s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes mb-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.rise {
+  animation: mb-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track, .live-dot, .rise {
+    animation: none !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* ---------- Focus visível e acessível ---------- */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-mb-red-light);
+  outline-offset: 2px;
+}
+
+/* ---------- Utilitário: bandeira quadriculada ---------- */
+.checkered {
+  background-image:
+    linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%),
+    linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 6px;
+  background-color: #000;
+}
