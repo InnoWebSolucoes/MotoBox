@@ -114,6 +114,35 @@ interface ContextoAdmin {
   exportar: () => string;
   /** Importa um estado previamente exportado */
   importar: (json: string) => boolean;
+  /** "supabase" quando a base de dados está ligada; "local" caso contrário */
+  origem: Origem;
+  /** Recarrega tudo a partir do Supabase */
+  recarregar: () => Promise<void>;
+  /** Último erro de sincronização, se existir */
+  erroSync: string | null;
+}
+
+export type Origem = "supabase" | "local" | "a-verificar";
+
+/** Envia uma escrita para a API de administração. */
+async function enviar(
+  metodo: "POST" | "PATCH" | "DELETE",
+  coleccao: string,
+  corpo?: unknown,
+  query = "",
+): Promise<string | null> {
+  try {
+    const r = await fetch(`/api/admin/${coleccao}${query}`, {
+      method: metodo,
+      headers: corpo ? { "Content-Type": "application/json" } : undefined,
+      body: corpo ? JSON.stringify(corpo) : undefined,
+    });
+    if (r.ok) return null;
+    const j = await r.json().catch(() => ({ erro: `HTTP ${r.status}` }));
+    return String(j.erro ?? `HTTP ${r.status}`);
+  } catch (e) {
+    return e instanceof Error ? e.message : "Falha de rede";
+  }
 }
 
 const Ctx = createContext<ContextoAdmin | null>(null);
@@ -121,21 +150,78 @@ const Ctx = createContext<ContextoAdmin | null>(null);
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [estado, setEstado] = useState<EstadoAdmin>(estadoInicial);
   const [pronto, setPronto] = useState(false);
+  const [origem, setOrigem] = useState<Origem>("a-verificar");
+  const [erroSync, setErroSync] = useState<string | null>(null);
 
-  // Hidratação a partir do localStorage — só no cliente, para não
-  // divergir do HTML pré-renderizado.
-  useEffect(() => {
+  /**
+   * Carrega tudo a partir do Supabase. Se a base de dados não
+   * estiver configurada, recorre ao localStorage e mantém o
+   * painel funcional com os dados de demonstração.
+   */
+  const carregarTudo = useCallback(async () => {
+    const coleccoes: ColeccaoNome[] = [
+      "eventos", "pilotos", "equipas", "corridas", "noticias", "videos",
+      "patrocinadores", "anuncios", "topicos", "categoriasForum",
+      "utilizadores", "encomendas", "denuncias", "subscritores",
+      "mensagens", "paginasLegais", "atividade",
+    ];
+
     try {
-      const guardado = localStorage.getItem(CHAVE);
-      if (guardado) {
-        const dados = JSON.parse(guardado) as Partial<EstadoAdmin>;
-        setEstado((atual) => ({ ...atual, ...dados }));
+      const respostas = await Promise.all(
+        [...coleccoes, "definicoes" as const].map(async (c) => {
+          const r = await fetch(`/api/admin/${c}`, { cache: "no-store" });
+          return { c, ok: r.ok, estado: r.status, json: await r.json().catch(() => null) };
+        }),
+      );
+
+      // 503 significa Supabase não configurado — modo local.
+      if (respostas.some((r) => r.estado === 503)) {
+        setOrigem("local");
+        try {
+          const guardado = localStorage.getItem(CHAVE);
+          if (guardado) {
+            const dados = JSON.parse(guardado) as Partial<EstadoAdmin>;
+            setEstado((atual) => ({ ...atual, ...dados }));
+          }
+        } catch { /* indisponível */ }
+        setPronto(true);
+        return;
       }
-    } catch {
-      /* localStorage indisponível — segue com os dados de demonstração */
+
+      const falha = respostas.find((r) => !r.ok);
+      if (falha) {
+        setErroSync(String(falha.json?.erro ?? `Falha ao ler ${falha.c}`));
+        setOrigem("local");
+        setPronto(true);
+        return;
+      }
+
+      const novo: Partial<EstadoAdmin> = {};
+      for (const r of respostas) {
+        if (r.c === "definicoes") {
+          if (r.json?.dados) novo.definicoes = { ...definicoesSeed, ...r.json.dados };
+        } else {
+          const lista = r.json?.dados ?? [];
+          // Tabela vazia mantém o conteúdo de demonstração à vista,
+          // para o painel não parecer partido antes de semear.
+          if (Array.isArray(lista) && lista.length > 0) {
+            (novo as Record<string, unknown>)[r.c] = lista;
+          }
+        }
+      }
+
+      setEstado((atual) => ({ ...atual, ...novo }));
+      setOrigem("supabase");
+      setErroSync(null);
+    } catch (e) {
+      setErroSync(e instanceof Error ? e.message : "Falha ao contactar a API");
+      setOrigem("local");
+    } finally {
+      setPronto(true);
     }
-    setPronto(true);
   }, []);
+
+  useEffect(() => { void carregarTudo(); }, [carregarTudo]);
 
   const persistir = useCallback((proximo: EstadoAdmin) => {
     setEstado(proximo);
@@ -164,6 +250,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
       return proximo;
     });
+    void enviar("POST", c, item).then((e) => e && setErroSync(e));
   }, [registarEm]);
 
   const atualizar = useCallback<ContextoAdmin["atualizar"]>((c, id, campos) => {
@@ -178,6 +265,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
       return proximo;
     });
+    void enviar("PATCH", c, { id, campos }).then((e) => e && setErroSync(e));
   }, [registarEm]);
 
   const remover = useCallback<ContextoAdmin["remover"]>((c, id) => {
@@ -190,6 +278,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
       return proximo;
     });
+    void enviar("DELETE", c, undefined, `?id=${encodeURIComponent(id)}`).then((e) => e && setErroSync(e));
   }, [registarEm]);
 
   const substituir = useCallback<ContextoAdmin["substituir"]>((c, itens) => {
@@ -209,6 +298,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
       return proximo;
     });
+    void enviar("PATCH", "definicoes", { campos: d }).then((e) => e && setErroSync(e));
   }, [registarEm]);
 
   const registar = useCallback<ContextoAdmin["registar"]>((accao, entidade, detalhe) => {
@@ -240,8 +330,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const valor = useMemo<ContextoAdmin>(() => ({
     estado, pronto, criar, atualizar, remover, substituir,
     guardarDefinicoes, registar, reiniciar, exportar, importar,
+    origem, recarregar: carregarTudo, erroSync,
   }), [estado, pronto, criar, atualizar, remover, substituir,
-       guardarDefinicoes, registar, reiniciar, exportar, importar]);
+       guardarDefinicoes, registar, reiniciar, exportar, importar,
+       origem, carregarTudo, erroSync]);
 
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }

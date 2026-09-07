@@ -119,7 +119,7 @@ export function IconeNav({ nome, className = "size-4" }: { nome: string; classNa
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const caminho = usePathname();
-  const { estado, pronto } = useAdmin();
+  const { estado, pronto, origem } = useAdmin();
   const [menuAberto, setMenuAberto] = useState(false);
 
   // Fecha o menu móvel ao mudar de página
@@ -231,6 +231,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <p className="flex-1 truncate font-display text-xs uppercase tracking-widest text-ink-500">
             {estado.definicoes.nomeSite} · Temporada {estado.definicoes.temporada}
           </p>
+
+          {pronto && origem === "local" && (
+            <Link href="/admin/dados"
+              className="hidden border border-gold/40 bg-gold/15 px-2 py-1 text-[10px] font-display uppercase tracking-widest text-gold transition-colors hover:bg-gold/25 sm:inline">
+              Modo local
+            </Link>
+          )}
 
           {estado.definicoes.manutencao && (
             <span className="hidden border border-gold/40 bg-gold/15 px-2 py-1 text-[10px] font-display uppercase tracking-widest text-gold sm:inline">

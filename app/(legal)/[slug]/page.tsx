@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { lerPaginasLegais, REVALIDAR } from "@/lib/supabase/publico";
 import { paginasLegaisSeed } from "@/lib/admin/seed";
 import { formatData } from "@/lib/data";
 
-export function generateStaticParams() {
-  return paginasLegaisSeed.map((p) => ({ slug: p.slug }));
+export const revalidate = REVALIDAR;
+
+export async function generateStaticParams() {
+  const paginas = await lerPaginasLegais();
+  return paginas.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> },
 ): Promise<Metadata> {
   const { slug } = await params;
-  const pagina = paginasLegaisSeed.find((p) => p.slug === slug);
+  const paginas = await lerPaginasLegais();
+  const pagina = paginas.find((p) => p.slug === slug);
   if (!pagina) return {};
   return {
     title: `${pagina.titulo} · Motobox Angola`,
@@ -24,10 +29,11 @@ export default async function PaginaLegalPublica(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const pagina = paginasLegaisSeed.find((p) => p.slug === slug);
+  const paginas = await lerPaginasLegais();
+  const pagina = paginas.find((p) => p.slug === slug && p.publicado !== false);
   if (!pagina) notFound();
 
-  const outras = paginasLegaisSeed.filter((p) => p.slug !== slug);
+  const outras = paginas.filter((p) => p.slug !== slug && p.publicado !== false);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">

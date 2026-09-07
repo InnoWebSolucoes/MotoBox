@@ -25,12 +25,32 @@ const COLECCOES: { chave: ColeccaoNome; nome: string }[] = [
 ];
 
 export default function AdminDados() {
-  const { estado, exportar, importar, reiniciar } = useAdmin();
+  const { estado, exportar, importar, reiniciar, origem, recarregar, erroSync } = useAdmin();
   const { mostrar, elemento } = useAviso();
   const ficheiro = useRef<HTMLInputElement>(null);
 
   const [aReiniciar, setAReiniciar] = useState(false);
   const [colar, setColar] = useState("");
+  const [aSemear, setASemear] = useState(false);
+  const [semeando, setSemeando] = useState(false);
+
+  const semear = async () => {
+    setSemeando(true);
+    try {
+      const r = await fetch("/api/admin/semear", { method: "POST" });
+      const j = await r.json();
+      if (r.ok) {
+        mostrar("Base de dados semeada com o conteúdo de demonstração.");
+        await recarregar();
+      } else {
+        mostrar(String(j.erro ?? "Falha ao semear."), "erro");
+      }
+    } catch (e) {
+      mostrar(e instanceof Error ? e.message : "Falha de rede.", "erro");
+    } finally {
+      setSemeando(false);
+    }
+  };
 
   const descarregar = () => {
     const url = URL.createObjectURL(new Blob([exportar()], { type: "application/json" }));
@@ -62,14 +82,51 @@ export default function AdminDados() {
     <>
       <CabecalhoPagina
         titulo="Dados"
-        descricao="Cópias de segurança, importação e reposição dos dados de demonstração."
+        descricao="Ligação à base de dados, cópias de segurança e importação."
       />
+
+      {/* Estado da ligação */}
+      <div className={`mb-6 border p-4 ${
+        origem === "supabase" ? "border-ok/30 bg-ok/10" : "border-gold/30 bg-gold/10"
+      }`}>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="font-display text-sm uppercase tracking-wider text-white">
+              {origem === "supabase" ? "Ligado ao Supabase" :
+               origem === "local" ? "Modo local (sem base de dados)" : "A verificar ligação…"}
+            </p>
+            <p className="mt-1 max-w-2xl text-sm text-ink-300">
+              {origem === "supabase"
+                ? "As alterações feitas no painel são gravadas na base de dados e ficam visíveis no site público."
+                : "As alterações são guardadas apenas neste navegador. Defina as variáveis de ambiente do Supabase para as tornar permanentes."}
+            </p>
+            {erroSync && (
+              <p className="mt-2 border-l-2 border-mb-red pl-2 text-xs text-mb-red">{erroSync}</p>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => void recarregar()}
+              className="h-10 border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:border-mb-red">
+              Recarregar
+            </button>
+            {origem === "supabase" && (
+              <button type="button" onClick={() => setASemear(true)} disabled={semeando}
+                className="h-10 bg-mb-red px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark disabled:opacity-50">
+                {semeando ? "A semear…" : "Semear base de dados"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Estatistica rotulo="Registos totais" valor={totalRegistos} />
         <Estatistica rotulo="Coleções" valor={COLECCOES.length} />
         <Estatistica rotulo="Ações registadas" valor={estado.atividade.length} />
-        <Estatistica rotulo="Armazenamento" valor="Local" variacao="localStorage do navegador" />
+        <Estatistica rotulo="Armazenamento"
+          valor={origem === "supabase" ? "Supabase" : "Local"}
+          tom={origem === "supabase" ? "ok" : "gold"}
+          variacao={origem === "supabase" ? "Base de dados Postgres" : "localStorage do navegador"} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -135,6 +192,15 @@ export default function AdminDados() {
           </div>
         </Painel>
       </div>
+
+      <Confirmar
+        aberta={aSemear}
+        aoFechar={() => setASemear(false)}
+        aoConfirmar={() => void semear()}
+        titulo="Semear base de dados"
+        mensagem="Copia o conteúdo de demonstração para o Supabase. Registos com o mesmo identificador são substituídos; nada é duplicado."
+        textoConfirmar="Semear"
+      />
 
       <Confirmar
         aberta={aReiniciar}
