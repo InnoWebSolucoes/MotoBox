@@ -3,6 +3,7 @@ import { Barlow_Condensed, Inter } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import CookieBanner from "@/components/CookieBanner";
 
 const display = Barlow_Condensed({
   variable: "--font-display",
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
+        <CookieBanner />
       </body>
     </html>
   );

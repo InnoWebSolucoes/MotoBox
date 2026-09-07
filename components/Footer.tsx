@@ -118,9 +118,10 @@ export function Footer() {
             © {TEMPORADA} Motobox Angola. Todos os direitos reservados.
           </p>
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-ink-600">
-            <Link href="/contacto" className="hover:text-ink-300">Termos de utilização</Link>
-            <Link href="/contacto" className="hover:text-ink-300">Política de privacidade</Link>
-            <Link href="/contacto" className="hover:text-ink-300">Cookies</Link>
+            <Link href="/termos" className="hover:text-ink-300">Termos e condições</Link>
+            <Link href="/privacidade" className="hover:text-ink-300">Política de privacidade</Link>
+            <Link href="/cookies" className="hover:text-ink-300">Cookies</Link>
+            <Link href="/regulamento" className="hover:text-ink-300">Regulamento</Link>
             <span className="text-ink-700">Luanda, Angola</span>
           </div>
         </div>
