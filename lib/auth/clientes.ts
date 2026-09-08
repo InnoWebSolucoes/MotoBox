@@ -17,6 +17,26 @@ const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
 export const authConfigurada = Boolean(URL && ANON);
 
+/**
+ * Endereço base para as ligações enviadas por email.
+ *
+ * Em produção usa o domínio público (NEXT_PUBLIC_SITE_URL, ou o
+ * domínio atribuído pela Vercel); em desenvolvimento usa o
+ * endereço do navegador. Assim, um registo feito no site real
+ * nunca gera uma ligação para localhost.
+ */
+export function urlBase(): string {
+  const definido =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : undefined);
+
+  if (definido) return definido.replace(/\/$/, "");
+  if (typeof window !== "undefined") return window.location.origin;
+  return "http://localhost:3000";
+}
+
 /** Cliente para componentes marcados com "use client". */
 export function supabaseNavegador() {
   return createBrowserClient(URL, ANON);

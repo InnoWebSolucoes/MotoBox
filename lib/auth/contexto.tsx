@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { supabaseNavegador, authConfigurada } from "./clientes";
+import { supabaseNavegador, authConfigurada, urlBase } from "./clientes";
 import type { Papel } from "@/lib/admin/types";
 
 export interface Perfil {
@@ -130,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password: d.palavra,
       options: {
         data: { nome: d.nome.trim(), newsletter: d.newsletter },
-        emailRedirectTo: `${window.location.origin}/entrar?confirmado=1`,
+        emailRedirectTo: `${urlBase()}/entrar?confirmado=1`,
       },
     });
     return error ? mensagem(error.message) : null;
@@ -140,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!cliente) return semAuth;
     const { error } = await cliente.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/retorno` },
+      options: { redirectTo: `${urlBase()}/auth/retorno` },
     });
     return error ? mensagem(error.message) : null;
   }, [cliente]);
@@ -149,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!cliente) return semAuth;
     const { error } = await cliente.auth.resetPasswordForEmail(
       email.trim().toLowerCase(),
-      { redirectTo: `${window.location.origin}/nova-palavra-passe` },
+      { redirectTo: `${urlBase()}/nova-palavra-passe` },
     );
     return error ? mensagem(error.message) : null;
   }, [cliente]);
