@@ -1,0 +1,228 @@
+/* ============================================================
+   MOTOBOX — Dicionário de traduções
+   Português (pt) e inglês (en).
+
+   Regras:
+   - Toda a cadeia visível ao utilizador vive aqui, incluindo
+     placeholders, aria-labels, avisos e mensagens de erro.
+   - As chaves são agrupadas por área e nomeadas em inglês.
+   - `npm run i18n:verificar` falha se alguma chave existir
+     numa língua e não na outra.
+   ============================================================ */
+
+export const traducoes = {
+  /* ---------------- Comum ---------------- */
+  comum: {
+    guardar:            { pt: "Guardar",            en: "Save" },
+    guardarAlteracoes:  { pt: "Guardar alterações", en: "Save changes" },
+    cancelar:           { pt: "Cancelar",           en: "Cancel" },
+    apagar:             { pt: "Apagar",             en: "Delete" },
+    remover:            { pt: "Remover",            en: "Remove" },
+    editar:             { pt: "Editar",             en: "Edit" },
+    novo:               { pt: "Novo",               en: "New" },
+    confirmar:          { pt: "Confirmar",          en: "Confirm" },
+    fechar:             { pt: "Fechar",             en: "Close" },
+    procurar:           { pt: "Procurar…",          en: "Search…" },
+    limpar:             { pt: "Limpar",             en: "Clear" },
+    juntar:             { pt: "Juntar",             en: "Add" },
+    anterior:           { pt: "Anterior",           en: "Previous" },
+    seguinte:           { pt: "Seguinte",           en: "Next" },
+    acoes:              { pt: "Ações",              en: "Actions" },
+    estado:             { pt: "Estado",             en: "Status" },
+    data:               { pt: "Data",               en: "Date" },
+    nome:               { pt: "Nome",               en: "Name" },
+    email:              { pt: "Email",              en: "Email" },
+    telefone:           { pt: "Telefone",           en: "Phone" },
+    categoria:          { pt: "Categoria",          en: "Category" },
+    provincia:          { pt: "Província",          en: "Province" },
+    descricao:          { pt: "Descrição",          en: "Description" },
+    titulo:             { pt: "Título",             en: "Title" },
+    preco:              { pt: "Preço",              en: "Price" },
+    total:              { pt: "Total",              en: "Total" },
+    pontos:             { pt: "Pontos",             en: "Points" },
+    vitorias:           { pt: "Vitórias",           en: "Wins" },
+    podios:             { pt: "Pódios",             en: "Podiums" },
+    equipa:             { pt: "Equipa",             en: "Team" },
+    piloto:             { pt: "Piloto",             en: "Rider" },
+    evento:             { pt: "Evento",             en: "Event" },
+    circuito:           { pt: "Circuito",           en: "Circuit" },
+    verTudo:            { pt: "Ver tudo",           en: "View all" },
+    verMais:            { pt: "Ver mais",           en: "See more" },
+    saibaMais:          { pt: "Saber mais",         en: "Learn more" },
+    voltar:             { pt: "Voltar",             en: "Back" },
+    inicio:             { pt: "Início",             en: "Home" },
+    carregando:         { pt: "A carregar…",        en: "Loading…" },
+    semResultados:      { pt: "Sem resultados.",    en: "No results." },
+    obrigatorio:        { pt: "Obrigatório",        en: "Required" },
+    opcional:           { pt: "Opcional",           en: "Optional" },
+    sim:                { pt: "Sim",                en: "Yes" },
+    nao:                { pt: "Não",                en: "No" },
+    todos:              { pt: "Todos",              en: "All" },
+    todas:              { pt: "Todas",              en: "All" },
+    nenhum:             { pt: "Nenhum",             en: "None" },
+    minutosLeitura:     { pt: "min de leitura",     en: "min read" },
+    porPublicar:        { pt: "Rascunho",           en: "Draft" },
+    publicado:          { pt: "Publicado",          en: "Published" },
+  },
+
+  /* ---------------- Navegação ---------------- */
+  nav: {
+    calendario:      { pt: "Calendário",      en: "Calendar" },
+    resultados:      { pt: "Resultados",      en: "Results" },
+    classificacao:   { pt: "Classificação",   en: "Standings" },
+    pilotos:         { pt: "Pilotos",         en: "Riders" },
+    equipas:         { pt: "Equipas",         en: "Teams" },
+    noticias:        { pt: "Notícias",        en: "News" },
+    videos:          { pt: "Vídeos",          en: "Videos" },
+    bilhetes:        { pt: "Bilhetes",        en: "Tickets" },
+    marketplace:     { pt: "Marketplace",     en: "Marketplace" },
+    forum:           { pt: "Fórum",           en: "Forum" },
+    conta:           { pt: "Conta",           en: "Account" },
+    sobre:           { pt: "Sobre",           en: "About" },
+    contacto:        { pt: "Contacto",        en: "Contact" },
+    patrocinadores:  { pt: "Patrocinadores",  en: "Sponsors" },
+    competicao:      { pt: "Competição",      en: "Competition" },
+    comunidade:      { pt: "Comunidade",      en: "Community" },
+    menu:            { pt: "Menu",            en: "Menu" },
+    abrirMenu:       { pt: "Abrir menu",      en: "Open menu" },
+    fecharMenu:      { pt: "Fechar menu",     en: "Close menu" },
+    mudarIdioma:     { pt: "Mudar idioma",    en: "Change language" },
+  },
+
+  /* ---------------- Rodapé ---------------- */
+  rodape: {
+    termos:          { pt: "Termos e condições",      en: "Terms and conditions" },
+    privacidade:     { pt: "Política de privacidade", en: "Privacy policy" },
+    cookies:         { pt: "Cookies",                 en: "Cookies" },
+    regulamento:     { pt: "Regulamento",             en: "Community rules" },
+    direitos:        { pt: "Todos os direitos reservados.", en: "All rights reserved." },
+    localizacao:     { pt: "Luanda, Angola",          en: "Luanda, Angola" },
+  },
+
+  /* ---------------- Newsletter ---------------- */
+  newsletter: {
+    titulo:       { pt: "Newsletter Motobox",   en: "Motobox newsletter" },
+    subtitulo:    { pt: "Provas, resultados e histórias do motociclismo angolano na sua caixa de entrada.",
+                    en: "Races, results and stories from Angolan motorcycling in your inbox." },
+    emailPlaceholder: { pt: "O seu email",      en: "Your email" },
+    subscrever:   { pt: "Subscrever",           en: "Subscribe" },
+    subscrito:    { pt: "Subscrição confirmada. Obrigado!", en: "Subscription confirmed. Thank you!" },
+    emailInvalido:{ pt: "Introduza um email válido.", en: "Please enter a valid email." },
+  },
+
+  /* ---------------- Cookies ---------------- */
+  cookies: {
+    titulo:       { pt: "Cookies nesta plataforma", en: "Cookies on this platform" },
+    texto:        { pt: "Usamos cookies essenciais para o funcionamento do site. Com o seu consentimento, usamos também cookies analíticos para perceber como a plataforma é utilizada.",
+                    en: "We use essential cookies to run the site. With your consent, we also use analytics cookies to understand how the platform is used." },
+    politica:     { pt: "Política de Cookies",   en: "Cookie Policy" },
+    personalizar: { pt: "Personalizar",          en: "Customise" },
+    soEssenciais: { pt: "Só essenciais",         en: "Essential only" },
+    aceitarTudo:  { pt: "Aceitar tudo",          en: "Accept all" },
+    guardarPrefs: { pt: "Guardar preferências",  en: "Save preferences" },
+    essenciais:   { pt: "Essenciais",            en: "Essential" },
+    essenciaisDesc: { pt: "Sessão, carrinho de bilhetes e preferências.", en: "Session, ticket cart and preferences." },
+    sempreActivo: { pt: "Sempre activo",         en: "Always on" },
+    analiticos:   { pt: "Analíticos",            en: "Analytics" },
+    analiticosDesc: { pt: "Estatísticas agregadas de utilização.", en: "Aggregated usage statistics." },
+    marketing:    { pt: "Marketing",             en: "Marketing" },
+    marketingDesc:{ pt: "Campanhas e conteúdo personalizado.", en: "Campaigns and personalised content." },
+    preferencias: { pt: "Preferências de cookies", en: "Cookie preferences" },
+  },
+
+  /* ---------------- Páginas legais ---------------- */
+  legal: {
+    documento:     { pt: "Documento legal",      en: "Legal document" },
+    ultimaActualizacao: { pt: "Última atualização:", en: "Last updated:" },
+    nestaPagina:   { pt: "Nesta página",         en: "On this page" },
+    outrosDocumentos: { pt: "Outros documentos", en: "Other documents" },
+  },
+
+  /* ---------------- Painel de administração ---------------- */
+  admin: {
+    gestao:          { pt: "Gestão",             en: "Management" },
+    painel:          { pt: "Painel",             en: "Dashboard" },
+    verSitePublico:  { pt: "Ver o site público", en: "View public site" },
+    administrador:   { pt: "Administrador",      en: "Administrator" },
+    temporada:       { pt: "Temporada",          en: "Season" },
+    manutencaoActiva:{ pt: "Manutenção activa",  en: "Maintenance on" },
+    modoLocal:       { pt: "Modo local",         en: "Local mode" },
+
+    // Grupos da navegação
+    grupoVisaoGeral: { pt: "Visão geral",  en: "Overview" },
+    grupoDesporto:   { pt: "Desporto",     en: "Sport" },
+    grupoConteudo:   { pt: "Conteúdo",     en: "Content" },
+    grupoComercial:  { pt: "Comercial",    en: "Commercial" },
+    grupoComunidade: { pt: "Comunidade",   en: "Community" },
+    grupoPessoas:    { pt: "Pessoas",      en: "People" },
+    grupoSistema:    { pt: "Sistema",      en: "System" },
+
+    // Itens da navegação
+    navAtividade:      { pt: "Atividade",       en: "Activity" },
+    navEventos:        { pt: "Eventos",         en: "Events" },
+    navResultados:     { pt: "Resultados",      en: "Results" },
+    navPilotos:        { pt: "Pilotos",         en: "Riders" },
+    navEquipas:        { pt: "Equipas",         en: "Teams" },
+    navNoticias:       { pt: "Notícias",        en: "News" },
+    navVideos:         { pt: "Vídeos",          en: "Videos" },
+    navPaginasLegais:  { pt: "Páginas legais",  en: "Legal pages" },
+    navBilheteira:     { pt: "Bilheteira",      en: "Box office" },
+    navEncomendas:     { pt: "Encomendas",      en: "Orders" },
+    navPatrocinadores: { pt: "Patrocinadores",  en: "Sponsors" },
+    navMarketplace:    { pt: "Marketplace",     en: "Marketplace" },
+    navForum:          { pt: "Fórum",           en: "Forum" },
+    navModeracao:      { pt: "Moderação",       en: "Moderation" },
+    navUtilizadores:   { pt: "Utilizadores",    en: "Users" },
+    navMensagens:      { pt: "Mensagens",       en: "Messages" },
+    navNewsletter:     { pt: "Newsletter",      en: "Newsletter" },
+    navDefinicoes:     { pt: "Definições",      en: "Settings" },
+    navDados:          { pt: "Dados",           en: "Data" },
+
+    // Mensagens genéricas de CRUD
+    registoCriado:     { pt: "Registo criado.",        en: "Record created." },
+    alteracoesGuardadas:{ pt: "Alterações guardadas.", en: "Changes saved." },
+    registoRemovido:   { pt: "Registo removido.",      en: "Record removed." },
+    idVazio:           { pt: "O identificador não pode ficar vazio.", en: "The identifier cannot be empty." },
+    idDuplicado:       { pt: "Já existe um registo com esse identificador.", en: "A record with that identifier already exists." },
+    semRegistos:       { pt: "Nenhum registo corresponde aos filtros.", en: "No records match the filters." },
+    novoRegisto:       { pt: "Novo registo",           en: "New record" },
+    preenchaGuarde:    { pt: "Preencha os campos e guarde.", en: "Fill in the fields and save." },
+    apagarRegisto:     { pt: "Apagar registo",         en: "Delete record" },
+    apagarRegistoMsg:  { pt: "Esta ação é permanente e remove o registo da plataforma. Pretende continuar?",
+                         en: "This action is permanent and removes the record from the platform. Continue?" },
+    paginaDe:          { pt: "Página",                 en: "Page" },
+    de:                { pt: "de",                     en: "of" },
+    registos:          { pt: "registos",               en: "records" },
+  },
+
+  /* ---------------- Marca ---------------- */
+  marca: {
+    motobox: { pt: "Motobox", en: "Motobox" },
+  },
+
+  /* ---------------- Menu principal ---------------- */
+  menu: {
+    calendario2026:    { pt: "Calendário 2026",       en: "2026 Calendar" },
+    calendarioDesc:    { pt: "Todas as provas da temporada", en: "Every race of the season" },
+    bilhetesDesc:      { pt: "Comprar entradas para os eventos", en: "Buy entry to the events" },
+    arquivoResultados: { pt: "Arquivo de resultados",     en: "Results archive" },
+    arquivoDesc:       { pt: "Corrida a corrida, época a época", en: "Race by race, season by season" },
+    classificacaoDesc: { pt: "Tabela nacional de pilotos e equipas", en: "National rider and team standings" },
+    pilotosDesc:       { pt: "Perfis, estatísticas e redes sociais", en: "Profiles, statistics and social media" },
+    equipasClubes:     { pt: "Equipas e clubes",          en: "Teams and clubs" },
+    equipasDesc:       { pt: "As estruturas do motociclismo angolano", en: "The structures of Angolan motorcycling" },
+    todasNoticias:     { pt: "Todas as notícias",        en: "All news" },
+    noticiasDesc:      { pt: "Angola e internacional",    en: "Angola and international" },
+    videosDesc:        { pt: "Highlights, onboards e documentários", en: "Highlights, onboards and documentaries" },
+    sobreMotobox:      { pt: "Sobre a Motobox",           en: "About Motobox" },
+    sobreDesc:         { pt: "História, missão e equipa",   en: "History, mission and team" },
+    patrocinadoresDesc:{ pt: "Quem apoia o motociclismo nacional", en: "Who supports national motorcycling" },
+    contactoDesc:      { pt: "Fale connosco",             en: "Get in touch" },
+    comprarBilhetes:   { pt: "Comprar bilhetes",          en: "Buy tickets" },
+    saltarConteudo:    { pt: "Saltar para o conteúdo",  en: "Skip to content" },
+    paginaInicial:     { pt: "Motobox Angola — página inicial", en: "Motobox Angola — home" },
+  },
+} as const;
+
+export type Traducoes = typeof traducoes;
+export type Seccao = keyof Traducoes;

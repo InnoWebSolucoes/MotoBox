@@ -6,56 +6,59 @@ import { useEffect, useRef, useState } from "react";
 import { LogoLink } from "./Brand";
 import { Icon } from "./ui";
 import { SOCIAIS } from "@/lib/data";
+import { useIdioma } from "@/lib/i18n/contexto";
+import { SelectorIdioma } from "./SelectorIdioma";
 
-type NavItem = { href: string; label: string; filhos?: { href: string; label: string; desc: string }[] };
+type NavItem = { href: string; chave: string; filhos?: { href: string; chave: string; desc: string }[] };
 
 const NAV: NavItem[] = [
   {
     href: "/calendario",
-    label: "Calendário",
+    chave: "nav.calendario",
     filhos: [
-      { href: "/calendario", label: "Calendário 2026", desc: "Todas as provas da temporada" },
-      { href: "/bilhetes", label: "Bilhetes", desc: "Comprar entradas para os eventos" },
+      { href: "/calendario", chave: "menu.calendario2026", desc: "menu.calendarioDesc" },
+      { href: "/bilhetes", chave: "nav.bilhetes", desc: "menu.bilhetesDesc" },
     ],
   },
   {
     href: "/resultados",
-    label: "Resultados",
+    chave: "nav.resultados",
     filhos: [
-      { href: "/resultados", label: "Arquivo de resultados", desc: "Corrida a corrida, época a época" },
-      { href: "/classificacao", label: "Classificação", desc: "Tabela nacional de pilotos e equipas" },
+      { href: "/resultados", chave: "menu.arquivoResultados", desc: "menu.arquivoDesc" },
+      { href: "/classificacao", chave: "nav.classificacao", desc: "menu.classificacaoDesc" },
     ],
   },
   {
     href: "/pilotos",
-    label: "Pilotos",
+    chave: "nav.pilotos",
     filhos: [
-      { href: "/pilotos", label: "Pilotos", desc: "Perfis, estatísticas e redes sociais" },
-      { href: "/equipas", label: "Equipas e clubes", desc: "As estruturas do motociclismo angolano" },
+      { href: "/pilotos", chave: "nav.pilotos", desc: "menu.pilotosDesc" },
+      { href: "/equipas", chave: "menu.equipasClubes", desc: "menu.equipasDesc" },
     ],
   },
   {
     href: "/noticias",
-    label: "Notícias",
+    chave: "nav.noticias",
     filhos: [
-      { href: "/noticias", label: "Todas as notícias", desc: "Angola e internacional" },
-      { href: "/videos", label: "Vídeos", desc: "Highlights, onboards e documentários" },
+      { href: "/noticias", chave: "menu.todasNoticias", desc: "menu.noticiasDesc" },
+      { href: "/videos", chave: "nav.videos", desc: "menu.videosDesc" },
     ],
   },
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/forum", label: "Fórum" },
+  { href: "/marketplace", chave: "nav.marketplace" },
+  { href: "/forum", chave: "nav.forum" },
   {
     href: "/sobre",
-    label: "Motobox",
+    chave: "marca.motobox",
     filhos: [
-      { href: "/sobre", label: "Sobre a Motobox", desc: "História, missão e equipa" },
-      { href: "/patrocinadores", label: "Patrocinadores", desc: "Quem apoia o motociclismo nacional" },
-      { href: "/contacto", label: "Contacto", desc: "Fale connosco" },
+      { href: "/sobre", chave: "menu.sobreMotobox", desc: "menu.sobreDesc" },
+      { href: "/patrocinadores", chave: "nav.patrocinadores", desc: "menu.patrocinadoresDesc" },
+      { href: "/contacto", chave: "nav.contacto", desc: "menu.contactoDesc" },
     ],
   },
 ];
 
 export function Nav() {
+  const { t } = useIdioma();
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
   const [dropdown, setDropdown] = useState<string | null>(null);
@@ -101,7 +104,7 @@ export function Nav() {
           <button
             className="lg:hidden -ml-2 grid size-10 place-items-center text-white"
             onClick={() => setAberto((v) => !v)}
-            aria-label={aberto ? "Fechar menu" : "Abrir menu"}
+            aria-label={aberto ? t("nav.fecharMenu") : t("nav.abrirMenu")}
             aria-expanded={aberto}
           >
             <Icon name={aberto ? "close" : "menu"} className="size-6" />
@@ -112,9 +115,9 @@ export function Nav() {
           <ul className="ml-6 hidden lg:flex items-center gap-0.5">
             {NAV.map((item) => (
               <li
-                key={item.label}
+                key={item.chave}
                 className="relative"
-                onMouseEnter={() => item.filhos && abrir(item.label)}
+                onMouseEnter={() => item.filhos && abrir(item.chave)}
                 onMouseLeave={fechar}
               >
                 <Link
@@ -123,16 +126,16 @@ export function Nav() {
                     activo(item.href) ? "text-white" : "text-ink-300 hover:text-white"
                   }`}
                 >
-                  {item.label}
+                  {t(item.chave)}
                   {activo(item.href) && (
                     <span className="absolute inset-x-2.5 bottom-0 h-[3px] bg-mb-red" aria-hidden />
                   )}
                 </Link>
 
-                {item.filhos && dropdown === item.label && (
+                {item.filhos && dropdown === item.chave && (
                   <div
                     className="absolute left-0 top-16 w-72 border border-ink-700 bg-ink-900 shadow-2xl shadow-black/60"
-                    onMouseEnter={() => abrir(item.label)}
+                    onMouseEnter={() => abrir(item.chave)}
                     onMouseLeave={fechar}
                   >
                     {item.filhos.map((f) => (
@@ -142,13 +145,13 @@ export function Nav() {
                         className="group block border-b border-ink-800 p-4 last:border-0 hover:bg-ink-850"
                       >
                         <span className="flex items-center justify-between font-display text-sm uppercase tracking-wide text-white">
-                          {f.label}
+                          {t(f.chave)}
                           <Icon
                             name="arrow"
                             className="size-4 text-mb-red opacity-0 transition-opacity group-hover:opacity-100"
                           />
                         </span>
-                        <span className="mt-1 block text-xs text-ink-500">{f.desc}</span>
+                        <span className="mt-1 block text-xs text-ink-500">{t(f.desc)}</span>
                       </Link>
                     ))}
                   </div>
@@ -163,12 +166,13 @@ export function Nav() {
               className="hidden sm:inline-flex h-9 items-center gap-2 bg-mb-red px-4 font-display text-[11px] uppercase tracking-widest text-white hover:bg-mb-red-dark transition-colors"
             >
               <Icon name="ticket" className="size-4" />
-              Bilhetes
+              {t("nav.bilhetes")}
             </Link>
+            <SelectorIdioma compacto />
             <Link
               href="/conta"
               className="grid size-10 place-items-center text-ink-300 hover:text-white transition-colors"
-              aria-label="A minha conta"
+              aria-label={t("nav.conta")}
             >
               <Icon name="user" className="size-5" />
             </Link>
@@ -181,14 +185,14 @@ export function Nav() {
         <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto bg-ink-950 border-t border-ink-800">
           <ul className="divide-y divide-ink-800">
             {NAV.map((item) => (
-              <li key={item.label}>
+              <li key={item.chave}>
                 <Link
                   href={item.href}
                   className={`flex items-center justify-between px-5 py-4 font-display text-base uppercase tracking-wide ${
                     activo(item.href) ? "text-mb-red" : "text-white"
                   }`}
                 >
-                  {item.label}
+                  {t(item.chave)}
                   <Icon name="arrow" className="size-4 text-ink-600" />
                 </Link>
                 {item.filhos && (
@@ -196,7 +200,7 @@ export function Nav() {
                     {item.filhos.slice(1).map((f) => (
                       <li key={f.href}>
                         <Link href={f.href} className="block px-5 py-3 text-sm text-ink-300">
-                          {f.label}
+                          {t(f.chave)}
                         </Link>
                       </li>
                     ))}
@@ -210,7 +214,7 @@ export function Nav() {
               href="/bilhetes"
               className="flex-1 h-12 grid place-items-center bg-mb-red font-display text-xs uppercase tracking-widest text-white"
             >
-              Comprar bilhetes
+              {t("menu.comprarBilhetes")}
             </Link>
             <Link
               href="/conta"
