@@ -1119,6 +1119,7 @@ export const videos: Video[] = [
     thumbnail: "lubango",
     categoria: "Highlights",
     visualizacoes: 24800,
+    videoId: "ZDTwsTIrIPA",
     evento: "GP da Huíla",
   },
   {
@@ -1130,6 +1131,7 @@ export const videos: Video[] = [
     thumbnail: "kilamba",
     categoria: "Onboard",
     visualizacoes: 41200,
+    videoId: "c87dWl93K1M",
     evento: "GP de Luanda",
   },
   {
@@ -1141,6 +1143,7 @@ export const videos: Video[] = [
     thumbnail: "ferraz",
     categoria: "Documentário",
     visualizacoes: 68400,
+    videoId: "nfMHEYkZIkw",
   },
   {
     slug: "resumo-enduro-litoral",
@@ -1151,6 +1154,7 @@ export const videos: Video[] = [
     thumbnail: "benguela",
     categoria: "Resumo",
     visualizacoes: 18900,
+    videoId: "8tLkPnTUw2g",
     evento: "Enduro do Litoral",
   },
   {
@@ -1162,6 +1166,7 @@ export const videos: Video[] = [
     thumbnail: "namibe",
     categoria: "Entrevista",
     visualizacoes: 15300,
+    videoId: "9kqeB10qIxw",
   },
   {
     slug: "passeio-cabinda-2026",
@@ -1172,6 +1177,7 @@ export const videos: Video[] = [
     thumbnail: "cabinda",
     categoria: "Resumo",
     visualizacoes: 32100,
+    videoId: "a4Wgw0aS34k",
     evento: "Passeio Solidário de Cabinda",
   },
   {
@@ -1183,6 +1189,7 @@ export const videos: Video[] = [
     thumbnail: "kilamba",
     categoria: "Highlights",
     visualizacoes: 29600,
+    videoId: "c87dWl93K1M",
     evento: "GP de Luanda",
   },
   {
@@ -1194,6 +1201,7 @@ export const videos: Video[] = [
     thumbnail: "huambo",
     categoria: "Highlights",
     visualizacoes: 52700,
+    videoId: "ZDTwsTIrIPA",
   },
 ];
 

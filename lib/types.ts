@@ -144,6 +144,12 @@ export interface Video {
   categoria: "Highlights" | "Entrevista" | "Documentário" | "Onboard" | "Resumo";
   visualizacoes: number;
   evento?: string;
+  /**
+   * ID do vídeo no YouTube. Enquanto não existe arquivo próprio da Motobox,
+   * aponta para vídeos reais dos canais oficiais (MXGP-TV, Dakar), para que
+   * o leitor funcione de facto. Sem ID, o cartão fica só com a miniatura.
+   */
+  videoId?: string;
 }
 
 export interface Patrocinador {

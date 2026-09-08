@@ -144,6 +144,10 @@ export const BANNERS: Record<string, string> = {
   patrocinadores: U("photo-1486401899868-0e435ed85128"),
   contacto: U("photo-1568605117036-5fe5e7bab0b7"),
   sobre: U("photo-1583121274602-3e2820c69888"),
+  legal: U("photo-1454165804606-c3d57bc86b40"),
+  topico: U("photo-1517649763962-0c623066013b"),
+  entrar: U("photo-1589578527966-fdac0f44566c"),
+  conta: U("photo-1450101499163-c8848c66ca85"),
 };
 
 /** URL do banner de uma rota, já dimensionado. */

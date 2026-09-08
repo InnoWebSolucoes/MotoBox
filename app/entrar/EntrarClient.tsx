@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Placeholder } from "@/components/Brand";
 import { useAuth } from "@/lib/auth/contexto";
 import { useIdioma } from "@/lib/i18n/contexto";
 
@@ -76,7 +77,10 @@ export function EntrarClient() {
     : t("auth.recuperarAcesso");
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16">
+    <div className="relative overflow-hidden">
+      <Placeholder nome="entrar" className="absolute inset-0 opacity-15" tamanhos="100vw" />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink-950 via-ink-950/95 to-ink-950" aria-hidden />
+      <div className="relative mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16">
       <div className="mb-8">
         <p className="eyebrow mb-2 text-mb-red">Motobox Angola</p>
         <h1 className="title-xl text-3xl text-white sm:text-4xl">{titulo}</h1>
@@ -189,6 +193,7 @@ export function EntrarClient() {
               className="text-mb-red hover:underline">{t("auth.entrar")}</button>
           </p>
         )}
+      </div>
       </div>
     </div>
   );

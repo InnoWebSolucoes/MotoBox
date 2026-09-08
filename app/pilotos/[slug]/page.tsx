@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Retrato } from "@/components/Brand";
+import { Placeholder, Retrato } from "@/components/Brand";
 import { ButtonLink, Icon, PosicaoBadge, Tag } from "@/components/ui";
 import {
   classificacaoPilotos,
@@ -60,6 +60,9 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
     <>
       {/* Hero do piloto */}
       <header className="relative overflow-hidden border-b border-ink-800">
+        {/* Fundo: a fotografia do piloto, muito esbatida atrás da ficha */}
+        <Placeholder nome={piloto.slug} className="absolute inset-0 opacity-20" tamanhos="100vw" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/90 to-ink-950/60" aria-hidden />
         <div className="grid-bg absolute inset-0 opacity-20" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-10">
           <Link

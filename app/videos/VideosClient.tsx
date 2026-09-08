@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Placeholder } from "@/components/Brand";
 import { Icon, PageHero, Tag } from "@/components/ui";
 import { formatData } from "@/lib/data";
@@ -10,7 +10,23 @@ const CATEGORIAS = ["Todos", "Highlights", "Onboard", "Entrevista", "Documentár
 
 export function VideosClient({ videos }: { videos: Video[] }) {
   const [categoria, setCategoria] = useState("Todos");
-  const [activo, setActivo] = useState<Video>(videos[0]);
+  const [activo, setActivoBruto] = useState<Video>(videos[0]);
+  const [aReproduzir, setAReproduzir] = useState(false);
+
+  // Trocar de vídeo volta à miniatura — não queremos o leitor a saltar sozinho
+  // para o vídeo seguinte.
+  const setActivo = (v: Video) => {
+    setActivoBruto(v);
+    setAReproduzir(false);
+  };
+
+  // A página inicial liga para /videos#slug — abrir esse vídeo no leitor.
+  useEffect(() => {
+    const slug = window.location.hash.slice(1);
+    if (!slug) return;
+    const v = videos.find((x) => x.slug === slug);
+    if (v) setActivoBruto(v);
+  }, []);
 
   const filtrados = useMemo(
     () => videos.filter((v) => categoria === "Todos" || v.categoria === categoria),
@@ -47,18 +63,33 @@ export function VideosClient({ videos }: { videos: Video[] }) {
           <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr]">
             <div>
               <div className="relative aspect-video overflow-hidden border border-ink-700">
-                <Placeholder nome={[activo.slug, activo.thumbnail]} className="absolute inset-0" />
-                <div className="absolute inset-0 grid place-items-center bg-ink-950/30">
-                  <button
-                    className="grid size-20 place-items-center rounded-full bg-mb-red text-white transition-transform hover:scale-110"
-                    aria-label={`Reproduzir ${activo.titulo}`}
-                  >
-                    <Icon name="play" className="size-8 translate-x-1" />
-                  </button>
-                </div>
-                <span className="absolute bottom-3 right-3 bg-ink-950/90 px-2.5 py-1 font-mono text-xs text-white">
-                  {activo.duracao}
-                </span>
+                {aReproduzir && activo.videoId ? (
+                  <iframe
+                    key={activo.videoId}
+                    src={`https://www.youtube-nocookie.com/embed/${activo.videoId}?autoplay=1&rel=0`}
+                    title={activo.titulo}
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 size-full"
+                  />
+                ) : (
+                  <>
+                    <Placeholder nome={[activo.slug, activo.thumbnail]} className="absolute inset-0" />
+                    <div className="absolute inset-0 grid place-items-center bg-ink-950/30">
+                      <button
+                        onClick={() => setAReproduzir(true)}
+                        disabled={!activo.videoId}
+                        className="grid size-20 place-items-center rounded-full bg-mb-red text-white transition-transform hover:scale-110 disabled:opacity-60 disabled:hover:scale-100"
+                        aria-label={`Reproduzir ${activo.titulo}`}
+                      >
+                        <Icon name="play" className="size-8 translate-x-1" />
+                      </button>
+                    </div>
+                    <span className="absolute bottom-3 right-3 bg-ink-950/90 px-2.5 py-1 font-mono text-xs text-white">
+                      {activo.duracao}
+                    </span>
+                  </>
+                )}
               </div>
 
               <div className="mt-5">

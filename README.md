@@ -107,9 +107,16 @@ autorizado em `next.config.ts`). O gradiente determinístico por nome mantém-se
 reserva para qualquer chave sem fotografia.
 
 Cada prova, notícia, vídeo, corrida, equipa e piloto tem fotografia própria (`POR_SLUG`), e cada
-cabeçalho de página tem a sua imagem de fundo (`BANNERS`, consumido por `PageHero`). Os componentes
-aceitam uma lista de chaves por ordem de preferência — `[slug, chaveGenérica]` — para que o item
-use a sua fotografia e caia na do local da prova apenas se não tiver uma.
+cabeçalho de página tem a sua imagem de fundo (`BANNERS`, consumido por `PageHero`) — incluindo os
+cabeçalhos que não são `PageHero`: a ficha de piloto, as páginas legais e o ecrã de entrar. Os
+componentes aceitam uma lista de chaves por ordem de preferência — `[slug, chaveGenérica]` — para
+que o item use a sua fotografia e caia na do local da prova apenas se não tiver uma.
+
+O leitor de `/videos` reproduz vídeo real: `Video.videoId` (em `lib/data.ts`) aponta para vídeos
+públicos dos canais oficiais MXGP-TV e Dakar — o mais próximo de motociclismo real disponível sem
+arquivo próprio. Clicar no leitor troca a miniatura por um `iframe` do youtube-nocookie.com; sem
+`videoId`, o botão de reprodução fica desativado. Quando o arquivo de vídeo da Motobox existir,
+substituir por ficheiros próprios (self-hosted ou um player como Mux/Cloudflare Stream).
 
 Para passar ao arquivo real da Motobox basta trocar os URLs em `lib/imagens.ts` — as chaves e a
 assinatura de `Placeholder` / `Retrato` não mudam, pelo que nenhuma página precisa de ser tocada.
