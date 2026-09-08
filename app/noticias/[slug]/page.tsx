@@ -44,7 +44,7 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
     <>
       {/* Cabeçalho */}
       <header className="relative overflow-hidden border-b border-ink-800">
-        <Placeholder nome={noticia.imagem} className="absolute inset-0" />
+        <Placeholder nome={[noticia.slug, noticia.imagem]} className="absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/90 to-ink-950/60" />
         <div className="relative mx-auto max-w-3xl px-4 sm:px-6 py-14 sm:py-20">
           <Link
@@ -155,7 +155,7 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
                 <Link key={n.slug} href={`/noticias/${n.slug}`} className="group card card-hover overflow-hidden">
                   <div className="relative aspect-[16/10]">
                     <Placeholder
-                      nome={n.imagem}
+                      nome={[n.slug, n.imagem]}
                       className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute left-3 top-3">

@@ -17,6 +17,7 @@ export default function BilhetesPage() {
   return (
     <>
       <PageHero
+        imagem="bilhetes"
         eyebrow="Bilhética oficial"
         titulo="Bilhetes"
         descricao="Compre online e receba o bilhete digital com código QR no seu email e telemóvel. Sem filas, sem dinheiro em mão, sem intermediários."
@@ -50,7 +51,7 @@ export default function BilhetesPage() {
                 <div className="grid lg:grid-cols-[1fr_1.5fr]">
                   {/* Imagem */}
                   <div className="relative min-h-[220px] lg:min-h-full">
-                    <Placeholder nome={e.imagem} className="absolute inset-0" />
+                    <Placeholder nome={[e.slug, e.imagem]} className="absolute inset-0" />
                     <div className="absolute inset-0 bg-gradient-to-t from-ink-900 via-transparent to-transparent lg:bg-gradient-to-r" />
                     <div className="absolute left-4 top-4 flex gap-2">
                       {e.ronda && <Tag tone="red">Ronda {e.ronda}</Tag>}

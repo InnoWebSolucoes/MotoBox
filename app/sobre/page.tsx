@@ -99,6 +99,7 @@ export default function SobrePage() {
   return (
     <>
       <PageHero
+        imagem="sobre"
         eyebrow="Quem somos"
         titulo="A casa do motociclismo angolano"
         descricao="A Motobox nasceu de uma constatação simples: não havia, em Angola, um sítio onde se encontrasse informação sobre o mundo das motas. Resolvemos ser esse sítio."

@@ -55,6 +55,7 @@ export function CalendarioClient({ eventos }: { eventos: Evento[] }) {
   return (
     <>
       <PageHero
+        imagem="calendario"
         eyebrow={`Temporada ${TEMPORADA}`}
         titulo="Calendário"
         descricao="Todas as provas do motociclismo angolano — motocross, enduro, rally-raid, passeios e acções solidárias. Clique numa prova para ver horários, circuito e bilhetes."
@@ -129,7 +130,7 @@ export function CalendarioClient({ eventos }: { eventos: Evento[] }) {
         {/* Destaque próxima prova */}
         {proximo && (
           <div className="mb-12 relative overflow-hidden border border-ink-700">
-            <Placeholder nome={proximo.imagem} className="absolute inset-0" />
+            <Placeholder nome={[proximo.slug, proximo.imagem]} className="absolute inset-0" />
             <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/90 to-ink-950/40" />
             <div className="relative grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
               <div>
@@ -251,7 +252,7 @@ export function CalendarioClient({ eventos }: { eventos: Evento[] }) {
                 className="group card card-hover overflow-hidden"
               >
                 <div className="relative aspect-[16/10]">
-                  <Placeholder nome={e.imagem} className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" />
+                  <Placeholder nome={[e.slug, e.imagem]} className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" />
                   <div className="absolute left-3 top-3 flex gap-2">{estadoTag(e)}</div>
                   <div className="absolute bottom-3 left-3">
                     <p className="font-display text-2xl text-white leading-none">

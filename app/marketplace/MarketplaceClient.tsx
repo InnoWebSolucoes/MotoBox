@@ -54,6 +54,7 @@ export function MarketplaceClient({ anuncios }: { anuncios: AnuncioMarketplace[]
   return (
     <>
       <PageHero
+        imagem="marketplace"
         eyebrow="Comunidade verificada"
         titulo="Marketplace"
         descricao="Motas, peças e equipamento à venda por membros verificados da comunidade motard angolana. Sem intermediários e sem anúncios falsos."

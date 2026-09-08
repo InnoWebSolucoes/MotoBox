@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Placeholder } from "@/components/Brand";
 import { Icon, PageHero, Tag } from "@/components/ui";
 import { equipas, pilotos } from "@/lib/data";
 
@@ -29,6 +30,7 @@ export default function EquipasPage() {
   return (
     <>
       <PageHero
+        imagem="equipas"
         eyebrow="Motociclismo angolano"
         titulo="Equipas e clubes"
         descricao="Quem move o motociclismo em Angola — das equipas de competição aos clubes que juntam centenas de motards todos os meses."
@@ -61,6 +63,14 @@ export default function EquipasPage() {
                 const seus = pilotos.filter((p) => p.equipaSlug === e.slug);
                 return (
                   <Link key={e.slug} href={`/equipas/${e.slug}`} className="group card card-hover overflow-hidden">
+                    {/* Fotografia da equipa */}
+                    <div className="relative aspect-[16/7]">
+                      <Placeholder
+                        nome={e.slug}
+                        className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                        tamanhos="(max-width: 768px) 100vw, 50vw"
+                      />
+                    </div>
                     {/* Faixa de cor */}
                     <div className="h-1.5" style={{ background: e.cor }} />
 

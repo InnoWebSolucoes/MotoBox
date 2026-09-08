@@ -20,6 +20,7 @@ export default function ResultadosPage() {
   return (
     <>
       <PageHero
+        imagem="resultados"
         eyebrow="Arquivo histórico"
         titulo="Resultados"
         descricao="Todos os resultados das provas do calendário nacional, corrida a corrida. Tempos, pontos, melhores voltas e desistências."
@@ -55,7 +56,7 @@ export default function ResultadosPage() {
                     <div className="grid lg:grid-cols-[16rem_1fr]">
                       {/* Cabeçalho da corrida */}
                       <div className="relative border-b lg:border-b-0 lg:border-r border-ink-800 p-5">
-                        <Placeholder nome={c.imagem} className="absolute inset-0 opacity-40" />
+                        <Placeholder nome={[c.slug, c.imagem]} className="absolute inset-0 opacity-40" />
                         <div className="relative">
                           <div className="flex flex-wrap gap-2">
                             <Tag tone="red">Ronda {c.ronda}</Tag>

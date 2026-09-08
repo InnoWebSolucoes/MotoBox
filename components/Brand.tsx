@@ -80,7 +80,7 @@ export function Placeholder({
   largura = 1600,
   tamanhos = "(max-width: 768px) 100vw, 50vw",
 }: {
-  nome: string;
+  nome: string | (string | undefined)[];
   className?: string;
   label?: string;
   rounded?: boolean;
@@ -89,8 +89,10 @@ export function Placeholder({
   /** `sizes` do next/image — afina o srcset ao espaço real ocupado. */
   tamanhos?: string;
 }) {
-  const paleta = PALETAS[nome];
-  const h = hash(nome);
+  // Para o gradiente de reserva conta a última chave (a genérica do local).
+  const chave = Array.isArray(nome) ? (nome.filter(Boolean).at(-1) ?? "") : nome;
+  const paleta = PALETAS[chave];
+  const h = hash(chave);
   const [c1, c2] = paleta ?? [`hsl(${h % 360} 45% 22%)`, "#0a0a0c"];
   const ang = 100 + (h % 60);
 

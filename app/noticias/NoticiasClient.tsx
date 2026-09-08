@@ -33,6 +33,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
   return (
     <>
       <PageHero
+        imagem="noticias"
         eyebrow="Motobox"
         titulo="Notícias"
         descricao="Cobertura das provas nacionais, entrevistas com quem faz o motociclismo angolano, e o que se passa no mundo das motas lá fora."
@@ -121,7 +122,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
                 >
                   <div className="relative aspect-[16/10]">
                     <Placeholder
-                      nome={n.imagem}
+                      nome={[n.slug, n.imagem]}
                       className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute left-3 top-3">

@@ -1,5 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ReactNode } from "react";
+import { banner } from "@/lib/imagens";
 
 /* ---------------- Botão ---------------- */
 
@@ -136,14 +138,35 @@ export function PageHero({
   titulo,
   descricao,
   children,
+  imagem,
 }: {
   eyebrow: string;
   titulo: string;
   descricao?: string;
   children?: ReactNode;
+  /** Chave de `BANNERS` (lib/imagens.ts) — fotografia de fundo do cabeçalho. */
+  imagem?: string;
 }) {
+  const foto = imagem ? banner(imagem) : null;
   return (
     <header className="relative border-b border-ink-800 bg-ink-900 overflow-hidden">
+      {foto && (
+        <>
+          <Image
+            src={foto}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover opacity-25"
+          />
+          {/* Escurecer para o texto manter contraste sobre qualquer fotografia. */}
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-ink-900 via-ink-900/85 to-ink-900/40"
+            aria-hidden
+          />
+        </>
+      )}
       <div className="grid-bg absolute inset-0 opacity-30" aria-hidden />
       <div
         className="absolute -right-24 -top-24 size-96 rounded-full blur-3xl opacity-20"

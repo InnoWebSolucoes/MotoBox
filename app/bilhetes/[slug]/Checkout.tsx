@@ -118,7 +118,7 @@ export function Checkout({ evento }: { evento: Evento }) {
       </Link>
 
       <div className="mt-5 relative overflow-hidden border border-ink-700">
-        <Placeholder nome={evento.imagem} className="absolute inset-0" />
+        <Placeholder nome={[evento.slug, evento.imagem]} className="absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink-950 to-ink-950/60" />
         <div className="relative p-6 sm:p-8">
           <div className="flex flex-wrap gap-2">

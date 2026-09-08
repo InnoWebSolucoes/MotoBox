@@ -41,6 +41,7 @@ export function PilotosClient({ pilotos }: { pilotos: (Piloto & { posicao: numbe
   return (
     <>
       <PageHero
+        imagem="pilotos"
         eyebrow={`Temporada ${TEMPORADA}`}
         titulo="Pilotos"
         descricao="Quem corre no motociclismo angolano. Estatísticas, histórico, equipas e onde os seguir."

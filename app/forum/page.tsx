@@ -18,6 +18,7 @@ export default function ForumPage() {
   return (
     <>
       <PageHero
+        imagem="forum"
         eyebrow="Comunidade"
         titulo="Fórum"
         descricao="O sítio onde a comunidade motard angolana fala. Dúvidas de mecânica, organização de passeios, análise das corridas e tudo o resto."

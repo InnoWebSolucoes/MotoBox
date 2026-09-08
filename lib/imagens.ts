@@ -68,8 +68,92 @@ export const ARTIGOS: Record<string, string> = {
   suporte: U("photo-1591768575198-88dac53fbd0a"),
 };
 
+/**
+ * Imagens por slug, para que cada item tenha a sua fotografia.
+ *
+ * As chaves genéricas de `CENAS` (o local da prova) repetem-se entre itens —
+ * oito vídeos partilhavam sete chaves, e as cinco corridas do arquivo só
+ * tinham três. Estas entradas têm prioridade sobre a chave genérica, pelo que
+ * cada vídeo, notícia, corrida e equipa passa a ter imagem própria.
+ */
+export const POR_SLUG: Record<string, string> = {
+  // --- vídeos ---
+  "highlights-gp-huila-2026": U("photo-1558981285-6f0c94958bb6"),
+  "onboard-kiala-kilamba": U("photo-1610647752706-3bb12232b3ab"),
+  "documentario-elas-de-capacete": U("photo-1547937414-009abc449011"),
+  "resumo-enduro-litoral": U("photo-1485965120184-e220f721d03e"),
+  "entrevista-carlos-samba": U("photo-1524712245354-2c4e5e7121c0"),
+  "passeio-cabinda-2026": U("photo-1558980394-4c7c9299fe96"),
+  "highlights-gp-luanda-2026": U("photo-1517927033932-b3d18e61fb3a"),
+  "top10-saltos-2026": U("photo-1541443131876-44b03de101c5"),
+
+  // --- provas do calendário ---
+  "gp-luanda-abertura": U("photo-1610647752706-3bb12232b3ab"),
+  "enduro-benguela": U("photo-1512909006721-3d6018887383"),
+  "gp-huila-lubango": U("photo-1518655048521-f130df041f66"),
+  "passeio-solidario-cabinda": U("photo-1502161254066-6c74afbf07aa"),
+  "gp-namibe-dunas": U("photo-1476514525535-07fb3b4ae5f1"),
+  "gp-huambo-final": U("photo-1533929736458-ca588d08c8be"),
+  "gala-motobox-2026": U("photo-1506947411487-a56738267384"),
+  "passeio-natal-luanda": U("photo-1543941869-11da6518d88f"),
+
+  // --- notícias ---
+  "campeonato-decide-se-no-huambo": U("photo-1559839914-17aae19cec71"),
+  "joana-ferraz-entrevista": U("photo-1552642986-ccb41e7059e7"),
+  "corrida-dunas-namibe-preview": U("photo-1508973379184-7517410fb0bc"),
+  "passeio-cabinda-material-escolar": U("photo-1502161254066-6c74afbf07aa"),
+  "ivandro-cabral-revelacao": U("photo-1526726538690-5cbf956ae2fd"),
+  "mxgp-calendario-2027": U("photo-1533106418989-88406c7cc8ca"),
+  "ktm-nova-450-2027": U("photo-1493225457124-a3eb161ffa5f"),
+  "dakar-2027-inscricoes": U("photo-1516450360452-9312f5e86fc7"),
+  "concentracao-motard-lubango": U("photo-1571019613454-1cb2f99b2d8b"),
+
+  // --- corridas do arquivo (duas mangas por prova, imagens distintas) ---
+  "gp-luanda-2026-mx1": U("photo-1558981806-ec527fa84c39"),
+  "gp-luanda-2026-mx2": U("photo-1517927033932-b3d18e61fb3a"),
+  "enduro-benguela-2026": U("photo-1485965120184-e220f721d03e"),
+  "gp-huila-2026-mx1": U("photo-1591637333184-19aa84b3e01f"),
+  "gp-huila-2026-mx2": U("photo-1558981285-6f0c94958bb6"),
+
+  // --- equipas e clubes ---
+  "kilamba-racing": U("photo-1594736797933-d0501ba2fe65"),
+  "tundavala-mx": U("photo-1580310614729-ccd69652491d"),
+  "lobito-motorsport": U("photo-1546484475-7f7bd55792da"),
+  "caala-racing-club": U("photo-1449158743715-0a90ebb6d2d8"),
+  "namibe-dunas-team": U("photo-1547549082-6bc09f2049ae"),
+  "cabinda-bikers": U("photo-1558980394-4c7c9299fe96"),
+  "moto-clube-luanda": U("photo-1461896836934-ffe607ba8211"),
+  "trail-angola": U("photo-1568772585407-9361f9bf3a87"),
+};
+
+/**
+ * Fotografia de fundo dos cabeçalhos de página (`PageHero`), por rota.
+ * Entram muito esbatidas, atrás da grelha e do halo vermelho.
+ */
+export const BANNERS: Record<string, string> = {
+  pilotos: U("photo-1622185135505-2d795003994a"),
+  calendario: U("photo-1571068316344-75bc76f77890"),
+  classificacao: U("photo-1517649763962-0c623066013b"),
+  videos: U("photo-1541443131876-44b03de101c5"),
+  noticias: U("photo-1559839914-17aae19cec71"),
+  equipas: U("photo-1594736797933-d0501ba2fe65"),
+  resultados: U("photo-1558981806-ec527fa84c39"),
+  bilhetes: U("photo-1552674605-db6ffd4facb5"),
+  marketplace: U("photo-1560472354-b33ff0c44a43"),
+  forum: U("photo-1558618666-fcd25c85cd64"),
+  patrocinadores: U("photo-1486401899868-0e435ed85128"),
+  contacto: U("photo-1568605117036-5fe5e7bab0b7"),
+  sobre: U("photo-1583121274602-3e2820c69888"),
+};
+
+/** URL do banner de uma rota, já dimensionado. */
+export function banner(chave: string, { w = 1920, q = 60 } = {}): string | null {
+  const base = BANNERS[chave];
+  return base ? `${base}?auto=format&fit=crop&w=${w}&q=${q}` : null;
+}
+
 /** Todas as chaves conhecidas, numa só tabela. */
-const TODAS: Record<string, string> = { ...CENAS, ...RETRATOS, ...ARTIGOS };
+const TODAS: Record<string, string> = { ...CENAS, ...RETRATOS, ...ARTIGOS, ...POR_SLUG };
 
 /**
  * URL da fotografia para uma chave, já dimensionada.
@@ -77,13 +161,19 @@ const TODAS: Record<string, string> = { ...CENAS, ...RETRATOS, ...ARTIGOS };
  * fica com o gradiente gerado, que continua a servir de marcador.
  */
 export function src(
-  nome: string,
+  nome: string | (string | undefined)[],
   { w = 1200, q = 70 }: { w?: number; q?: number } = {},
 ): string | null {
-  // chaves derivadas do tipo "capacete-2" (galerias) caem na imagem base
-  const base = TODAS[nome] ?? TODAS[nome.replace(/-\d+$/, "")];
-  if (!base) return null;
-  return `${base}?auto=format&fit=crop&w=${w}&q=${q}`;
+  // Aceita uma lista por ordem de preferência: normalmente [slug, chaveGenérica].
+  // O slug tem imagem própria; a chave genérica (o local da prova) repete-se
+  // entre itens e serve de reserva.
+  const chaves = (Array.isArray(nome) ? nome : [nome]).filter(Boolean) as string[];
+  for (const c of chaves) {
+    // chaves derivadas do tipo "capacete-2" (galerias) caem na imagem base
+    const base = TODAS[c] ?? TODAS[c.replace(/-\d+$/, "")];
+    if (base) return `${base}?auto=format&fit=crop&w=${w}&q=${q}`;
+  }
+  return null;
 }
 
 /**

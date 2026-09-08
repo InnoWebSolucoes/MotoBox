@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Retrato } from "@/components/Brand";
+import { Placeholder, Retrato } from "@/components/Brand";
 import { ButtonLink, Icon, PosicaoBadge, Tag } from "@/components/ui";
 import { classificacaoEquipas, equipas, getEquipa, pilotos } from "@/lib/data";
 
@@ -36,6 +36,9 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
   return (
     <>
       <header className="relative overflow-hidden border-b border-ink-800">
+        {/* Fotografia da equipa, esbatida sob a cor do clube */}
+        <Placeholder nome={equipa.slug} className="absolute inset-0 opacity-30" tamanhos="100vw" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/45" aria-hidden />
         <div
           className="absolute inset-0 opacity-25"
           style={{ background: `linear-gradient(115deg, ${equipa.cor} 0%, transparent 62%)` }}

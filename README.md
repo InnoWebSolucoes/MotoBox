@@ -106,9 +106,15 @@ As fotografias são de demonstração: cada chave de imagem usada em `lib/data.t
 autorizado em `next.config.ts`). O gradiente determinístico por nome mantém-se por baixo, como
 reserva para qualquer chave sem fotografia.
 
+Cada prova, notícia, vídeo, corrida, equipa e piloto tem fotografia própria (`POR_SLUG`), e cada
+cabeçalho de página tem a sua imagem de fundo (`BANNERS`, consumido por `PageHero`). Os componentes
+aceitam uma lista de chaves por ordem de preferência — `[slug, chaveGenérica]` — para que o item
+use a sua fotografia e caia na do local da prova apenas se não tiver uma.
+
 Para passar ao arquivo real da Motobox basta trocar os URLs em `lib/imagens.ts` — as chaves e a
 assinatura de `Placeholder` / `Retrato` não mudam, pelo que nenhuma página precisa de ser tocada.
-Os logótipos de equipas e patrocinadores continuam a ser monogramas de texto, por opção de design.
+Os logótipos de equipas e patrocinadores, e os avatares do fórum, continuam a ser monogramas de
+texto, por opção de design.
 
 ## Próximos passos para produção
 

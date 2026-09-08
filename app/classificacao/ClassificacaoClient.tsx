@@ -38,6 +38,7 @@ export function ClassificacaoClient({
   return (
     <>
       <PageHero
+        imagem="classificacao"
         eyebrow={`Campeonato Nacional ${TEMPORADA}`}
         titulo="Classificação"
         descricao="Pontuação do campeonato nacional de motociclismo, actualizada após cada prova. Pontuação a dobrar na ronda final."

@@ -38,7 +38,7 @@ export default function Home() {
     <>
       {/* ============ HERO ============ */}
       <section className="relative overflow-hidden border-b border-ink-800">
-        <Placeholder nome={proximo?.imagem ?? "namibe"} className="absolute inset-0" />
+        <Placeholder nome={[proximo?.slug, proximo?.imagem ?? "namibe"]} className="absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/30" />
         <div className="grid-bg absolute inset-0 opacity-20" aria-hidden />
 
@@ -158,7 +158,7 @@ export default function Home() {
                 href={`/noticias/${n.slug}`}
                 className="group card card-hover flex gap-4 overflow-hidden"
               >
-                <Placeholder nome={n.imagem} className="w-28 sm:w-32 shrink-0" tamanhos="128px" />
+                <Placeholder nome={[n.slug, n.imagem]} className="w-28 sm:w-32 shrink-0" tamanhos="128px" />
                 <div className="min-w-0 flex-1 py-3.5 pr-4">
                   <p className="eyebrow text-mb-red">{n.categoria}</p>
                   <h3 className="mt-1.5 font-display text-base uppercase leading-snug text-white line-clamp-2 group-hover:text-mb-red transition-colors">
@@ -322,7 +322,7 @@ export default function Home() {
                 className="group card card-hover w-[280px] sm:w-[320px] shrink-0 overflow-hidden"
               >
                 <div className="relative aspect-video">
-                  <Placeholder nome={v.thumbnail} className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" />
+                  <Placeholder nome={[v.slug, v.thumbnail]} className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" />
                   <div className="absolute inset-0 grid place-items-center">
                     <span className="grid size-14 place-items-center rounded-full bg-mb-red/90 text-white transition-transform group-hover:scale-110">
                       <Icon name="play" className="size-5 translate-x-0.5" />

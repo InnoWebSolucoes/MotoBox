@@ -64,6 +64,7 @@ export default function PatrocinadoresPage() {
   return (
     <>
       <PageHero
+        imagem="patrocinadores"
         eyebrow="Quem apoia"
         titulo="Patrocinadores"
         descricao="O motociclismo angolano existe porque há marcas que acreditam nele. Estas são as que estão connosco."

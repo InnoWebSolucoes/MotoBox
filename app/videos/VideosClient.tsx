@@ -22,6 +22,7 @@ export function VideosClient({ videos }: { videos: Video[] }) {
   return (
     <>
       <PageHero
+        imagem="videos"
         eyebrow="Motobox TV"
         titulo="Vídeos"
         descricao="Os melhores momentos das provas nacionais, câmaras de bordo, entrevistas e documentários sobre quem faz o motociclismo angolano."
@@ -46,7 +47,7 @@ export function VideosClient({ videos }: { videos: Video[] }) {
           <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr]">
             <div>
               <div className="relative aspect-video overflow-hidden border border-ink-700">
-                <Placeholder nome={activo.thumbnail} className="absolute inset-0" />
+                <Placeholder nome={[activo.slug, activo.thumbnail]} className="absolute inset-0" />
                 <div className="absolute inset-0 grid place-items-center bg-ink-950/30">
                   <button
                     className="grid size-20 place-items-center rounded-full bg-mb-red text-white transition-transform hover:scale-110"
@@ -94,7 +95,7 @@ export function VideosClient({ videos }: { videos: Video[] }) {
                       className="group flex w-full gap-3 border border-ink-800 text-left transition-colors hover:border-mb-red/60 hover:bg-ink-850"
                     >
                       <div className="relative w-32 shrink-0 aspect-video">
-                        <Placeholder nome={v.thumbnail} className="absolute inset-0" />
+                        <Placeholder nome={[v.slug, v.thumbnail]} className="absolute inset-0" />
                         <span className="absolute bottom-1 right-1 bg-ink-950/90 px-1 font-mono text-[10px] text-white">
                           {v.duracao}
                         </span>
@@ -148,7 +149,7 @@ export function VideosClient({ videos }: { videos: Video[] }) {
             >
               <div className="relative aspect-video">
                 <Placeholder
-                  nome={v.thumbnail}
+                  nome={[v.slug, v.thumbnail]}
                   className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 grid place-items-center opacity-0 transition-opacity group-hover:opacity-100">

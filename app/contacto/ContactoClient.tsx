@@ -36,6 +36,7 @@ export function ContactoClient() {
   return (
     <>
       <PageHero
+        imagem="contacto"
         eyebrow="Fale connosco"
         titulo="Contacto"
         descricao="Tem uma dúvida, um evento para divulgar ou uma proposta de parceria? Escreva-nos. Respondemos a todas as mensagens."
