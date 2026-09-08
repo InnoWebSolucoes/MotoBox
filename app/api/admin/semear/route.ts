@@ -22,6 +22,30 @@ import type { ColeccaoNome } from "@/lib/admin/store";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+/** Tabelas com coluna booleana `publicado`. */
+const COM_PUBLICADO = new Set<ColeccaoNome>([
+  "eventos", "equipas", "pilotos", "corridas", "noticias",
+  "videos", "patrocinadores", "topicos",
+]);
+
+/**
+ * Valores por omissão para colunas NOT NULL cujo campo é
+ * opcional nos tipos da aplicação.
+ */
+const OMISSOES: Partial<Record<ColeccaoNome, Record<string, unknown>>> = {
+  eventos:   { bilhetes: [], horarios: [] },
+  noticias:  { destaque: false, tags: [] },
+  topicos:   { fixado: false, bloqueado: false, resolvido: false, ultima_resposta: {} },
+  anuncios:  { imagens: [], vendedor: {} },
+  equipas:   { pilotos: [], motas: [], estatisticas: {}, redes: {} },
+  pilotos:   { estatisticas: {}, redes: {} },
+  corridas:  { resultados: [] },
+  utilizadores: { verificado: false, newsletter: false },
+  denuncias: { estado: "pendente" },
+  mensagens: { lida: false, arquivada: false },
+  subscritores: { ativo: true },
+};
+
 /** Ordem respeita as chaves estrangeiras (equipas antes de pilotos). */
 const LOTES: { coleccao: ColeccaoNome; itens: unknown[] }[] = [
   { coleccao: "equipas", itens: equipas },
@@ -61,11 +85,19 @@ export async function POST() {
   for (const { coleccao, itens } of LOTES) {
     const linhas = (itens as Record<string, unknown>[]).map((it) => {
       const base = paraBase(coleccao, it);
-      // `anuncios.publicado` é uma data na app; as restantes tabelas
-      // usam `publicado` como booleano de visibilidade.
-      if (coleccao !== "anuncios" && coleccao !== "paginasLegais") {
+
+      // Só as tabelas de conteúdo público têm coluna `publicado`.
+      // Em `anuncios` e `paginas_legais` o valor já vem dos dados.
+      if (COM_PUBLICADO.has(coleccao) && base.publicado === undefined) {
         base.publicado = true;
       }
+
+      // Campos opcionais nos tipos da app mas NOT NULL na base de
+      // dados: preencher com o valor neutro quando faltam.
+      for (const [col, valor] of Object.entries(OMISSOES[coleccao] ?? {})) {
+        if (base[col] === undefined || base[col] === null) base[col] = valor;
+      }
+
       return base;
     });
 
