@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import { src as fotoSrc } from "@/lib/imagens";
 
 /** Logótipo Motobox — reprodução em SVG do lettering com linhas de velocidade. */
 export function Logo({ className = "", height = 28 }: { className?: string; height?: number }) {
@@ -45,9 +47,10 @@ export function LogoLink({ height = 28 }: { height?: number }) {
 }
 
 /**
- * Imagem de marcador. O site é entregue sem fotografias reais — cada
- * `nome` gera um gradiente determinístico com textura, para que o layout
- * possa ser avaliado antes de a Motobox fornecer o material fotográfico.
+ * Imagem de cena. Procura em `lib/imagens.ts` a fotografia da chave `nome`;
+ * quando existe, entra por baixo das linhas de velocidade e do gradiente de
+ * leitura. Sem fotografia, fica o gradiente determinístico por nome, que
+ * continua a servir de marcador.
  */
 const PALETAS: Record<string, [string, string]> = {
   kilamba: ["#7f1d1d", "#1c1917"],
@@ -74,16 +77,24 @@ export function Placeholder({
   className = "",
   label,
   rounded = false,
+  largura = 1600,
+  tamanhos = "(max-width: 768px) 100vw, 50vw",
 }: {
   nome: string;
   className?: string;
   label?: string;
   rounded?: boolean;
+  /** Largura pedida ao CDN de origem. Baixar nas miniaturas. */
+  largura?: number;
+  /** `sizes` do next/image — afina o srcset ao espaço real ocupado. */
+  tamanhos?: string;
 }) {
   const paleta = PALETAS[nome];
   const h = hash(nome);
   const [c1, c2] = paleta ?? [`hsl(${h % 360} 45% 22%)`, "#0a0a0c"];
   const ang = 100 + (h % 60);
+
+  const foto = fotoSrc(nome, { w: largura });
 
   return (
     <div
@@ -93,6 +104,15 @@ export function Placeholder({
       role={label ? "img" : undefined}
       aria-label={label}
     >
+      {foto && (
+        <Image
+          src={foto}
+          alt={label ?? ""}
+          fill
+          sizes={tamanhos}
+          className="object-cover"
+        />
+      )}
       <div className="speed-lines absolute inset-0 opacity-50" />
       <div
         className="absolute inset-0 opacity-[0.14]"
@@ -112,25 +132,44 @@ export function Retrato({
   iniciais,
   className = "",
   cor,
+  largura = 900,
+  tamanhos = "(max-width: 768px) 50vw, 25vw",
 }: {
   nome: string;
   iniciais: string;
   className?: string;
   cor?: string;
+  /** Largura pedida ao CDN de origem. Baixar nos avatares pequenos. */
+  largura?: number;
+  /** `sizes` do next/image — afina o srcset ao espaço real ocupado. */
+  tamanhos?: string;
 }) {
   const h = hash(nome);
   const base = cor ?? `hsl(${h % 360} 40% 26%)`;
+  const foto = fotoSrc(nome, { w: largura });
   return (
     <div
       className={`relative overflow-hidden ${className}`}
       style={{ background: `linear-gradient(160deg, ${base} 0%, #0a0a0c 82%)` }}
     >
+      {foto && (
+        <Image
+          src={foto}
+          alt={iniciais ? `Retrato de ${nome}` : ""}
+          fill
+          sizes={tamanhos}
+          className="object-cover"
+        />
+      )}
       <div className="speed-lines absolute inset-0 opacity-40" />
-      <div className="absolute inset-0 grid place-items-center">
-        <span className="font-display text-white/12 leading-none select-none" style={{ fontSize: "clamp(3rem, 34cqw, 12rem)" }}>
-          {iniciais}
-        </span>
-      </div>
+      {/* Iniciais só quando não há fotografia — de outro modo sujavam o retrato. */}
+      {!foto && (
+        <div className="absolute inset-0 grid place-items-center">
+          <span className="font-display text-white/12 leading-none select-none" style={{ fontSize: "clamp(3rem, 34cqw, 12rem)" }}>
+            {iniciais}
+          </span>
+        </div>
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/25 to-transparent" />
     </div>
   );

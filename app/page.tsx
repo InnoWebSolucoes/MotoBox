@@ -158,7 +158,7 @@ export default function Home() {
                 href={`/noticias/${n.slug}`}
                 className="group card card-hover flex gap-4 overflow-hidden"
               >
-                <Placeholder nome={n.imagem} className="w-28 sm:w-32 shrink-0" />
+                <Placeholder nome={n.imagem} className="w-28 sm:w-32 shrink-0" tamanhos="128px" />
                 <div className="min-w-0 flex-1 py-3.5 pr-4">
                   <p className="eyebrow text-mb-red">{n.categoria}</p>
                   <h3 className="mt-1.5 font-display text-base uppercase leading-snug text-white line-clamp-2 group-hover:text-mb-red transition-colors">
@@ -199,6 +199,7 @@ export default function Home() {
                       nome={p.slug}
                       iniciais={iniciais(p.nome)}
                       className="size-11 shrink-0 rounded-full"
+                      tamanhos="44px"
                     />
                     <div className="min-w-0 flex-1">
                       <p className="font-display text-base uppercase text-white truncate group-hover:text-mb-red transition-colors">

@@ -101,13 +101,18 @@ representar de forma realista o motociclismo angolano — circuitos do Kilamba, 
 dunas do Namibe; províncias, clubes e valores em kwanzas. Vive todo em `lib/data.ts`, pronto a ser
 substituído pelos dados reais da Motobox ou ligado a um CMS.
 
-As fotografias estão substituídas por marcadores gerados (`components/Brand.tsx`), com gradientes
-determinísticos por nome, para que o layout possa ser avaliado antes de o material fotográfico da
-Motobox ser fornecido. Substituir por `next/image` quando as fotografias existirem.
+As fotografias são de demonstração: cada chave de imagem usada em `lib/data.ts` está mapeada em
+`lib/imagens.ts` para uma fotografia livre do Unsplash, servida por `next/image` (domínio
+autorizado em `next.config.ts`). O gradiente determinístico por nome mantém-se por baixo, como
+reserva para qualquer chave sem fotografia.
+
+Para passar ao arquivo real da Motobox basta trocar os URLs em `lib/imagens.ts` — as chaves e a
+assinatura de `Placeholder` / `Retrato` não mudam, pelo que nenhuma página precisa de ser tocada.
+Os logótipos de equipas e patrocinadores continuam a ser monogramas de texto, por opção de design.
 
 ## Próximos passos para produção
 
-1. **Fotografias** — substituir `Placeholder` / `Retrato` por `next/image` com o arquivo do Gonçalo.
+1. **Fotografias** — trocar os URLs de demonstração em `lib/imagens.ts` pelo arquivo do Gonçalo.
 2. **Backend** — ligar `lib/data.ts` a um CMS (Sanity, Payload) ou API própria.
 3. **Pagamentos** — integrar Multicaixa Express / EMIS e um gateway de cartão no passo 3 do checkout.
 4. **Autenticação** — contas reais em `/conta` (NextAuth ou equivalente).

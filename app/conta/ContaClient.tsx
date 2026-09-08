@@ -198,7 +198,7 @@ export function ContaClient() {
                 <div className="space-y-3">
                   {noticias.slice(0, 4).map((n) => (
                     <Link key={n.slug} href={`/noticias/${n.slug}`} className="group flex gap-3.5">
-                      <Placeholder nome={n.imagem} className="size-16 shrink-0" />
+                      <Placeholder nome={n.imagem} className="size-16 shrink-0" tamanhos="64px" />
                       <div className="min-w-0 flex-1">
                         <p className="eyebrow text-mb-red">{n.categoria}</p>
                         <p className="mt-1 text-sm text-white line-clamp-2 group-hover:text-mb-red transition-colors">
@@ -226,7 +226,7 @@ export function ContaClient() {
                         <Retrato
                           nome={p.slug}
                           iniciais={iniciais(p.nome)}
-                          className="size-10 shrink-0 rounded-full [container-type:size]"
+                          className="size-10 shrink-0 rounded-full [container-type:size]" tamanhos="40px"
                         />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm text-white group-hover:text-mb-red transition-colors">
@@ -366,7 +366,7 @@ export function ContaClient() {
                       <Retrato
                         nome={p.slug}
                         iniciais={iniciais(p.nome)}
-                        className="size-9 shrink-0 rounded-full [container-type:size]"
+                        className="size-9 shrink-0 rounded-full [container-type:size]" tamanhos="36px"
                       />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm text-white">{p.nome}</span>
