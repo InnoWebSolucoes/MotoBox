@@ -57,6 +57,8 @@ function mensagem(erro: string): string {
   if (m.includes("user already registered")) return "Já existe uma conta com este email.";
   if (m.includes("password should be at least")) return "A palavra-passe tem de ter pelo menos 8 caracteres.";
   if (m.includes("unable to validate email")) return "Endereço de email inválido.";
+  if (m.includes("over_email_send_rate_limit") || m.includes("email rate limit"))
+    return "O limite de emails do servidor foi atingido. Tente daqui a uma hora, ou peça a um administrador para confirmar a conta manualmente.";
   if (m.includes("rate limit") || m.includes("too many")) return "Demasiadas tentativas. Aguarde um momento.";
   if (m.includes("provider is not enabled")) return "Este método de entrada ainda não está activo.";
   return erro;
