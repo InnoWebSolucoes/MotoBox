@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { lerPaginasLegais, REVALIDAR } from "@/lib/supabase/publico";
+import { lerPaginasLegais } from "@/lib/supabase/publico";
 import { paginasLegaisSeed } from "@/lib/admin/seed";
 import { formatData } from "@/lib/data";
 
-export const revalidate = REVALIDAR;
+// O Next exige um literal aqui — não aceita constante importada.
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const paginas = await lerPaginasLegais();
