@@ -7,6 +7,7 @@ import { LogoLink } from "./Brand";
 import { Icon } from "./ui";
 import { SOCIAIS } from "@/lib/data";
 import { useIdioma } from "@/lib/i18n/contexto";
+import { useAuth } from "@/lib/auth/contexto";
 import { SelectorIdioma } from "./SelectorIdioma";
 
 type NavItem = { href: string; chave: string; filhos?: { href: string; chave: string; desc: string }[] };
@@ -59,6 +60,7 @@ const NAV: NavItem[] = [
 
 export function Nav() {
   const { t } = useIdioma();
+  const { utilizador, perfil, equipa, sair } = useAuth();
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
   const [dropdown, setDropdown] = useState<string | null>(null);
@@ -169,13 +171,46 @@ export function Nav() {
               {t("nav.bilhetes")}
             </Link>
             <SelectorIdioma compacto />
-            <Link
-              href="/conta"
-              className="grid size-10 place-items-center text-ink-300 hover:text-white transition-colors"
-              aria-label={t("nav.conta")}
-            >
-              <Icon name="user" className="size-5" />
-            </Link>
+            {utilizador ? (
+              <div className="flex items-center gap-1.5">
+                {equipa && (
+                  <Link
+                    href="/admin"
+                    className="hidden border border-ink-600 px-2.5 py-1.5 font-display text-[11px] uppercase tracking-widest text-ink-300 transition-colors hover:border-mb-red hover:text-white lg:inline-block"
+                  >
+                    {t("admin.gestao")}
+                  </Link>
+                )}
+                <Link
+                  href="/conta"
+                  className="grid size-9 place-items-center font-display text-[11px] text-white"
+                  style={{ background: perfil?.avatarCor ?? "#e10600" }}
+                  aria-label={t("auth.aMinhaConta")}
+                  title={perfil?.nome ?? undefined}
+                >
+                  {(perfil?.nome ?? "?").slice(0, 1).toUpperCase()}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => void sair()}
+                  aria-label={t("auth.sair")}
+                  title={t("auth.sair")}
+                  className="grid size-9 place-items-center text-ink-400 transition-colors hover:text-white"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+                    strokeLinecap="round" strokeLinejoin="round" className="size-4.5" aria-hidden>
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/entrar"
+                className="inline-flex h-9 items-center border border-ink-600 px-3.5 font-display text-[11px] uppercase tracking-widest text-white transition-colors hover:border-mb-red hover:bg-mb-red/10"
+              >
+                {t("auth.entrar")}
+              </Link>
+            )}
           </div>
         </div>
       </nav>

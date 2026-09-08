@@ -5,6 +5,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
 import { IdiomaProvider } from "@/lib/i18n/contexto";
+import { AuthProvider } from "@/lib/auth/contexto";
 
 const display = Barlow_Condensed({
   variable: "--font-display",
@@ -62,12 +63,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Saltar para o conteúdo
         </a>
         <IdiomaProvider>
+        <AuthProvider>
         <Nav />
         <main id="conteudo" className="flex-1">
           {children}
         </main>
         <Footer />
         <CookieBanner />
+        </AuthProvider>
         </IdiomaProvider>
       </body>
     </html>
