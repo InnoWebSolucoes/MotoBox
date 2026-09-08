@@ -1,5 +1,34 @@
 # Configurar o envio de email
 
+> ## Estado actual — leia primeiro
+>
+> **O registo de contas não funciona para ninguém além de `motoboxweb@gmail.com`.**
+>
+> Diagnóstico feito a 8 de Setembro de 2026:
+>
+> | Verificação | Resultado |
+> | --- | --- |
+> | Limite de 3 emails/hora do Supabase | Já reposto, deixou de ser o problema |
+> | Supabase regista o envio | Sim — `confirmation_sent_at` fica preenchido |
+> | O email chega ao Gmail | **Não** — o servidor incluído no Supabase não é fiável |
+> | Resend com a chave actual | **Só entrega a `motoboxweb@gmail.com`** (erro 403 para os restantes) |
+>
+> A causa é uma só: **não há domínio verificado no Resend**. Sem isso, nenhum
+> serviço de email aceita entregar a terceiros — é assim que se trava o spam.
+>
+> **Só há duas saídas, e ambas dependem de uma decisão sua:**
+>
+> **A · Desligar a confirmação de email (imediato, 30 segundos)**
+> Supabase → Authentication → Sign In / Providers → Email → desactivar
+> *Confirm email*. Os registos passam a funcionar de imediato, sem envio nenhum.
+> Serve para desenvolver e demonstrar. **Tem de ser revertido antes do
+> lançamento**, senão qualquer pessoa se regista com o email de outra.
+>
+> **B · Verificar um domínio (definitivo, depende do DNS)**
+> Requer um domínio com acesso aos registos DNS. `motobox.ao` não está
+> registado — ou se regista, ou se usa um domínio da Innoweb entretanto.
+> O procedimento está nas secções abaixo.
+
 O serviço de email que vem com o Supabase envia **3 mensagens por hora, no
 projecto inteiro**. Serve para experimentar; não serve para produção. Foi por isso
 que os emails de confirmação deixaram de chegar — a quota esgotou-se.
