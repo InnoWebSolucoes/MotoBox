@@ -43,9 +43,15 @@ o que chega para testar mas não para o público.
 
 ---
 
-## 2. Obter as credenciais SMTP
+## 2. Credenciais SMTP
 
-No Resend: **API Keys** → **Create API Key** → permissão de envio.
+> **Estado actual:** a chave já existe e foi validada — envio confirmado a
+> funcionar. Está guardada em `.env.local` e nas variáveis da Vercel como
+> `RESEND_API_KEY`. A conta Resend está registada em `motoboxweb@gmail.com`.
+>
+> **Falta apenas verificar um domínio.** Enquanto isso não acontecer, o Resend
+> só entrega mensagens para `motoboxweb@gmail.com`; qualquer outro destinatário
+> é recusado com erro 403.
 
 Os valores para o Supabase são estes:
 
