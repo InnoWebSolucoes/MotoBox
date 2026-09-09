@@ -1759,12 +1759,19 @@ export function formatKz(valor: number): string {
   return new Intl.NumberFormat("pt-AO", { maximumFractionDigits: 0 }).format(valor) + " Kz";
 }
 
+/*
+ * As datas saem sempre em português: são formatadas no servidor, onde o
+ * idioma escolhido pelo visitante ainda não é conhecido. A tradução para
+ * inglês é feita no cliente, em components/TraduzirPagina.tsx.
+ */
+const localeData = "pt-PT";
+
 export function formatData(iso: string, opts?: Intl.DateTimeFormatOptions): string {
-  return new Date(iso).toLocaleDateString("pt-PT", opts ?? { day: "2-digit", month: "long", year: "numeric" });
+  return new Date(iso).toLocaleDateString(localeData, opts ?? { day: "2-digit", month: "long", year: "numeric" });
 }
 
 export function formatDataCurta(iso: string): string {
-  return new Date(iso).toLocaleDateString("pt-PT", { day: "2-digit", month: "short" }).toUpperCase().replace(".", "");
+  return new Date(iso).toLocaleDateString(localeData, { day: "2-digit", month: "short" }).toUpperCase().replace(".", "");
 }
 
 export function classificacaoPilotos(categoria?: string) {

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
+import { TraduzirPagina } from "@/components/TraduzirPagina";
 import { IdiomaProvider } from "@/lib/i18n/contexto";
 import { AuthProvider } from "@/lib/auth/contexto";
 
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <Footer />
         <CookieBanner />
+        <TraduzirPagina />
         </AuthProvider>
         </IdiomaProvider>
       </body>
