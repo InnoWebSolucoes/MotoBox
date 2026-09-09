@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Placeholder, Retrato } from "@/components/Brand";
+import { C, T } from "@/components/T";
 import { Countdown } from "@/components/Countdown";
 import { Newsletter } from "@/components/Newsletter";
 import { ButtonLink, Icon, PosicaoBadge, SectionHead, Tag } from "@/components/ui";
@@ -45,26 +46,25 @@ export default function Home() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-24 lg:py-28">
           <div className="max-w-3xl rise">
             <div className="flex flex-wrap items-center gap-2">
-              <Tag tone="red">Temporada {TEMPORADA}</Tag>
-              {proximo && <Tag tone="outline">Ronda {proximo.ronda ?? "—"} · {proximo.disciplina}</Tag>}
+              <Tag tone="red"><T k="paginas.temporada" /> {TEMPORADA}</Tag>
+              {proximo && <Tag tone="outline"><T k="paginas.ronda" /> {proximo.ronda ?? "—"} · {proximo.disciplina}</Tag>}
             </div>
 
             <h1 className="title-xl mt-6 text-5xl sm:text-6xl lg:text-7xl">
-              A casa do<br />
-              <span className="text-mb-red">motociclismo</span><br />
-              angolano
+              <T k="paginas.inicioTitulo1" /><br />
+              <span className="text-mb-red"><T k="paginas.inicioTitulo2" /></span><br />
+              <T k="paginas.inicioTitulo3" />
             </h1>
 
             <p className="mt-6 max-w-xl text-base sm:text-lg text-ink-300 leading-relaxed">
-              Calendário, resultados, classificações, pilotos e bilhetes. Tudo o que acontece no
-              mundo motard em Angola, num só lugar.
+              <T k="paginas.inicioSub" />
             </p>
 
             {proximo && (
               <div className="mt-10 border border-ink-700 bg-ink-950/80 backdrop-blur-sm p-6 sm:p-7 max-w-xl">
-                <p className="eyebrow text-mb-red">Próxima prova</p>
+                <p className="eyebrow text-mb-red"><T k="paginas.proximaProva" /></p>
                 <h2 className="font-display mt-2 text-2xl sm:text-3xl uppercase leading-tight text-white">
-                  {proximo.titulo}
+                  <C>{proximo.titulo}</C>
                 </h2>
                 <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-400">
                   <span className="inline-flex items-center gap-1.5">

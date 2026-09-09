@@ -6,10 +6,15 @@ import { Placeholder } from "@/components/Brand";
 import { Icon, PageHero, Tag } from "@/components/ui";
 import { formatData } from "@/lib/data";
 import type { Noticia } from "@/lib/types";
+import { useIdioma } from "@/lib/i18n/contexto";
+import { useConteudo } from "@/lib/i18n/useConteudo";
 
 const CATEGORIAS = ["Todas", "Angola", "Internacional", "Entrevista", "Comunidade", "Solidária"];
 
-export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
+export function NoticiasClient({ noticias: originais }: { noticias: Noticia[] }) {
+  const { t } = useIdioma();
+  // Traduz o conteúdo uma vez; todos os cartões abaixo já o recebem traduzido.
+  const noticias = useConteudo(originais, ["titulo", "resumo"]);
   const [categoria, setCategoria] = useState("Todas");
   const [busca, setBusca] = useState("");
 
@@ -34,9 +39,9 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
     <>
       <PageHero
         imagem="noticias"
-        eyebrow="Motobox"
-        titulo="Notícias"
-        descricao="Cobertura das provas nacionais, entrevistas com quem faz o motociclismo angolano, e o que se passa no mundo das motas lá fora."
+        eyebrow={t("paginas.motobox")}
+        titulo={t("paginas.noticiasTitulo")}
+        descricao={t("paginas.noticiasSub")}
       />
 
       {/* Filtros */}

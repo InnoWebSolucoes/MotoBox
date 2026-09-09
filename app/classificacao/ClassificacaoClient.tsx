@@ -6,6 +6,7 @@ import { Retrato } from "@/components/Brand";
 import { Icon, PageHero, PosicaoBadge, Tag } from "@/components/ui";
 import { TEMPORADA } from "@/lib/data";
 import type { Equipa, Piloto } from "@/lib/types";
+import { useIdioma } from "@/lib/i18n/contexto";
 
 type PilotoClass = Piloto & { posicao: number };
 type EquipaClass = Equipa & { posicao: number };
@@ -23,6 +24,7 @@ export function ClassificacaoClient({
   pilotos: PilotoClass[];
   equipas: EquipaClass[];
 }) {
+  const { t } = useIdioma();
   const [aba, setAba] = useState<"pilotos" | "equipas">("pilotos");
   const [categoria, setCategoria] = useState("Todas");
 
@@ -40,7 +42,7 @@ export function ClassificacaoClient({
       <PageHero
         imagem="classificacao"
         eyebrow={`Campeonato Nacional ${TEMPORADA}`}
-        titulo="Classificação"
+        titulo={t("paginas.classificacaoTitulo")}
         descricao="Pontuação do campeonato nacional de motociclismo, actualizada após cada prova. Pontuação a dobrar na ronda final."
       />
 

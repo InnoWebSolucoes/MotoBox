@@ -6,6 +6,8 @@ import { Placeholder } from "@/components/Brand";
 import { ButtonLink, Icon, PageHero, Tag } from "@/components/ui";
 import { formatData, formatKz } from "@/lib/data";
 import type { AnuncioMarketplace } from "@/lib/types";
+import { useIdioma } from "@/lib/i18n/contexto";
+import { useConteudo } from "@/lib/i18n/useConteudo";
 
 const CATEGORIAS = ["Todas", "Motas", "Peças", "Equipamento", "Acessórios"] as const;
 const ORDENS = [
@@ -15,7 +17,9 @@ const ORDENS = [
   { id: "vistos", label: "Mais vistos" },
 ] as const;
 
-export function MarketplaceClient({ anuncios }: { anuncios: AnuncioMarketplace[] }) {
+export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMarketplace[] }) {
+  const anuncios = useConteudo(originais, ["titulo", "descricao"]);
+  const { t } = useIdioma();
   const [categoria, setCategoria] = useState<string>("Todas");
   const [provincia, setProvincia] = useState("Todas");
   const [ordem, setOrdem] = useState<string>("recentes");
@@ -55,9 +59,9 @@ export function MarketplaceClient({ anuncios }: { anuncios: AnuncioMarketplace[]
     <>
       <PageHero
         imagem="marketplace"
-        eyebrow="Comunidade verificada"
-        titulo="Marketplace"
-        descricao="Motas, peças e equipamento à venda por membros verificados da comunidade motard angolana. Sem intermediários e sem anúncios falsos."
+        eyebrow={t("paginas.comunidadeVerificada")}
+        titulo={t("paginas.marketplaceTitulo")}
+        descricao={t("paginas.marketplaceSub")}
       >
         <div className="flex flex-wrap items-center gap-4">
           <ButtonLink href="/conta#anuncios" size="lg">

@@ -7,6 +7,8 @@ import { Countdown } from "@/components/Countdown";
 import { ButtonLink, Icon, PageHero, Tag } from "@/components/ui";
 import { TEMPORADA, formatData } from "@/lib/data";
 import type { Disciplina, Evento } from "@/lib/types";
+import { useIdioma } from "@/lib/i18n/contexto";
+import { useConteudo } from "@/lib/i18n/useConteudo";
 
 const DISCIPLINAS: (Disciplina | "Todas")[] = [
   "Todas",
@@ -36,7 +38,9 @@ function estadoTag(e: Evento) {
   }
 }
 
-export function CalendarioClient({ eventos }: { eventos: Evento[] }) {
+export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) {
+  const eventos = useConteudo(originais, ["titulo", "resumo", "descricao", "circuito"]);
+  const { t } = useIdioma();
   const [disciplina, setDisciplina] = useState<Disciplina | "Todas">("Todas");
   const [vista, setVista] = useState<"lista" | "grelha">("lista");
   const [mostrarPassados, setMostrarPassados] = useState(true);
@@ -57,7 +61,7 @@ export function CalendarioClient({ eventos }: { eventos: Evento[] }) {
       <PageHero
         imagem="calendario"
         eyebrow={`Temporada ${TEMPORADA}`}
-        titulo="Calendário"
+        titulo={t("paginas.calendarioTitulo")}
         descricao="Todas as provas do motociclismo angolano — motocross, enduro, rally-raid, passeios e acções solidárias. Clique numa prova para ver horários, circuito e bilhetes."
       >
         <div className="flex flex-wrap gap-6 sm:gap-10">

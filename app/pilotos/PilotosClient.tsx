@@ -6,6 +6,8 @@ import { Retrato } from "@/components/Brand";
 import { Icon, PageHero, Tag } from "@/components/ui";
 import { TEMPORADA } from "@/lib/data";
 import type { Piloto } from "@/lib/types";
+import { useIdioma } from "@/lib/i18n/contexto";
+import { useConteudo } from "@/lib/i18n/useConteudo";
 
 const CATEGORIAS = ["Todas", "MX1", "MX2", "Rally / Enduro"];
 
@@ -13,7 +15,9 @@ function iniciais(n: string) {
   return n.split(" ").map((p) => p[0]).slice(0, 2).join("");
 }
 
-export function PilotosClient({ pilotos }: { pilotos: (Piloto & { posicao: number })[] }) {
+export function PilotosClient({ pilotos: originais }: { pilotos: (Piloto & { posicao: number })[] }) {
+  const pilotos = useConteudo(originais, ["bio"]);
+  const { t } = useIdioma();
   const [categoria, setCategoria] = useState("Todas");
   const [provincia, setProvincia] = useState("Todas");
   const [busca, setBusca] = useState("");
@@ -43,8 +47,8 @@ export function PilotosClient({ pilotos }: { pilotos: (Piloto & { posicao: numbe
       <PageHero
         imagem="pilotos"
         eyebrow={`Temporada ${TEMPORADA}`}
-        titulo="Pilotos"
-        descricao="Quem corre no motociclismo angolano. Estatísticas, histórico, equipas e onde os seguir."
+        titulo={t("paginas.pilotosTitulo")}
+        descricao={t("paginas.pilotosSub")}
       />
 
       {/* Filtros */}

@@ -5,10 +5,14 @@ import { Placeholder } from "@/components/Brand";
 import { Icon, PageHero, Tag } from "@/components/ui";
 import { formatData } from "@/lib/data";
 import type { Video } from "@/lib/types";
+import { useIdioma } from "@/lib/i18n/contexto";
+import { useConteudo } from "@/lib/i18n/useConteudo";
 
 const CATEGORIAS = ["Todos", "Highlights", "Onboard", "Entrevista", "Documentário", "Resumo"];
 
-export function VideosClient({ videos }: { videos: Video[] }) {
+export function VideosClient({ videos: originais }: { videos: Video[] }) {
+  const videos = useConteudo(originais, ["titulo", "descricao"]);
+  const { t } = useIdioma();
   const [categoria, setCategoria] = useState("Todos");
   const [activo, setActivoBruto] = useState<Video>(videos[0]);
   const [aReproduzir, setAReproduzir] = useState(false);
@@ -39,9 +43,9 @@ export function VideosClient({ videos }: { videos: Video[] }) {
     <>
       <PageHero
         imagem="videos"
-        eyebrow="Motobox TV"
-        titulo="Vídeos"
-        descricao="Os melhores momentos das provas nacionais, câmaras de bordo, entrevistas e documentários sobre quem faz o motociclismo angolano."
+        eyebrow={t("paginas.motoboxTv")}
+        titulo={t("paginas.videosTitulo")}
+        descricao={t("paginas.videosSub")}
       >
         <div className="flex flex-wrap gap-8">
           {[
