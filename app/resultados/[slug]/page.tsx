@@ -39,7 +39,7 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
     <>
       <header className="relative overflow-hidden border-b border-ink-800">
         <Placeholder nome={[corrida.slug, corrida.imagem]} className="absolute inset-0" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/85 to-ink-950/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/95 via-ink-950/60 to-ink-950/25" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-14">
           <Link
             href="/resultados"

@@ -131,7 +131,7 @@ export function CalendarioClient({ eventos }: { eventos: Evento[] }) {
         {proximo && (
           <div className="mb-12 relative overflow-hidden border border-ink-700">
             <Placeholder nome={[proximo.slug, proximo.imagem]} className="absolute inset-0" />
-            <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/90 to-ink-950/40" />
+            <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/30" />
             <div className="relative grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
               <div>
                 <p className="eyebrow text-mb-red">Próxima prova</p>

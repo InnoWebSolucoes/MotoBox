@@ -98,9 +98,16 @@ export function Placeholder({
 
   const foto = fotoSrc(nome, { w: largura });
 
+  // Quase todas as chamadas passam "absolute inset-0". Se juntássemos sempre
+  // "relative", as duas classes de posicionamento colidiam, o `inset-0` não
+  // ancorava e a caixa ficava com altura 0 — a fotografia não aparecia.
+  const posicao = /(^|\s)(absolute|fixed|sticky|relative)(\s|$)/.test(className)
+    ? ""
+    : "relative ";
+
   return (
     <div
-      className={`relative overflow-hidden bg-ink-900 ${rounded ? "rounded-full" : ""} ${className}`}
+      className={`${posicao}overflow-hidden bg-ink-900 ${rounded ? "rounded-full" : ""} ${className}`}
       style={{ background: `linear-gradient(${ang}deg, ${c1} 0%, ${c2} 78%)` }}
       aria-hidden={!label}
       role={label ? "img" : undefined}
@@ -115,15 +122,29 @@ export function Placeholder({
           className="object-cover"
         />
       )}
-      <div className="speed-lines absolute inset-0 opacity-50" />
+      {/*
+        As texturas abaixo existiam para dar vida ao gradiente quando não havia
+        fotografia. Com fotografia, empilhavam-se sobre ela e escureciam-na até
+        ao preto — por isso só entram quando não há imagem. O véu inferior fica,
+        mas leve, porque há legendas por cima em quase todos os cartões.
+      */}
+      {!foto && (
+        <>
+          <div className="speed-lines absolute inset-0 opacity-50" />
+          <div
+            className="absolute inset-0 opacity-[0.14]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 9px)",
+            }}
+          />
+        </>
+      )}
       <div
-        className="absolute inset-0 opacity-[0.14]"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 9px)",
-        }}
+        className={`absolute inset-0 bg-gradient-to-t to-transparent ${
+          foto ? "from-ink-950/45 via-ink-950/5" : "from-ink-950/80 via-transparent"
+        }`}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-transparent to-transparent" />
     </div>
   );
 }
@@ -149,9 +170,14 @@ export function Retrato({
   const h = hash(nome);
   const base = cor ?? `hsl(${h % 360} 40% 26%)`;
   const foto = fotoSrc(nome, { w: largura });
+  // Ver a nota em Placeholder: "relative" + "absolute" do chamador colidiam e
+  // deixavam a caixa com altura 0.
+  const posicao = /(^|\s)(absolute|fixed|sticky|relative)(\s|$)/.test(className)
+    ? ""
+    : "relative ";
   return (
     <div
-      className={`relative overflow-hidden ${className}`}
+      className={`${posicao}overflow-hidden ${className}`}
       style={{ background: `linear-gradient(160deg, ${base} 0%, #0a0a0c 82%)` }}
     >
       {foto && (
@@ -163,16 +189,23 @@ export function Retrato({
           className="object-cover"
         />
       )}
-      <div className="speed-lines absolute inset-0 opacity-40" />
-      {/* Iniciais só quando não há fotografia — de outro modo sujavam o retrato. */}
+      {/* Textura e iniciais só sem fotografia — sobre o retrato, escureciam-no. */}
       {!foto && (
-        <div className="absolute inset-0 grid place-items-center">
-          <span className="font-display text-white/12 leading-none select-none" style={{ fontSize: "clamp(3rem, 34cqw, 12rem)" }}>
-            {iniciais}
-          </span>
-        </div>
+        <>
+          <div className="speed-lines absolute inset-0 opacity-40" />
+          <div className="absolute inset-0 grid place-items-center">
+            <span className="font-display text-white/12 leading-none select-none" style={{ fontSize: "clamp(3rem, 34cqw, 12rem)" }}>
+              {iniciais}
+            </span>
+          </div>
+        </>
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/25 to-transparent" />
+      {/* Véu inferior: o nome e o número do piloto assentam aqui por cima. */}
+      <div
+        className={`absolute inset-0 bg-gradient-to-t to-transparent ${
+          foto ? "from-ink-950/75 via-ink-950/10" : "from-ink-950 via-ink-950/25"
+        }`}
+      />
     </div>
   );
 }

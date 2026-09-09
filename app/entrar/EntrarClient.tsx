@@ -79,7 +79,7 @@ export function EntrarClient() {
   return (
     <div className="relative overflow-hidden">
       <Placeholder nome="entrar" className="absolute inset-0 opacity-15" tamanhos="100vw" />
-      <div className="absolute inset-0 bg-gradient-to-b from-ink-950 via-ink-950/95 to-ink-950" aria-hidden />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink-950/92 via-ink-950/80 to-ink-950/92" aria-hidden />
       <div className="relative mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16">
       <div className="mb-8">
         <p className="eyebrow mb-2 text-mb-red">Motobox Angola</p>

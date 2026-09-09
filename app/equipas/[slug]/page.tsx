@@ -38,7 +38,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
       <header className="relative overflow-hidden border-b border-ink-800">
         {/* Fotografia da equipa, esbatida sob a cor do clube */}
         <Placeholder nome={equipa.slug} className="absolute inset-0 opacity-30" tamanhos="100vw" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/45" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/30" aria-hidden />
         <div
           className="absolute inset-0 opacity-25"
           style={{ background: `linear-gradient(115deg, ${equipa.cor} 0%, transparent 62%)` }}

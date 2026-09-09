@@ -15,57 +15,55 @@ const U = (id: string) => `https://images.unsplash.com/${id}`;
 
 /** Provas, circuitos, notícias e vídeos — imagens largas. */
 export const CENAS: Record<string, string> = {
-  // circuitos e provas
-  kilamba: U("photo-1558981806-ec527fa84c39"), // motocross em pista de terra
-  benguela: U("photo-1449426468159-d96dbf08f19f"), // enduro junto ao litoral
-  lubango: U("photo-1591637333184-19aa84b3e01f"), // montanha, curva de altitude
-  cabinda: U("photo-1568772585407-9361f9bf3a87"), // passeio em estrada verde
-  namibe: U("photo-1547549082-6bc09f2049ae"), // deserto e dunas
-  huambo: U("photo-1571068316344-75bc76f77890"), // salto de motocross
-  tundavala: U("photo-1580310614729-ccd69652491d"), // serra
-  gala: U("photo-1517649763962-0c623066013b"), // palco / celebração
-  natal: U("photo-1558618666-fcd25c85cd64"), // concentração de motos
-  mxgp: U("photo-1622185135505-2d795003994a"), // grelha internacional
-  ktm: U("photo-1615172282427-9a57ef2d142e"), // moto de competição
-  dakar: U("photo-1609630875171-b1321377ee65"), // rali no deserto
-  // genéricas de reserva
-  competicao: U("photo-1558980664-10e7170b5df9"),
-  passeios: U("photo-1583121274602-3e2820c69888"),
-  mecanica: U("photo-1534073737927-85f1ebff1f5d"),
-  geral: U("photo-1600717535275-0b18ede2f7fc"),
-  novatos: U("photo-1449965408869-eaa3f722e40d"),
+  "kilamba": U("photo-1542550546-88afdd84b64f"),
+  "benguela": U("photo-1500578862199-d2872c0781ec"),
+  "lubango": U("photo-1602478411948-e28ad9b247b8"),
+  "cabinda": U("photo-1749453841347-2cda97af2526"),
+  "namibe": U("photo-1546489545-697049cfdc1e"),
+  "huambo": U("photo-1715178160659-7cc8ef44ade1"),
+  "tundavala": U("photo-1687227394984-a9de8f64fd0d"),
+  "gala": U("photo-1761860467031-5175bbc0503e"),
+  "natal": U("photo-1489731007795-388eee095ff6"),
+  "mxgp": U("photo-1551759390-5c112a9ffef0"),
+  "ktm": U("photo-1605121476668-ae388fa8fe27"),
+  "dakar": U("photo-1514826863517-464eed44915d"),
+  "competicao": U("photo-1626130569162-f90681b6982a"),
+  "passeios": U("photo-1556036518-705db5129896"),
+  "mecanica": U("photo-1636761358757-0a616eb9e17e"),
+  "geral": U("photo-1752778268540-dfc2eb7a10e4"),
+  "novatos": U("photo-1687278346516-17a9f85b0252"),
 };
 
 /** Retratos de pilotos, por slug. */
 export const RETRATOS: Record<string, string> = {
-  "nelson-kiala": U("photo-1517672651691-24622a91b550"),
-  "joana-ferraz": U("photo-1552642986-ccb41e7059e7"),
-  "ivandro-cabral": U("photo-1526726538690-5cbf956ae2fd"),
-  "carlos-samba": U("photo-1552053831-71594a27632d"),
-  "mario-bengui": U("photo-1507003211169-0a1dd7228f2d"),
-  "rui-katchimba": U("photo-1500648767791-00dcc994a43e"),
-  "adilson-mbala": U("photo-1519085360753-af0119f7cbe7"),
-  "eduardo-neto": U("photo-1506794778202-cad84cf45f1d"),
-  "helder-quissanga": U("photo-1492562080023-ab3db95bfbce"),
-  "paulo-tembo": U("photo-1463453091185-61582044d556"),
-  "bruno-tchipa": U("photo-1568605117036-5fe5e7bab0b7"),
-  "silvio-domingos": U("photo-1502877338535-766e1452684a"),
+  "nelson-kiala": U("photo-1591037307610-9b7bcdffb72a"),
+  "joana-ferraz": U("photo-1559913516-d47b38fab290"),
+  "ivandro-cabral": U("photo-1591216105236-5ba45970702a"),
+  "carlos-samba": U("photo-1736454327682-a684ef60c3fe"),
+  "mario-bengui": U("photo-1582092605221-bf4ddf388587"),
+  "rui-katchimba": U("photo-1591124999021-a0b9ebe09b9a"),
+  "adilson-mbala": U("photo-1591037240570-58b94467a14b"),
+  "eduardo-neto": U("photo-1562402082-05a4e888ca96"),
+  "helder-quissanga": U("photo-1606497058128-19b758a3dd88"),
+  "paulo-tembo": U("photo-1788421845004-62ba196cf860"),
+  "bruno-tchipa": U("photo-1660337294765-2a20770826aa"),
+  "silvio-domingos": U("photo-1606927131353-c0ad17d60b56"),
 };
 
 /** Anúncios do marketplace. */
 export const ARTIGOS: Record<string, string> = {
-  crf450: U("photo-1558981806-ec527fa84c39"),
-  ktm250: U("photo-1615172282427-9a57ef2d142e"),
-  fe350: U("photo-1571068316344-75bc76f77890"),
-  tenere: U("photo-1568772585407-9361f9bf3a87"),
-  dr650: U("photo-1583121274602-3e2820c69888"),
-  capacete: U("photo-1596727147705-61a532a659bd"),
-  botas: U("photo-1520975916090-3105956dac38"),
-  equipamento: U("photo-1533558701576-23c65e0272fb"),
-  escape: U("photo-1611241893603-3c359704e0ee"),
-  suspensao: U("photo-1558981359-219d6364c9c8"),
-  plasticos: U("photo-1626248801379-51a0748a5f96"),
-  suporte: U("photo-1591768575198-88dac53fbd0a"),
+  "crf450": U("photo-1542550546-88afdd84b64f"),
+  "ktm250": U("photo-1605121476668-ae388fa8fe27"),
+  "fe350": U("photo-1582092722992-b2f960bafbfb"),
+  "tenere": U("photo-1514826863517-464eed44915d"),
+  "dr650": U("photo-1687227394984-a9de8f64fd0d"),
+  "capacete": U("photo-1611004061856-ccc3cbe944b2"),
+  "botas": U("photo-1725387023639-28e9a42a83b1"),
+  "equipamento": U("photo-1611004060674-7e8864bcb4e4"),
+  "escape": U("photo-1771252297207-eca148228341"),
+  "suspensao": U("photo-1762012507780-060fe0bcc783"),
+  "plasticos": U("photo-1769537754889-8d731b83547f"),
+  "suporte": U("photo-1774902410486-648614277f1f"),
 };
 
 /**
@@ -77,53 +75,44 @@ export const ARTIGOS: Record<string, string> = {
  * cada vídeo, notícia, corrida e equipa passa a ter imagem própria.
  */
 export const POR_SLUG: Record<string, string> = {
-  // --- vídeos ---
-  "highlights-gp-huila-2026": U("photo-1558981285-6f0c94958bb6"),
-  "onboard-kiala-kilamba": U("photo-1610647752706-3bb12232b3ab"),
-  "documentario-elas-de-capacete": U("photo-1547937414-009abc449011"),
-  "resumo-enduro-litoral": U("photo-1485965120184-e220f721d03e"),
-  "entrevista-carlos-samba": U("photo-1524712245354-2c4e5e7121c0"),
-  "passeio-cabinda-2026": U("photo-1558980394-4c7c9299fe96"),
-  "highlights-gp-luanda-2026": U("photo-1517927033932-b3d18e61fb3a"),
-  "top10-saltos-2026": U("photo-1541443131876-44b03de101c5"),
-
-  // --- provas do calendário ---
-  "gp-luanda-abertura": U("photo-1610647752706-3bb12232b3ab"),
-  "enduro-benguela": U("photo-1512909006721-3d6018887383"),
-  "gp-huila-lubango": U("photo-1518655048521-f130df041f66"),
-  "passeio-solidario-cabinda": U("photo-1502161254066-6c74afbf07aa"),
-  "gp-namibe-dunas": U("photo-1476514525535-07fb3b4ae5f1"),
-  "gp-huambo-final": U("photo-1533929736458-ca588d08c8be"),
-  "gala-motobox-2026": U("photo-1506947411487-a56738267384"),
-  "passeio-natal-luanda": U("photo-1543941869-11da6518d88f"),
-
-  // --- notícias ---
-  "campeonato-decide-se-no-huambo": U("photo-1559839914-17aae19cec71"),
-  "joana-ferraz-entrevista": U("photo-1552642986-ccb41e7059e7"),
-  "corrida-dunas-namibe-preview": U("photo-1508973379184-7517410fb0bc"),
-  "passeio-cabinda-material-escolar": U("photo-1502161254066-6c74afbf07aa"),
-  "ivandro-cabral-revelacao": U("photo-1526726538690-5cbf956ae2fd"),
-  "mxgp-calendario-2027": U("photo-1533106418989-88406c7cc8ca"),
-  "ktm-nova-450-2027": U("photo-1493225457124-a3eb161ffa5f"),
-  "dakar-2027-inscricoes": U("photo-1516450360452-9312f5e86fc7"),
-  "concentracao-motard-lubango": U("photo-1571019613454-1cb2f99b2d8b"),
-
-  // --- corridas do arquivo (duas mangas por prova, imagens distintas) ---
-  "gp-luanda-2026-mx1": U("photo-1558981806-ec527fa84c39"),
-  "gp-luanda-2026-mx2": U("photo-1517927033932-b3d18e61fb3a"),
-  "enduro-benguela-2026": U("photo-1485965120184-e220f721d03e"),
-  "gp-huila-2026-mx1": U("photo-1591637333184-19aa84b3e01f"),
-  "gp-huila-2026-mx2": U("photo-1558981285-6f0c94958bb6"),
-
-  // --- equipas e clubes ---
-  "kilamba-racing": U("photo-1594736797933-d0501ba2fe65"),
-  "tundavala-mx": U("photo-1580310614729-ccd69652491d"),
-  "lobito-motorsport": U("photo-1546484475-7f7bd55792da"),
-  "caala-racing-club": U("photo-1449158743715-0a90ebb6d2d8"),
-  "namibe-dunas-team": U("photo-1547549082-6bc09f2049ae"),
-  "cabinda-bikers": U("photo-1558980394-4c7c9299fe96"),
-  "moto-clube-luanda": U("photo-1461896836934-ffe607ba8211"),
-  "trail-angola": U("photo-1568772585407-9361f9bf3a87"),
+  "gp-luanda-abertura": U("photo-1542550546-88afdd84b64f"),
+  "enduro-benguela": U("photo-1500578862199-d2872c0781ec"),
+  "gp-huila-lubango": U("photo-1602478411948-e28ad9b247b8"),
+  "passeio-solidario-cabinda": U("photo-1749453841347-2cda97af2526"),
+  "gp-namibe-dunas": U("photo-1546489545-697049cfdc1e"),
+  "gp-huambo-final": U("photo-1715178160659-7cc8ef44ade1"),
+  "gala-motobox-2026": U("photo-1761860467031-5175bbc0503e"),
+  "passeio-natal-luanda": U("photo-1489731007795-388eee095ff6"),
+  "highlights-gp-huila-2026": U("photo-1562424292-1fa536217c58"),
+  "onboard-kiala-kilamba": U("photo-1752778268540-dfc2eb7a10e4"),
+  "documentario-elas-de-capacete": U("photo-1559913516-d47b38fab290"),
+  "resumo-enduro-litoral": U("photo-1580053002916-07df563231be"),
+  "entrevista-carlos-samba": U("photo-1736454327682-a684ef60c3fe"),
+  "passeio-cabinda-2026": U("photo-1580357703484-4bbb329b83a7"),
+  "highlights-gp-luanda-2026": U("photo-1626130569162-f90681b6982a"),
+  "top10-saltos-2026": U("photo-1549524362-47d913ec9a0e"),
+  "campeonato-decide-se-no-huambo": U("photo-1715178160659-7cc8ef44ade1"),
+  "joana-ferraz-entrevista": U("photo-1559913516-d47b38fab290"),
+  "corrida-dunas-namibe-preview": U("photo-1573826688141-c0caf0e14081"),
+  "passeio-cabinda-material-escolar": U("photo-1556036518-705db5129896"),
+  "ivandro-cabral-revelacao": U("photo-1591216105236-5ba45970702a"),
+  "mxgp-calendario-2027": U("photo-1551759390-5c112a9ffef0"),
+  "ktm-nova-450-2027": U("photo-1605121476668-ae388fa8fe27"),
+  "dakar-2027-inscricoes": U("photo-1514826863517-464eed44915d"),
+  "concentracao-motard-lubango": U("photo-1489731007795-388eee095ff6"),
+  "gp-luanda-2026-mx1": U("photo-1542550546-88afdd84b64f"),
+  "gp-luanda-2026-mx2": U("photo-1626130569162-f90681b6982a"),
+  "enduro-benguela-2026": U("photo-1500578862199-d2872c0781ec"),
+  "gp-huila-2026-mx1": U("photo-1602478411948-e28ad9b247b8"),
+  "gp-huila-2026-mx2": U("photo-1562424292-1fa536217c58"),
+  "kilamba-racing": U("photo-1591037307610-9b7bcdffb72a"),
+  "tundavala-mx": U("photo-1687227394984-a9de8f64fd0d"),
+  "lobito-motorsport": U("photo-1580053002916-07df563231be"),
+  "caala-racing-club": U("photo-1687278346516-17a9f85b0252"),
+  "namibe-dunas-team": U("photo-1546489545-697049cfdc1e"),
+  "cabinda-bikers": U("photo-1749453841347-2cda97af2526"),
+  "moto-clube-luanda": U("photo-1674829198252-589ed0f49716"),
+  "trail-angola": U("photo-1582092605221-bf4ddf388587"),
 };
 
 /**
@@ -131,23 +120,23 @@ export const POR_SLUG: Record<string, string> = {
  * Entram muito esbatidas, atrás da grelha e do halo vermelho.
  */
 export const BANNERS: Record<string, string> = {
-  pilotos: U("photo-1622185135505-2d795003994a"),
-  calendario: U("photo-1571068316344-75bc76f77890"),
-  classificacao: U("photo-1517649763962-0c623066013b"),
-  videos: U("photo-1541443131876-44b03de101c5"),
-  noticias: U("photo-1559839914-17aae19cec71"),
-  equipas: U("photo-1594736797933-d0501ba2fe65"),
-  resultados: U("photo-1558981806-ec527fa84c39"),
-  bilhetes: U("photo-1552674605-db6ffd4facb5"),
-  marketplace: U("photo-1560472354-b33ff0c44a43"),
-  forum: U("photo-1558618666-fcd25c85cd64"),
-  patrocinadores: U("photo-1486401899868-0e435ed85128"),
-  contacto: U("photo-1568605117036-5fe5e7bab0b7"),
-  sobre: U("photo-1583121274602-3e2820c69888"),
-  legal: U("photo-1454165804606-c3d57bc86b40"),
-  topico: U("photo-1517649763962-0c623066013b"),
-  entrar: U("photo-1589578527966-fdac0f44566c"),
-  conta: U("photo-1450101499163-c8848c66ca85"),
+  "pilotos": U("photo-1591037307610-9b7bcdffb72a"),
+  "calendario": U("photo-1715178160659-7cc8ef44ade1"),
+  "classificacao": U("photo-1752778268540-dfc2eb7a10e4"),
+  "videos": U("photo-1549524362-47d913ec9a0e"),
+  "noticias": U("photo-1626130569162-f90681b6982a"),
+  "equipas": U("photo-1551759390-5c112a9ffef0"),
+  "resultados": U("photo-1542550546-88afdd84b64f"),
+  "bilhetes": U("photo-1580357703484-4bbb329b83a7"),
+  "marketplace": U("photo-1771252297207-eca148228341"),
+  "forum": U("photo-1556036518-705db5129896"),
+  "patrocinadores": U("photo-1761860467031-5175bbc0503e"),
+  "contacto": U("photo-1582092605221-bf4ddf388587"),
+  "sobre": U("photo-1687227394984-a9de8f64fd0d"),
+  "legal": U("photo-1582092722992-b2f960bafbfb"),
+  "topico": U("photo-1749453841347-2cda97af2526"),
+  "entrar": U("photo-1591216105236-5ba45970702a"),
+  "conta": U("photo-1602478411948-e28ad9b247b8"),
 };
 
 /** URL do banner de uma rota, já dimensionado. */

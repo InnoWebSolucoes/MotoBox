@@ -35,7 +35,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
       {/* Hero */}
       <header className="relative overflow-hidden border-b border-ink-800">
         <Placeholder nome={[evento.slug, evento.imagem]} className="absolute inset-0" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/85 to-ink-950/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/95 via-ink-950/60 to-ink-950/25" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-14 sm:py-20">
           <Link
             href="/calendario"
