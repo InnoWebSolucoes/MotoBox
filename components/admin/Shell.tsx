@@ -8,8 +8,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
-import { useAdmin } from "@/lib/admin/store";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useAdmin, limparDadosLocais } from "@/lib/admin/store";
+import { useAuth } from "@/lib/auth/contexto";
+import { PAPEIS } from "@/lib/admin/types";
 
 interface ItemNav {
   href: string;
@@ -107,6 +109,7 @@ const CAMINHOS: Record<string, string> = {
   database: "M12 8c4.4 0 8-1.3 8-3s-3.6-3-8-3-8 1.3-8 3 3.6 3 8 3ZM4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
   menu: "M3 6h18M3 12h18M3 18h18",
   close: "M18 6 6 18M6 6l12 12",
+  logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",
   external: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3",
 };
 
@@ -122,7 +125,41 @@ export function IconeNav({ nome, className = "size-4" }: { nome: string; classNa
 export function AdminShell({ children }: { children: ReactNode }) {
   const caminho = usePathname();
   const { estado, pronto, origem, erroSync, limparErro } = useAdmin();
+  const { utilizador, perfil, equipa, carregando, sair } = useAuth();
   const [menuAberto, setMenuAberto] = useState(false);
+  const [contaAberta, setContaAberta] = useState(false);
+  const [aSair, setASair] = useState(false);
+  const conta = useRef<HTMLDivElement>(null);
+
+  // O middleware barra quem chega sem sessão; isto cobre a sessão que
+  // termina com o painel já aberto (saída noutro separador, expiração).
+  // A navegação é completa para que nada do painel fique em memória.
+  useEffect(() => {
+    if (carregando || aSair) return;
+    if (!utilizador) window.location.replace(`/entrar?destino=${encodeURIComponent(caminho)}`);
+    else if (perfil && !equipa) window.location.replace("/sem-acesso");
+  }, [carregando, utilizador, perfil, equipa, aSair, caminho]);
+
+  // Fecha o menu da conta ao clicar fora dele
+  useEffect(() => {
+    if (!contaAberta) return;
+    const fora = (e: MouseEvent) => {
+      if (conta.current && !conta.current.contains(e.target as Node)) setContaAberta(false);
+    };
+    document.addEventListener("mousedown", fora);
+    return () => document.removeEventListener("mousedown", fora);
+  }, [contaAberta]);
+
+  const terminarSessao = async () => {
+    setASair(true);
+    await sair();
+    limparDadosLocais();
+    window.location.replace("/entrar");
+  };
+
+  const nome = perfil?.nome || utilizador?.email || "";
+  const iniciais = nome.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase() || "?";
+  const papel = PAPEIS.find((p) => p.valor === perfil?.papel)?.nome ?? "";
 
   // Fecha o menu móvel ao mudar de página
   useEffect(() => { setMenuAberto(false); }, [caminho]);
@@ -247,12 +284,41 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </span>
           )}
 
-          <div className="flex items-center gap-2">
-            <span className="grid size-8 place-items-center bg-mb-red font-display text-xs text-white">GB</span>
-            <span className="hidden text-xs leading-tight sm:block">
-              <span className="block text-white">Gonçalo Bessa</span>
-              <span className="block text-ink-500">Administrador</span>
-            </span>
+          <div ref={conta} className="relative">
+            <button
+              type="button" onClick={() => setContaAberta((v) => !v)}
+              aria-haspopup="menu" aria-expanded={contaAberta}
+              className="flex items-center gap-2 border border-transparent px-1 py-0.5 transition-colors hover:border-ink-700"
+            >
+              <span className="grid size-8 place-items-center font-display text-xs text-white"
+                style={{ backgroundColor: perfil?.avatarCor ?? "#e10600" }}>
+                {iniciais}
+              </span>
+              <span className="hidden text-left text-xs leading-tight sm:block">
+                <span className="block max-w-40 truncate text-white">{nome}</span>
+                <span className="block text-ink-500">{papel}</span>
+              </span>
+            </button>
+
+            {contaAberta && (
+              <div role="menu"
+                className="absolute right-0 top-full z-40 mt-2 w-64 border border-ink-700 bg-ink-900 shadow-xl">
+                <div className="border-b border-ink-700/60 px-4 py-3">
+                  <p className="truncate text-sm text-white">{nome}</p>
+                  <p className="truncate text-xs text-ink-500">{utilizador?.email}</p>
+                </div>
+                <Link href="/" role="menuitem"
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-ink-300 transition-colors hover:bg-ink-850 hover:text-white">
+                  <IconeNav nome="external" className="size-3.5" />
+                  Ver o site público
+                </Link>
+                <button type="button" role="menuitem" onClick={terminarSessao} disabled={aSair}
+                  className="flex w-full items-center gap-2 border-t border-ink-700/60 px-4 py-2.5 text-left text-sm text-mb-red transition-colors hover:bg-mb-red/10 disabled:opacity-60">
+                  <IconeNav nome="logout" className="size-3.5" />
+                  {aSair ? "A terminar sessão…" : "Terminar sessão"}
+                </button>
+              </div>
+            )}
           </div>
         </header>
 

@@ -11,7 +11,7 @@ export const PAPEIS: { valor: Papel; nome: string; descricao: string }[] = [
   { valor: "editor", nome: "Editor", descricao: "Conteúdo: notícias, eventos, vídeos, pilotos, equipas" },
   { valor: "moderador", nome: "Moderador", descricao: "Fórum, marketplace, comentários e denúncias" },
   { valor: "financeiro", nome: "Financeiro", descricao: "Bilhetes, pagamentos, comissões e relatórios" },
-  { valor: "leitor", nome: "Leitor", descricao: "Apenas consulta, sem permissões de edição" },
+  { valor: "leitor", nome: "Leitor", descricao: "Conta do site público, sem acesso ao painel" },
 ];
 
 export type Permissao =
@@ -32,7 +32,7 @@ export const PERMISSOES_POR_PAPEL: Record<Papel, Permissao[]> = {
   editor: ["conteudo.ler", "conteudo.escrever", "conteudo.publicar", "comunidade.ler"],
   moderador: ["conteudo.ler", "comunidade.ler", "comunidade.moderar", "utilizadores.ler"],
   financeiro: ["conteudo.ler", "comercial.ler", "comercial.escrever", "utilizadores.ler"],
-  leitor: ["conteudo.ler", "comunidade.ler", "comercial.ler", "utilizadores.ler", "definicoes.ler"],
+  leitor: [],
 };
 
 export type EstadoUtilizador = "ativo" | "suspenso" | "pendente" | "banido";

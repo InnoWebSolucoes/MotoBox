@@ -47,7 +47,8 @@ interface ContextoAuth {
 
 const Ctx = createContext<ContextoAuth | null>(null);
 
-const PAPEIS_EQUIPA = ["admin", "editor", "moderador", "financeiro", "leitor"];
+/** Papéis com acesso ao painel. Quem se regista no site fica "leitor", sem acesso. */
+const PAPEIS_EQUIPA = ["admin", "editor", "moderador", "financeiro"];
 
 /** Traduz os erros do Supabase para mensagens legíveis. */
 function mensagem(erro: string): string {

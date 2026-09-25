@@ -8,8 +8,12 @@ import { supabaseMiddleware, authConfigurada } from "@/lib/auth/clientes";
    papel adequado.
    ============================================================ */
 
-/** Papéis autorizados a entrar no painel. */
-const PAPEIS_PAINEL = ["admin", "editor", "moderador", "financeiro", "leitor"];
+/**
+ * Papéis autorizados a entrar no painel. "leitor" fica de fora: é o
+ * papel de quem se regista no site público, e o painel mostra dados
+ * pessoais (emails, encomendas, mensagens).
+ */
+const PAPEIS_PAINEL = ["admin", "editor", "moderador", "financeiro"];
 
 export async function middleware(pedido: NextRequest) {
   const resposta = NextResponse.next({ request: pedido });
@@ -80,15 +84,6 @@ export async function middleware(pedido: NextRequest) {
     const url = pedido.nextUrl.clone();
     url.pathname = "/sem-acesso";
     return NextResponse.redirect(url);
-  }
-
-  // Escrita exige mais do que o papel de leitor.
-  const escrita = ["POST", "PATCH", "PUT", "DELETE"].includes(pedido.method);
-  if (escrita && caminho.startsWith("/api/admin") && papel === "leitor") {
-    return NextResponse.json(
-      { erro: "O seu papel permite apenas consulta." },
-      { status: 403 },
-    );
   }
 
   return resposta;

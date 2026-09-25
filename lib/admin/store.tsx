@@ -31,8 +31,21 @@ import {
   utilizadoresSeed, encomendasSeed, denunciasSeed, subscritoresSeed,
   mensagensSeed, paginasLegaisSeed, definicoesSeed, atividadeSeed,
 } from "./seed";
+import { useAuth } from "@/lib/auth/contexto";
 
 const CHAVE = "motobox-admin-v1";
+
+/**
+ * Apaga do navegador tudo o que o painel lá deixou. Chamado ao
+ * terminar sessão, para que num computador partilhado não fique
+ * nada da gestão para o utilizador seguinte.
+ */
+export function limparDadosLocais() {
+  try {
+    localStorage.removeItem(CHAVE);
+    localStorage.removeItem("motobox-organizador-v1");
+  } catch { /* indisponível */ }
+}
 
 export interface EstadoAdmin {
   eventos: Evento[];
@@ -164,6 +177,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   /** Verdadeiro só quando o servidor diz que não há Supabase (503). */
   const semBase = useRef(false);
 
+  /** Nome de quem está a usar o painel, para o registo de atividade. */
+  const { perfil } = useAuth();
+  const nomeRef = useRef("");
+  useEffect(() => { nomeRef.current = perfil?.nome ?? ""; }, [perfil]);
+
   /**
    * Carrega tudo a partir do Supabase. Se a base de dados não
    * estiver configurada, recorre ao localStorage e mantém o
@@ -223,6 +241,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
 
       setEstado((atual) => ({ ...atual, ...novo }));
+      // Cópias antigas guardadas no navegador deixam de ser necessárias.
+      try { localStorage.removeItem(CHAVE); } catch { /* indisponível */ }
       setOrigem("supabase");
       setErroSync(null);
     } catch (e) {
@@ -237,6 +257,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const persistir = useCallback((proximo: EstadoAdmin) => {
     setEstado(proximo);
+    if (!semBase.current) return;
     try {
       localStorage.setItem(CHAVE, JSON.stringify(proximo));
     } catch {
@@ -248,13 +269,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const linha: RegistoAtividade = {
       id: `a-${Date.now()}`,
       quando: new Date().toISOString(),
-      utilizador: "Gonçalo Bessa",
+      utilizador: nomeRef.current || "Equipa Motobox",
       accao, entidade, detalhe,
     };
     return { ...base, atividade: [linha, ...base.atividade].slice(0, 200) };
   }, []);
 
+  // Com a base de dados ligada, o navegador não guarda cópia: os
+  // dados (emails, encomendas) vivem só no Supabase e na memória.
   const guardarLocal = (proximo: EstadoAdmin) => {
+    if (!semBase.current) return;
     try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
   };
 

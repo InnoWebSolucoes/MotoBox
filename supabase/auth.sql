@@ -115,7 +115,7 @@ as $$
   select exists (
     select 1 from utilizadores
     where auth_id = auth.uid()
-      and papel in ('admin','editor','moderador','financeiro','leitor')
+      and papel in ('admin','editor','moderador','financeiro')
       and estado not in ('suspenso','banido')
   );
 $$;
