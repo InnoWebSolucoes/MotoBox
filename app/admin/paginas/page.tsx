@@ -26,14 +26,15 @@ export default function AdminPaginas() {
     });
   };
 
-  const novaPagina = () => {
+  const novaPagina = async () => {
     const slug = `pagina-${Date.now().toString(36).slice(-4)}`;
-    criar("paginasLegais", {
+    const falha = await criar("paginasLegais", {
       slug, titulo: "Nova página", descricao: "",
       atualizado: new Date().toISOString().slice(0, 10),
       publicado: false,
       seccoes: [{ titulo: "1. Secção", corpo: ["Texto da secção."] }],
     } as unknown as Record<string, unknown>);
+    if (falha) { mostrar(falha, "erro"); return; }
     setActiva(slug);
     mostrar("Página criada.");
   };

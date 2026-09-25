@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { ButtonLink, Icon, PageHero, Tag } from "@/components/ui";
-import { patrocinadores } from "@/lib/data";
+import { ButtonLink, EmptyState, Icon, PageHero, Tag } from "@/components/ui";
+import { lerPatrocinadores } from "@/lib/supabase/publico";
+
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Patrocinadores",
@@ -60,7 +63,9 @@ const VANTAGENS = [
   },
 ];
 
-export default function PatrocinadoresPage() {
+export default async function PatrocinadoresPage() {
+  const patrocinadores = await lerPatrocinadores();
+
   return (
     <>
       <PageHero
@@ -71,6 +76,13 @@ export default function PatrocinadoresPage() {
       />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14">
+        {patrocinadores.length === 0 && (
+          <EmptyState
+            titulo="Sem patrocinadores publicados"
+            descricao="As marcas que apoiam o motociclismo angolano aparecem aqui."
+          />
+        )}
+
         {NIVEIS.map((nivel) => {
           const lista = patrocinadores.filter((p) => p.nivel === nivel.id);
           if (lista.length === 0) return null;
@@ -142,7 +154,7 @@ export default function PatrocinadoresPage() {
               Ponha a sua marca ao lado do motociclismo angolano
             </h2>
             <p className="mt-5 max-w-2xl text-base text-ink-300 leading-relaxed">
-              A Motobox chega a milhares de motards em todo o país — nas provas, nas redes sociais e
+              A Motobox chega a milhares de motards em todo o país: nas provas, nas redes sociais e
               agora nesta plataforma. Temos pacotes de patrocínio para diferentes dimensões e
               orçamentos, do apoio pontual a uma prova até ao patrocínio principal da temporada.
             </p>
@@ -175,7 +187,7 @@ export default function PatrocinadoresPage() {
           {[
             {
               t: "Publicidade no site",
-              d: "Banners nas páginas de maior tráfego — calendário, resultados e classificação — com relatório mensal de impressões e cliques.",
+              d: "Banners nas páginas de maior tráfego (calendário, resultados e classificação), com relatório mensal de impressões e cliques.",
             },
             {
               t: "Conteúdo patrocinado",

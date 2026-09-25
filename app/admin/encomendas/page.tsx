@@ -194,7 +194,7 @@ export default function AdminEncomendas() {
                 ["Taxa Motobox", formatKz(aberta.taxa)],
                 ["Método", aberta.metodo],
                 ["Criado", formatDataCurta(aberta.criado)],
-                ["Pago", aberta.pago ? formatDataCurta(aberta.pago) : "—"],
+                ["Pago", aberta.pago ? formatDataCurta(aberta.pago) : "Pendente"],
                 ["Código QR", aberta.codigoQR],
                 ["Comprador", aberta.comprador.nome],
                 ["Email", aberta.comprador.email],

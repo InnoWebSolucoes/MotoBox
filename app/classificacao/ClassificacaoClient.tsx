@@ -273,9 +273,9 @@ export function ClassificacaoClient({
           <span className="inline-flex items-center gap-2">
             <Tag tone="gold" className="!px-1.5 !py-0.5 !text-[9px]">1</Tag> Líder do campeonato
           </span>
-          <span>Vit — vitórias</span>
-          <span>Pód — pódios</span>
-          <span>Pole — melhores qualificações</span>
+          <span>Vit: vitórias</span>
+          <span>Pód: pódios</span>
+          <span>Pole: melhores qualificações</span>
           <span className="inline-flex items-center gap-1.5">
             <Icon name="clock" className="size-3.5" />
             Actualizado após cada prova

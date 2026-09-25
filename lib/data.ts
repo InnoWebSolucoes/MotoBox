@@ -29,7 +29,7 @@ export const SOCIAIS = {
 export const eventos: Evento[] = [
   {
     slug: "gp-luanda-abertura",
-    titulo: "GP de Luanda — Abertura da Temporada",
+    titulo: "GP de Luanda: Abertura da Temporada",
     disciplina: "Motocross",
     ronda: 1,
     temporada: 2026,
@@ -51,10 +51,10 @@ export const eventos: Evento[] = [
       { dia: "Sábado", hora: "12:00", sessao: "Treinos livres MX1" },
       { dia: "Sábado", hora: "15:00", sessao: "Qualificação" },
       { dia: "Domingo", hora: "09:00", sessao: "Warm-up" },
-      { dia: "Domingo", hora: "11:00", sessao: "Manga 1 — MX2" },
-      { dia: "Domingo", hora: "12:15", sessao: "Manga 1 — MX1" },
-      { dia: "Domingo", hora: "15:00", sessao: "Manga 2 — MX2" },
-      { dia: "Domingo", hora: "16:15", sessao: "Manga 2 — MX1" },
+      { dia: "Domingo", hora: "11:00", sessao: "Manga 1 (MX2)" },
+      { dia: "Domingo", hora: "12:15", sessao: "Manga 1 (MX1)" },
+      { dia: "Domingo", hora: "15:00", sessao: "Manga 2 (MX2)" },
+      { dia: "Domingo", hora: "16:15", sessao: "Manga 2 (MX1)" },
       { dia: "Domingo", hora: "17:30", sessao: "Cerimónia do pódio" },
     ],
     distanciaVolta: "1,8 km",
@@ -63,7 +63,7 @@ export const eventos: Evento[] = [
   },
   {
     slug: "enduro-benguela",
-    titulo: "Enduro do Litoral — Benguela",
+    titulo: "Enduro do Litoral, Benguela",
     disciplina: "Enduro",
     ronda: 2,
     temporada: 2026,
@@ -81,7 +81,7 @@ export const eventos: Evento[] = [
     organizador: "Moto Clube de Benguela",
     horarios: [
       { dia: "Sábado", hora: "07:00", sessao: "Parque fechado abre" },
-      { dia: "Sábado", hora: "08:30", sessao: "Partida — Especial 1" },
+      { dia: "Sábado", hora: "08:30", sessao: "Partida da Especial 1" },
       { dia: "Sábado", hora: "13:00", sessao: "Especial 2" },
       { dia: "Sábado", hora: "16:00", sessao: "Especial 3" },
       { dia: "Domingo", hora: "08:30", sessao: "Especial 4" },
@@ -93,7 +93,7 @@ export const eventos: Evento[] = [
   },
   {
     slug: "gp-huila-lubango",
-    titulo: "GP da Huíla — Lubango",
+    titulo: "GP da Huíla, Lubango",
     disciplina: "Motocross",
     ronda: 3,
     temporada: 2026,
@@ -125,7 +125,7 @@ export const eventos: Evento[] = [
     titulo: "Passeio Solidário de Cabinda",
     disciplina: "Solidária",
     temporada: 2026,
-    circuito: "Cabinda — Buco-Zau",
+    circuito: "Cabinda, Buco-Zau",
     provincia: "Cabinda",
     localidade: "Cabinda",
     dataInicio: "2026-08-09T07:30:00+01:00",
@@ -147,7 +147,7 @@ export const eventos: Evento[] = [
   },
   {
     slug: "gp-namibe-dunas",
-    titulo: "GP do Namibe — Corrida das Dunas",
+    titulo: "GP do Namibe: Corrida das Dunas",
     disciplina: "Rally",
     ronda: 4,
     temporada: 2026,
@@ -165,9 +165,9 @@ export const eventos: Evento[] = [
     organizador: "Federação Angolana de Motociclismo",
     horarios: [
       { dia: "Sábado", hora: "06:00", sessao: "Briefing e entrega de roadbook" },
-      { dia: "Sábado", hora: "07:30", sessao: "Partida — Etapa 1" },
+      { dia: "Sábado", hora: "07:30", sessao: "Partida da Etapa 1" },
       { dia: "Sábado", hora: "16:00", sessao: "Chegada e parque fechado" },
-      { dia: "Domingo", hora: "07:30", sessao: "Partida — Etapa 2" },
+      { dia: "Domingo", hora: "07:30", sessao: "Partida da Etapa 2" },
       { dia: "Domingo", hora: "15:30", sessao: "Chegada" },
       { dia: "Domingo", hora: "18:00", sessao: "Pódio e jantar de encerramento" },
     ],
@@ -214,7 +214,7 @@ export const eventos: Evento[] = [
   },
   {
     slug: "gp-huambo-final",
-    titulo: "GP do Huambo — Final do Campeonato",
+    titulo: "GP do Huambo: Final do Campeonato",
     disciplina: "Motocross",
     ronda: 5,
     temporada: 2026,
@@ -237,10 +237,10 @@ export const eventos: Evento[] = [
       { dia: "Sábado", hora: "14:30", sessao: "Qualificação MX2" },
       { dia: "Sábado", hora: "16:00", sessao: "Qualificação MX1" },
       { dia: "Domingo", hora: "09:30", sessao: "Warm-up" },
-      { dia: "Domingo", hora: "11:00", sessao: "Manga 1 — MX2" },
-      { dia: "Domingo", hora: "12:30", sessao: "Manga 1 — MX1" },
-      { dia: "Domingo", hora: "15:30", sessao: "Manga 2 — MX2" },
-      { dia: "Domingo", hora: "17:00", sessao: "Manga 2 — MX1" },
+      { dia: "Domingo", hora: "11:00", sessao: "Manga 1 (MX2)" },
+      { dia: "Domingo", hora: "12:30", sessao: "Manga 1 (MX1)" },
+      { dia: "Domingo", hora: "15:30", sessao: "Manga 2 (MX2)" },
+      { dia: "Domingo", hora: "17:00", sessao: "Manga 2 (MX1)" },
       { dia: "Domingo", hora: "18:30", sessao: "Pódio e Gala de encerramento" },
     ],
     distanciaVolta: "1,95 km",
@@ -296,7 +296,7 @@ export const eventos: Evento[] = [
   },
   {
     slug: "gala-motobox-2026",
-    titulo: "Gala Motobox — Prémios da Temporada",
+    titulo: "Gala Motobox: Prémios da Temporada",
     disciplina: "Passeio",
     temporada: 2026,
     circuito: "Talatona Convention Centre",
@@ -344,10 +344,10 @@ export const eventos: Evento[] = [
   },
   {
     slug: "passeio-natal-luanda",
-    titulo: "Passeio de Natal — Luanda",
+    titulo: "Passeio de Natal em Luanda",
     disciplina: "Solidária",
     temporada: 2026,
-    circuito: "Marginal de Luanda — Cacuaco",
+    circuito: "Marginal de Luanda a Cacuaco",
     provincia: "Luanda",
     localidade: "Luanda",
     dataInicio: "2026-12-20T08:00:00+01:00",
@@ -437,7 +437,7 @@ export const pilotos: Piloto[] = [
     mota: "Yamaha YZ 450F",
     categoria: "MX1",
     foto: "mbala",
-    bio: "Especialista em areia — o terreno do Lobito onde treina desde miúdo. Terceiro classificado nas duas últimas temporadas e o piloto com mais melhores voltas em 2026. Falta-lhe apenas converter velocidade em consistência.",
+    bio: "Especialista em areia, o terreno do Lobito onde treina desde miúdo. Terceiro classificado nas duas últimas temporadas e o piloto com mais melhores voltas em 2026. Falta-lhe apenas converter velocidade em consistência.",
     estreia: 2019,
     estatisticas: {
       pontos: 191,
@@ -714,7 +714,7 @@ export const equipas: Equipa[] = [
     membros: 18,
     pilotos: ["bruno-tchipa", "mario-bengui"],
     descricao:
-      "Equipa do planalto, treina a 1.700 metros de altitude e faz dessa dureza uma vantagem competitiva. Especialistas em preparação de motores para altitude — presta serviço a outras equipas do calendário.",
+      "Equipa do planalto, treina a 1.700 metros de altitude e faz dessa dureza uma vantagem competitiva. Especialistas em preparação de motores para altitude, prestam serviço a outras equipas do calendário.",
     motas: ["Honda CRF 450R"],
     estatisticas: { pontos: 314, vitorias: 22, podios: 52, titulos: 1 },
     redes: { instagram: "#", facebook: "#" },
@@ -822,7 +822,7 @@ export const equipas: Equipa[] = [
     membros: 72,
     pilotos: [],
     descricao:
-      "Clube dedicado ao trail e às viagens de longo curso. Já organizou travessias Luanda–Namibe e Luanda–Cabinda, e mantém um roteiro público de trilhos por província que qualquer motard pode consultar.",
+      "Clube dedicado ao trail e às viagens de longo curso. Já organizou travessias de Luanda ao Namibe e de Luanda a Cabinda, e mantém um roteiro público de trilhos por província que qualquer motard pode consultar.",
     motas: ["Trail", "Adventure"],
     estatisticas: { pontos: 0, vitorias: 0, podios: 0, titulos: 0 },
     redes: { instagram: "#", facebook: "#" },
@@ -893,7 +893,7 @@ export const corridas: Corrida[] = [
       { posicao: 3, pilotoSlug: "nelson-kiala", piloto: "Nelson Kiala", equipa: "Kilamba Racing", voltas: 6, tempo: "+5:19", pontos: 20 },
       { posicao: 4, pilotoSlug: "paulo-tembo", piloto: "Paulo Tembo", equipa: "Namibe Dunas Team", voltas: 6, tempo: "+8:02", pontos: 18 },
       { posicao: 5, pilotoSlug: "rui-katchimba", piloto: "Rui Katchimba", equipa: "Cabinda Bikers", voltas: 6, tempo: "+13:37", pontos: 16 },
-      { posicao: 0, pilotoSlug: "bruno-tchipa", piloto: "Bruno Tchipa", equipa: "Tundavala MX", voltas: 3, tempo: "—", pontos: 0, estado: "DNF" },
+      { posicao: 0, pilotoSlug: "bruno-tchipa", piloto: "Bruno Tchipa", equipa: "Tundavala MX", voltas: 3, tempo: "DNF", pontos: 0, estado: "DNF" },
     ],
   },
   {
@@ -948,10 +948,10 @@ export const noticias: Noticia[] = [
     resumo:
       "Nelson Kiala chega à final com 218 pontos, seguido de Bruno Tchipa (205) e Adilson Mbala (191). Com pontuação a dobrar na Caála, qualquer um dos três pode ser campeão.",
     corpo: [
-      "A temporada 2026 do Campeonato Nacional de Motocross entra na última ronda com o desfecho mais apertado dos últimos dez anos. Nelson Kiala lidera com 218 pontos, mas a vantagem de 13 sobre Bruno Tchipa não chega para garantir o tricampeonato — e com a pontuação a dobrar na final da Caála, Adilson Mbala, 27 pontos atrás, também continua matematicamente na corrida.",
+      "A temporada 2026 do Campeonato Nacional de Motocross entra na última ronda com o desfecho mais apertado dos últimos dez anos. Nelson Kiala lidera com 218 pontos, mas a vantagem de 13 sobre Bruno Tchipa não chega para garantir o tricampeonato. E com a pontuação a dobrar na final da Caála, Adilson Mbala, 27 pontos atrás, também continua matematicamente na corrida.",
       "\"Não penso na tabela. Penso em ganhar as duas mangas e acabou\", disse Kiala à Motobox no final dos treinos de preparação no Kilamba. O piloto da Kilamba Racing venceu duas das quatro rondas disputadas, mas cedeu terreno no Lubango, onde Tchipa é praticamente imbatível.",
       "Bruno Tchipa, por seu lado, chega à Caála com o argumento da forma: venceu a última ronda e assinou a melhor volta em três das quatro provas do ano. \"Toda a gente sabe que o Nelson é rápido. Mas na Caála é terreno duro, e terreno duro é onde eu me sinto em casa.\"",
-      "Adilson Mbala precisa de um cenário improvável — vencer as duas mangas e contar com problemas dos dois rivais — mas o piloto do Lobito não desarma: \"Já vi campeonatos decidirem-se por menos. A minha função é ganhar. O resto não controlo.\"",
+      "Adilson Mbala precisa de um cenário improvável (vencer as duas mangas e contar com problemas dos dois rivais), mas o piloto do Lobito não desarma: \"Já vi campeonatos decidirem-se por menos. A minha função é ganhar. O resto não controlo.\"",
       "A ronda final disputa-se a 21 e 22 de Novembro no Circuito da Caála, com a nova bancada para 3.000 espectadores a estrear-se nesta prova. Os bilhetes estão à venda na Motobox.",
     ],
     categoria: "Angola",
@@ -971,7 +971,7 @@ export const noticias: Noticia[] = [
       "Encontrámos Joana Ferraz na oficina da Lobito Motorsport, com as mãos sujas de massa lubrificante e a corrente da YZ 250F desmontada em cima da bancada. Faz a manutenção da própria mota desde os 17 anos. \"Se não souber o que a mota tem, não sei o que lhe pedir na pista.\"",
       "Chegou ao paddock em 2021, aos 18 anos. \"Na primeira corrida houve quem se risse. Um senhor disse ao meu pai que aquilo não era lugar para mim. Acabei em nono. No ano seguinte fui sétima. Em 2025 subi ao pódio no Lobito e esse mesmo senhor veio dar-me os parabéns.\"",
       "O programa Elas de Capacete nasceu dessa experiência. Começou com três raparigas e uma mota emprestada, aos sábados de manhã na restinga. Hoje são 30, com quatro motas do clube e uma lista de espera. \"Não é sobre fazer campeãs. É sobre não deixar que nenhuma pense que aquilo não é lugar para ela.\"",
-      "Sobre o resto — os balneários, os patrocínios, a cobertura — Joana é directa: \"Mudou muito. Mas ainda há provas onde me troco atrás da carrinha. Não me queixo, digo só que se resolve com pouco dinheiro e ninguém resolveu ainda.\"",
+      "Sobre o resto (os balneários, os patrocínios, a cobertura), Joana é directa: \"Mudou muito. Mas ainda há provas onde me troco atrás da carrinha. Não me queixo, digo só que se resolve com pouco dinheiro e ninguém resolveu ainda.\"",
       "Este ano é quarta classificada em MX2 e chega à final da Caála com hipóteses reais de terminar no pódio do campeonato. Seria outra primeira vez.",
     ],
     categoria: "Entrevista",
@@ -1112,8 +1112,8 @@ export const noticias: Noticia[] = [
 export const videos: Video[] = [
   {
     slug: "highlights-gp-huila-2026",
-    titulo: "HIGHLIGHTS — GP da Huíla 2026",
-    descricao: "Os melhores momentos das duas mangas de MX1 no circuito da Tundavala, incluindo o duelo Tchipa–Kiala na volta 11.",
+    titulo: "HIGHLIGHTS: GP da Huíla 2026",
+    descricao: "Os melhores momentos das duas mangas de MX1 no circuito da Tundavala, incluindo o duelo entre Tchipa e Kiala na volta 11.",
     duracao: "8:42",
     data: "2026-06-15",
     thumbnail: "lubango",
@@ -1124,7 +1124,7 @@ export const videos: Video[] = [
   },
   {
     slug: "onboard-kiala-kilamba",
-    titulo: "ONBOARD — Nelson Kiala, volta de qualificação no Kilamba",
+    titulo: "ONBOARD: Nelson Kiala, volta de qualificação no Kilamba",
     descricao: "Uma volta completa com Nelson Kiala em modo de qualificação. Câmara de bordo, som de motor, sem comentário.",
     duracao: "2:04",
     data: "2026-03-14",
@@ -1136,7 +1136,7 @@ export const videos: Video[] = [
   },
   {
     slug: "documentario-elas-de-capacete",
-    titulo: "ELAS DE CAPACETE — O documentário",
+    titulo: "ELAS DE CAPACETE: O documentário",
     descricao: "Seis meses a acompanhar as 30 raparigas do programa fundado por Joana Ferraz na restinga do Lobito.",
     duracao: "24:15",
     data: "2026-09-30",
@@ -1147,7 +1147,7 @@ export const videos: Video[] = [
   },
   {
     slug: "resumo-enduro-litoral",
-    titulo: "RESUMO — Enduro do Litoral, Benguela",
+    titulo: "RESUMO: Enduro do Litoral, Benguela",
     descricao: "Dois dias, seis especiais, 84 km. O resumo da prova mais dura do calendário nacional.",
     duracao: "12:30",
     data: "2026-04-20",
@@ -1159,7 +1159,7 @@ export const videos: Video[] = [
   },
   {
     slug: "entrevista-carlos-samba",
-    titulo: "ENTREVISTA — Carlos Samba, o rei das dunas",
+    titulo: "ENTREVISTA: Carlos Samba, o rei das dunas",
     descricao: "Conversa em Moçâmedes sobre navegação, deserto, e o que é preciso para chegar ao Dakar a partir de Angola.",
     duracao: "17:08",
     data: "2026-09-20",
@@ -1182,7 +1182,7 @@ export const videos: Video[] = [
   },
   {
     slug: "highlights-gp-luanda-2026",
-    titulo: "HIGHLIGHTS — GP de Luanda 2026",
+    titulo: "HIGHLIGHTS: GP de Luanda 2026",
     descricao: "A abertura da temporada no Kilamba. Kiala vence, Cabral estreia-se a ganhar em MX2.",
     duracao: "10:21",
     data: "2026-03-16",
@@ -1194,7 +1194,7 @@ export const videos: Video[] = [
   },
   {
     slug: "top10-saltos-2026",
-    titulo: "TOP 10 — Os melhores saltos da temporada",
+    titulo: "TOP 10: Os melhores saltos da temporada",
     descricao: "Compilação dos dez saltos mais espectaculares do campeonato nacional de 2026.",
     duracao: "5:47",
     data: "2026-10-30",
@@ -1322,7 +1322,7 @@ export const patrocinadores: Patrocinador[] = [
 export const anuncios: AnuncioMarketplace[] = [
   {
     id: "mkt-001",
-    titulo: "KTM 250 SX-F 2023 — pronta para competição",
+    titulo: "KTM 250 SX-F 2023, pronta para competição",
     categoria: "Motas",
     preco: 6800000,
     negociavel: true,
@@ -1341,7 +1341,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-002",
-    titulo: "Capacete Fox V3 RS — tamanho M, como novo",
+    titulo: "Capacete Fox V3 RS, tamanho M, como novo",
     categoria: "Equipamento",
     preco: 320000,
     negociavel: false,
@@ -1358,7 +1358,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-003",
-    titulo: "Honda CRF 450R 2021 — trail e enduro",
+    titulo: "Honda CRF 450R 2021, trail e enduro",
     categoria: "Motas",
     preco: 5200000,
     negociavel: true,
@@ -1377,7 +1377,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-004",
-    titulo: "Jogo de suspensão WP XACT — revisto",
+    titulo: "Jogo de suspensão WP XACT, revisto",
     categoria: "Peças",
     preco: 890000,
     negociavel: true,
@@ -1394,7 +1394,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-005",
-    titulo: "Yamaha Ténéré 700 2022 — pronta para viajar",
+    titulo: "Yamaha Ténéré 700 2022, pronta para viajar",
     categoria: "Motas",
     preco: 9400000,
     negociavel: false,
@@ -1405,7 +1405,7 @@ export const anuncios: AnuncioMarketplace[] = [
     estado: "Muito bom",
     provincia: "Luanda",
     descricao:
-      "Trail preparada para viagem: malas laterais Givi, top case, protecção de motor, guiador alto, tomada USB e suporte de GPS. Fez Luanda–Namibe e Luanda–Cabinda. Revisões todas na marca.",
+      "Trail preparada para viagem: malas laterais Givi, top case, protecção de motor, guiador alto, tomada USB e suporte de GPS. Já fez as viagens de Luanda ao Namibe e de Luanda a Cabinda. Revisões todas na marca.",
     imagens: ["tenere"],
     vendedor: { nome: "Miguel Sousa", verificado: true, desde: 2021, anuncios: 5, avaliacao: 5 },
     publicado: "2026-11-04",
@@ -1413,7 +1413,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-006",
-    titulo: "Botas Alpinestars Tech 7 — 43",
+    titulo: "Botas Alpinestars Tech 7, n.º 43",
     categoria: "Equipamento",
     preco: 245000,
     negociavel: true,
@@ -1430,7 +1430,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-007",
-    titulo: "Escape Akrapovič completo — KTM 450 SX-F",
+    titulo: "Escape Akrapovič completo para KTM 450 SX-F",
     categoria: "Peças",
     preco: 620000,
     negociavel: false,
@@ -1446,7 +1446,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-008",
-    titulo: "Suzuki DR 650 1998 — projecto",
+    titulo: "Suzuki DR 650 1998, projecto",
     categoria: "Motas",
     preco: 1350000,
     negociavel: true,
@@ -1465,7 +1465,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-009",
-    titulo: "Kit de plásticos Polisport — Honda CRF 250",
+    titulo: "Kit de plásticos Polisport para Honda CRF 250",
     categoria: "Peças",
     preco: 95000,
     negociavel: false,
@@ -1481,7 +1481,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-010",
-    titulo: "Equipamento completo Thor — calças 32 + camisola M",
+    titulo: "Equipamento completo Thor: calças 32 + camisola M",
     categoria: "Equipamento",
     preco: 130000,
     negociavel: true,
@@ -1513,7 +1513,7 @@ export const anuncios: AnuncioMarketplace[] = [
   },
   {
     id: "mkt-012",
-    titulo: "Husqvarna FE 350 2020 — enduro",
+    titulo: "Husqvarna FE 350 2020, enduro",
     categoria: "Motas",
     preco: 4900000,
     negociavel: true,
@@ -1596,7 +1596,7 @@ export const categoriasForum: CategoriaForum[] = [
 export const topicos: TopicoForum[] = [
   {
     id: "t-001",
-    titulo: "[OFICIAL] Regras do fórum Motobox — ler antes de publicar",
+    titulo: "[OFICIAL] Regras do fórum Motobox: ler antes de publicar",
     categoria: "Conversa Geral",
     categoriaSlug: "geral",
     autor: "Sofia Mussungo",
@@ -1629,7 +1629,7 @@ export const topicos: TopicoForum[] = [
   },
   {
     id: "t-003",
-    titulo: "CRF 250 a falhar a quente depois de 20 minutos — já tentei tudo",
+    titulo: "CRF 250 a falhar a quente depois de 20 minutos, já tentei tudo",
     categoria: "Mecânica e Afinações",
     categoriaSlug: "mecanica",
     autor: "Zeca_Lobito",
@@ -1675,7 +1675,7 @@ export const topicos: TopicoForum[] = [
   },
   {
     id: "t-006",
-    titulo: "Capacetes com certificação ECE 22.06 — onde comprar em Luanda?",
+    titulo: "Capacetes com certificação ECE 22.06: onde comprar em Luanda?",
     categoria: "Equipamento",
     categoriaSlug: "equipamento",
     autor: "SegurancaPrimeiro",
@@ -1690,7 +1690,7 @@ export const topicos: TopicoForum[] = [
   },
   {
     id: "t-007",
-    titulo: "Afinação de suspensão para o circuito da Caála — partilha de valores",
+    titulo: "Afinação de suspensão para o circuito da Caála: partilha de valores",
     categoria: "Mecânica e Afinações",
     categoriaSlug: "mecanica",
     autor: "Bruno_T12",
@@ -1735,7 +1735,7 @@ export const topicos: TopicoForum[] = [
   },
   {
     id: "t-010",
-    titulo: "Vendo material do meu filho que deixou de correr — dúvida sobre o marketplace",
+    titulo: "Vendo material do meu filho que deixou de correr: dúvida sobre o marketplace",
     categoria: "Conversa Geral",
     categoriaSlug: "geral",
     autor: "PaiDoPiloto",
@@ -1774,46 +1774,33 @@ export function formatDataCurta(iso: string): string {
   return new Date(iso).toLocaleDateString(localeData, { day: "2-digit", month: "short" }).toUpperCase().replace(".", "");
 }
 
-export function classificacaoPilotos(categoria?: string) {
+/*
+ * Os helpers abaixo recebem a lista em vez de usarem os arrays deste
+ * ficheiro: o site público lê o conteúdo do Supabase (ver
+ * lib/supabase/publico.ts), e estes arrays são só demonstração e semente.
+ */
+
+export function classificacaoPilotos(pilotos: Piloto[], categoria?: string) {
   return [...pilotos]
     .filter((p) => !categoria || categoria === "Todas" || p.categoria === categoria)
     .sort((a, b) => b.estatisticas.pontos - a.estatisticas.pontos)
     .map((p, i) => ({ ...p, posicao: i + 1 }));
 }
 
-export function classificacaoEquipas() {
+export function classificacaoEquipas(equipas: Equipa[]) {
   return [...equipas]
     .filter((e) => e.estatisticas.pontos > 0)
     .sort((a, b) => b.estatisticas.pontos - a.estatisticas.pontos)
     .map((e, i) => ({ ...e, posicao: i + 1 }));
 }
 
-export function proximoEvento(): Evento | undefined {
+export function proximoEvento(eventos: Evento[]): Evento | undefined {
   const agora = Date.now();
   return eventos
     .filter((e) => new Date(e.dataInicio).getTime() > agora)
     .sort((a, b) => +new Date(a.dataInicio) - +new Date(b.dataInicio))[0];
 }
 
-export function eventosComBilhetes(): Evento[] {
+export function eventosComBilhetes(eventos: Evento[]): Evento[] {
   return eventos.filter((e) => e.bilhetes && e.bilhetes.length > 0 && e.estado !== "concluido");
-}
-
-export function getEvento(slug: string) {
-  return eventos.find((e) => e.slug === slug);
-}
-export function getPiloto(slug: string) {
-  return pilotos.find((p) => p.slug === slug);
-}
-export function getEquipa(slug: string) {
-  return equipas.find((e) => e.slug === slug);
-}
-export function getNoticia(slug: string) {
-  return noticias.find((n) => n.slug === slug);
-}
-export function getAnuncio(id: string) {
-  return anuncios.find((a) => a.id === id);
-}
-export function getTopico(id: string) {
-  return topicos.find((t) => t.id === id);
 }

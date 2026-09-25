@@ -36,16 +36,17 @@ export default function AdminNewsletter() {
 
   const activos = estado.subscritores.filter((s) => s.ativo).length;
 
-  const adicionar = () => {
+  const adicionar = async () => {
     const email = novoEmail.trim().toLowerCase();
     if (!email || !email.includes("@")) { mostrar("Introduza um email válido.", "erro"); return; }
     if (estado.subscritores.some((s) => s.email.toLowerCase() === email)) {
       mostrar("Esse email já está subscrito.", "erro"); return;
     }
-    criar("subscritores", {
+    const falha = await criar("subscritores", {
       id: novoId("s"), email, nome: novoNome.trim() || undefined,
       origem: "manual", subscrito: new Date().toISOString().slice(0, 10), ativo: true,
     } as unknown as Record<string, unknown>);
+    if (falha) { mostrar(falha, "erro"); return; }
     setNovoEmail(""); setNovoNome("");
     mostrar("Subscritor adicionado.");
   };
@@ -114,7 +115,7 @@ export default function AdminNewsletter() {
           {fatia.map((s) => (
             <Linha key={s.id}>
               <Cel className="text-white">{s.email}</Cel>
-              <Cel className="text-ink-300">{s.nome ?? "—"}</Cel>
+              <Cel className="text-ink-300">{s.nome ?? ""}</Cel>
               <Cel className="text-ink-400">{s.origem}</Cel>
               <Cel className="tabular-nums text-ink-400">{formatDataCurta(s.subscrito)}</Cel>
               <Cel>

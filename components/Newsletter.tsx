@@ -108,7 +108,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
             Não perca<br />nenhuma prova
           </h2>
           <p className="mt-4 max-w-md text-sm text-ink-400 leading-relaxed">
-            Resultados, calendário, bilhetes e as histórias da comunidade motard angolana — no seu
+            Resultados, calendário, bilhetes e as histórias da comunidade motard angolana, no seu
             email, todas as semanas. Sem spam, e cancela quando quiser.
           </p>
         </div>

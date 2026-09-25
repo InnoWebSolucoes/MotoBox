@@ -41,11 +41,11 @@ export default function AdminNoticias() {
         tags: [], autor: "Redação Motobox", data: new Date().toISOString().slice(0, 10),
         imagem: "", leitura: 3, destaque: false,
       }) as Noticia}
-      formulario={(r, definir) => (
+      formulario={(r, definir, { novo }) => (
         <>
           <Campo etiqueta="Título" obrigatorio>
             <Input value={r.titulo}
-              onChange={(e) => definir({ titulo: e.target.value, slug: r.slug || slugify(e.target.value) } as Partial<Noticia>)} />
+              onChange={(e) => definir({ titulo: e.target.value, slug: novo && r.slug === slugify(r.titulo) ? slugify(e.target.value) : r.slug } as Partial<Noticia>)} />
           </Campo>
           <Campo etiqueta="Slug" obrigatorio>
             <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Noticia>)} />

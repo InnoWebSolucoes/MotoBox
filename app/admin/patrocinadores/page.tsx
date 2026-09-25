@@ -46,7 +46,7 @@ export default function AdminPatrocinadores() {
         {
           cabecalho: "Website",
           celula: (p) => (
-            <span className="truncate text-xs text-ink-400">{p.website || "—"}</span>
+            <span className="truncate text-xs text-ink-400">{p.website || ""}</span>
           ),
         },
       ]}
@@ -54,12 +54,12 @@ export default function AdminPatrocinadores() {
         slug: "", nome: "", nivel: "Apoio", setor: "", descricao: "",
         logo: "", website: "", desde: new Date().getFullYear(),
       }) as Patrocinador}
-      formulario={(r, definir) => (
+      formulario={(r, definir, { novo }) => (
         <>
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo etiqueta="Nome" obrigatorio>
               <Input value={r.nome}
-                onChange={(e) => definir({ nome: e.target.value, slug: r.slug || slugify(e.target.value) } as Partial<Patrocinador>)} />
+                onChange={(e) => definir({ nome: e.target.value, slug: novo && r.slug === slugify(r.nome) ? slugify(e.target.value) : r.slug } as Partial<Patrocinador>)} />
             </Campo>
             <Campo etiqueta="Slug" obrigatorio>
               <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Patrocinador>)} />

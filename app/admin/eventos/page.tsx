@@ -36,7 +36,7 @@ export default function AdminEventos() {
         },
         { cabecalho: "Disciplina", celula: (e) => <span className="text-ink-300">{e.disciplina}</span> },
         { cabecalho: "Data", celula: (e) => <span className="tabular-nums text-ink-300">{formatDataCurta(e.dataInicio)}</span> },
-        { cabecalho: "Ronda", celula: (e) => <span className="tabular-nums text-ink-400">{e.ronda ?? "—"}</span> },
+        { cabecalho: "Ronda", celula: (e) => <span className="tabular-nums text-ink-400">{e.ronda ?? ""}</span> },
         { cabecalho: "Bilhetes", celula: (e) => <span className="tabular-nums text-ink-400">{e.bilhetes?.length ?? 0}</span> },
         { cabecalho: "Estado", celula: (e) => <Estado valor={e.estado} /> },
       ]}
@@ -48,11 +48,11 @@ export default function AdminEventos() {
         estado: "agendado", imagem: "", resumo: "", descricao: "",
         organizador: "Motobox Angola", horarios: [], bilhetes: [],
       }) as Evento}
-      formulario={(r, definir) => (
+      formulario={(r, definir, { novo }) => (
         <>
           <Campo etiqueta="Título" obrigatorio>
             <Input value={r.titulo}
-              onChange={(e) => definir({ titulo: e.target.value, slug: r.slug || slugify(e.target.value) } as Partial<Evento>)} />
+              onChange={(e) => definir({ titulo: e.target.value, slug: novo && r.slug === slugify(r.titulo) ? slugify(e.target.value) : r.slug } as Partial<Evento>)} />
           </Campo>
           <Campo etiqueta="Slug (URL)" obrigatorio ajuda="Identificador único usado no endereço da página.">
             <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Evento>)} />

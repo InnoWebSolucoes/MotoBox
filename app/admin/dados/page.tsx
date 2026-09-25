@@ -65,13 +65,13 @@ export default function AdminDados() {
   const carregarFicheiro = async (f: File) => {
     const texto = await f.text();
     if (importar(texto)) mostrar("Dados importados com sucesso.");
-    else mostrar("Ficheiro inválido — nada foi alterado.", "erro");
+    else mostrar("Ficheiro inválido. Nada foi alterado.", "erro");
   };
 
   const importarColado = () => {
     if (!colar.trim()) { mostrar("Cole primeiro o conteúdo JSON.", "erro"); return; }
     if (importar(colar)) { mostrar("Dados importados com sucesso."); setColar(""); }
-    else mostrar("JSON inválido — nada foi alterado.", "erro");
+    else mostrar("JSON inválido. Nada foi alterado.", "erro");
   };
 
   const totalRegistos = COLECCOES.reduce(

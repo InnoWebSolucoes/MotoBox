@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Placeholder } from "@/components/Brand";
 import { Countdown } from "@/components/Countdown";
-import { ButtonLink, Icon, PageHero, Tag } from "@/components/ui";
+import { ButtonLink, EmptyState, Icon, PageHero, Tag } from "@/components/ui";
 import { eventosComBilhetes, formatData, formatKz } from "@/lib/data";
+import { lerEventos } from "@/lib/supabase/publico";
+
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Bilhetes",
@@ -11,8 +15,8 @@ export const metadata: Metadata = {
     "Compre bilhetes para as provas do motociclismo angolano. Pagamento por Multicaixa Express, transferência ou cartão. Bilhete digital com QR code no telemóvel.",
 };
 
-export default function BilhetesPage() {
-  const eventos = eventosComBilhetes();
+export default async function BilhetesPage() {
+  const eventos = eventosComBilhetes(await lerEventos());
 
   return (
     <>
@@ -43,6 +47,12 @@ export default function BilhetesPage() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14">
         <div className="space-y-6">
+          {eventos.length === 0 && (
+            <EmptyState
+              titulo="Sem bilhetes à venda"
+              descricao="De momento não há provas com bilhetes à venda. Consulte o calendário para ver o que vem a seguir."
+            />
+          )}
           {eventos.map((e) => {
             const minimo = Math.min(...e.bilhetes!.map((b) => b.preco));
             const total = e.bilhetes!.reduce((s, b) => s + b.disponiveis, 0);

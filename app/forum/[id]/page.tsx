@@ -2,9 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, Icon, Tag } from "@/components/ui";
-import { formatData, getTopico, topicos } from "@/lib/data";
+import { formatData } from "@/lib/data";
+import { lerTopico, lerTopicos } from "@/lib/supabase/publico";
 
-export function generateStaticParams() {
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
+
+// Tópicos criados depois do build são gerados no primeiro pedido
+// (`dynamicParams` fica no valor por omissão, `true`).
+export async function generateStaticParams() {
+  const topicos = await lerTopicos();
   return topicos.map((t) => ({ id: t.id }));
 }
 
@@ -14,7 +21,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const t = getTopico(id);
+  const t = await lerTopico(id);
   if (!t) return { title: "Tópico não encontrado" };
   return { title: t.titulo, description: t.excerto };
 }
@@ -30,7 +37,7 @@ const RESPOSTAS = [
     desde: 2022,
     melhor: true,
     texto:
-      "Isso é quase de certeza a bobine a aquecer. Acontece muito nas CRF quando o isolamento está a ceder — a frio faz contacto, a quente dilata e corta. Teste simples: quando começar a falhar, desliga e deixa arrefecer 10 minutos. Se voltar a trabalhar bem, é bobine.",
+      "Isso é quase de certeza a bobine a aquecer. Acontece muito nas CRF quando o isolamento está a ceder: a frio faz contacto, a quente dilata e corta. Teste simples: quando começar a falhar, desliga e deixa arrefecer 10 minutos. Se voltar a trabalhar bem, é bobine.",
   },
   {
     autor: "Zeca_Lobito",
@@ -56,10 +63,10 @@ const RESPOSTAS = [
 
 export default async function TopicoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const topico = getTopico(id);
+  const topico = await lerTopico(id);
   if (!topico) notFound();
 
-  const relacionados = topicos
+  const relacionados = (await lerTopicos())
     .filter((t) => t.id !== topico.id && t.categoriaSlug === topico.categoriaSlug)
     .slice(0, 4);
 
@@ -158,7 +165,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
               {r.melhor && (
                 <p className="flex items-center gap-2 border-b border-ok/25 bg-ok/10 px-5 py-2 eyebrow text-ok">
                   <Icon name="check" className="size-3.5" />
-                  Melhor resposta — marcada pelo autor
+                  Melhor resposta, marcada pelo autor
                 </p>
               )}
               <div className="flex flex-col sm:flex-row">

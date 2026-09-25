@@ -24,6 +24,7 @@ export const traducoes = {
     fechar:             { pt: "Fechar",             en: "Close" },
     procurar:           { pt: "Procurar…",          en: "Search…" },
     limpar:             { pt: "Limpar",             en: "Clear" },
+    ate:                { pt: "a",                  en: "to" },
     juntar:             { pt: "Juntar",             en: "Add" },
     anterior:           { pt: "Anterior",           en: "Previous" },
     seguinte:           { pt: "Seguinte",           en: "Next" },
@@ -220,7 +221,7 @@ export const traducoes = {
     contactoDesc:      { pt: "Fale connosco",             en: "Get in touch" },
     comprarBilhetes:   { pt: "Comprar bilhetes",          en: "Buy tickets" },
     saltarConteudo:    { pt: "Saltar para o conteúdo",  en: "Skip to content" },
-    paginaInicial:     { pt: "Motobox Angola — página inicial", en: "Motobox Angola — home" },
+    paginaInicial:     { pt: "Motobox Angola, página inicial", en: "Motobox Angola, home" },
   },
 
   /* ---------------- Autenticação ---------------- */

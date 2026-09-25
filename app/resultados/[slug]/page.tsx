@@ -3,9 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
 import { ButtonLink, Icon, PosicaoBadge, Tag } from "@/components/ui";
-import { corridas, formatData, getEvento } from "@/lib/data";
+import { formatData } from "@/lib/data";
+import { lerCorrida, lerCorridas, lerEvento } from "@/lib/supabase/publico";
 
-export function generateStaticParams() {
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
+
+// Corridas criadas depois do build são geradas no primeiro pedido
+// (`dynamicParams` fica no valor por omissão, `true`).
+export async function generateStaticParams() {
+  const corridas = await lerCorridas();
   return corridas.map((c) => ({ slug: c.slug }));
 }
 
@@ -15,21 +22,21 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const c = corridas.find((x) => x.slug === slug);
+  const c = await lerCorrida(slug);
   if (!c) return { title: "Resultado não encontrado" };
   return {
-    title: `${c.nome} ${c.temporada} — ${c.categoria}`,
+    title: `${c.nome} ${c.temporada}, ${c.categoria}`,
     description: `Resultado completo do ${c.nome} de ${c.temporada}, categoria ${c.categoria}. Vencedor: ${c.vencedor}.`,
   };
 }
 
 export default async function ResultadoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const corrida = corridas.find((c) => c.slug === slug);
+  const corrida = await lerCorrida(slug);
   if (!corrida) notFound();
 
-  const evento = getEvento(corrida.eventoSlug);
-  const outrasCategorias = corridas.filter(
+  const evento = await lerEvento(corrida.eventoSlug);
+  const outrasCategorias = (await lerCorridas()).filter(
     (c) => c.eventoSlug === corrida.eventoSlug && c.slug !== corrida.slug,
   );
   const classificados = corrida.resultados.filter((r) => !r.estado);

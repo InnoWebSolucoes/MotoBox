@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { VideosClient } from "./VideosClient";
-import { videos } from "@/lib/data";
+import { lerVideos } from "@/lib/supabase/publico";
+
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Vídeos",
@@ -8,6 +11,6 @@ export const metadata: Metadata = {
     "Highlights, onboards, entrevistas e documentários do motociclismo angolano. Motobox TV.",
 };
 
-export default function VideosPage() {
-  return <VideosClient videos={videos} />;
+export default async function VideosPage() {
+  return <VideosClient videos={await lerVideos()} />;
 }

@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button, ButtonLink, Icon, PageHero, Tag } from "@/components/ui";
-import { categoriasForum, formatData, topicos } from "@/lib/data";
+import { Button, ButtonLink, EmptyState, Icon, PageHero, Tag } from "@/components/ui";
+import { formatData } from "@/lib/data";
+import { lerCategoriasForum, lerTopicos } from "@/lib/supabase/publico";
+import type { TopicoForum } from "@/lib/types";
+
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Fórum",
   description:
-    "O fórum da comunidade motard angolana — competição, mecânica, passeios, equipamento e conversa geral.",
+    "O fórum da comunidade motard angolana: competição, mecânica, passeios, equipamento e conversa geral.",
 };
 
-export default function ForumPage() {
+export default async function ForumPage() {
+  const [topicos, categoriasForum] = await Promise.all([lerTopicos(), lerCategoriasForum()]);
   const fixados = topicos.filter((t) => t.fixado);
   const recentes = topicos.filter((t) => !t.fixado);
   const totalMensagens = categoriasForum.reduce((s, c) => s + c.mensagens, 0);
@@ -108,11 +114,18 @@ export default function ForumPage() {
                   ))}
                 </div>
               </div>
-              <div className="card divide-y divide-ink-800">
-                {recentes.map((t) => (
-                  <TopicoLinha key={t.id} topico={t} />
-                ))}
-              </div>
+              {recentes.length === 0 ? (
+                <EmptyState
+                  titulo="Sem discussões recentes"
+                  descricao="As conversas mais recentes da comunidade aparecem aqui."
+                />
+              ) : (
+                <div className="card divide-y divide-ink-800">
+                  {recentes.map((t) => (
+                    <TopicoLinha key={t.id} topico={t} />
+                  ))}
+                </div>
+              )}
             </section>
           </div>
 
@@ -179,7 +192,7 @@ export default function ForumPage() {
   );
 }
 
-function TopicoLinha({ topico: t }: { topico: (typeof topicos)[0] }) {
+function TopicoLinha({ topico: t }: { topico: TopicoForum }) {
   return (
     <Link href={`/forum/${t.id}`} className="group flex gap-4 p-4 hover:bg-ink-850 transition-colors">
       <span
@@ -215,8 +228,12 @@ function TopicoLinha({ topico: t }: { topico: (typeof topicos)[0] }) {
           <span>{t.autor}</span>
           <span className="size-1 rounded-full bg-ink-700" />
           <span>{formatData(t.criado, { day: "2-digit", month: "short" })}</span>
-          <span className="size-1 rounded-full bg-ink-700" />
-          <span>última resposta {t.ultimaResposta.quando}</span>
+          {t.ultimaResposta.quando && (
+            <>
+              <span className="size-1 rounded-full bg-ink-700" />
+              <span>última resposta {t.ultimaResposta.quando}</span>
+            </>
+          )}
         </p>
       </div>
 

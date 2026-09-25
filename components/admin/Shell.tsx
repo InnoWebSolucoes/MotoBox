@@ -29,6 +29,7 @@ export const NAVEGACAO: GrupoNav[] = [
     grupo: "Visão geral",
     itens: [
       { href: "/admin", nome: "Painel", icone: "grid" },
+      { href: "/admin/organizador", nome: "Organizador IA", icone: "sparkle" },
       { href: "/admin/atividade", nome: "Atividade", icone: "clock" },
     ],
   },
@@ -85,6 +86,7 @@ export const NAVEGACAO: GrupoNav[] = [
 const CAMINHOS: Record<string, string> = {
   grid: "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z",
   clock: "M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+  sparkle: "M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z",
   calendar: "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z",
   flag: "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7",
   user: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z",
@@ -119,7 +121,7 @@ export function IconeNav({ nome, className = "size-4" }: { nome: string; classNa
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const caminho = usePathname();
-  const { estado, pronto, origem } = useAdmin();
+  const { estado, pronto, origem, erroSync, limparErro } = useAdmin();
   const [menuAberto, setMenuAberto] = useState(false);
 
   // Fecha o menu móvel ao mudar de página
@@ -253,6 +255,17 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </span>
           </div>
         </header>
+
+        {erroSync && (
+          <div role="alert"
+            className="sticky top-[57px] z-20 flex items-start gap-3 border-b border-mb-red/40 bg-mb-red/15 px-4 py-3 text-sm text-white">
+            <span className="flex-1">{erroSync}</span>
+            <button type="button" onClick={limparErro} aria-label="Fechar aviso"
+              className="shrink-0 border border-mb-red/50 px-2 py-0.5 font-display text-[10px] uppercase tracking-widest text-white hover:bg-mb-red/30">
+              Fechar
+            </button>
+          </div>
+        )}
 
         <main className="p-4 sm:p-6">{children}</main>
       </div>

@@ -50,11 +50,11 @@ export default function AdminUtilizadores() {
           ),
         },
         { cabecalho: "Estado", celula: (u) => <Estado valor={u.estado} /> },
-        { cabecalho: "Província", celula: (u) => <span className="text-ink-400">{u.provincia ?? "—"}</span> },
+        { cabecalho: "Província", celula: (u) => <span className="text-ink-400">{u.provincia ?? ""}</span> },
         { cabecalho: "Registo", celula: (u) => <span className="tabular-nums text-ink-400">{formatDataCurta(u.registado)}</span> },
         {
           cabecalho: "Último acesso",
-          celula: (u) => <span className="tabular-nums text-ink-500">{u.ultimoAcesso ? formatDataCurta(u.ultimoAcesso) : "—"}</span>,
+          celula: (u) => <span className="tabular-nums text-ink-500">{u.ultimoAcesso ? formatDataCurta(u.ultimoAcesso) : "Nunca"}</span>,
         },
       ]}
       novoRegisto={() => ({

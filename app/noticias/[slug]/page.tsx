@@ -4,9 +4,16 @@ import { notFound } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
 import { Newsletter } from "@/components/Newsletter";
 import { Icon, Tag } from "@/components/ui";
-import { formatData, getNoticia, noticias } from "@/lib/data";
+import { formatData } from "@/lib/data";
+import { lerNoticia, lerNoticias } from "@/lib/supabase/publico";
 
-export function generateStaticParams() {
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
+
+// Notícias criadas depois do build são geradas no primeiro pedido
+// (`dynamicParams` fica no valor por omissão, `true`).
+export async function generateStaticParams() {
+  const noticias = await lerNoticias();
   return noticias.map((n) => ({ slug: n.slug }));
 }
 
@@ -16,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const n = getNoticia(slug);
+  const n = await lerNoticia(slug);
   if (!n) return { title: "Notícia não encontrada" };
   return {
     title: n.titulo,
@@ -27,10 +34,10 @@ export async function generateMetadata({
 
 export default async function NoticiaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const noticia = getNoticia(slug);
+  const noticia = await lerNoticia(slug);
   if (!noticia) notFound();
 
-  const relacionadas = noticias
+  const relacionadas = (await lerNoticias())
     .filter((n) => n.slug !== noticia.slug)
     .map((n) => ({
       n,

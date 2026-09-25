@@ -4,9 +4,16 @@ import { notFound } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
 import { Countdown } from "@/components/Countdown";
 import { ButtonLink, Icon, PosicaoBadge, Tag } from "@/components/ui";
-import { corridas, eventos, formatData, formatKz, getEvento } from "@/lib/data";
+import { formatData, formatKz } from "@/lib/data";
+import { lerCorridas, lerEvento, lerEventos } from "@/lib/supabase/publico";
 
-export function generateStaticParams() {
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
+
+// Eventos criados depois do build são gerados no primeiro pedido
+// (`dynamicParams` fica no valor por omissão, `true`).
+export async function generateStaticParams() {
+  const eventos = await lerEventos();
   return eventos.map((e) => ({ slug: e.slug }));
 }
 
@@ -16,18 +23,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const e = getEvento(slug);
+  const e = await lerEvento(slug);
   if (!e) return { title: "Evento não encontrado" };
   return { title: e.titulo, description: e.resumo };
 }
 
 export default async function EventoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const evento = getEvento(slug);
+  const evento = await lerEvento(slug);
   if (!evento) notFound();
 
   const futuro = new Date(evento.dataInicio).getTime() > Date.now();
-  const resultados = corridas.filter((c) => c.eventoSlug === evento.slug);
+  const resultados = (await lerCorridas()).filter((c) => c.eventoSlug === evento.slug);
   const dias = [...new Set(evento.horarios.map((h) => h.dia))];
 
   return (
@@ -55,7 +62,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
           <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm text-ink-300">
             <span className="inline-flex items-center gap-2">
               <Icon name="pin" className="size-4 text-mb-red" />
-              {evento.circuito}, {evento.localidade} — {evento.provincia}
+              {evento.circuito}, {evento.localidade}, {evento.provincia}
             </span>
             <span className="inline-flex items-center gap-2">
               <Icon name="calendar" className="size-4 text-mb-red" />
@@ -93,30 +100,32 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
               <p className="text-base text-ink-300 leading-relaxed">{evento.descricao}</p>
             </section>
 
-            {/* Horários */}
-            <section>
-              <h2 className="eyebrow accent-bar text-white">Programa</h2>
-              <div className="space-y-6">
-                {dias.map((dia) => (
-                  <div key={dia}>
-                    <p className="font-display text-lg uppercase text-mb-red mb-3">{dia}</p>
-                    <div className="card divide-y divide-ink-800">
-                      {evento.horarios
-                        .filter((h) => h.dia === dia)
-                        .map((h, i) => (
-                          <div key={i} className="flex items-center gap-5 p-4">
-                            <span className="font-mono text-sm text-white tabular-nums w-14 shrink-0">
-                              {h.hora}
-                            </span>
-                            <span className="h-8 w-px bg-ink-700 shrink-0" />
-                            <span className="text-sm text-ink-300">{h.sessao}</span>
-                          </div>
-                        ))}
+            {/* Horários, se o organizador já os publicou */}
+            {dias.length > 0 && (
+              <section>
+                <h2 className="eyebrow accent-bar text-white">Programa</h2>
+                <div className="space-y-6">
+                  {dias.map((dia) => (
+                    <div key={dia}>
+                      <p className="font-display text-lg uppercase text-mb-red mb-3">{dia}</p>
+                      <div className="card divide-y divide-ink-800">
+                        {evento.horarios
+                          .filter((h) => h.dia === dia)
+                          .map((h, i) => (
+                            <div key={i} className="flex items-center gap-5 p-4">
+                              <span className="font-mono text-sm text-white tabular-nums w-14 shrink-0">
+                                {h.hora}
+                              </span>
+                              <span className="h-8 w-px bg-ink-700 shrink-0" />
+                              <span className="text-sm text-ink-300">{h.sessao}</span>
+                            </div>
+                          ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Resultados, se já disputado */}
             {resultados.length > 0 && (

@@ -3,9 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Placeholder, Retrato } from "@/components/Brand";
 import { ButtonLink, Icon, PosicaoBadge, Tag } from "@/components/ui";
-import { classificacaoEquipas, equipas, getEquipa, pilotos } from "@/lib/data";
+import { classificacaoEquipas } from "@/lib/data";
+import { lerEquipa, lerEquipas, lerPilotos } from "@/lib/supabase/publico";
 
-export function generateStaticParams() {
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
+
+// Equipas criadas depois do build são geradas no primeiro pedido
+// (`dynamicParams` fica no valor por omissão, `true`).
+export async function generateStaticParams() {
+  const equipas = await lerEquipas();
   return equipas.map((e) => ({ slug: e.slug }));
 }
 
@@ -15,7 +22,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const e = getEquipa(slug);
+  const e = await lerEquipa(slug);
   if (!e) return { title: "Equipa não encontrada" };
   return { title: e.nome, description: e.descricao.slice(0, 155) };
 }
@@ -26,11 +33,12 @@ function iniciais(n: string) {
 
 export default async function EquipaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const equipa = getEquipa(slug);
+  const equipa = await lerEquipa(slug);
   if (!equipa) notFound();
 
+  const [equipas, pilotos] = await Promise.all([lerEquipas(), lerPilotos()]);
   const seus = pilotos.filter((p) => p.equipaSlug === equipa.slug);
-  const posicao = classificacaoEquipas().find((e) => e.slug === equipa.slug)?.posicao;
+  const posicao = classificacaoEquipas(equipas).find((e) => e.slug === equipa.slug)?.posicao;
   const outras = equipas.filter((e) => e.tipo === equipa.tipo && e.slug !== equipa.slug).slice(0, 3);
 
   return (

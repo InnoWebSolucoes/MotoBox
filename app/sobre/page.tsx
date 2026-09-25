@@ -3,12 +3,16 @@ import Link from "next/link";
 import { Placeholder } from "@/components/Brand";
 import { Newsletter } from "@/components/Newsletter";
 import { ButtonLink, Icon, PageHero } from "@/components/ui";
-import { SOCIAIS, equipas, eventos, pilotos } from "@/lib/data";
+import { SOCIAIS } from "@/lib/data";
+import { lerEquipas, lerEventos, lerPilotos } from "@/lib/supabase/publico";
+
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Sobre a Motobox",
   description:
-    "A história, a missão e a equipa da Motobox Angola — a casa digital do motociclismo angolano, um projecto sem fins lucrativos nascido em 2019.",
+    "A história, a missão e a equipa da Motobox Angola, a casa digital do motociclismo angolano, um projecto sem fins lucrativos nascido em 2019.",
 };
 
 const EQUIPA = [
@@ -52,7 +56,7 @@ const VALORES = [
     icone: "shield",
     titulo: "Memória do motociclismo",
     texto:
-      "Recuperar e guardar o que se tem perdido — entrevistas, resultados, fotografias, histórias de quem correu antes.",
+      "Recuperar e guardar o que se tem perdido: entrevistas, resultados, fotografias, histórias de quem correu antes.",
   },
   {
     icone: "trending",
@@ -95,7 +99,9 @@ const MARCOS = [
   },
 ];
 
-export default function SobrePage() {
+export default async function SobrePage() {
+  const [eventos, pilotos, equipas] = await Promise.all([lerEventos(), lerPilotos(), lerEquipas()]);
+
   return (
     <>
       <PageHero
@@ -119,7 +125,7 @@ export default function SobrePage() {
               </p>
               <p>
                 A revista nunca chegou a sair como estava pensada. O designer que a desenhava faleceu
-                num acidente e o projecto ficou suspenso. Mas o trabalho não parou — mudou de forma.
+                num acidente e o projecto ficou suspenso. Mas o trabalho não parou. Mudou de forma.
                 Passou a viver no Instagram e no Facebook, com cobertura fotográfica das provas,
                 entrevistas a pilotos e divulgação de tudo o que acontecia.
               </p>
@@ -130,7 +136,7 @@ export default function SobrePage() {
                 que ligam para o número pessoal da Sofia a perguntar quando é a próxima prova.
               </p>
               <p>
-                Este site existe para resolver isso. É a casa fixa de tudo o que a Motobox faz — e a
+                Este site existe para resolver isso. É a casa fixa de tudo o que a Motobox faz, e a
                 base para o que ainda falta fazer.
               </p>
             </div>
@@ -242,7 +248,7 @@ export default function SobrePage() {
               </h2>
               <p className="mt-5 text-base text-ink-300 leading-relaxed">
                 A ideia original da Motobox nunca foi só motas. Era o mundo motorizado angolano
-                inteiro — os clubes de jipes, os Land Rover, os Land Cruiser, as travessias, o
+                inteiro: os clubes de jipes, os Land Rover, os Land Cruiser, as travessias, o
                 off-road em todas as suas formas.
               </p>
               <p className="mt-4 text-base text-ink-300 leading-relaxed">

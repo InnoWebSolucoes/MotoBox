@@ -24,7 +24,7 @@ const body = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://motobox.ao"),
   title: {
-    default: "Motobox Angola — A casa do motociclismo angolano",
+    default: "Motobox Angola | A casa do motociclismo angolano",
     template: "%s | Motobox Angola",
   },
   description:
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "pt_AO",
     siteName: "Motobox Angola",
-    title: "Motobox Angola — A casa do motociclismo angolano",
+    title: "Motobox Angola | A casa do motociclismo angolano",
     description:
       "Calendário, resultados, pilotos, bilhetes e marketplace do motociclismo em Angola.",
   },

@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Placeholder } from "@/components/Brand";
-import { Icon, PageHero, Tag } from "@/components/ui";
-import { equipas, pilotos } from "@/lib/data";
+import { EmptyState, Icon, PageHero, Tag } from "@/components/ui";
+import { lerEquipas, lerPilotos } from "@/lib/supabase/publico";
+
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Equipas e Clubes",
   description:
-    "As equipas de competição e os clubes motard de Angola — história, base, pilotos e palmarés.",
+    "As equipas de competição e os clubes motard de Angola: história, base, pilotos e palmarés.",
 };
 
-export default function EquipasPage() {
+export default async function EquipasPage() {
+  const [equipas, pilotos] = await Promise.all([lerEquipas(), lerPilotos()]);
   const competicao = equipas.filter((e) => e.tipo === "Equipa");
   const clubes = equipas.filter((e) => e.tipo === "Clube");
 
@@ -33,7 +37,7 @@ export default function EquipasPage() {
         imagem="equipas"
         eyebrow="Motociclismo angolano"
         titulo="Equipas e clubes"
-        descricao="Quem move o motociclismo em Angola — das equipas de competição aos clubes que juntam centenas de motards todos os meses."
+        descricao="Quem move o motociclismo em Angola, das equipas de competição aos clubes que juntam centenas de motards todos os meses."
       >
         <div className="flex flex-wrap gap-8">
           {[
@@ -51,7 +55,16 @@ export default function EquipasPage() {
       </PageHero>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
-        {grupos.map((g) => (
+        {equipas.length === 0 && (
+          <div className="mb-14">
+            <EmptyState
+              titulo="Sem equipas registadas"
+              descricao="As equipas e os clubes aparecem aqui assim que forem registados."
+            />
+          </div>
+        )}
+
+        {grupos.filter((g) => g.lista.length > 0).map((g) => (
           <section key={g.titulo} className="mb-14 last:mb-0">
             <div className="mb-7">
               <h2 className="title-xl text-3xl">{g.titulo}</h2>
@@ -125,9 +138,9 @@ export default function EquipasPage() {
                       <dl className="mt-5 grid grid-cols-4 divide-x divide-ink-800 border-t border-ink-800 pt-4">
                         {[
                           ["Membros", e.membros],
-                          ["Pontos", e.estatisticas.pontos || "—"],
-                          ["Vitórias", e.estatisticas.vitorias || "—"],
-                          ["Pódios", e.estatisticas.podios || "—"],
+                          ["Pontos", e.estatisticas.pontos],
+                          ["Vitórias", e.estatisticas.vitorias],
+                          ["Pódios", e.estatisticas.podios],
                         ].map(([k, v]) => (
                           <div key={k as string} className="px-2 text-center first:pl-0">
                             <dd className="font-display text-base text-white tabular-nums">{v}</dd>

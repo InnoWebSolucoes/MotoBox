@@ -2,16 +2,15 @@
 
 /* ============================================================
    MOTOBOX ADMIN — Camada de persistência
-   Estado global do painel, guardado em localStorage e semeado
-   a partir de `lib/data.ts` e `lib/admin/seed.ts`.
-
-   Para ligar a um backend real, substituir apenas `carregar` e
-   `guardar` por chamadas à API — a interface do contexto
-   mantém-se inalterada.
+   Estado global do painel. Com o Supabase ligado, lê tudo de
+   /api/admin e cada escrita só fica no ecrã se a base de dados
+   a aceitar: em caso de erro a alteração é desfeita e o motivo
+   aparece num aviso. Sem base de dados configurada, o painel
+   trabalha em localStorage sobre os dados de demonstração.
    ============================================================ */
 
 import {
-  createContext, useCallback, useContext, useEffect, useMemo, useState,
+  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
   type ReactNode,
 } from "react";
 import {
@@ -93,19 +92,22 @@ export function chaveDe(coleccao: ColeccaoNome): string {
   return CHAVE_PRIMARIA[coleccao];
 }
 
+/** Resultado de uma escrita: null quando correu bem, senão a mensagem de erro. */
+export type ResultadoEscrita = Promise<string | null>;
+
 interface ContextoAdmin {
   estado: EstadoAdmin;
   pronto: boolean;
   /** Cria um registo no topo da coleção */
-  criar: <T extends Record<string, unknown>>(c: ColeccaoNome, item: T) => void;
+  criar: <T extends Record<string, unknown>>(c: ColeccaoNome, item: T) => ResultadoEscrita;
   /** Atualiza parcialmente o registo identificado por `id` */
-  atualizar: <T extends Record<string, unknown>>(c: ColeccaoNome, id: string, campos: Partial<T>) => void;
+  atualizar: <T extends Record<string, unknown>>(c: ColeccaoNome, id: string, campos: Partial<T>) => ResultadoEscrita;
   /** Remove o registo identificado por `id` */
-  remover: (c: ColeccaoNome, id: string) => void;
+  remover: (c: ColeccaoNome, id: string) => ResultadoEscrita;
   /** Substitui a coleção inteira (reordenações, importações) */
   substituir: (c: ColeccaoNome, itens: unknown[]) => void;
   /** Atualiza as definições globais */
-  guardarDefinicoes: (d: Partial<Definicoes>) => void;
+  guardarDefinicoes: (d: Partial<Definicoes>) => ResultadoEscrita;
   /** Escreve uma linha no registo de atividade */
   registar: (accao: string, entidade: string, detalhe: string) => void;
   /** Repõe todos os dados de demonstração */
@@ -120,6 +122,8 @@ interface ContextoAdmin {
   recarregar: () => Promise<void>;
   /** Último erro de sincronização, se existir */
   erroSync: string | null;
+  /** Esconde o aviso de erro */
+  limparErro: () => void;
 }
 
 export type Origem = "supabase" | "local" | "a-verificar";
@@ -153,6 +157,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [origem, setOrigem] = useState<Origem>("a-verificar");
   const [erroSync, setErroSync] = useState<string | null>(null);
 
+  /** Estado mais recente, para desfazer uma escrita que falhou. */
+  const estadoRef = useRef(estado);
+  useEffect(() => { estadoRef.current = estado; }, [estado]);
+
+  /** Verdadeiro só quando o servidor diz que não há Supabase (503). */
+  const semBase = useRef(false);
+
   /**
    * Carrega tudo a partir do Supabase. Se a base de dados não
    * estiver configurada, recorre ao localStorage e mantém o
@@ -176,6 +187,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
       // 503 significa Supabase não configurado — modo local.
       if (respostas.some((r) => r.estado === 503)) {
+        semBase.current = true;
         setOrigem("local");
         try {
           const guardado = localStorage.getItem(CHAVE);
@@ -201,10 +213,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         if (r.c === "definicoes") {
           if (r.json?.dados) novo.definicoes = { ...definicoesSeed, ...r.json.dados };
         } else {
-          const lista = r.json?.dados ?? [];
-          // Tabela vazia mantém o conteúdo de demonstração à vista,
-          // para o painel não parecer partido antes de semear.
-          if (Array.isArray(lista) && lista.length > 0) {
+          // A base de dados manda: uma tabela vazia fica vazia, para
+          // que apagar tudo não traga de volta a demonstração.
+          const lista = r.json?.dados;
+          if (Array.isArray(lista)) {
             (novo as Record<string, unknown>)[r.c] = lista;
           }
         }
@@ -242,44 +254,102 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     return { ...base, atividade: [linha, ...base.atividade].slice(0, 200) };
   }, []);
 
+  const guardarLocal = (proximo: EstadoAdmin) => {
+    try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
+  };
+
+  /**
+   * Envia uma escrita à API. Sem base de dados configurada, fica só
+   * no localStorage. Se falhar, `desfazer` repõe o ecrã e o erro
+   * fica visível em `erroSync`.
+   */
+  const confirmar = useCallback(async (
+    pedido: () => Promise<string | null>,
+    desfazer: () => void,
+  ): Promise<string | null> => {
+    if (semBase.current) return null;
+    const e = await pedido();
+    if (e) {
+      desfazer();
+      setErroSync(`Não foi guardado: ${e}`);
+    } else {
+      setErroSync(null);
+    }
+    return e;
+  }, []);
+
   const criar = useCallback<ContextoAdmin["criar"]>((c, item) => {
+    const k = chaveDe(c);
     setEstado((atual) => {
       const lista = [item, ...(atual[c] as unknown as unknown[])];
       const nome = String(item.titulo ?? item.nome ?? item.referencia ?? item.email ?? "registo");
       const proximo = registarEm({ ...atual, [c]: lista }, "criou", rotulo(c), nome);
-      try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
+      guardarLocal(proximo);
       return proximo;
     });
-    void enviar("POST", c, item).then((e) => e && setErroSync(e));
-  }, [registarEm]);
+    return confirmar(
+      () => enviar("POST", c, item),
+      () => setEstado((atual) => ({
+        ...atual,
+        [c]: (atual[c] as unknown as Record<string, unknown>[]).filter((it) => it[k] !== item[k]),
+      })),
+    );
+  }, [registarEm, confirmar]);
 
   const atualizar = useCallback<ContextoAdmin["atualizar"]>((c, id, campos) => {
+    const k = chaveDe(c);
+    const antes = (estadoRef.current[c] as unknown as Record<string, unknown>[]).find((it) => it[k] === id);
     setEstado((atual) => {
-      const k = chaveDe(c);
       const lista = (atual[c] as unknown as Record<string, unknown>[]).map((it) =>
         it[k] === id ? { ...it, ...campos } : it,
       );
       const alvo = lista.find((it) => it[k] === id);
       const nome = String(alvo?.titulo ?? alvo?.nome ?? alvo?.referencia ?? alvo?.email ?? id);
       const proximo = registarEm({ ...atual, [c]: lista }, "editou", rotulo(c), nome);
-      try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
+      guardarLocal(proximo);
       return proximo;
     });
-    void enviar("PATCH", c, { id, campos }).then((e) => e && setErroSync(e));
-  }, [registarEm]);
+    // Se a chave mudou (slug editado), o registo tem outro id no ecrã.
+    const novaChave = (campos as Record<string, unknown>)[k] ?? id;
+    return confirmar(
+      () => enviar("PATCH", c, { id, campos }),
+      () => {
+        if (!antes) return;
+        setEstado((atual) => ({
+          ...atual,
+          [c]: (atual[c] as unknown as Record<string, unknown>[]).map((it) =>
+            it[k] === novaChave ? antes : it,
+          ),
+        }));
+      },
+    );
+  }, [registarEm, confirmar]);
 
   const remover = useCallback<ContextoAdmin["remover"]>((c, id) => {
+    const k = chaveDe(c);
+    const lista0 = estadoRef.current[c] as unknown as Record<string, unknown>[];
+    const posicao = lista0.findIndex((it) => it[k] === id);
+    const antes = lista0[posicao];
     setEstado((atual) => {
-      const k = chaveDe(c);
       const alvo = (atual[c] as unknown as Record<string, unknown>[]).find((it) => it[k] === id);
       const nome = String(alvo?.titulo ?? alvo?.nome ?? alvo?.referencia ?? alvo?.email ?? id);
       const lista = (atual[c] as unknown as Record<string, unknown>[]).filter((it) => it[k] !== id);
       const proximo = registarEm({ ...atual, [c]: lista }, "removeu", rotulo(c), nome);
-      try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
+      guardarLocal(proximo);
       return proximo;
     });
-    void enviar("DELETE", c, undefined, `?id=${encodeURIComponent(id)}`).then((e) => e && setErroSync(e));
-  }, [registarEm]);
+    return confirmar(
+      () => enviar("DELETE", c, undefined, `?id=${encodeURIComponent(id)}`),
+      () => {
+        if (!antes) return;
+        setEstado((atual) => {
+          const lista = [...(atual[c] as unknown as Record<string, unknown>[])];
+          lista.splice(Math.max(0, posicao), 0, antes);
+          return { ...atual, [c]: lista };
+        });
+      },
+    );
+  }, [registarEm, confirmar]);
 
   const substituir = useCallback<ContextoAdmin["substituir"]>((c, itens) => {
     setEstado((atual) => {
@@ -290,24 +360,30 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const guardarDefinicoes = useCallback<ContextoAdmin["guardarDefinicoes"]>((d) => {
+    const antes = estadoRef.current.definicoes;
     setEstado((atual) => {
       const proximo = registarEm(
         { ...atual, definicoes: { ...atual.definicoes, ...d } },
         "atualizou", "Definições", Object.keys(d).join(", "),
       );
-      try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
+      guardarLocal(proximo);
       return proximo;
     });
-    void enviar("PATCH", "definicoes", { campos: d }).then((e) => e && setErroSync(e));
-  }, [registarEm]);
+    return confirmar(
+      () => enviar("PATCH", "definicoes", { campos: d }),
+      () => setEstado((atual) => ({ ...atual, definicoes: antes })),
+    );
+  }, [registarEm, confirmar]);
 
   const registar = useCallback<ContextoAdmin["registar"]>((accao, entidade, detalhe) => {
     setEstado((atual) => {
       const proximo = registarEm(atual, accao, entidade, detalhe);
-      try { localStorage.setItem(CHAVE, JSON.stringify(proximo)); } catch {}
+      guardarLocal(proximo);
       return proximo;
     });
   }, [registarEm]);
+
+  const limparErro = useCallback(() => setErroSync(null), []);
 
   const reiniciar = useCallback(() => {
     const novo = estadoInicial();
@@ -330,10 +406,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const valor = useMemo<ContextoAdmin>(() => ({
     estado, pronto, criar, atualizar, remover, substituir,
     guardarDefinicoes, registar, reiniciar, exportar, importar,
-    origem, recarregar: carregarTudo, erroSync,
+    origem, recarregar: carregarTudo, erroSync, limparErro,
   }), [estado, pronto, criar, atualizar, remover, substituir,
        guardarDefinicoes, registar, reiniciar, exportar, importar,
-       origem, carregarTudo, erroSync]);
+       origem, carregarTudo, erroSync, limparErro]);
 
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }

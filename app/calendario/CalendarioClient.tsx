@@ -62,7 +62,7 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
         imagem="calendario"
         eyebrow={`Temporada ${TEMPORADA}`}
         titulo={t("paginas.calendarioTitulo")}
-        descricao="Todas as provas do motociclismo angolano — motocross, enduro, rally-raid, passeios e acções solidárias. Clique numa prova para ver horários, circuito e bilhetes."
+        descricao="Todas as provas do motociclismo angolano: motocross, enduro, rally-raid, passeios e acções solidárias. Clique numa prova para ver horários, circuito e bilhetes."
       >
         <div className="flex flex-wrap gap-6 sm:gap-10">
           {[
@@ -206,7 +206,7 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
                         </span>
                         <span className="inline-flex items-center gap-1.5">
                           <Icon name="calendar" className="size-3.5" />
-                          {formatData(e.dataInicio, { day: "2-digit", month: "short" })} —{" "}
+                          {formatData(e.dataInicio, { day: "2-digit", month: "short" })} {t("comum.ate")}{" "}
                           {formatData(e.dataFim, { day: "2-digit", month: "short" })}
                         </span>
                         <span className="inline-flex items-center gap-1.5">

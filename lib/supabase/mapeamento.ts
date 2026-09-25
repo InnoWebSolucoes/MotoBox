@@ -49,6 +49,7 @@ const RENOMES: Partial<Record<ColeccaoNome, Record<string, string>>> = {
   pilotos: { equipaSlug: "equipa_slug" },
   corridas: { eventoSlug: "evento_slug" },
   noticias: { fonteUrl: "fonte_url" },
+  videos: { videoId: "video_id" },
   topicos: {
     categoriaSlug: "categoria_slug", autorAvatar: "autor_avatar",
     avatarCor: "avatar_cor", ultimaResposta: "ultima_resposta",
@@ -78,7 +79,10 @@ export function daBase<T>(coleccao: ColeccaoNome, linha: Record<string, unknown>
   for (const [col, valor] of Object.entries(linha)) {
     if (COLUNAS_INTERNAS.has(col)) continue;
     // `anuncios.publicado_em` volta a chamar-se `publicado` na app,
-    // onde representa a data de publicação do anúncio.
+    // onde representa a data de publicação do anúncio. A coluna
+    // booleana `publicado` da mesma tabela fica de fora, senão
+    // substituía a data por true.
+    if (coleccao === "anuncios" && col === "publicado") continue;
     const nome = mapa[col] ?? col;
     saida[nome] = valor;
   }

@@ -5,15 +5,8 @@ import { useState } from "react";
 import { Logo, Placeholder, Retrato } from "@/components/Brand";
 import { QRCode } from "@/components/QRCode";
 import { Button, ButtonLink, Icon, Tag } from "@/components/ui";
-import {
-  anuncios,
-  equipas,
-  eventos,
-  formatData,
-  formatKz,
-  noticias,
-  pilotos,
-} from "@/lib/data";
+import { formatData, formatKz } from "@/lib/data";
+import type { AnuncioMarketplace, Equipa, Evento, Noticia, Piloto } from "@/lib/types";
 
 type Aba = "resumo" | "bilhetes" | "preferencias" | "notificacoes" | "anuncios";
 
@@ -34,10 +27,14 @@ const UTILIZADOR = {
   verificado: true,
 };
 
-const BILHETES = [
+/*
+ * Bilhetes de demonstração. Apontam para as provas pelo slug; se a prova
+ * for apagada no painel, o bilhete deixa simplesmente de aparecer.
+ */
+const BILHETES_DEMO = [
   {
     codigo: "MBX-GP-4K9T2A",
-    evento: eventos.find((e) => e.slug === "gp-huambo-final")!,
+    eventoSlug: "gp-huambo-final",
     tipo: "Bancada Central",
     quantidade: 2,
     estado: "válido" as const,
@@ -45,7 +42,7 @@ const BILHETES = [
   },
   {
     codigo: "MBX-GP-7X1M5B",
-    evento: eventos.find((e) => e.slug === "gp-namibe-dunas")!,
+    eventoSlug: "gp-namibe-dunas",
     tipo: "Tribuna Coberta",
     quantidade: 1,
     estado: "válido" as const,
@@ -53,7 +50,7 @@ const BILHETES = [
   },
   {
     codigo: "MBX-GP-2H8L4C",
-    evento: eventos.find((e) => e.slug === "gp-huila-lubango")!,
+    eventoSlug: "gp-huila-lubango",
     tipo: "Geral",
     quantidade: 2,
     estado: "usado" as const,
@@ -65,7 +62,23 @@ function iniciais(n: string) {
   return n.split(" ").map((p) => p[0]).slice(0, 2).join("");
 }
 
-export function ContaClient() {
+export function ContaClient({
+  eventos,
+  pilotos,
+  equipas,
+  noticias,
+  anuncios,
+}: {
+  eventos: Evento[];
+  pilotos: Piloto[];
+  equipas: Equipa[];
+  noticias: Noticia[];
+  anuncios: AnuncioMarketplace[];
+}) {
+  const bilhetes = BILHETES_DEMO.flatMap(({ eventoSlug, ...b }) => {
+    const evento = eventos.find((e) => e.slug === eventoSlug);
+    return evento ? [{ ...b, evento }] : [];
+  });
   const [aba, setAba] = useState<Aba>("resumo");
   const [seguidos, setSeguidos] = useState<string[]>(["nelson-kiala", "joana-ferraz"]);
   const [equipasSeguidas, setEquipasSeguidas] = useState<string[]>(["kilamba-racing"]);
@@ -85,7 +98,7 @@ export function ContaClient() {
   const alternar = <T,>(lista: T[], set: (v: T[]) => void, item: T) =>
     set(lista.includes(item) ? lista.filter((x) => x !== item) : [...lista, item]);
 
-  const bilhetesValidos = BILHETES.filter((b) => b.estado === "válido");
+  const bilhetesValidos = bilhetes.filter((b) => b.estado === "válido");
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
@@ -270,7 +283,7 @@ export function ContaClient() {
         {/* ---------- BILHETES ---------- */}
         {aba === "bilhetes" && (
           <div className="space-y-4">
-            {BILHETES.map((b) => (
+            {bilhetes.map((b) => (
               <article
                 key={b.codigo}
                 className={`card overflow-hidden ${b.estado === "usado" ? "opacity-60" : ""}`}

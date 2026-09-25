@@ -45,13 +45,16 @@ export default function AdminForum() {
     respostas: estado.topicos.reduce((s, t) => s + t.respostas, 0),
   }), [estado.topicos]);
 
-  const guardar = () => {
+  const guardar = async () => {
     if (!rascunho) return;
     if (!rascunho.titulo.trim()) { mostrar("O título é obrigatório.", "erro"); return; }
     const cat = estado.categoriasForum.find((c) => c.slug === rascunho.categoriaSlug);
     const completo = { ...rascunho, categoria: cat?.nome ?? rascunho.categoria };
-    if (novo) { criar("topicos", completo as unknown as Record<string, unknown>); mostrar("Tópico criado."); }
-    else { atualizar("topicos", rascunho.id, completo); mostrar("Tópico atualizado."); }
+    const falha = novo
+      ? await criar("topicos", completo as unknown as Record<string, unknown>)
+      : await atualizar("topicos", rascunho.id, completo);
+    if (falha) { mostrar(falha, "erro"); return; }
+    mostrar(novo ? "Tópico criado." : "Tópico atualizado.");
     setRascunho(null); setNovo(false);
   };
 
@@ -62,7 +65,7 @@ export default function AdminForum() {
       id: novoId("t"), titulo: "", categoria: c?.nome ?? "", categoriaSlug: c?.slug ?? "",
       autor: "Equipa Motobox", autorAvatar: "EM", avatarCor: "#e10600",
       criado: new Date().toISOString().slice(0, 10), respostas: 0, visualizacoes: 0,
-      ultimaResposta: { autor: "—", quando: "—" }, excerto: "",
+      ultimaResposta: { autor: "", quando: "" }, excerto: "",
     });
   };
 
@@ -207,7 +210,11 @@ export default function AdminForum() {
       <Confirmar
         aberta={aApagar !== null}
         aoFechar={() => setAApagar(null)}
-        aoConfirmar={() => { if (aApagar) { remover("topicos", aApagar.id); mostrar("Tópico removido."); } }}
+        aoConfirmar={async () => {
+          if (!aApagar) return;
+          const falha = await remover("topicos", aApagar.id);
+          mostrar(falha ?? "Tópico removido.", falha ? "erro" : "ok");
+        }}
         titulo="Apagar tópico"
         mensagem="O tópico e as suas respostas deixam de estar visíveis no fórum."
         textoConfirmar="Apagar"

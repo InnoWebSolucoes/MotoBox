@@ -50,10 +50,10 @@ export default function AdminPilotos() {
         slug: "", nome: "", numero: 0, equipa: "", equipaSlug: "",
         provincia: "Luanda", nacionalidade: "Angolana", idade: 20,
         mota: "", categoria: "MX1", foto: "", bio: "", estreia: 2026,
-        estatisticas: { pontos: 0, vitorias: 0, podios: 0, poles: 0, corridas: 0, melhorResultado: "—" },
+        estatisticas: { pontos: 0, vitorias: 0, podios: 0, poles: 0, corridas: 0, melhorResultado: "" },
         redes: {}, campeonatos: 0,
       }) as Piloto}
-      formulario={(r, definir) => {
+      formulario={(r, definir, { novo }) => {
         const stat = (campos: Partial<Piloto["estatisticas"]>) =>
           definir({ estatisticas: { ...r.estatisticas, ...campos } } as Partial<Piloto>);
         return (
@@ -61,7 +61,7 @@ export default function AdminPilotos() {
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo etiqueta="Nome" obrigatorio>
                 <Input value={r.nome}
-                  onChange={(e) => definir({ nome: e.target.value, slug: r.slug || slugify(e.target.value) } as Partial<Piloto>)} />
+                  onChange={(e) => definir({ nome: e.target.value, slug: novo && r.slug === slugify(r.nome) ? slugify(e.target.value) : r.slug } as Partial<Piloto>)} />
               </Campo>
               <Campo etiqueta="Slug" obrigatorio>
                 <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Piloto>)} />

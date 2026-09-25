@@ -3,16 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Placeholder, Retrato } from "@/components/Brand";
 import { ButtonLink, Icon, PosicaoBadge, Tag } from "@/components/ui";
-import {
-  classificacaoPilotos,
-  corridas,
-  formatData,
-  getEquipa,
-  getPiloto,
-  pilotos,
-} from "@/lib/data";
+import { classificacaoPilotos, formatData } from "@/lib/data";
+import { lerCorridas, lerEquipa, lerPiloto, lerPilotos } from "@/lib/supabase/publico";
 
-export function generateStaticParams() {
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
+
+// Pilotos criados depois do build são gerados no primeiro pedido
+// (`dynamicParams` fica no valor por omissão, `true`).
+export async function generateStaticParams() {
+  const pilotos = await lerPilotos();
   return pilotos.map((p) => ({ slug: p.slug }));
 }
 
@@ -22,10 +22,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const p = getPiloto(slug);
+  const p = await lerPiloto(slug);
   if (!p) return { title: "Piloto não encontrado" };
   return {
-    title: `${p.nome} — #${p.numero}`,
+    title: `${p.nome} #${p.numero}`,
     description: `${p.nome}, piloto ${p.categoria} da ${p.equipa}. ${p.estatisticas.vitorias} vitórias e ${p.estatisticas.podios} pódios no motociclismo angolano.`,
   };
 }
@@ -36,11 +36,13 @@ function iniciais(n: string) {
 
 export default async function PilotoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const piloto = getPiloto(slug);
+  const piloto = await lerPiloto(slug);
   if (!piloto) notFound();
 
-  const equipa = getEquipa(piloto.equipaSlug);
-  const classificacao = classificacaoPilotos();
+  const [pilotos, corridas, equipa] = await Promise.all([
+    lerPilotos(), lerCorridas(), lerEquipa(piloto.equipaSlug),
+  ]);
+  const classificacao = classificacaoPilotos(pilotos);
   const posicao = classificacao.find((p) => p.slug === piloto.slug)?.posicao ?? 0;
   const lider = classificacao[0];
 
@@ -156,7 +158,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
       <section className="border-b border-ink-800 bg-ink-900">
         <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-ink-800 px-4 sm:grid-cols-3 lg:grid-cols-6 sm:px-6">
           {[
-            ["Posição", posicao > 0 ? `${posicao}.º` : "—"],
+            ["Posição", posicao > 0 ? `${posicao}.º` : "NC"],
             ["Pontos", piloto.estatisticas.pontos],
             ["Vitórias", piloto.estatisticas.vitorias],
             ["Pódios", piloto.estatisticas.podios],
@@ -245,7 +247,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                 <div
                   className="h-full bg-mb-red"
                   style={{
-                    width: `${lider ? (piloto.estatisticas.pontos / lider.estatisticas.pontos) * 100 : 0}%`,
+                    width: `${lider?.estatisticas.pontos ? (piloto.estatisticas.pontos / lider.estatisticas.pontos) * 100 : 0}%`,
                   }}
                 />
               </div>

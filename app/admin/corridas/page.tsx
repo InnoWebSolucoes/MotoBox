@@ -46,7 +46,7 @@ export default function AdminCorridas() {
         circuito: "", provincia: "Luanda", data: new Date().toISOString().slice(0, 10),
         categoria: "MX1", vencedor: "", imagem: "", resultados: [],
       }) as Corrida}
-      formulario={(r, definir) => {
+      formulario={(r, definir, { novo }) => {
         const alterar = (i: number, campos: Partial<ResultadoCorrida>) =>
           definir({ resultados: r.resultados.map((x, j) => (j === i ? { ...x, ...campos } : x)) } as Partial<Corrida>);
 
@@ -54,7 +54,7 @@ export default function AdminCorridas() {
           <>
             <Campo etiqueta="Nome da corrida" obrigatorio>
               <Input value={r.nome}
-                onChange={(e) => definir({ nome: e.target.value, slug: r.slug || slugify(e.target.value) } as Partial<Corrida>)} />
+                onChange={(e) => definir({ nome: e.target.value, slug: novo && r.slug === slugify(r.nome) ? slugify(e.target.value) : r.slug } as Partial<Corrida>)} />
             </Campo>
             <Campo etiqueta="Slug" obrigatorio>
               <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Corrida>)} />

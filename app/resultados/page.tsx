@@ -1,16 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Placeholder } from "@/components/Brand";
-import { Icon, PageHero, PosicaoBadge, Tag } from "@/components/ui";
-import { TEMPORADA, corridas, formatData } from "@/lib/data";
+import { EmptyState, Icon, PageHero, PosicaoBadge, Tag } from "@/components/ui";
+import { TEMPORADA, formatData } from "@/lib/data";
+import { lerCorridas } from "@/lib/supabase/publico";
+
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Arquivo de Resultados",
   description:
-    "Arquivo completo de resultados do motociclismo angolano — corrida a corrida, com tempos, pontos e melhores voltas.",
+    "Arquivo completo de resultados do motociclismo angolano, corrida a corrida, com tempos, pontos e melhores voltas.",
 };
 
-export default function ResultadosPage() {
+export default async function ResultadosPage() {
+  const corridas = await lerCorridas();
   const porTemporada = corridas.reduce<Record<number, typeof corridas>>((acc, c) => {
     (acc[c.temporada] ??= []).push(c);
     return acc;
@@ -40,6 +45,12 @@ export default function ResultadosPage() {
       </PageHero>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+        {temporadas.length === 0 && (
+          <EmptyState
+            titulo="Sem resultados publicados"
+            descricao="Os resultados aparecem aqui assim que a primeira corrida da temporada terminar."
+          />
+        )}
         {temporadas.map((t) => (
           <section key={t} className="mb-14 last:mb-0">
             <div className="mb-6 flex items-center gap-4">
@@ -131,7 +142,7 @@ export default function ResultadosPage() {
 
         <p className="mt-10 flex items-center gap-2 text-xs text-ink-600">
           <Icon name="flag" className="size-4" />
-          MV — melhor volta da corrida · DNF — não terminou · DNS — não partiu · DSQ — desclassificado
+          MV: melhor volta da corrida · DNF: não terminou · DNS: não partiu · DSQ: desclassificado
         </p>
       </div>
     </>

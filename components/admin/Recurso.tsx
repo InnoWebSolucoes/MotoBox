@@ -39,8 +39,11 @@ export function PaginaRecurso<T extends object>({
   filtros?: Filtro[];
   /** Campos onde a procura textual actua */
   procuraEm: (item: T) => string;
-  /** Formulário de criação/edição; recebe o rascunho e um setter */
-  formulario: (rascunho: T, definir: (campos: Partial<T>) => void) => ReactNode;
+  /**
+   * Formulário de criação/edição; recebe o rascunho, um setter e se o
+   * registo é novo (só aí o slug acompanha o nome automaticamente).
+   */
+  formulario: (rascunho: T, definir: (campos: Partial<T>) => void, contexto: { novo: boolean }) => ReactNode;
   /** Registo em branco para o botão "Novo" */
   novoRegisto: () => T;
   vazio?: string;
@@ -59,6 +62,7 @@ export function PaginaRecurso<T extends object>({
   const [rascunho, setRascunho] = useState<T | null>(null);
   const [aEditar, setAEditar] = useState<string | null>(null);
   const [aApagar, setAApagar] = useState<T | null>(null);
+  const [aGuardar, setAGuardar] = useState(false);
 
   const filtrados = useMemo(() => {
     const q = procura.trim().toLowerCase();
@@ -82,22 +86,26 @@ export function PaginaRecurso<T extends object>({
   const definir = (campos: Partial<T>) =>
     setRascunho((r) => (r ? { ...r, ...campos } : r));
 
-  const guardar = () => {
-    if (!rascunho) return;
+  const guardar = async () => {
+    if (!rascunho || aGuardar) return;
     const id = String((rascunho as Record<string, unknown>)[chave] ?? "").trim();
-    if (!id) { mostrar("O identificador não pode ficar vazio.", "erro"); return; }
+    if (!id) { mostrar("Preencha o nome ou o título antes de guardar.", "erro"); return; }
 
-    if (aEditar) {
-      atualizar(coleccao, aEditar, rascunho as Record<string, unknown>);
-      mostrar("Alterações guardadas.");
-    } else {
-      if (dados.some((it) => String((it as Record<string, unknown>)[chave]) === id)) {
-        mostrar("Já existe um registo com esse identificador.", "erro");
-        return;
-      }
-      criar(coleccao, rascunho as Record<string, unknown>);
-      mostrar("Registo criado.");
+    if (!aEditar && dados.some((it) => String((it as Record<string, unknown>)[chave]) === id)) {
+      mostrar(`Já existe um registo com o endereço "${id}". Altere o slug.`, "erro");
+      return;
     }
+
+    // O formulário só fecha quando a base de dados confirma; se falhar,
+    // fica aberto com o que foi escrito para se poder corrigir.
+    setAGuardar(true);
+    const falha = aEditar
+      ? await atualizar(coleccao, aEditar, rascunho as Record<string, unknown>)
+      : await criar(coleccao, rascunho as Record<string, unknown>);
+    setAGuardar(false);
+
+    if (falha) { mostrar(falha, "erro"); return; }
+    mostrar(aEditar ? "Alterações guardadas." : "Registo criado.");
     fechar();
   };
 
@@ -190,24 +198,23 @@ export function PaginaRecurso<T extends object>({
               className="h-10 border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-ink-800">
               Cancelar
             </button>
-            <button type="button" onClick={guardar}
-              className="h-10 bg-mb-red px-5 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark">
-              Guardar
+            <button type="button" onClick={guardar} disabled={aGuardar}
+              className="h-10 bg-mb-red px-5 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60">
+              {aGuardar ? "A guardar…" : "Guardar"}
             </button>
           </>
         }
       >
-        {rascunho && <div className="space-y-4">{formulario(rascunho, definir)}</div>}
+        {rascunho && <div className="space-y-4">{formulario(rascunho, definir, { novo: !aEditar })}</div>}
       </Gaveta>
 
       <Confirmar
         aberta={aApagar !== null}
         aoFechar={() => setAApagar(null)}
-        aoConfirmar={() => {
-          if (aApagar) {
-            remover(coleccao, String((aApagar as Record<string, unknown>)[chave]));
-            mostrar("Registo removido.");
-          }
+        aoConfirmar={async () => {
+          if (!aApagar) return;
+          const falha = await remover(coleccao, String((aApagar as Record<string, unknown>)[chave]));
+          mostrar(falha ?? "Registo removido.", falha ? "erro" : "ok");
         }}
         titulo="Apagar registo"
         mensagem="Esta ação é permanente e remove o registo da plataforma. Pretende continuar?"

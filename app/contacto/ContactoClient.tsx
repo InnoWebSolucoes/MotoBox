@@ -212,7 +212,7 @@ export function ContactoClient() {
             <div className="card p-6">
               <h2 className="eyebrow text-mb-red mb-4">Redes sociais</h2>
               <p className="text-sm text-ink-400 leading-relaxed">
-                A forma mais rápida de falar connosco continua a ser o Instagram — é lá que estamos
+                A forma mais rápida de falar connosco continua a ser o Instagram: é lá que estamos
                 todos os dias.
               </p>
               <div className="mt-4 space-y-2">

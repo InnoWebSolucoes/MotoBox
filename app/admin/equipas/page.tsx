@@ -48,7 +48,7 @@ export default function AdminEquipas() {
         estatisticas: { pontos: 0, vitorias: 0, podios: 0, titulos: 0 },
         redes: {},
       }) as Equipa}
-      formulario={(r, definir) => {
+      formulario={(r, definir, { novo }) => {
         const stat = (campos: Partial<Equipa["estatisticas"]>) =>
           definir({ estatisticas: { ...r.estatisticas, ...campos } } as Partial<Equipa>);
         return (
@@ -56,7 +56,7 @@ export default function AdminEquipas() {
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo etiqueta="Nome" obrigatorio>
                 <Input value={r.nome}
-                  onChange={(e) => definir({ nome: e.target.value, slug: r.slug || slugify(e.target.value) } as Partial<Equipa>)} />
+                  onChange={(e) => definir({ nome: e.target.value, slug: novo && r.slug === slugify(r.nome) ? slugify(e.target.value) : r.slug } as Partial<Equipa>)} />
               </Campo>
               <Campo etiqueta="Slug" obrigatorio>
                 <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Equipa>)} />

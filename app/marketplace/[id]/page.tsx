@@ -3,9 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
 import { Button, Icon, Tag } from "@/components/ui";
-import { anuncios, formatData, formatKz, getAnuncio } from "@/lib/data";
+import { formatData, formatKz } from "@/lib/data";
+import { lerAnuncio, lerAnuncios } from "@/lib/supabase/publico";
 
-export function generateStaticParams() {
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
+
+// Anúncios criados depois do build são gerados no primeiro pedido
+// (`dynamicParams` fica no valor por omissão, `true`).
+export async function generateStaticParams() {
+  const anuncios = await lerAnuncios();
   return anuncios.map((a) => ({ id: a.id }));
 }
 
@@ -15,17 +22,17 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const a = getAnuncio(id);
+  const a = await lerAnuncio(id);
   if (!a) return { title: "Anúncio não encontrado" };
   return { title: a.titulo, description: a.descricao.slice(0, 155) };
 }
 
 export default async function AnuncioPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const anuncio = getAnuncio(id);
+  const anuncio = await lerAnuncio(id);
   if (!anuncio) notFound();
 
-  const semelhantes = anuncios
+  const semelhantes = (await lerAnuncios())
     .filter((a) => a.id !== anuncio.id && a.categoria === anuncio.categoria)
     .slice(0, 4);
 

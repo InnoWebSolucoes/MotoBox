@@ -210,7 +210,7 @@ export function PosicaoBadge({ posicao, size = "md" }: { posicao: number; size?:
   const dim = size === "sm" ? "size-7 text-xs" : "size-10 text-base";
   return (
     <span className={`grid place-items-center font-display shrink-0 ${cor} ${dim}`}>
-      {posicao === 0 ? "—" : posicao}
+      {posicao === 0 ? "NC" : posicao}
     </span>
   );
 }

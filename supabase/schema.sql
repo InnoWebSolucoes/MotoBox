@@ -132,10 +132,14 @@ create table if not exists videos (
   categoria      text not null default 'Highlights',
   visualizacoes  int  not null default 0,
   evento         text,
+  video_id       text,
   publicado      boolean not null default true,
   criado_em      timestamptz not null default now(),
   atualizado_em  timestamptz not null default now()
 );
+
+-- Bases criadas antes de os vídeos terem ID do YouTube.
+alter table videos add column if not exists video_id text;
 
 create table if not exists patrocinadores (
   slug          text primary key,
