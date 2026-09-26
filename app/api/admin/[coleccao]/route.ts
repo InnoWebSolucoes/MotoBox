@@ -1,11 +1,16 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin, supabaseAdminConfigurado } from "@/lib/supabase/server";
 import {
-  TABELA, CHAVE_TABELA, listaDaBase, paraBase,
+  TABELA, CHAVE_TABELA, daBase, listaDaBase, paraBase,
   definicoesDaBase, definicoesParaBase,
 } from "@/lib/supabase/mapeamento";
 import type { ColeccaoNome } from "@/lib/admin/store";
+import {
+  notificarNovoEvento, notificarBilhetesAbertos, notificarNovoResultado,
+  notificarNovoAnuncio, temBilhetes,
+} from "@/lib/notificacoes";
+import type { AnuncioMarketplace, Corrida, Evento } from "@/lib/types";
 
 /* ============================================================
    MOTOBOX — API de administração
@@ -103,6 +108,23 @@ async function validar(params: Promise<{ coleccao: string }>) {
   return { coleccao: coleccao as ColeccaoNome, db };
 }
 
+/**
+ * Avisa por email quem o pediu, depois de a resposta seguir, para
+ * que o painel não espere pela Resend. O registo usa a forma da
+ * app: o corpo do pedido, completado com o que a base devolveu
+ * (por exemplo o id gerado de um anúncio).
+ */
+function notificarCriacao(
+  coleccao: ColeccaoNome,
+  corpo: Record<string, unknown>,
+  linha: Record<string, unknown> | null,
+) {
+  const registo = { ...corpo, ...(linha ? daBase<Record<string, unknown>>(coleccao, linha) : {}) };
+  if (coleccao === "eventos") after(() => notificarNovoEvento(registo as unknown as Evento));
+  else if (coleccao === "corridas") after(() => notificarNovoResultado(registo as unknown as Corrida));
+  else if (coleccao === "anuncios") after(() => notificarNovoAnuncio(registo as unknown as AnuncioMarketplace));
+}
+
 /* ---------------- GET: listar ---------------- */
 
 export async function GET(
@@ -143,6 +165,7 @@ export async function POST(
 
   if (error) return erroDaBase(error);
   revalidar();
+  notificarCriacao(coleccao, corpo, data);
   return NextResponse.json({ dados: data }, { status: 201 });
 }
 
@@ -175,7 +198,17 @@ export async function PATCH(
   if (!corpo.campos) return erro("Faltam os campos a atualizar.");
 
   const id = corpo.id;
-  const { data, error } = await escrever(linhaPara(coleccao, corpo.campos), (linha) =>
+  const campos = corpo.campos;
+
+  // Bilhetes de um evento: guarda-se o estado anterior para saber,
+  // depois de gravar, se a bilheteira acabou de abrir.
+  let eventoAntes: Record<string, unknown> | null = null;
+  if (coleccao === "eventos" && "bilhetes" in campos) {
+    const { data: atual } = await db.from("eventos").select("*").eq("slug", id).maybeSingle();
+    eventoAntes = atual;
+  }
+
+  const { data, error } = await escrever(linhaPara(coleccao, campos), (linha) =>
     db.from(TABELA[coleccao]).update(linha).eq(CHAVE_TABELA[coleccao], id).select(CHAVE_TABELA[coleccao]),
   );
 
@@ -184,6 +217,10 @@ export async function PATCH(
     return erro("Este registo já não existe na base de dados. Recarregue a página.", 404);
   }
   revalidar();
+  if (eventoAntes && !temBilhetes(eventoAntes.bilhetes) && temBilhetes(campos.bilhetes)) {
+    const evento = { ...daBase<Record<string, unknown>>("eventos", eventoAntes), ...campos };
+    after(() => notificarBilhetesAbertos(evento as unknown as Evento));
+  }
   return NextResponse.json({ ok: true });
 }
 

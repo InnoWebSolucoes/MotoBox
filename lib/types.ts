@@ -177,7 +177,11 @@ export interface AnuncioMarketplace {
   provincia: Provincia;
   descricao: string;
   imagens: string[];
-  vendedor: { nome: string; verificado: boolean; desde: number; anuncios: number; avaliacao: number };
+  vendedor: {
+    nome: string; verificado: boolean; desde: number; anuncios: number; avaliacao: number;
+    /** Conta do Supabase Auth de quem publicou, nos anúncios criados no site. */
+    authId?: string;
+  };
   publicado: string;
   visualizacoes: number;
 }

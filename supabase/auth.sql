@@ -121,19 +121,18 @@ as $$
 $$;
 
 -- ---------- Políticas de acesso ----------
--- Cada pessoa vê e edita apenas o seu próprio perfil.
--- A equipa de gestão continua a operar pelo service role, no
--- servidor, que ignora RLS.
+-- Cada pessoa lê apenas o seu próprio perfil. Não há política de
+-- escrita: uma política de UPDATE sobre a linha inteira deixava
+-- qualquer conta mudar o próprio `papel` para admin com a chave
+-- pública. As alterações ao perfil passam por /api/conta, no
+-- servidor, que só aceita nome, telefone e província. A equipa de
+-- gestão opera pelo service role, que ignora RLS.
 
 drop policy if exists ler_proprio_perfil     on utilizadores;
 drop policy if exists editar_proprio_perfil  on utilizadores;
 
 create policy ler_proprio_perfil on utilizadores
   for select using (auth_id = auth.uid());
-
-create policy editar_proprio_perfil on utilizadores
-  for update using (auth_id = auth.uid())
-  with check (auth_id = auth.uid());
 
 -- Encomendas: cada comprador vê as suas, por email.
 drop policy if exists ler_proprias_encomendas on encomendas;

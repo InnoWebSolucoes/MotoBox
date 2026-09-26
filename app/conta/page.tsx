@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { ContaClient } from "./ContaClient";
 import {
-  lerAnuncios, lerEquipas, lerEventos, lerNoticias, lerPilotos,
+  lerEquipas, lerEventos, lerNoticias, lerPilotos,
 } from "@/lib/supabase/publico";
 
 // O Next exige um literal aqui, não aceita constante importada.
@@ -14,16 +15,13 @@ export const metadata: Metadata = {
 };
 
 export default async function ContaPage() {
-  const [eventos, pilotos, equipas, noticias, anuncios] = await Promise.all([
-    lerEventos(), lerPilotos(), lerEquipas(), lerNoticias(), lerAnuncios(),
+  const [eventos, pilotos, equipas, noticias] = await Promise.all([
+    lerEventos(), lerPilotos(), lerEquipas(), lerNoticias(),
   ]);
+  // O separador aberto vem do endereço (?aba=), lido no cliente.
   return (
-    <ContaClient
-      eventos={eventos}
-      pilotos={pilotos}
-      equipas={equipas}
-      noticias={noticias}
-      anuncios={anuncios}
-    />
+    <Suspense fallback={null}>
+      <ContaClient eventos={eventos} pilotos={pilotos} equipas={equipas} noticias={noticias} />
+    </Suspense>
   );
 }

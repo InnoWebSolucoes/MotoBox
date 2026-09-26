@@ -94,7 +94,7 @@ export interface Subscritor {
   id: string;
   email: string;
   nome?: string;
-  origem: "rodapé" | "faixa" | "cartão" | "checkout" | "manual";
+  origem: "rodapé" | "faixa" | "cartão" | "checkout" | "manual" | "conta";
   subscrito: string;
   ativo: boolean;
 }
