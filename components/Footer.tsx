@@ -46,9 +46,9 @@ const COLUNAS: { titulo: string; links: { href: string; label: string }[] }[] = 
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-ink-800 bg-ink-950">
+    <footer className="mt-auto bg-ink-950">
       {/* Faixa newsletter */}
-      <div className="border-b border-ink-800 bg-ink-900">
+      <div className="stripes bg-ink-900">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 py-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
           <div>
             <p className="eyebrow text-mb-red">Newsletter</p>
@@ -84,7 +84,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="grid size-10 place-items-center border border-ink-700 text-ink-400 transition-colors hover:border-mb-red hover:text-white"
+                  className="grid size-10 place-items-center rounded-full bg-ink-800 text-ink-300 transition-colors hover:bg-mb-red hover:text-white"
                 >
                   <Icon name={icone} className="size-5" />
                 </a>
@@ -95,13 +95,13 @@ export function Footer() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {COLUNAS.map((c) => (
               <div key={c.titulo}>
-                <h3 className="eyebrow text-white">{c.titulo}</h3>
+                <h3 className="font-ui text-base text-white">{c.titulo}</h3>
                 <ul className="mt-4 space-y-2.5">
                   {c.links.map((l) => (
                     <li key={l.href + l.label}>
                       <Link
                         href={l.href}
-                        className="text-sm text-ink-500 transition-colors hover:text-mb-red"
+                        className="text-sm text-ink-400 transition-colors hover:text-white"
                       >
                         {l.label}
                       </Link>
@@ -113,7 +113,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-ink-800 pt-7 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-4 border-t border-white/6 pt-7 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-ink-600">
             © {TEMPORADA} Motobox Angola. Todos os direitos reservados.
           </p>

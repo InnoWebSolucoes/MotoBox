@@ -53,7 +53,7 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
       <Link
         href="/marketplace"
-        className="inline-flex items-center gap-2 font-display text-[11px] uppercase tracking-widest text-ink-500 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 font-ui text-base text-ink-400 hover:text-white transition-colors"
       >
         <span aria-hidden>←</span> Marketplace
       </Link>
@@ -61,41 +61,51 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
       <div className="mt-6 grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:items-start">
         {/* Galeria e descrição */}
         <div>
-          <div className="relative aspect-[4/3] overflow-hidden border border-ink-700">
-            <Placeholder nome={anuncio.imagens[0]} className="absolute inset-0" />
+          <div className="media relative aspect-[4/3]">
+            <Placeholder
+              nome={anuncio.imagens[0]}
+              className="absolute inset-0"
+              tamanhos="(max-width: 1024px) 100vw, 760px"
+            />
             <div className="absolute left-4 top-4 flex gap-2">
               <Tag tone="neutral">{anuncio.categoria}</Tag>
-              <Tag tone="outline">{anuncio.estado}</Tag>
+              <Tag tone="neutral">{anuncio.estado}</Tag>
             </div>
           </div>
 
           {/* Miniaturas */}
-          <div className="mt-3 grid grid-cols-4 gap-2">
+          <div className="mt-3 grid grid-cols-4 gap-2 sm:gap-3">
             {[0, 1, 2, 3].map((i) => (
               <div
                 key={i}
-                className={`relative aspect-[4/3] cursor-pointer border ${
-                  i === 0 ? "border-mb-red" : "border-ink-800 opacity-50 hover:opacity-100"
+                className={`media relative aspect-[4/3] cursor-pointer transition-opacity ${
+                  i === 0
+                    ? "ring-2 ring-mb-red ring-offset-2 ring-offset-ink-950"
+                    : "opacity-50 hover:opacity-100"
                 }`}
               >
-                <Placeholder nome={`${anuncio.imagens[0]}-${i}`} className="absolute inset-0" />
+                <Placeholder
+                  nome={`${anuncio.imagens[0]}-${i}`}
+                  className="absolute inset-0"
+                  tamanhos="200px"
+                />
               </div>
             ))}
           </div>
 
-          <section className="mt-9">
+          <section className="mt-10">
             <h2 className="eyebrow accent-bar text-white">Descrição</h2>
             <p className="text-base text-ink-300 leading-relaxed whitespace-pre-line">
               {anuncio.descricao}
             </p>
           </section>
 
-          <section className="mt-9">
+          <section className="mt-10">
             <h2 className="eyebrow accent-bar text-white">Ficha técnica</h2>
-            <dl className="card grid gap-px overflow-hidden bg-ink-800 sm:grid-cols-2">
+            <dl className="grid gap-x-10 sm:grid-cols-2">
               {ficha.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 bg-ink-900 px-4 py-3.5">
-                  <dt className="text-xs text-ink-500">{k}</dt>
+                <div key={k} className="flex justify-between gap-4 border-b border-white/6 py-3.5">
+                  <dt className="text-sm text-ink-500">{k}</dt>
                   <dd className="text-sm text-white text-right">{v}</dd>
                 </div>
               ))}
@@ -110,12 +120,12 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
               {anuncio.titulo}
             </h1>
 
-            <p className="mt-4 font-display text-3xl text-white">{formatKz(anuncio.preco)}</p>
+            <p className="mt-4 font-display text-4xl leading-none text-white tabular-nums">{formatKz(anuncio.preco)}</p>
             <p className="mt-1 text-xs text-ink-500">
               {anuncio.negociavel ? "Preço negociável" : "Preço fixo"}
             </p>
 
-            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-ink-800 pt-4 text-xs text-ink-500">
+            <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-white/6 pt-4 text-xs text-ink-500">
               <span className="inline-flex items-center gap-1.5">
                 <Icon name="pin" className="size-3.5" />
                 {anuncio.provincia}
@@ -156,7 +166,7 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
           <div className="card p-6">
             <h2 className="eyebrow text-mb-red mb-4">Vendedor</h2>
             <div className="flex items-center gap-3">
-              <span className="grid size-12 shrink-0 place-items-center bg-ink-800 font-display text-sm text-white">
+              <span className="grid size-12 shrink-0 place-items-center rounded-full bg-ink-800 font-display text-sm text-white">
                 {anuncio.vendedor.nome
                   .split(" ")
                   .map((p) => p[0])
@@ -176,7 +186,7 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-ink-800 pt-4">
+            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-white/6 pt-4">
               <div>
                 <dd className="font-display text-lg text-white">{anuncio.vendedor.anuncios}</dd>
                 <dt className="eyebrow text-ink-600">Anúncios</dt>
@@ -192,7 +202,7 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* Aviso */}
-          <div className="card border-ink-700 p-5">
+          <div className="px-1 pt-1">
             <p className="flex gap-2.5 text-xs text-ink-500 leading-relaxed">
               <Icon name="shield" className="size-4 shrink-0 text-ink-600" />
               A Motobox não intermedeia pagamentos. Combine sempre um encontro em local público,
@@ -206,21 +216,20 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
       {semelhantes.length > 0 && (
         <section className="mt-16">
           <h2 className="title-xl text-2xl sm:text-3xl">Anúncios semelhantes</h2>
-          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
             {semelhantes.map((a) => (
-              <Link key={a.id} href={`/marketplace/${a.id}`} className="group card card-hover overflow-hidden">
-                <div className="relative aspect-[4/3]">
+              <Link key={a.id} href={`/marketplace/${a.id}`} className="group block">
+                <div className="media relative aspect-[4/3]">
                   <Placeholder
                     nome={a.imagens[0]}
                     className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                    tamanhos="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
                   />
                 </div>
-                <div className="p-4">
-                  <h3 className="font-display text-sm uppercase leading-snug text-white line-clamp-2 group-hover:text-mb-red transition-colors">
-                    {a.titulo}
-                  </h3>
-                  <p className="mt-2 font-display text-base text-white">{formatKz(a.preco)}</p>
-                </div>
+                <p className="mt-3.5 font-display text-2xl leading-none text-white tabular-nums">{formatKz(a.preco)}</p>
+                <h3 className="mt-2.5 font-display text-base uppercase leading-snug text-white line-clamp-2 group-hover:text-mb-red transition-colors">
+                  {a.titulo}
+                </h3>
               </Link>
             ))}
           </div>

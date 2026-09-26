@@ -70,12 +70,12 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
             setEstado("idle");
           }}
           placeholder="o.seu@email.ao"
-          className="h-11 flex-1 min-w-0 border border-ink-700 bg-ink-950 px-4 text-sm text-white placeholder:text-ink-600 focus:border-mb-red outline-none"
+          className="h-12 w-full min-w-0 sm:flex-1 rounded-full bg-ink-950 px-5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red outline-none"
         />
         <button
           type="submit"
           disabled={estado === "a-enviar"}
-          className="h-11 shrink-0 bg-mb-red px-6 font-display text-[11px] uppercase tracking-widest text-white hover:bg-mb-red-dark transition-colors disabled:opacity-50"
+          className="h-12 shrink-0 rounded-full bg-mb-red px-7 font-ui text-base text-white hover:bg-mb-red-dark transition-colors disabled:opacity-50"
         >
           {estado === "a-enviar" ? "A enviar…" : "Subscrever"}
         </button>
@@ -89,7 +89,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
   /* ---- Variante completa ---- */
   const wrapper =
     variante === "faixa"
-      ? "relative overflow-hidden border-y border-ink-800 bg-ink-900"
+      ? "relative overflow-hidden bg-ink-900"
       : "card p-6 sm:p-8";
 
   return (
@@ -124,7 +124,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="O seu nome"
-                className="h-12 w-full border border-ink-700 bg-ink-950 px-4 text-sm text-white placeholder:text-ink-600 focus:border-mb-red outline-none"
+                className="h-12 w-full rounded-full bg-ink-950 px-5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red outline-none"
               />
             </div>
             <div>
@@ -141,7 +141,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
                   setEstado("idle");
                 }}
                 placeholder="o.seu@email.ao"
-                className="h-12 w-full border border-ink-700 bg-ink-950 px-4 text-sm text-white placeholder:text-ink-600 focus:border-mb-red outline-none"
+                className="h-12 w-full rounded-full bg-ink-950 px-5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red outline-none"
               />
             </div>
           </div>
@@ -157,11 +157,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
                     type="button"
                     onClick={() => alternar(i)}
                     aria-pressed={on}
-                    className={`px-3 h-8 text-[11px] font-display uppercase tracking-wider transition-colors ${
-                      on
-                        ? "bg-mb-red text-white"
-                        : "border border-ink-700 text-ink-400 hover:border-ink-500 hover:text-ink-200"
-                    }`}
+                    className="chip"
                   >
                     {i}
                   </button>
@@ -178,7 +174,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
             <button
               type="submit"
               disabled={estado === "a-enviar"}
-              className="h-12 bg-mb-red px-8 font-display text-xs uppercase tracking-widest text-white hover:bg-mb-red-dark transition-colors disabled:opacity-50"
+              className="h-12 rounded-full bg-mb-red px-8 font-ui text-base text-white hover:bg-mb-red-dark transition-colors disabled:opacity-50"
             >
               {estado === "a-enviar" ? "A subscrever…" : "Subscrever"}
             </button>

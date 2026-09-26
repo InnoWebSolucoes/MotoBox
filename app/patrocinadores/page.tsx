@@ -97,18 +97,18 @@ export default async function PatrocinadoresPage() {
                 <p className="mt-2 text-sm text-ink-400">{nivel.descricao}</p>
               </div>
 
-              <div className={`grid gap-4 ${nivel.cols}`}>
+              <div className={`grid gap-x-6 gap-y-10 ${nivel.cols}`}>
                 {lista.map((p) => (
                   <a
                     key={p.slug}
                     href={p.website}
                     target={p.website !== "#" ? "_blank" : undefined}
                     rel="noopener noreferrer"
-                    className="group card card-hover overflow-hidden"
+                    className="group block"
                   >
-                    {/* Bloco do logótipo */}
+                    {/* Bloco do logótipo: arredondado, sem moldura */}
                     <div
-                      className={`relative grid ${nivel.altura} place-items-center bg-ink-950 transition-colors group-hover:bg-ink-850`}
+                      className={`media relative grid ${nivel.altura} place-items-center bg-ink-900 transition-colors group-hover:bg-ink-850`}
                     >
                       <div className="speed-lines absolute inset-0 opacity-20" aria-hidden />
                       <span
@@ -120,7 +120,7 @@ export default async function PatrocinadoresPage() {
                       </span>
                     </div>
 
-                    <div className="p-5">
+                    <div className="pt-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <h3 className="font-display text-lg uppercase text-white group-hover:text-mb-red transition-colors">
@@ -132,7 +132,7 @@ export default async function PatrocinadoresPage() {
                       </div>
                       <p className="mt-3 text-sm text-ink-500 leading-relaxed">{p.descricao}</p>
                       {p.website !== "#" && (
-                        <span className="mt-3 inline-flex items-center gap-1.5 font-display text-[11px] uppercase tracking-widest text-mb-red">
+                        <span className="mt-3 inline-flex items-center gap-1.5 font-ui text-base text-white transition-colors group-hover:text-mb-red">
                           Visitar
                           <Icon name="arrow" className="size-3.5 transition-transform group-hover:translate-x-1" />
                         </span>
@@ -146,7 +146,7 @@ export default async function PatrocinadoresPage() {
         })}
 
         {/* Tornar-se patrocinador */}
-        <section className="mt-16 relative overflow-hidden border border-ink-700 bg-ink-900">
+        <section className="mt-16 relative overflow-hidden rounded-card bg-ink-900">
           <div className="speed-lines absolute inset-0 opacity-25" aria-hidden />
           <div className="relative p-8 sm:p-12">
             <p className="eyebrow text-mb-red">Parcerias</p>
@@ -162,7 +162,7 @@ export default async function PatrocinadoresPage() {
             <div className="mt-10 grid gap-6 sm:grid-cols-3">
               {VANTAGENS.map((v) => (
                 <div key={v.titulo}>
-                  <span className="grid size-11 place-items-center bg-mb-red/10 text-mb-red">
+                  <span className="grid size-12 place-items-center rounded-full bg-mb-red/12 text-mb-red">
                     <Icon name={v.icone} className="size-5" />
                   </span>
                   <h3 className="mt-4 font-display text-base uppercase text-white">{v.titulo}</h3>

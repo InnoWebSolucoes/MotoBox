@@ -83,19 +83,15 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
       </PageHero>
 
       {/* Barra de filtros */}
-      <div className="sticky top-16 z-30 border-b border-ink-800 bg-ink-950/95 backdrop-blur-md">
+      <div className="sticky top-16 z-30 border-b border-white/6 bg-ink-950/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 sm:px-6 py-3 overflow-x-auto no-scrollbar">
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             {DISCIPLINAS.map((d) => (
               <button
                 key={d}
                 onClick={() => setDisciplina(d)}
                 aria-pressed={disciplina === d}
-                className={`h-8 shrink-0 px-3.5 font-display text-[11px] uppercase tracking-wider transition-colors ${
-                  disciplina === d
-                    ? "bg-mb-red text-white"
-                    : "border border-ink-700 text-ink-400 hover:border-ink-500 hover:text-white"
-                }`}
+                className="chip h-8 px-3.5 text-sm"
               >
                 {d}
               </button>
@@ -103,7 +99,7 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-3">
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-ink-400">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-400">
               <input
                 type="checkbox"
                 checked={mostrarPassados}
@@ -112,15 +108,13 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
               />
               Provas passadas
             </label>
-            <div className="hidden sm:flex border border-ink-700">
+            <div className="hidden sm:flex gap-1 rounded-full bg-ink-800 p-1">
               {(["lista", "grelha"] as const).map((v) => (
                 <button
                   key={v}
                   onClick={() => setVista(v)}
                   aria-pressed={vista === v}
-                  className={`h-8 px-3 font-display text-[11px] uppercase tracking-wider transition-colors ${
-                    vista === v ? "bg-ink-700 text-white" : "text-ink-500 hover:text-white"
-                  }`}
+                  className={`chip h-7 px-3 text-sm capitalize ${vista === v ? "" : "bg-transparent"}`}
                 >
                   {v}
                 </button>
@@ -133,9 +127,9 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         {/* Destaque próxima prova */}
         {proximo && (
-          <div className="mb-12 relative overflow-hidden border border-ink-700">
+          <div className="mb-12 relative overflow-hidden rounded-card">
             <Placeholder nome={[proximo.slug, proximo.imagem]} className="absolute inset-0" />
-            <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/30" />
+            <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/75 to-ink-950/45" />
             <div className="relative grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
               <div>
                 <p className="eyebrow text-mb-red">Próxima prova</p>
@@ -153,7 +147,7 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
                   </ButtonLink>
                 </div>
               </div>
-              <div className="border-t border-ink-800 pt-6 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
+              <div className="border-t border-white/10 pt-6 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
                 <p className="eyebrow text-ink-500 mb-4">Começa em</p>
                 <Countdown data={proximo.dataInicio} size="md" />
               </div>
@@ -163,34 +157,34 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
 
         {/* Lista de eventos */}
         {vista === "lista" ? (
-          <ol className="space-y-3">
+          <ol>
             {filtrados.map((e) => {
               const passado = new Date(e.dataFim).getTime() < agora;
               return (
-                <li key={e.slug}>
+                <li key={e.slug} className="border-b border-white/6 last:border-0">
                   <Link
                     href={`/calendario/${e.slug}`}
-                    className={`group card card-hover flex flex-col sm:flex-row overflow-hidden ${
+                    className={`group grid grid-cols-[3.5rem_1fr] sm:grid-cols-[5rem_1fr_9rem] items-start sm:items-center gap-x-5 sm:gap-x-8 gap-y-3 py-6 transition-opacity ${
                       passado ? "opacity-60 hover:opacity-100" : ""
                     }`}
                   >
-                    {/* Data */}
-                    <div className="flex sm:flex-col items-center sm:justify-center gap-3 sm:gap-0 border-b sm:border-b-0 sm:border-r border-ink-800 bg-ink-950 px-5 py-4 sm:w-28 shrink-0">
-                      <span className="font-display text-3xl leading-none text-white">
+                    {/* Data: coluna tipográfica, sem caixa */}
+                    <div className="text-center">
+                      <span className="block font-display text-4xl sm:text-5xl leading-none text-white">
                         {new Date(e.dataInicio).getDate()}
                       </span>
-                      <span className="eyebrow sm:mt-1.5 text-mb-red">
+                      <span className="eyebrow mt-1.5 block text-mb-red">
                         {new Date(e.dataInicio)
                           .toLocaleDateString("pt-PT", { month: "short" })
                           .replace(".", "")}
                       </span>
-                      <span className="eyebrow sm:mt-0.5 text-ink-600">
+                      <span className="eyebrow mt-0.5 block text-ink-600">
                         {new Date(e.dataInicio).getFullYear()}
                       </span>
                     </div>
 
                     {/* Info */}
-                    <div className="min-w-0 flex-1 p-5">
+                    <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         {e.ronda && <Tag tone="neutral">Ronda {e.ronda}</Tag>}
                         <Tag tone="outline">{e.disciplina}</Tag>
@@ -218,25 +212,25 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
                     </div>
 
                     {/* Acção */}
-                    <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 border-t sm:border-t-0 sm:border-l border-ink-800 px-5 py-4 sm:w-40 shrink-0">
+                    <div className="col-start-2 sm:col-start-auto flex flex-wrap sm:flex-col items-center sm:items-end gap-x-3 gap-y-1 sm:text-right">
                       {e.bilhetes && e.estado !== "concluido" ? (
                         <>
                           <span className="eyebrow text-ink-600">Desde</span>
                           <span className="font-display text-lg text-white">
                             {Math.min(...e.bilhetes.map((b) => b.preco)).toLocaleString("pt-PT")} Kz
                           </span>
-                          <span className="mt-1 inline-flex items-center gap-1.5 font-display text-[11px] uppercase tracking-widest text-mb-red">
+                          <span className="sm:mt-1 inline-flex items-center gap-1.5 font-ui text-sm text-mb-red">
                             Bilhetes
                             <Icon name="arrow" className="size-3.5 transition-transform group-hover:translate-x-1" />
                           </span>
                         </>
                       ) : passado ? (
-                        <span className="inline-flex items-center gap-1.5 font-display text-[11px] uppercase tracking-widest text-ink-500">
+                        <span className="inline-flex items-center gap-1.5 font-ui text-sm text-ink-500">
                           Resultados
                           <Icon name="arrow" className="size-3.5" />
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 font-display text-[11px] uppercase tracking-widest text-ink-400">
+                        <span className="inline-flex items-center gap-1.5 font-ui text-sm text-ink-300 group-hover:text-white transition-colors">
                           Detalhes
                           <Icon name="arrow" className="size-3.5 transition-transform group-hover:translate-x-1" />
                         </span>
@@ -248,14 +242,14 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
             })}
           </ol>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {filtrados.map((e) => (
               <Link
                 key={e.slug}
                 href={`/calendario/${e.slug}`}
-                className="group card card-hover overflow-hidden"
+                className="group block"
               >
-                <div className="relative aspect-[16/10]">
+                <div className="media relative aspect-[16/10]">
                   <Placeholder nome={[e.slug, e.imagem]} className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" />
                   <div className="absolute left-3 top-3 flex gap-2">{estadoTag(e)}</div>
                   <div className="absolute bottom-3 left-3">
@@ -268,7 +262,7 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
                     </p>
                   </div>
                 </div>
-                <div className="p-5">
+                <div className="pt-4">
                   <Tag tone="outline">{e.disciplina}</Tag>
                   <h3 className="mt-2.5 font-display text-lg uppercase leading-tight text-white line-clamp-2 group-hover:text-mb-red transition-colors">
                     {e.titulo}

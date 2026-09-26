@@ -68,7 +68,7 @@ export default async function PaginaLegalPublica(
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <p className="eyebrow mb-3 text-ink-500">Nesta página</p>
-            <ul className="mb-8 space-y-1.5 border-l border-ink-700 pl-3">
+            <ul className="mb-8 space-y-1.5 border-l-2 border-white/8 pl-3.5">
               {pagina.seccoes.map((s, i) => (
                 <li key={i}>
                   <a href={`#s-${i + 1}`} className="text-xs text-ink-400 transition-colors hover:text-mb-red">

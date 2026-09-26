@@ -77,8 +77,8 @@ export function ContactoClient() {
                     {ASSUNTOS.map((a) => (
                       <label
                         key={a.id}
-                        className={`flex cursor-pointer items-start gap-3 border p-4 transition-colors ${
-                          assunto === a.id ? "border-mb-red bg-mb-red/5" : "border-ink-800 hover:border-ink-600"
+                        className={`flex cursor-pointer items-start gap-3 rounded-card p-4 transition-colors ${
+                          assunto === a.id ? "bg-mb-red/10 ring-2 ring-inset ring-mb-red/70" : "bg-ink-900 hover:bg-ink-850"
                         }`}
                       >
                         <input
@@ -129,8 +129,8 @@ export function ContactoClient() {
                           }}
                           placeholder={c.ph}
                           aria-invalid={Boolean(erros[c.k])}
-                          className={`h-12 w-full border bg-ink-950 px-4 text-sm text-white placeholder:text-ink-600 outline-none transition-colors ${
-                            erros[c.k] ? "border-mb-red" : "border-ink-700 focus:border-mb-red"
+                          className={`h-12 w-full bg-ink-900 px-4 text-sm text-white ring-inset placeholder:text-ink-600 outline-none transition-shadow ${
+                            erros[c.k] ? "ring-2 ring-mb-red" : "ring-1 ring-white/10 focus:ring-2 focus:ring-mb-red"
                           }`}
                         />
                         {erros[c.k] && <p className="mt-1.5 text-xs text-mb-red-light">{erros[c.k]}</p>}
@@ -153,8 +153,8 @@ export function ContactoClient() {
                     placeholder="Conte-nos com o máximo de detalhe possível…"
                     aria-invalid={Boolean(erros.mensagem)}
                     aria-label="Mensagem"
-                    className={`w-full resize-y border bg-ink-950 p-4 text-sm text-white placeholder:text-ink-600 outline-none transition-colors ${
-                      erros.mensagem ? "border-mb-red" : "border-ink-700 focus:border-mb-red"
+                    className={`w-full resize-y rounded-card bg-ink-900 p-4 text-sm text-white ring-inset placeholder:text-ink-600 outline-none transition-shadow ${
+                      erros.mensagem ? "ring-2 ring-mb-red" : "ring-1 ring-white/10 focus:ring-2 focus:ring-mb-red"
                     }`}
                   />
                   {erros.mensagem && (
@@ -186,7 +186,7 @@ export function ContactoClient() {
                   { icone: "pin", t: "Localização", v: "Luanda, Angola", href: null },
                 ].map((c) => (
                   <div key={c.t} className="flex items-start gap-3.5">
-                    <span className="grid size-10 shrink-0 place-items-center bg-ink-800 text-mb-red">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-mb-red/12 text-mb-red">
                       <Icon name={c.icone} className="size-4.5" />
                     </span>
                     <div className="min-w-0">
@@ -215,7 +215,7 @@ export function ContactoClient() {
                 A forma mais rápida de falar connosco continua a ser o Instagram: é lá que estamos
                 todos os dias.
               </p>
-              <div className="mt-4 space-y-2">
+              <div className="mt-3">
                 {[
                   { icone: "instagram", label: "@motobox_angola", href: SOCIAIS.instagram },
                   { icone: "facebook", label: "Motobox Angola", href: SOCIAIS.facebook },
@@ -226,11 +226,11 @@ export function ContactoClient() {
                     href={r.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-3 border border-ink-800 p-3 transition-colors hover:border-mb-red"
+                    className="group flex items-center gap-3 border-b border-white/6 py-3 last:border-0 last:pb-0"
                   >
                     <Icon name={r.icone} className="size-4.5 shrink-0 text-ink-400 group-hover:text-mb-red transition-colors" />
-                    <span className="min-w-0 flex-1 truncate text-sm text-ink-200">{r.label}</span>
-                    <Icon name="arrow" className="size-3.5 shrink-0 text-ink-700 transition-transform group-hover:translate-x-1" />
+                    <span className="min-w-0 flex-1 truncate text-sm text-ink-200 group-hover:text-white transition-colors">{r.label}</span>
+                    <Icon name="arrow" className="size-4 shrink-0 text-ink-600 transition-all group-hover:translate-x-1 group-hover:text-white" />
                   </a>
                 ))}
               </div>
@@ -245,7 +245,7 @@ export function ContactoClient() {
               </p>
             </div>
 
-            <div className="card border-mb-red/30 bg-mb-red/5 p-6">
+            <div className="card bg-mb-red/8 p-6">
               <h2 className="eyebrow text-mb-red mb-3">Organiza uma prova?</h2>
               <p className="text-sm text-ink-300 leading-relaxed">
                 Divulgamos gratuitamente no calendário nacional qualquer prova, passeio ou

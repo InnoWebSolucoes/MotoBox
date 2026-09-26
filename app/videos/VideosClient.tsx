@@ -64,11 +64,11 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
 
       {/* Leitor em destaque */}
       {activo && (
-        <section className="border-b border-ink-800 bg-ink-900">
+        <section className="bg-ink-900">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
             <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr]">
               <div>
-                <div className="relative aspect-video overflow-hidden border border-ink-700">
+                <div className="media relative aspect-video bg-ink-950">
                   {aReproduzir && activo.videoId ? (
                     <iframe
                       key={activo.videoId}
@@ -91,7 +91,7 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
                           <Icon name="play" className="size-8 translate-x-1" />
                         </button>
                       </div>
-                      <span className="absolute bottom-3 right-3 bg-ink-950/90 px-2.5 py-1 font-mono text-xs text-white">
+                      <span className="absolute bottom-3 right-3 rounded-full bg-ink-950/80 px-2.5 py-1 font-mono text-xs text-white backdrop-blur-sm">
                         {activo.duracao}
                       </span>
                     </>
@@ -121,7 +121,7 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
               {/* Lista lateral */}
               <div>
                 <p className="eyebrow text-ink-500 mb-3">A seguir</p>
-                <div className="space-y-2 lg:max-h-[520px] lg:overflow-y-auto lg:pr-1">
+                <div className="lg:max-h-[520px] lg:overflow-y-auto lg:pr-1">
                   {videos
                     .filter((v) => v.slug !== activo.slug)
                     .slice(0, 6)
@@ -129,17 +129,21 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
                       <button
                         key={v.slug}
                         onClick={() => setActivo(v)}
-                        className="group flex w-full gap-3 border border-ink-800 text-left transition-colors hover:border-mb-red/60 hover:bg-ink-850"
+                        className="group flex w-full items-center gap-4 border-b border-white/6 py-3 text-left last:border-0"
                       >
-                        <div className="relative w-32 shrink-0 aspect-video">
-                          <Placeholder nome={[v.slug, v.thumbnail]} className="absolute inset-0" />
-                          <span className="absolute bottom-1 right-1 bg-ink-950/90 px-1 font-mono text-[10px] text-white">
+                        <div className="media relative w-32 shrink-0 aspect-video">
+                          <Placeholder
+                            nome={[v.slug, v.thumbnail]}
+                            className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                            tamanhos="128px"
+                          />
+                          <span className="absolute bottom-1.5 right-1.5 font-mono text-[10px] text-white [text-shadow:0_1px_4px_rgb(0_0_0/0.8)]">
                             {v.duracao}
                           </span>
                         </div>
-                        <div className="min-w-0 flex-1 py-2 pr-2">
+                        <div className="min-w-0 flex-1">
                           <p className="eyebrow text-mb-red">{v.categoria}</p>
-                          <p className="mt-1 text-xs text-white line-clamp-2 group-hover:text-mb-red transition-colors">
+                          <p className="mt-1 font-display text-sm uppercase leading-snug text-white line-clamp-2 group-hover:text-mb-red transition-colors">
                             {v.titulo}
                           </p>
                           <p className="mt-1 text-[11px] text-ink-600">
@@ -157,17 +161,13 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
 
       {/* Filtros e grelha */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
-        <div className="mb-8 flex gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="mb-9 flex gap-2 overflow-x-auto no-scrollbar">
           {CATEGORIAS.map((c) => (
             <button
               key={c}
               onClick={() => setCategoria(c)}
               aria-pressed={categoria === c}
-              className={`h-9 shrink-0 px-4 font-display text-xs uppercase tracking-wider transition-colors ${
-                categoria === c
-                  ? "bg-mb-red text-white"
-                  : "border border-ink-700 text-ink-400 hover:text-white"
-              }`}
+              className="chip"
             >
               {c}
             </button>
@@ -180,7 +180,7 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
             descricao="Os próximos highlights, entrevistas e onboards aparecem aqui."
           />
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtrados.map((v) => (
               <button
                 key={v.slug}
@@ -189,35 +189,30 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
                   setActivo(v);
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="group card card-hover overflow-hidden text-left"
+                className="group flex w-full flex-col self-start text-left"
               >
-                <div className="relative aspect-video">
+                <div className="media relative aspect-video">
                   <Placeholder
                     nome={[v.slug, v.thumbnail]}
                     className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                    tamanhos="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
                   />
-                  <div className="absolute inset-0 grid place-items-center opacity-0 transition-opacity group-hover:opacity-100">
-                    <span className="grid size-14 place-items-center rounded-full bg-mb-red text-white">
-                      <Icon name="play" className="size-5 translate-x-0.5" />
-                    </span>
-                  </div>
-                  <span className="absolute bottom-2 right-2 bg-ink-950/90 px-2 py-0.5 font-mono text-[11px] text-white">
+                  <span className="absolute bottom-3 left-3 grid size-10 place-items-center rounded-full bg-white/15 text-white ring-2 ring-white/80 backdrop-blur-sm transition-colors group-hover:bg-mb-red group-hover:ring-mb-red">
+                    <Icon name="play" className="size-4 translate-x-px" />
+                  </span>
+                  <span className="absolute bottom-3.5 right-3 font-mono text-xs text-white [text-shadow:0_1px_4px_rgb(0_0_0/0.8)]">
                     {v.duracao}
                   </span>
-                  <div className="absolute left-2 top-2">
-                    <Tag tone="neutral" className="!text-[9px]">{v.categoria}</Tag>
-                  </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-display text-sm uppercase leading-snug text-white line-clamp-2 group-hover:text-mb-red transition-colors">
-                    {v.titulo}
-                  </h3>
-                  <p className="mt-2 flex items-center gap-2 text-[11px] text-ink-600">
-                    <span>{v.visualizacoes.toLocaleString("pt-PT")} visualizações</span>
-                    <span className="size-1 rounded-full bg-ink-700" />
-                    <span>{formatData(v.data, { day: "2-digit", month: "short" })}</span>
-                  </p>
-                </div>
+                <p className="eyebrow mt-3 text-mb-red">{v.categoria}</p>
+                <h3 className="mt-1.5 font-display text-lg uppercase leading-tight text-white line-clamp-2 group-hover:text-mb-red transition-colors">
+                  {v.titulo}
+                </h3>
+                <p className="mt-1.5 flex items-center gap-2 text-xs text-ink-500">
+                  <span>{v.visualizacoes.toLocaleString("pt-PT")} visualizações</span>
+                  <span className="size-1 rounded-full bg-ink-600" />
+                  <span>{formatData(v.data, { day: "2-digit", month: "short" })}</span>
+                </p>
               </button>
             ))}
           </div>

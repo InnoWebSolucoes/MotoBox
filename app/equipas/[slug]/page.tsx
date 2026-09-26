@@ -43,7 +43,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
 
   return (
     <>
-      <header className="relative overflow-hidden border-b border-ink-800">
+      <header className="relative overflow-hidden">
         {/* Fotografia da equipa, esbatida sob a cor do clube */}
         <Placeholder nome={equipa.slug} className="absolute inset-0 opacity-30" tamanhos="100vw" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/30" aria-hidden />
@@ -52,19 +52,19 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
           style={{ background: `linear-gradient(115deg, ${equipa.cor} 0%, transparent 62%)` }}
           aria-hidden
         />
-        <div className="grid-bg absolute inset-0 opacity-20" aria-hidden />
+        <div className="stripes absolute inset-0" aria-hidden />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-12">
           <Link
             href="/equipas"
-            className="inline-flex items-center gap-2 font-display text-[11px] uppercase tracking-widest text-ink-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 font-ui text-sm text-ink-400 hover:text-white transition-colors"
           >
             <span aria-hidden>←</span> Equipas e clubes
           </Link>
 
           <div className="mt-7 flex flex-wrap items-start gap-6">
             <span
-              className="grid size-24 shrink-0 place-items-center font-display text-2xl text-white"
+              className="grid size-24 shrink-0 place-items-center rounded-full font-display text-2xl text-white ring-2 ring-white/15"
               style={{ background: equipa.cor }}
             >
               {equipa.logo}
@@ -105,7 +105,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
                       href={equipa.redes.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="grid size-10 place-items-center border border-ink-700 text-ink-300 transition-colors hover:border-mb-red hover:text-white"
+                      className="grid size-10 place-items-center rounded-full bg-ink-800 text-ink-300 transition-colors hover:bg-mb-red hover:text-white"
                       aria-label="Instagram"
                     >
                       <Icon name="instagram" className="size-4.5" />
@@ -116,7 +116,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
                       href={equipa.redes.facebook}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="grid size-10 place-items-center border border-ink-700 text-ink-300 transition-colors hover:border-mb-red hover:text-white"
+                      className="grid size-10 place-items-center rounded-full bg-ink-800 text-ink-300 transition-colors hover:bg-mb-red hover:text-white"
                       aria-label="Facebook"
                     >
                       <Icon name="facebook" className="size-4.5" />
@@ -131,8 +131,8 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
 
       {/* Estatísticas */}
       {equipa.estatisticas.pontos > 0 && (
-        <section className="border-b border-ink-800 bg-ink-900">
-          <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-ink-800 px-4 sm:grid-cols-4 sm:px-6">
+        <section className="bg-ink-900">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 px-4 sm:grid-cols-4 sm:px-6">
             {[
               ["Pontos", equipa.estatisticas.pontos],
               ["Vitórias", equipa.estatisticas.vitorias],
@@ -161,36 +161,46 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
                 <h2 className="eyebrow accent-bar text-white">Pilotos</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {seus.map((p) => (
-                    <Link key={p.slug} href={`/pilotos/${p.slug}`} className="group card card-hover overflow-hidden">
-                      <div className="relative aspect-[16/10]">
-                        <Retrato
-                          nome={p.slug}
-                          iniciais={iniciais(p.nome)}
-                          cor={equipa.cor}
-                          className="absolute inset-0 [container-type:size] transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <span className="absolute right-3 top-3 font-display text-4xl leading-none text-white/15">
-                          {p.numero}
-                        </span>
-                        <div className="absolute inset-x-0 bottom-0 p-4">
-                          <p className="eyebrow text-mb-red">{p.categoria}</p>
-                          <p className="mt-1 font-display text-lg uppercase text-white group-hover:text-mb-red transition-colors">
-                            {p.nome}
-                          </p>
-                        </div>
+                    <Link
+                      key={p.slug}
+                      href={`/pilotos/${p.slug}`}
+                      className="group relative isolate flex aspect-[16/11] flex-col justify-between overflow-hidden rounded-card p-5"
+                    >
+                      <Retrato
+                        nome={p.slug}
+                        iniciais={iniciais(p.nome)}
+                        cor={equipa.cor}
+                        className="absolute inset-0 -z-20 [container-type:size] transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div
+                        className="absolute inset-0 -z-10"
+                        style={{
+                          // A cor da equipa a subir de baixo, como nos cartões de pódio.
+                          background: `linear-gradient(to top, ${equipa.cor} 0%, color-mix(in srgb, ${equipa.cor} 65%, transparent) 30%, transparent 68%)`,
+                        }}
+                        aria-hidden
+                      />
+                      <span className="self-end font-display text-4xl leading-none text-white/25">
+                        {p.numero}
+                      </span>
+                      <div>
+                        <p className="eyebrow text-white/80">{p.categoria}</p>
+                        <p className="mt-1 font-display text-xl uppercase leading-tight text-white">
+                          {p.nome}
+                        </p>
+                        <dl className="mt-3 flex gap-6">
+                          {[
+                            ["Pts", p.estatisticas.pontos],
+                            ["Vit", p.estatisticas.vitorias],
+                            ["Pód", p.estatisticas.podios],
+                          ].map(([k, v]) => (
+                            <div key={k as string}>
+                              <dd className="font-display text-lg leading-none text-white tabular-nums">{v}</dd>
+                              <dt className="eyebrow mt-1 text-white/65">{k}</dt>
+                            </div>
+                          ))}
+                        </dl>
                       </div>
-                      <dl className="grid grid-cols-3 divide-x divide-ink-800 border-t border-ink-800">
-                        {[
-                          ["Pts", p.estatisticas.pontos],
-                          ["Vit", p.estatisticas.vitorias],
-                          ["Pód", p.estatisticas.podios],
-                        ].map(([k, v]) => (
-                          <div key={k as string} className="p-2.5 text-center">
-                            <dd className="font-display text-base text-white tabular-nums">{v}</dd>
-                            <dt className="eyebrow text-ink-600">{k}</dt>
-                          </div>
-                        ))}
-                      </dl>
                     </Link>
                   ))}
                 </div>
@@ -209,7 +219,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
                   ["Membros", String(equipa.membros)],
                   ["Material", equipa.motas.join(", ")],
                 ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-4 border-b border-ink-800 pb-3 last:border-0 last:pb-0">
+                  <div key={k} className="flex justify-between gap-4 border-b border-white/6 pb-3 last:border-0 last:pb-0">
                     <dt className="shrink-0 text-xs text-ink-500">{k}</dt>
                     <dd className="text-sm text-white text-right">{v}</dd>
                   </div>
@@ -244,7 +254,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
                   {outras.map((o) => (
                     <Link key={o.slug} href={`/equipas/${o.slug}`} className="group flex items-center gap-3">
                       <span
-                        className="grid size-9 shrink-0 place-items-center font-display text-[10px] text-white"
+                        className="grid size-9 shrink-0 place-items-center rounded-full font-display text-[10px] text-white"
                         style={{ background: o.cor }}
                       >
                         {o.logo}

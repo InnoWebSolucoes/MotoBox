@@ -58,9 +58,9 @@ export default function CookieBanner() {
     <div
       role="dialog"
       aria-label={t("cookies.preferencias")}
-      className="fixed inset-x-0 bottom-0 z-90 border-t border-ink-700 bg-ink-900/98 backdrop-blur"
+      className="fixed inset-x-3 bottom-3 z-90 mx-auto max-w-5xl rounded-2xl bg-ink-900/95 shadow-2xl shadow-black/60 ring-1 ring-white/8 backdrop-blur-md sm:inset-x-5 sm:bottom-5"
     >
-      <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
+      <div className="px-5 py-5 sm:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
             <p className="font-display text-sm uppercase tracking-wider text-white">
@@ -78,21 +78,21 @@ export default function CookieBanner() {
             <button
               type="button"
               onClick={() => setDetalhe((d) => !d)}
-              className="h-10 border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-ink-200 transition-colors hover:border-ink-400 hover:text-white"
+              className="h-10 flex-auto rounded-full px-4 font-ui text-[15px] text-ink-200 transition-colors hover:bg-white/8 hover:text-white"
             >
               {t("cookies.personalizar")}
             </button>
             <button
               type="button"
               onClick={() => guardar(false, false)}
-              className="h-10 border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-ink-800"
+              className="h-10 flex-auto rounded-full bg-ink-800 px-5 font-ui text-[15px] text-white transition-colors hover:bg-ink-700"
             >
               {t("cookies.soEssenciais")}
             </button>
             <button
               type="button"
               onClick={() => guardar(true, true)}
-              className="h-10 bg-mb-red px-5 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark"
+              className="h-10 flex-auto rounded-full bg-mb-red px-5 font-ui text-[15px] text-white transition-colors hover:bg-mb-red-dark"
             >
               {t("cookies.aceitarTudo")}
             </button>
@@ -100,8 +100,8 @@ export default function CookieBanner() {
         </div>
 
         {detalhe && (
-          <div className="mt-4 grid gap-2 border-t border-ink-800 pt-4 sm:grid-cols-3">
-            <div className="border border-ink-700 bg-ink-950 p-3">
+          <div className="mt-5 grid gap-2.5 border-t border-white/6 pt-5 sm:grid-cols-3">
+            <div className="rounded-xl bg-ink-950 p-4">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm text-white">{t("cookies.essenciais")}</p>
                 <span className="text-[10px] uppercase tracking-widest text-ok">{t("cookies.sempreActivo")}</span>
@@ -109,27 +109,27 @@ export default function CookieBanner() {
               <p className="mt-1 text-xs text-ink-500">{t("cookies.essenciaisDesc")}</p>
             </div>
 
-            <label className="flex cursor-pointer items-start justify-between gap-2 border border-ink-700 bg-ink-950 p-3">
+            <label className="flex cursor-pointer items-start justify-between gap-2 rounded-xl bg-ink-950 p-4 transition-colors hover:bg-ink-850">
               <span>
                 <span className="block text-sm text-white">{t("cookies.analiticos")}</span>
                 <span className="mt-1 block text-xs text-ink-500">{t("cookies.analiticosDesc")}</span>
               </span>
-              <input type="checkbox" checked={analiticos} onChange={(e) => setAnaliticos(e.target.checked)} />
+              <input type="checkbox" checked={analiticos} onChange={(e) => setAnaliticos(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[#e10600]" />
             </label>
 
-            <label className="flex cursor-pointer items-start justify-between gap-2 border border-ink-700 bg-ink-950 p-3">
+            <label className="flex cursor-pointer items-start justify-between gap-2 rounded-xl bg-ink-950 p-4 transition-colors hover:bg-ink-850">
               <span>
                 <span className="block text-sm text-white">{t("cookies.marketing")}</span>
                 <span className="mt-1 block text-xs text-ink-500">{t("cookies.marketingDesc")}</span>
               </span>
-              <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
+              <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[#e10600]" />
             </label>
 
             <div className="sm:col-span-3">
               <button
                 type="button"
                 onClick={() => guardar(analiticos, marketing)}
-                className="h-10 w-full border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:border-mb-red sm:w-auto"
+                className="h-10 w-full rounded-full bg-white px-5 font-ui text-[15px] text-ink-950 transition-colors hover:bg-ink-200 sm:w-auto"
               >
                 {t("cookies.guardarPrefs")}
               </button>

@@ -16,8 +16,8 @@ export function NovaPalavraClient() {
   const [ocupado, setOcupado] = useState(false);
 
   const campo =
-    "w-full border border-ink-700 bg-ink-950 px-3 py-2.5 text-sm text-white " +
-    "placeholder:text-ink-600 outline-none transition-colors focus:border-mb-red";
+    "h-12 w-full bg-ink-900 px-4 text-sm text-white ring-1 ring-inset ring-white/10 " +
+    "placeholder:text-ink-600 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
   const etiqueta =
     "mb-1.5 block text-[11px] font-display uppercase tracking-widest text-ink-300";
 
@@ -41,7 +41,7 @@ export function NovaPalavraClient() {
       <h1 className="title-xl mb-6 text-3xl text-white">{t("auth.novaPalavra")}</h1>
 
       {erro && (
-        <p role="alert" className="mb-4 border border-mb-red/40 bg-mb-red/10 px-3 py-2.5 text-sm text-mb-red">
+        <p role="alert" className="mb-4 rounded-xl bg-mb-red/12 px-4 py-3 text-sm text-mb-red-light">
           {erro}
         </p>
       )}
@@ -62,7 +62,7 @@ export function NovaPalavraClient() {
         </label>
 
         <button type="submit" disabled={ocupado}
-          className="h-12 w-full bg-mb-red font-display text-sm uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark disabled:opacity-50">
+          className="h-12 w-full rounded-full bg-mb-red font-ui text-base text-white transition-colors hover:bg-mb-red-dark disabled:opacity-50">
           {ocupado ? t("auth.aguarde") : t("comum.guardar")}
         </button>
       </form>

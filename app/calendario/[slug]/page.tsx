@@ -40,13 +40,13 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
   return (
     <>
       {/* Hero */}
-      <header className="relative overflow-hidden border-b border-ink-800">
+      <header className="relative overflow-hidden">
         <Placeholder nome={[evento.slug, evento.imagem]} className="absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/95 via-ink-950/60 to-ink-950/25" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-14 sm:py-20">
           <Link
             href="/calendario"
-            className="inline-flex items-center gap-2 font-display text-[11px] uppercase tracking-widest text-ink-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 font-ui text-sm text-ink-200 [text-shadow:0_1px_6px_rgb(0_0_0/0.6)] hover:text-white transition-colors"
           >
             <span aria-hidden>←</span> Calendário
           </Link>
@@ -108,15 +108,15 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
                   {dias.map((dia) => (
                     <div key={dia}>
                       <p className="font-display text-lg uppercase text-mb-red mb-3">{dia}</p>
-                      <div className="card divide-y divide-ink-800">
+                      <div>
                         {evento.horarios
                           .filter((h) => h.dia === dia)
                           .map((h, i) => (
-                            <div key={i} className="flex items-center gap-5 p-4">
+                            <div key={i} className="flex items-center gap-5 border-b border-white/6 py-3.5 last:border-0">
                               <span className="font-mono text-sm text-white tabular-nums w-14 shrink-0">
                                 {h.hora}
                               </span>
-                              <span className="h-8 w-px bg-ink-700 shrink-0" />
+                              <span className="h-5 w-0.5 rounded-full bg-mb-red/60 shrink-0" />
                               <span className="text-sm text-ink-300">{h.sessao}</span>
                             </div>
                           ))}
@@ -138,15 +138,15 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
                         <p className="font-display text-lg uppercase text-white">{c.categoria}</p>
                         <Link
                           href={`/resultados/${c.slug}`}
-                          className="eyebrow text-mb-red hover:text-mb-red-light"
+                          className="font-ui text-sm text-mb-red hover:text-mb-red-light transition-colors"
                         >
                           Detalhe →
                         </Link>
                       </div>
-                      <div className="card overflow-hidden">
-                        <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto] gap-4 border-b border-ink-800 bg-ink-950 px-4 py-2.5">
+                      <div>
+                        <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto] gap-4 border-b border-white/10 pb-2.5">
                           {["Pos", "Piloto", "Tempo", "Pts"].map((h) => (
-                            <span key={h} className="eyebrow text-ink-600">
+                            <span key={h} className="eyebrow text-ink-500">
                               {h}
                             </span>
                           ))}
@@ -154,7 +154,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
                         {c.resultados.map((r) => (
                           <div
                             key={r.pilotoSlug}
-                            className="grid grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_1fr_auto_auto] items-center gap-4 border-b border-ink-800 px-4 py-3 last:border-0"
+                            className="grid grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_1fr_auto_auto] items-center gap-4 border-b border-white/6 py-3 last:border-0"
                           >
                             <PosicaoBadge posicao={r.posicao} size="sm" />
                             <Link href={`/pilotos/${r.pilotoSlug}`} className="min-w-0 group">
@@ -195,7 +195,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
                 ]
                   .filter((x): x is [string, string] => Boolean(x))
                   .map(([k, v]) => (
-                    <div key={k} className="flex justify-between gap-4 border-b border-ink-800 pb-3 last:border-0 last:pb-0">
+                    <div key={k} className="flex justify-between gap-4 border-b border-white/6 pb-3 last:border-0 last:pb-0">
                       <dt className="text-xs text-ink-500">{k}</dt>
                       <dd className="text-sm text-white text-right">{v}</dd>
                     </div>
@@ -203,7 +203,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
               </dl>
 
               {evento.recordeVolta && (
-                <div className="mt-5 border border-mb-red/30 bg-mb-red/5 p-4">
+                <div className="mt-5 rounded-xl bg-mb-red/10 p-4">
                   <p className="eyebrow text-mb-red">Recorde de volta</p>
                   <p className="mt-1.5 font-mono text-xl text-white tabular-nums">
                     {evento.recordeVolta.tempo}
@@ -221,7 +221,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
                 <h3 className="eyebrow text-mb-red mb-4">Bilhetes</h3>
                 <div className="space-y-2.5">
                   {evento.bilhetes.map((b) => (
-                    <div key={b.id} className="flex items-center justify-between gap-3 border-b border-ink-800 pb-2.5 last:border-0 last:pb-0">
+                    <div key={b.id} className="flex items-center justify-between gap-3 border-b border-white/6 pb-2.5 last:border-0 last:pb-0">
                       <div className="min-w-0">
                         <p className="text-sm text-white truncate">{b.nome}</p>
                         <p className="text-xs text-ink-600">{b.disponiveis} disponíveis</p>
@@ -244,7 +244,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
                 {(["whatsapp", "facebook", "instagram", "share"] as const).map((r) => (
                   <span
                     key={r}
-                    className="grid size-10 cursor-pointer place-items-center border border-ink-700 text-ink-400 transition-colors hover:border-mb-red hover:text-white"
+                    className="grid size-10 cursor-pointer place-items-center rounded-full bg-ink-800 text-ink-300 transition-colors hover:bg-mb-red hover:text-white"
                   >
                     <Icon name={r} className="size-4.5" />
                   </span>

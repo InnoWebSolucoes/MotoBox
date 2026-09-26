@@ -55,25 +55,25 @@ export default async function ForumPage() {
             {/* Categorias */}
             <section>
               <h2 className="eyebrow accent-bar text-white">Categorias</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
                 {categoriasForum.map((c) => (
                   <Link
                     key={c.slug}
                     href={`/forum#${c.slug}`}
-                    className="group card card-hover flex items-start gap-4 p-5"
+                    className="group flex items-start gap-4"
                   >
                     <span
-                      className="grid size-11 shrink-0 place-items-center text-white"
+                      className="grid size-11 shrink-0 place-items-center rounded-full text-white"
                       style={{ background: c.cor }}
                     >
                       <Icon name={c.icone} className="size-5" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-display text-base uppercase text-white group-hover:text-mb-red transition-colors">
+                      <h3 className="font-display text-lg uppercase leading-tight text-white group-hover:text-mb-red transition-colors">
                         {c.nome}
                       </h3>
-                      <p className="mt-1 text-xs text-ink-500 leading-relaxed">{c.descricao}</p>
-                      <p className="mt-2.5 flex gap-4 text-[11px] text-ink-600">
+                      <p className="mt-1 text-sm text-ink-400 leading-relaxed">{c.descricao}</p>
+                      <p className="mt-2 flex gap-4 text-xs text-ink-500">
                         <span>{c.topicos.toLocaleString("pt-PT")} tópicos</span>
                         <span>{c.mensagens.toLocaleString("pt-PT")} mensagens</span>
                       </p>
@@ -87,7 +87,7 @@ export default async function ForumPage() {
             {fixados.length > 0 && (
               <section>
                 <h2 className="eyebrow accent-bar text-white">Fixados</h2>
-                <div className="card divide-y divide-ink-800">
+                <div>
                   {fixados.map((t) => (
                     <TopicoLinha key={t.id} topico={t} />
                   ))}
@@ -97,18 +97,11 @@ export default async function ForumPage() {
 
             {/* Tópicos recentes */}
             <section>
-              <div className="mb-3.5 flex items-center justify-between">
+              <div className="mb-2 flex flex-wrap items-end justify-between gap-3">
                 <h2 className="eyebrow accent-bar mb-0 text-white after:hidden">Discussões recentes</h2>
-                <div className="flex gap-1.5">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar">
                   {["Recentes", "Populares", "Sem resposta"].map((f, i) => (
-                    <button
-                      key={f}
-                      className={`h-8 px-3 font-display text-[11px] uppercase tracking-wider transition-colors ${
-                        i === 0
-                          ? "bg-mb-red text-white"
-                          : "border border-ink-700 text-ink-400 hover:text-white"
-                      }`}
-                    >
+                    <button key={f} aria-pressed={i === 0} className="chip h-8 px-3.5 text-sm">
                       {f}
                     </button>
                   ))}
@@ -120,7 +113,7 @@ export default async function ForumPage() {
                   descricao="As conversas mais recentes da comunidade aparecem aqui."
                 />
               ) : (
-                <div className="card divide-y divide-ink-800">
+                <div>
                   {recentes.map((t) => (
                     <TopicoLinha key={t.id} topico={t} />
                   ))}
@@ -130,8 +123,8 @@ export default async function ForumPage() {
           </div>
 
           {/* Barra lateral */}
-          <aside className="space-y-4">
-            <div className="card p-5">
+          <aside className="space-y-10">
+            <div className="card p-6">
               <h2 className="eyebrow text-mb-red mb-3">Participar</h2>
               <p className="text-sm text-ink-400 leading-relaxed">
                 Para publicar e responder precisa de uma conta Motobox. É gratuita e leva um minuto.
@@ -144,9 +137,9 @@ export default async function ForumPage() {
               </Button>
             </div>
 
-            <div className="card p-5">
-              <h2 className="eyebrow text-mb-red mb-3.5">Regras do fórum</h2>
-              <ul className="space-y-2.5">
+            <div>
+              <h2 className="eyebrow text-mb-red mb-4">Regras do fórum</h2>
+              <ul className="space-y-3">
                 {[
                   "Respeito em primeiro lugar. Sem insultos.",
                   "Sem publicidade não autorizada.",
@@ -154,17 +147,17 @@ export default async function ForumPage() {
                   "Pesquise antes de abrir um tópico novo.",
                   "Sem conteúdo fora do tema motard.",
                 ].map((r) => (
-                  <li key={r} className="flex gap-2.5 text-xs text-ink-400 leading-relaxed">
-                    <Icon name="check" className="size-3.5 shrink-0 text-mb-red mt-0.5" />
+                  <li key={r} className="flex gap-2.5 text-sm text-ink-400 leading-relaxed">
+                    <Icon name="check" className="size-4 shrink-0 text-mb-red mt-0.5" />
                     {r}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="card p-5">
-              <h2 className="eyebrow text-mb-red mb-3.5">Membros activos</h2>
-              <div className="space-y-3">
+            <div>
+              <h2 className="eyebrow text-mb-red mb-2">Membros activos</h2>
+              <div>
                 {[
                   { n: "Bruno_T12", c: "#e10600", m: 1284 },
                   { n: "MecanicoDoBairro", c: "#f59e0b", m: 987 },
@@ -172,15 +165,15 @@ export default async function ForumPage() {
                   { n: "Bino_MX", c: "#0ea5e9", m: 645 },
                   { n: "AnalistaMX", c: "#a855f7", m: 519 },
                 ].map((m) => (
-                  <div key={m.n} className="flex items-center gap-3">
+                  <div key={m.n} className="flex items-center gap-3 border-b border-white/6 py-3 last:border-0">
                     <span
-                      className="grid size-8 shrink-0 place-items-center font-display text-[10px] text-white"
+                      className="grid size-8 shrink-0 place-items-center rounded-full font-display text-[10px] text-white"
                       style={{ background: m.c }}
                     >
                       {m.n.slice(0, 2).toUpperCase()}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-sm text-ink-300">{m.n}</span>
-                    <span className="text-xs text-ink-600 tabular-nums">{m.m}</span>
+                    <span className="font-display text-sm text-ink-400 tabular-nums">{m.m}</span>
                   </div>
                 ))}
               </div>
@@ -194,9 +187,12 @@ export default async function ForumPage() {
 
 function TopicoLinha({ topico: t }: { topico: TopicoForum }) {
   return (
-    <Link href={`/forum/${t.id}`} className="group flex gap-4 p-4 hover:bg-ink-850 transition-colors">
+    <Link
+      href={`/forum/${t.id}`}
+      className="group flex gap-4 border-b border-white/6 py-5 last:border-0"
+    >
       <span
-        className="grid size-10 shrink-0 place-items-center font-display text-xs text-white"
+        className="grid size-10 shrink-0 place-items-center rounded-full font-display text-xs text-white"
         style={{ background: t.avatarCor }}
       >
         {t.autorAvatar}

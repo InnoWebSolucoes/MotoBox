@@ -112,7 +112,7 @@ export default async function SobrePage() {
       />
 
       {/* Manifesto */}
-      <section className="border-b border-ink-800">
+      <section>
         <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 py-16 lg:grid-cols-2 lg:items-center">
           <div>
             <h2 className="eyebrow accent-bar text-white">A nossa história</h2>
@@ -142,8 +142,9 @@ export default async function SobrePage() {
             </div>
           </div>
 
-          <div className="relative aspect-[4/3] overflow-hidden border border-ink-700">
+          <div className="media relative aspect-[4/3]">
             <Placeholder nome="kilamba" className="absolute inset-0" />
+            <div className="absolute inset-0 bg-ink-950/60" aria-hidden />
             <div className="absolute inset-0 grid place-items-center">
               <p className="max-w-xs px-6 text-center font-display text-xl uppercase leading-tight text-white">
                 “Queria que houvesse um sítio onde tudo isto estivesse.
@@ -155,8 +156,8 @@ export default async function SobrePage() {
       </section>
 
       {/* Números */}
-      <section className="border-b border-ink-800 bg-ink-900">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-ink-800 px-4 sm:grid-cols-4 sm:px-6">
+      <section className="bg-ink-900">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 px-4 sm:grid-cols-4 sm:px-6">
           {[
             [eventos.length, "Provas no calendário"],
             [pilotos.length, "Pilotos registados"],
@@ -174,13 +175,13 @@ export default async function SobrePage() {
       {/* Missão */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <h2 className="title-xl text-3xl sm:text-4xl">A nossa missão</h2>
-        <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-9 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
           {VALORES.map((v) => (
-            <div key={v.titulo} className="card p-6">
-              <span className="grid size-11 place-items-center bg-mb-red/10 text-mb-red">
+            <div key={v.titulo}>
+              <span className="grid size-12 place-items-center rounded-full bg-mb-red/12 text-mb-red">
                 <Icon name={v.icone} className="size-5" />
               </span>
-              <h3 className="mt-4 font-display text-lg uppercase leading-tight text-white">
+              <h3 className="mt-5 font-display text-xl uppercase leading-tight text-white">
                 {v.titulo}
               </h3>
               <p className="mt-2.5 text-sm text-ink-500 leading-relaxed">{v.texto}</p>
@@ -190,14 +191,14 @@ export default async function SobrePage() {
       </section>
 
       {/* Cronologia */}
-      <section className="border-y border-ink-800 bg-ink-900">
+      <section className="bg-ink-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
           <h2 className="title-xl text-3xl sm:text-4xl">O percurso</h2>
-          <ol className="mt-10 relative border-l border-ink-700 pl-8 space-y-9">
+          <ol className="mt-10 relative border-l-2 border-white/8 pl-8 space-y-9">
             {MARCOS.map((m) => (
               <li key={m.ano} className="relative">
                 <span
-                  className="absolute -left-[2.3rem] top-1 grid size-4 place-items-center rounded-full border-2 border-ink-900 bg-mb-red"
+                  className="absolute -left-[2.4rem] top-1.5 grid size-4 place-items-center rounded-full ring-4 ring-ink-900 bg-mb-red"
                   aria-hidden
                 />
                 <p className="font-display text-2xl text-mb-red">{m.ano}</p>
@@ -215,30 +216,30 @@ export default async function SobrePage() {
         <p className="mt-3 max-w-2xl text-sm text-ink-400">
           A Motobox é um projecto pequeno, feito por poucas pessoas e por uma comunidade que colabora.
         </p>
-        <div className="mt-9 grid gap-5 sm:grid-cols-3">
+        <div className="mt-9 grid gap-x-6 gap-y-10 sm:grid-cols-3">
           {EQUIPA.map((p) => (
-            <div key={p.nome} className="card overflow-hidden">
+            <div key={p.nome}>
               <div
-                className="relative aspect-[4/3]"
+                className="media relative aspect-[4/3]"
                 style={{ background: `linear-gradient(155deg, ${p.cor} 0%, #0a0a0c 80%)` }}
               >
                 <div className="speed-lines absolute inset-0 opacity-40" />
                 <div className="absolute inset-0 grid place-items-center">
                   <span className="font-display text-6xl text-white/15">{p.iniciais}</span>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-900 to-transparent p-5">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-950/90 to-transparent p-5">
                   <p className="font-display text-lg uppercase text-white">{p.nome}</p>
                   <p className="eyebrow mt-0.5 text-mb-red">{p.papel}</p>
                 </div>
               </div>
-              <p className="p-5 text-sm text-ink-400 leading-relaxed">{p.bio}</p>
+              <p className="pt-4 text-sm text-ink-400 leading-relaxed">{p.bio}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Visão futura */}
-      <section className="border-t border-ink-800 bg-ink-900">
+      <section className="bg-ink-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
@@ -267,16 +268,16 @@ export default async function SobrePage() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
               {[
                 { t: "Clubes de jipes", d: "Land Rover, Land Cruiser e off-road 4×4." },
                 { t: "Travessias", d: "Rotas e expedições por todo o país." },
                 { t: "Velocidade", d: "Provas de asfalto e circuito." },
                 { t: "Formação", d: "Escolas de pilotagem e segurança rodoviária." },
               ].map((c) => (
-                <div key={c.t} className="card p-5">
-                  <h3 className="font-display text-base uppercase text-white">{c.t}</h3>
-                  <p className="mt-1.5 text-xs text-ink-500 leading-relaxed">{c.d}</p>
+                <div key={c.t} className="border-t border-white/10 pt-4">
+                  <h3 className="font-display text-lg uppercase text-white">{c.t}</h3>
+                  <p className="mt-1.5 text-sm text-ink-400 leading-relaxed">{c.d}</p>
                 </div>
               ))}
             </div>
@@ -286,7 +287,7 @@ export default async function SobrePage() {
 
       {/* Contactos rápidos */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-x-8 gap-y-6 sm:grid-cols-3">
           {[
             { icone: "mail", t: "Email", v: SOCIAIS.email, href: `mailto:${SOCIAIS.email}` },
             { icone: "whatsapp", t: "WhatsApp", v: SOCIAIS.telefone, href: SOCIAIS.whatsapp },
@@ -297,14 +298,14 @@ export default async function SobrePage() {
               href={c.href}
               target={c.href.startsWith("http") ? "_blank" : undefined}
               rel="noopener noreferrer"
-              className="group card card-hover flex items-center gap-4 p-5"
+              className="group flex items-center gap-4"
             >
-              <span className="grid size-11 shrink-0 place-items-center bg-mb-red/10 text-mb-red transition-colors group-hover:bg-mb-red group-hover:text-white">
+              <span className="grid size-12 shrink-0 place-items-center rounded-full bg-mb-red/12 text-mb-red transition-colors group-hover:bg-mb-red group-hover:text-white">
                 <Icon name={c.icone} className="size-5" />
               </span>
               <span className="min-w-0">
                 <span className="eyebrow block text-ink-600">{c.t}</span>
-                <span className="mt-0.5 block truncate text-sm text-white">{c.v}</span>
+                <span className="mt-0.5 block truncate text-base text-white transition-colors group-hover:text-mb-red">{c.v}</span>
               </span>
             </a>
           ))}

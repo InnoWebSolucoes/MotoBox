@@ -112,12 +112,12 @@ export function Checkout({ evento }: { evento: Evento }) {
       {/* Cabeçalho do evento */}
       <Link
         href="/bilhetes"
-        className="inline-flex items-center gap-2 font-display text-[11px] uppercase tracking-widest text-ink-500 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 font-ui text-sm text-ink-400 hover:text-white transition-colors"
       >
         <span aria-hidden>←</span> Todos os bilhetes
       </Link>
 
-      <div className="mt-5 relative overflow-hidden border border-ink-700">
+      <div className="mt-5 relative overflow-hidden rounded-card">
         <Placeholder nome={[evento.slug, evento.imagem]} className="absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink-950 to-ink-950/60" />
         <div className="relative p-6 sm:p-8">
@@ -147,7 +147,7 @@ export function Checkout({ evento }: { evento: Evento }) {
           return (
             <li key={p.n} className="flex flex-1 items-center gap-1 sm:gap-2">
               <span
-                className={`grid size-8 shrink-0 place-items-center font-display text-xs transition-colors ${
+                className={`grid size-8 shrink-0 place-items-center rounded-full font-display text-sm transition-colors ${
                   feito ? "bg-ok text-white" : activo ? "bg-mb-red text-white" : "bg-ink-800 text-ink-500"
                 }`}
                 aria-current={activo ? "step" : undefined}
@@ -155,14 +155,14 @@ export function Checkout({ evento }: { evento: Evento }) {
                 {feito ? <Icon name="check" className="size-4" /> : p.n}
               </span>
               <span
-                className={`hidden sm:block font-display text-[11px] uppercase tracking-wider ${
-                  activo ? "text-white" : "text-ink-500"
+                className={`hidden sm:block font-ui text-sm ${
+                  activo ? "text-white" : feito ? "text-ink-300" : "text-ink-500"
                 }`}
               >
                 {p.label}
               </span>
               {i < passos.length - 1 && (
-                <span className={`h-px flex-1 ${feito ? "bg-ok" : "bg-ink-800"}`} aria-hidden />
+                <span className={`h-0.5 flex-1 rounded-full ${feito ? "bg-ok" : "bg-ink-800"}`} aria-hidden />
               )}
             </li>
           );
@@ -181,8 +181,8 @@ export function Checkout({ evento }: { evento: Evento }) {
                 return (
                   <div
                     key={t.id}
-                    className={`card p-5 transition-colors ${
-                      qtd > 0 ? "border-mb-red/50" : t.destaque ? "border-ink-600" : ""
+                    className={`card p-5 transition-shadow ${
+                      qtd > 0 ? "ring-2 ring-inset ring-mb-red/70" : ""
                     }`}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-4">
@@ -212,7 +212,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                             onClick={() => alterarQtd(t.id, -1)}
                             disabled={qtd === 0}
                             aria-label={`Menos um bilhete ${t.nome}`}
-                            className="grid size-9 place-items-center border border-ink-700 text-white transition-colors hover:border-mb-red disabled:opacity-30 disabled:pointer-events-none"
+                            className="grid size-9 place-items-center rounded-full bg-ink-800 text-white transition-colors hover:bg-mb-red disabled:opacity-30 disabled:pointer-events-none"
                           >
                             <span aria-hidden>−</span>
                           </button>
@@ -223,7 +223,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                             onClick={() => alterarQtd(t.id, 1)}
                             disabled={qtd >= Math.min(t.disponiveis, 10)}
                             aria-label={`Mais um bilhete ${t.nome}`}
-                            className="grid size-9 place-items-center border border-ink-700 text-white transition-colors hover:border-mb-red disabled:opacity-30 disabled:pointer-events-none"
+                            className="grid size-9 place-items-center rounded-full bg-ink-800 text-white transition-colors hover:bg-mb-red disabled:opacity-30 disabled:pointer-events-none"
                           >
                             <Icon name="plus" className="size-4" />
                           </button>
@@ -263,15 +263,15 @@ export function Checkout({ evento }: { evento: Evento }) {
                       }}
                       placeholder={c.ph}
                       aria-invalid={Boolean(erros[c.k])}
-                      className={`h-12 w-full border bg-ink-950 px-4 text-sm text-white placeholder:text-ink-600 outline-none transition-colors ${
-                        erros[c.k] ? "border-mb-red" : "border-ink-700 focus:border-mb-red"
+                      className={`h-12 w-full bg-ink-950 px-4 text-sm text-white ring-inset placeholder:text-ink-600 outline-none transition-shadow ${
+                        erros[c.k] ? "ring-2 ring-mb-red" : "ring-1 ring-white/10 focus:ring-2 focus:ring-mb-red"
                       }`}
                     />
                     {erros[c.k] && <p className="mt-1.5 text-xs text-mb-red-light">{erros[c.k]}</p>}
                   </div>
                 ))}
 
-                <p className="flex gap-2.5 border-t border-ink-800 pt-4 text-xs text-ink-500 leading-relaxed">
+                <p className="flex gap-2.5 border-t border-white/6 pt-4 text-xs text-ink-500 leading-relaxed">
                   <Icon name="lock" className="size-4 shrink-0 text-ink-600" />
                   Os seus dados servem apenas para emitir e validar o bilhete. Não são partilhados com
                   terceiros.
@@ -289,7 +289,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                   <label
                     key={m.id}
                     className={`card flex cursor-pointer items-start gap-4 p-5 transition-colors ${
-                      metodo === m.id ? "border-mb-red" : "hover:border-ink-600"
+                      metodo === m.id ? "ring-2 ring-inset ring-mb-red/70" : "card-hover"
                     }`}
                   >
                     <input
@@ -299,7 +299,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                       onChange={() => setMetodo(m.id)}
                       className="mt-1 size-4 shrink-0 accent-[#e10600]"
                     />
-                    <span className="grid size-10 shrink-0 place-items-center bg-ink-800 text-mb-red">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ink-800 text-mb-red">
                       <Icon name={m.icone} className="size-5" />
                     </span>
                     <span className="min-w-0">
@@ -332,7 +332,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                         ["Banco", "Banco Atlântico"],
                         ["Referência", `MBX-${evento.slug.slice(0, 6).toUpperCase()}`],
                       ].map(([k, v]) => (
-                        <div key={k} className="flex justify-between gap-4 border-b border-ink-800 pb-2.5 last:border-0">
+                        <div key={k} className="flex justify-between gap-4 border-b border-white/6 pb-2.5 last:border-0">
                           <dt className="text-ink-500">{k}</dt>
                           <dd className="font-mono text-white text-right">{v}</dd>
                         </div>
@@ -350,17 +350,17 @@ export function Checkout({ evento }: { evento: Evento }) {
                       <input
                         placeholder="Número do cartão"
                         inputMode="numeric"
-                        className="h-11 sm:col-span-2 border border-ink-700 bg-ink-950 px-4 text-sm text-white placeholder:text-ink-600 focus:border-mb-red outline-none"
+                        className="h-11 sm:col-span-2 bg-ink-950 px-4 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red outline-none"
                       />
                       <input
                         placeholder="MM / AA"
                         inputMode="numeric"
-                        className="h-11 border border-ink-700 bg-ink-950 px-4 text-sm text-white placeholder:text-ink-600 focus:border-mb-red outline-none"
+                        className="h-11 bg-ink-950 px-4 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red outline-none"
                       />
                       <input
                         placeholder="CVV"
                         inputMode="numeric"
-                        className="h-11 border border-ink-700 bg-ink-950 px-4 text-sm text-white placeholder:text-ink-600 focus:border-mb-red outline-none"
+                        className="h-11 bg-ink-950 px-4 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red outline-none"
                       />
                     </div>
                     <p className="mt-3 flex items-center gap-2 text-xs text-ink-600">
@@ -376,7 +376,7 @@ export function Checkout({ evento }: { evento: Evento }) {
           {/* PASSO 4 — bilhetes emitidos */}
           {passo === 4 && (
             <section>
-              <div className="card border-ok/40 bg-ok/5 p-6 text-center">
+              <div className="card bg-ok/8 p-6 text-center">
                 <span className="mx-auto grid size-14 place-items-center rounded-full bg-ok/20 text-ok">
                   <Icon name="check" className="size-7" />
                 </span>
@@ -389,7 +389,7 @@ export function Checkout({ evento }: { evento: Evento }) {
 
               <div className="mt-6 space-y-4">
                 {codigos.map((b) => (
-                  <article key={b.id} className="relative overflow-hidden border border-ink-700 bg-ink-900">
+                  <article key={b.id} className="relative overflow-hidden rounded-card bg-ink-900">
                     {/* Recorte de bilhete */}
                     <div className="absolute left-0 top-1/2 size-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-950" aria-hidden />
                     <div className="absolute right-0 top-1/2 size-6 translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-950" aria-hidden />
@@ -420,7 +420,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                         </dl>
                       </div>
 
-                      <div className="flex flex-col items-center justify-center gap-3 border-t border-dashed border-ink-700 p-6 sm:border-l sm:border-t-0">
+                      <div className="flex flex-col items-center justify-center gap-3 border-t-2 border-dashed border-ink-950 p-6 sm:border-l-2 sm:border-t-0">
                         <QRCode valor={b.codigo} size={150} />
                         <p className="font-mono text-[11px] text-ink-500">{b.codigo}</p>
                       </div>
@@ -479,7 +479,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                     ))}
                   </ul>
 
-                  <dl className="mt-5 space-y-2.5 border-t border-ink-800 pt-4 text-sm">
+                  <dl className="mt-5 space-y-2.5 border-t border-white/6 pt-4 text-sm">
                     <div className="flex justify-between">
                       <dt className="text-ink-500">Subtotal</dt>
                       <dd className="text-ink-200 tabular-nums">{formatKz(subtotal)}</dd>
@@ -491,7 +491,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                       </dt>
                       <dd className="text-ink-200 tabular-nums">{formatKz(taxa)}</dd>
                     </div>
-                    <div className="flex justify-between border-t border-ink-800 pt-3">
+                    <div className="flex justify-between border-t border-white/6 pt-3">
                       <dt className="font-display text-base uppercase text-white">Total</dt>
                       <dd className="font-display text-xl text-white tabular-nums">{formatKz(total)}</dd>
                     </div>

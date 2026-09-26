@@ -61,22 +61,22 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
   return (
     <>
       {/* Hero do piloto */}
-      <header className="relative overflow-hidden border-b border-ink-800">
+      <header className="relative overflow-hidden">
         {/* Fundo: a fotografia do piloto, muito esbatida atrás da ficha */}
         <Placeholder nome={piloto.slug} className="absolute inset-0 opacity-20" tamanhos="100vw" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/35" aria-hidden />
-        <div className="grid-bg absolute inset-0 opacity-20" aria-hidden />
+        <div className="stripes absolute inset-0" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-10">
           <Link
             href="/pilotos"
-            className="inline-flex items-center gap-2 font-display text-[11px] uppercase tracking-widest text-ink-500 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 font-ui text-sm text-ink-400 hover:text-white transition-colors"
           >
             <span aria-hidden>←</span> Todos os pilotos
           </Link>
 
           <div className="mt-6 grid gap-8 lg:grid-cols-[22rem_1fr] lg:items-end">
             {/* Retrato */}
-            <div className="relative aspect-[4/5] max-w-xs overflow-hidden border border-ink-700">
+            <div className="relative aspect-[4/5] max-w-xs overflow-hidden rounded-card">
               <Retrato
                 nome={piloto.slug}
                 iniciais={iniciais(piloto.nome)}
@@ -130,7 +130,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                       href={piloto.redes.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-10 items-center gap-2 border border-ink-700 px-4 font-display text-[11px] uppercase tracking-widest text-ink-300 transition-colors hover:border-mb-red hover:text-white"
+                      className="inline-flex h-10 items-center gap-2 rounded-full bg-ink-800 px-4 font-ui text-sm text-ink-200 transition-colors hover:bg-mb-red hover:text-white"
                     >
                       <Icon name="instagram" className="size-4" />
                       Instagram
@@ -141,7 +141,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                       href={piloto.redes.facebook}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-10 items-center gap-2 border border-ink-700 px-4 font-display text-[11px] uppercase tracking-widest text-ink-300 transition-colors hover:border-mb-red hover:text-white"
+                      className="inline-flex h-10 items-center gap-2 rounded-full bg-ink-800 px-4 font-ui text-sm text-ink-200 transition-colors hover:bg-mb-red hover:text-white"
                     >
                       <Icon name="facebook" className="size-4" />
                       Facebook
@@ -155,8 +155,8 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
       </header>
 
       {/* Faixa de estatísticas */}
-      <section className="border-b border-ink-800 bg-ink-900">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-ink-800 px-4 sm:grid-cols-3 lg:grid-cols-6 sm:px-6">
+      <section className="bg-ink-900">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 px-4 sm:grid-cols-3 lg:grid-cols-6 sm:px-6">
           {[
             ["Posição", posicao > 0 ? `${posicao}.º` : "NC"],
             ["Pontos", piloto.estatisticas.pontos],
@@ -186,10 +186,10 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
             {historico.length > 0 && (
               <section>
                 <h2 className="eyebrow accent-bar text-white">Histórico de corridas</h2>
-                <div className="card overflow-hidden">
-                  <div className="hidden sm:grid grid-cols-[1fr_7rem_7rem_3.5rem_3.5rem] items-center gap-3 border-b border-ink-800 bg-ink-950 px-5 py-2.5">
+                <div>
+                  <div className="hidden sm:grid grid-cols-[1fr_7rem_7rem_3.5rem_3.5rem] items-center gap-3 border-b border-white/10 pb-3">
                     {["Prova", "Data", "Categoria", "Pos", "Pts"].map((h) => (
-                      <span key={h} className="eyebrow text-ink-600">
+                      <span key={h} className="eyebrow text-ink-500">
                         {h}
                       </span>
                     ))}
@@ -198,7 +198,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                     <Link
                       key={corrida.slug}
                       href={`/resultados/${corrida.slug}`}
-                      className="group grid grid-cols-[1fr_3.5rem_3.5rem] sm:grid-cols-[1fr_7rem_7rem_3.5rem_3.5rem] items-center gap-3 border-b border-ink-800 px-5 py-3.5 last:border-0 hover:bg-ink-850 transition-colors"
+                      className="group grid grid-cols-[1fr_3.5rem_3.5rem] sm:grid-cols-[1fr_7rem_7rem_3.5rem_3.5rem] items-center gap-3 border-b border-white/6 py-3.5 last:border-0"
                     >
                       <div className="min-w-0">
                         <p className="truncate text-sm text-white group-hover:text-mb-red transition-colors">
@@ -243,9 +243,9 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                   {posicao === 1 && <p className="text-xs text-gold">Líder do campeonato</p>}
                 </div>
               </div>
-              <div className="mt-4 h-1.5 w-full bg-ink-800">
+              <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-ink-800">
                 <div
-                  className="h-full bg-mb-red"
+                  className="h-full rounded-full bg-mb-red"
                   style={{
                     width: `${lider?.estatisticas.pontos ? (piloto.estatisticas.pontos / lider.estatisticas.pontos) * 100 : 0}%`,
                   }}
@@ -267,7 +267,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                   ["Taxa de pódio", `${taxaPodio}%`],
                   ["Títulos nacionais", String(piloto.campeonatos)],
                 ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-4 border-b border-ink-800 pb-3 last:border-0 last:pb-0">
+                  <div key={k} className="flex justify-between gap-4 border-b border-white/6 pb-3 last:border-0 last:pb-0">
                     <dt className="text-xs text-ink-500">{k}</dt>
                     <dd className="text-sm text-white">{v}</dd>
                   </div>
@@ -281,7 +281,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                 <h3 className="eyebrow text-mb-red mb-4">Equipa</h3>
                 <Link href={`/equipas/${equipa.slug}`} className="group flex items-center gap-3">
                   <span
-                    className="grid size-12 shrink-0 place-items-center font-display text-sm text-white"
+                    className="grid size-12 shrink-0 place-items-center rounded-full font-display text-sm text-white"
                     style={{ background: equipa.cor }}
                   >
                     {equipa.logo}

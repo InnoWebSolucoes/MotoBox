@@ -74,7 +74,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
     <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
       <Link
         href="/forum"
-        className="inline-flex items-center gap-2 font-display text-[11px] uppercase tracking-widest text-ink-500 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 font-ui text-base text-ink-400 hover:text-white transition-colors"
       >
         <span aria-hidden>←</span> Fórum
       </Link>
@@ -100,7 +100,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
 
         <h1 className="title-xl mt-4 text-2xl sm:text-3xl lg:text-4xl">{topico.titulo}</h1>
 
-        <p className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-ink-800 py-3.5 text-xs text-ink-500">
+        <p className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-white/6 pb-5 text-xs text-ink-500">
           <span className="inline-flex items-center gap-1.5">
             <Icon name="chat" className="size-3.5" />
             {topico.respostas} respostas
@@ -117,85 +117,77 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
       </header>
 
       {/* Mensagem original */}
-      <article className="mt-6 card overflow-hidden">
-        <div className="flex flex-col sm:flex-row">
-          <div className="flex sm:flex-col items-center gap-3 sm:gap-0 border-b sm:border-b-0 sm:border-r border-ink-800 bg-ink-950 p-5 sm:w-40 sm:text-center">
-            <span
-              className="grid size-12 shrink-0 place-items-center font-display text-sm text-white"
-              style={{ background: topico.avatarCor }}
-            >
-              {topico.autorAvatar}
-            </span>
-            <div className="min-w-0 sm:mt-3">
-              <p className="truncate font-display text-sm uppercase text-white">{topico.autor}</p>
-              <p className="text-[11px] text-ink-600">Autor do tópico</p>
-            </div>
-          </div>
+      <article className="mt-8 flex gap-4 sm:gap-5">
+        <span
+          className="grid size-12 shrink-0 place-items-center rounded-full font-display text-sm text-white"
+          style={{ background: topico.avatarCor }}
+        >
+          {topico.autorAvatar}
+        </span>
 
-          <div className="min-w-0 flex-1 p-6">
-            <p className="text-[11px] text-ink-600">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+            <p className="truncate font-display text-base uppercase text-white">{topico.autor}</p>
+            <p className="text-xs text-ink-500">Autor do tópico</p>
+            <p className="text-xs text-ink-600">
               {formatData(topico.criado, { day: "2-digit", month: "long", year: "numeric" })}
             </p>
-            <p className="mt-3 text-base text-ink-200 leading-relaxed">{topico.excerto}</p>
+          </div>
+          <p className="mt-3 text-base sm:text-lg text-ink-200 leading-relaxed">{topico.excerto}</p>
 
-            <div className="mt-5 flex flex-wrap gap-2 border-t border-ink-800 pt-4">
-              {["Gosto", "Citar", "Partilhar", "Reportar"].map((a) => (
-                <button
-                  key={a}
-                  className="font-display text-[11px] uppercase tracking-wider text-ink-500 transition-colors hover:text-mb-red"
-                >
-                  {a}
-                </button>
-              ))}
-            </div>
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+            {["Gosto", "Citar", "Partilhar", "Reportar"].map((a) => (
+              <button
+                key={a}
+                className="font-ui text-sm text-ink-400 transition-colors hover:text-mb-red"
+              >
+                {a}
+              </button>
+            ))}
           </div>
         </div>
       </article>
 
       {/* Respostas */}
-      <section className="mt-8">
+      <section className="mt-12">
         <h2 className="eyebrow accent-bar text-white">{topico.respostas} respostas</h2>
 
-        <div className="space-y-3">
+        <div>
           {RESPOSTAS.map((r, i) => (
             <article
               key={i}
-              className={`card overflow-hidden ${r.melhor ? "border-ok/40" : ""}`}
+              className="flex gap-4 sm:gap-5 border-b border-white/6 py-6 first:pt-2 last:border-0"
             >
-              {r.melhor && (
-                <p className="flex items-center gap-2 border-b border-ok/25 bg-ok/10 px-5 py-2 eyebrow text-ok">
-                  <Icon name="check" className="size-3.5" />
-                  Melhor resposta, marcada pelo autor
-                </p>
-              )}
-              <div className="flex flex-col sm:flex-row">
-                <div className="flex sm:flex-col items-center gap-3 sm:gap-0 border-b sm:border-b-0 sm:border-r border-ink-800 bg-ink-950 p-5 sm:w-40 sm:text-center">
-                  <span
-                    className="grid size-11 shrink-0 place-items-center font-display text-xs text-white"
-                    style={{ background: r.cor }}
-                  >
-                    {r.avatar}
-                  </span>
-                  <div className="min-w-0 sm:mt-3">
-                    <p className="truncate font-display text-sm uppercase text-white">{r.autor}</p>
-                    <p className="text-[11px] text-ink-600">{r.mensagens} mensagens</p>
-                    <p className="text-[11px] text-ink-700">desde {r.desde}</p>
-                  </div>
-                </div>
+              <span
+                className="grid size-11 shrink-0 place-items-center rounded-full font-display text-xs text-white"
+                style={{ background: r.cor }}
+              >
+                {r.avatar}
+              </span>
 
-                <div className="min-w-0 flex-1 p-6">
-                  <p className="text-[11px] text-ink-600">{r.quando}</p>
-                  <p className="mt-3 text-base text-ink-300 leading-relaxed">{r.texto}</p>
-                  <div className="mt-5 flex flex-wrap gap-2 border-t border-ink-800 pt-4">
-                    {["Gosto", "Citar", "Reportar"].map((a) => (
-                      <button
-                        key={a}
-                        className="font-display text-[11px] uppercase tracking-wider text-ink-500 transition-colors hover:text-mb-red"
-                      >
-                        {a}
-                      </button>
-                    ))}
-                  </div>
+              <div className="min-w-0 flex-1">
+                {r.melhor && (
+                  <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-ok/12 px-3 py-1.5 eyebrow text-ok">
+                    <Icon name="check" className="size-3.5" />
+                    Melhor resposta, marcada pelo autor
+                  </p>
+                )}
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <p className="truncate font-display text-base uppercase text-white">{r.autor}</p>
+                  <p className="text-xs text-ink-500">{r.mensagens} mensagens</p>
+                  <p className="text-xs text-ink-600">desde {r.desde}</p>
+                  <p className="text-xs text-ink-600">{r.quando}</p>
+                </div>
+                <p className="mt-2.5 text-base text-ink-300 leading-relaxed">{r.texto}</p>
+                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+                  {["Gosto", "Citar", "Reportar"].map((a) => (
+                    <button
+                      key={a}
+                      className="font-ui text-sm text-ink-400 transition-colors hover:text-mb-red"
+                    >
+                      {a}
+                    </button>
+                  ))}
                 </div>
               </div>
             </article>
@@ -219,7 +211,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
             <textarea
               rows={5}
               placeholder="Escreva a sua resposta…"
-              className="w-full resize-y border border-ink-700 bg-ink-950 p-4 text-sm text-white placeholder:text-ink-600 outline-none focus:border-mb-red"
+              className="w-full resize-y bg-ink-950 p-4 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 outline-none focus:ring-2 focus:ring-mb-red"
             />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
               <p className="text-xs text-ink-600">
@@ -238,18 +230,25 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
       {relacionados.length > 0 && (
         <section className="mt-12">
           <h2 className="eyebrow accent-bar text-white">Tópicos relacionados</h2>
-          <div className="card divide-y divide-ink-800">
+          <div>
             {relacionados.map((t) => (
-              <Link key={t.id} href={`/forum/${t.id}`} className="group flex items-center gap-4 p-4 hover:bg-ink-850 transition-colors">
+              <Link
+                key={t.id}
+                href={`/forum/${t.id}`}
+                className="group flex items-center gap-4 border-b border-white/6 py-4 last:border-0"
+              >
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm text-white group-hover:text-mb-red transition-colors">
+                  <span className="block truncate font-display text-base uppercase text-white group-hover:text-mb-red transition-colors">
                     {t.titulo}
                   </span>
-                  <span className="mt-0.5 block text-[11px] text-ink-600">
+                  <span className="mt-0.5 block text-xs text-ink-500">
                     {t.autor} · {t.respostas} respostas
                   </span>
                 </span>
-                <Icon name="arrow" className="size-4 shrink-0 text-ink-700 transition-transform group-hover:translate-x-1" />
+                <Icon
+                  name="arrow"
+                  className="size-5 shrink-0 text-ink-600 transition-all group-hover:translate-x-1 group-hover:text-white"
+                />
               </Link>
             ))}
           </div>

@@ -36,7 +36,7 @@ export function QRCode({
 
   return (
     <div
-      className={`grid place-items-center bg-white p-3 ${className}`}
+      className={`grid place-items-center rounded-xl bg-white p-3 ${className}`}
       style={{ width: size, height: size }}
       role="img"
       aria-label={`Código QR do bilhete ${valor}`}
@@ -44,7 +44,7 @@ export function QRCode({
       {svg ? (
         <div className="size-full [&>svg]:size-full" dangerouslySetInnerHTML={{ __html: svg }} />
       ) : (
-        <div className="size-full animate-pulse bg-ink-200" />
+        <div className="size-full animate-pulse rounded-md bg-ink-200" />
       )}
     </div>
   );

@@ -5,23 +5,25 @@ import { banner } from "@/lib/imagens";
 
 /* ---------------- Botão ---------------- */
 
-type BtnVariant = "primary" | "ghost" | "outline" | "dark";
+type BtnVariant = "primary" | "ghost" | "outline" | "dark" | "light";
 type BtnSize = "sm" | "md" | "lg";
 
+// Botões em pílula, texto em minúsculas como na F1 ("Sign In", "View full standings").
 const btnBase =
-  "inline-flex items-center justify-center gap-2 font-display uppercase tracking-wider transition-colors disabled:opacity-45 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-full font-ui whitespace-nowrap transition-colors disabled:opacity-45 disabled:pointer-events-none";
 
 const btnVariants: Record<BtnVariant, string> = {
   primary: "bg-mb-red text-white hover:bg-mb-red-dark",
-  ghost: "text-ink-200 hover:text-white hover:bg-ink-800",
-  outline: "border border-ink-600 text-white hover:border-mb-red hover:bg-mb-red/10",
+  ghost: "text-ink-200 hover:text-white hover:bg-white/8",
+  outline: "border-2 border-ink-500 text-white hover:border-white",
   dark: "bg-ink-800 text-white hover:bg-ink-700",
+  light: "bg-white text-ink-950 hover:bg-ink-200",
 };
 
 const btnSizes: Record<BtnSize, string> = {
-  sm: "text-[11px] px-3 h-8",
-  md: "text-xs px-5 h-11",
-  lg: "text-sm px-7 h-13",
+  sm: "text-sm px-4 h-9",
+  md: "text-base px-6 h-11",
+  lg: "text-lg px-8 h-13",
 };
 
 export function Button({
@@ -82,14 +84,15 @@ export function Tag({
   const tones = {
     red: "bg-mb-red text-white",
     neutral: "bg-ink-800 text-ink-200",
-    outline: "border border-ink-600 text-ink-300",
+    // Sem contorno: pílula escura translúcida, legível sobre fotografia clara e sobre fundo liso.
+    outline: "bg-ink-800/85 text-ink-100 backdrop-blur-sm",
     gold: "bg-gold text-ink-950",
     live: "bg-live text-white",
     ok: "bg-ok text-white",
   } as const;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2 py-1 text-[10px] font-display uppercase tracking-widest ${tones[tone]} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] leading-none font-display uppercase tracking-widest ${tones[tone]} ${className}`}
     >
       {children}
     </span>
@@ -121,10 +124,15 @@ export function SectionHead({
       {acao && (
         <Link
           href={acao.href}
-          className="group inline-flex items-center gap-2 font-display text-xs uppercase tracking-widest text-ink-300 hover:text-mb-red transition-colors"
+          className="group inline-flex items-center gap-3 font-ui text-base text-white transition-colors hover:text-ink-200"
         >
           {acao.texto}
-          <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+          <span
+            aria-hidden
+            className="grid size-9 place-items-center rounded-full bg-ink-800 transition-colors group-hover:bg-mb-red"
+          >
+            <Icon name="arrow" className="size-4" />
+          </span>
         </Link>
       )}
     </div>
@@ -167,7 +175,7 @@ export function PageHero({
           />
         </>
       )}
-      <div className="grid-bg absolute inset-0 opacity-30" aria-hidden />
+      <div className="stripes absolute inset-0" aria-hidden />
       <div
         className="absolute -right-24 -top-24 size-96 rounded-full blur-3xl opacity-20"
         style={{ background: "radial-gradient(circle, #e10600 0%, transparent 70%)" }}
@@ -189,27 +197,24 @@ export function PageHero({
 
 export function EmptyState({ titulo, descricao }: { titulo: string; descricao: string }) {
   return (
-    <div className="card p-12 text-center">
+    <div className="card px-8 py-14 text-center">
       <p className="font-display text-lg uppercase tracking-wide text-ink-300">{titulo}</p>
       <p className="mt-2 text-sm text-ink-500">{descricao}</p>
     </div>
   );
 }
 
-/* ---------------- Medalha de posição ---------------- */
+/* ---------------- Número de posição ----------------
+   Só o número, sem caixa nem cor de medalha — como nas tabelas da F1. */
 
 export function PosicaoBadge({ posicao, size = "md" }: { posicao: number; size?: "sm" | "md" }) {
-  const cor =
-    posicao === 1
-      ? "bg-gold text-ink-950"
-      : posicao === 2
-        ? "bg-silver text-ink-950"
-        : posicao === 3
-          ? "bg-bronze text-white"
-          : "bg-ink-800 text-ink-300";
-  const dim = size === "sm" ? "size-7 text-xs" : "size-10 text-base";
+  const dim = size === "sm" ? "w-6 text-lg" : "w-9 text-2xl";
   return (
-    <span className={`grid place-items-center font-display shrink-0 ${cor} ${dim}`}>
+    <span
+      className={`shrink-0 font-display leading-none tabular-nums ${dim} ${
+        posicao === 0 ? "text-sm text-ink-500" : "text-white"
+      }`}
+    >
       {posicao === 0 ? "NC" : posicao}
     </span>
   );
@@ -229,7 +234,7 @@ export function Icon({ name, className = "size-4" }: { name: string; className?:
   const paths: Record<string, ReactNode> = {
     calendar: (
       <>
-        <rect x="3" y="5" width="18" height="16" rx="1" {...ic} />
+        <rect x="3" y="5" width="18" height="16" rx="2.5" {...ic} />
         <path d="M3 10h18M8 3v4M16 3v4" {...ic} />
       </>
     ),

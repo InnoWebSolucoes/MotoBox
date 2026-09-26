@@ -41,6 +41,7 @@ export default async function Home() {
   const secundarias = noticias.filter((n) => n.slug !== principal?.slug).slice(0, 4);
   const topPilotos = classificacaoPilotos(pilotos).slice(0, 5);
   const topEquipas = classificacaoEquipas(equipas).slice(0, 3);
+  const corEquipa = new Map(equipas.map((e) => [e.slug, e.cor]));
   const ultimaCorrida = corridas.at(-1);
   const proximasProvas = eventos
     .filter((e) => new Date(e.dataInicio).getTime() > Date.now())
@@ -50,10 +51,10 @@ export default async function Home() {
   return (
     <>
       {/* ============ HERO ============ */}
-      <section className="relative overflow-hidden border-b border-ink-800">
+      <section className="relative overflow-hidden">
         <Placeholder nome={[proximo?.slug, proximo?.imagem ?? "namibe"]} className="absolute inset-0" tamanhos="100vw" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/25" />
-        <div className="grid-bg absolute inset-0 opacity-20" aria-hidden />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink-950 to-transparent" aria-hidden />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-24 lg:py-28">
           <div className="max-w-3xl rise">
@@ -73,7 +74,7 @@ export default async function Home() {
             </p>
 
             {proximo && (
-              <div className="mt-10 border border-ink-700 bg-ink-950/80 backdrop-blur-sm p-6 sm:p-7 max-w-xl">
+              <div className="mt-10 max-w-xl rounded-card bg-ink-950/60 p-6 sm:p-7 backdrop-blur-md">
                 <p className="eyebrow text-mb-red"><T k="paginas.proximaProva" /></p>
                 <h2 className="font-display mt-2 text-2xl sm:text-3xl uppercase leading-tight text-white">
                   <C>{proximo.titulo}</C>
@@ -89,7 +90,7 @@ export default async function Home() {
                   </span>
                 </p>
 
-                <div className="mt-6 border-t border-ink-800 pt-5">
+                <div className="mt-6 border-t border-white/10 pt-5">
                   <Countdown data={proximo.dataInicio} size="md" />
                 </div>
 
@@ -112,7 +113,7 @@ export default async function Home() {
 
       {/* ============ FAIXA DE PATROCINADORES ============ */}
       {patrocinadores.length > 0 && (
-        <section className="border-b border-ink-800 bg-ink-900 py-5 overflow-hidden" aria-label="Patrocinadores oficiais">
+        <section className="py-6 overflow-hidden" aria-label="Patrocinadores oficiais">
           <div className="flex w-max marquee-track">
             {[0, 1].map((rep) => (
               <div key={rep} className="flex items-center gap-12 px-6" aria-hidden={rep === 1}>
@@ -147,47 +148,45 @@ export default async function Home() {
             />
           </div>
         ) : (
-          <div className="mt-9 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-            {/* Notícia principal */}
+          <div className="mt-9 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-[1.35fr_1fr]">
+            {/* Notícia principal: título sobre a fotografia, como a manchete da F1 */}
             <Link
               href={`/noticias/${principal.slug}`}
-              className="group card card-hover overflow-hidden flex flex-col"
+              className="group relative isolate flex min-h-[420px] flex-col justify-end overflow-hidden rounded-card lg:min-h-[520px]"
             >
-              <div className="relative aspect-[16/9] overflow-hidden">
-                <Placeholder nome={principal.imagem} className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" />
-                <div className="absolute left-4 top-4">
-                  <Tag tone="red">{principal.categoria}</Tag>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="font-display text-2xl sm:text-3xl uppercase leading-tight text-white group-hover:text-mb-red transition-colors">
+              <Placeholder
+                nome={principal.imagem}
+                className="absolute inset-0 -z-10 transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink-950 via-ink-950/50 to-transparent" />
+              <div className="p-6 sm:p-8">
+                <Tag tone="red">{principal.categoria}</Tag>
+                <h3 className="mt-4 font-display text-3xl sm:text-4xl uppercase leading-[0.95] text-white">
                   {principal.titulo}
                 </h3>
-                <p className="mt-3 text-sm text-ink-400 leading-relaxed line-clamp-3">{principal.resumo}</p>
-                <p className="mt-4 flex items-center gap-3 text-xs text-ink-600">
+                <p className="mt-3 max-w-xl text-sm text-ink-300 leading-relaxed line-clamp-2">{principal.resumo}</p>
+                <p className="mt-4 flex items-center gap-3 text-xs text-ink-400">
                   <span>{formatData(principal.data)}</span>
-                  <span className="size-1 rounded-full bg-ink-700" />
+                  <span className="size-1 rounded-full bg-ink-500" />
                   <span>{principal.leitura} min de leitura</span>
                 </p>
               </div>
             </Link>
 
-            {/* Lista lateral */}
-            <div className="grid gap-3 content-start">
+            {/* Secundárias: fotografia arredondada e título por baixo, sem moldura */}
+            <div className="grid grid-cols-2 content-start gap-x-5 gap-y-7">
               {secundarias.map((n) => (
-                <Link
-                  key={n.slug}
-                  href={`/noticias/${n.slug}`}
-                  className="group card card-hover flex gap-4 overflow-hidden"
-                >
-                  <Placeholder nome={[n.slug, n.imagem]} className="w-28 sm:w-32 shrink-0" tamanhos="128px" />
-                  <div className="min-w-0 flex-1 py-3.5 pr-4">
-                    <p className="eyebrow text-mb-red">{n.categoria}</p>
-                    <h3 className="mt-1.5 font-display text-base uppercase leading-snug text-white line-clamp-2 group-hover:text-mb-red transition-colors">
-                      {n.titulo}
-                    </h3>
-                    <p className="mt-1.5 text-xs text-ink-600">{formatData(n.data, { day: "2-digit", month: "short" })}</p>
-                  </div>
+                <Link key={n.slug} href={`/noticias/${n.slug}`} className="group block">
+                  <Placeholder
+                    nome={[n.slug, n.imagem]}
+                    className="media aspect-[16/10]"
+                    tamanhos="(max-width: 1024px) 50vw, 260px"
+                  />
+                  <p className="eyebrow mt-3 text-mb-red">{n.categoria}</p>
+                  <h3 className="mt-1.5 font-display text-base sm:text-lg uppercase leading-tight text-white line-clamp-3 transition-colors group-hover:text-mb-red">
+                    {n.titulo}
+                  </h3>
+                  <p className="mt-1.5 text-xs text-ink-500">{formatData(n.data, { day: "2-digit", month: "short" })}</p>
                 </Link>
               ))}
             </div>
@@ -196,9 +195,9 @@ export default async function Home() {
       </section>
 
       {/* ============ CLASSIFICAÇÃO + PRÓXIMAS PROVAS ============ */}
-      <section className="border-y border-ink-800 bg-ink-900">
+      <section className="bg-ink-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-          <div className="grid gap-10 lg:grid-cols-[1.25fr_1fr]">
+          <div className="grid grid-cols-1 gap-x-14 gap-y-14 lg:grid-cols-[1.25fr_1fr]">
             {/* Classificação */}
             <div>
               <SectionHead
@@ -214,58 +213,60 @@ export default async function Home() {
                   />
                 </div>
               ) : (
-                <div className="mt-7 card overflow-hidden">
+                <ol className="mt-7">
                   {topPilotos.map((p) => (
-                    <Link
-                      key={p.slug}
-                      href={`/pilotos/${p.slug}`}
-                      className="group flex items-center gap-4 border-b border-ink-800 p-4 last:border-0 hover:bg-ink-850 transition-colors"
-                    >
-                      <PosicaoBadge posicao={p.posicao} />
-                      <div
-                        className="h-11 w-1 shrink-0"
-                        style={{ background: p.equipaSlug === "kilamba-racing" ? "#e10600" : undefined }}
-                      />
-                      <Retrato
-                        nome={p.slug}
-                        iniciais={iniciais(p.nome)}
-                        className="size-11 shrink-0 rounded-full"
-                        tamanhos="44px"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-display text-base uppercase text-white truncate group-hover:text-mb-red transition-colors">
-                          {p.nome}
+                    <li key={p.slug} className="border-b border-white/6 last:border-0">
+                      <Link
+                        href={`/pilotos/${p.slug}`}
+                        className="group flex items-center gap-4 py-3.5"
+                      >
+                        <PosicaoBadge posicao={p.posicao} />
+                        <span
+                          className="h-10 w-1 shrink-0 rounded-full bg-ink-700"
+                          style={{ background: corEquipa.get(p.equipaSlug) }}
+                          aria-hidden
+                        />
+                        <Retrato
+                          nome={p.slug}
+                          iniciais={iniciais(p.nome)}
+                          className="size-11 shrink-0 rounded-full"
+                          tamanhos="44px"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-display text-lg uppercase leading-tight text-white truncate transition-colors group-hover:text-mb-red">
+                            {p.nome}
+                          </p>
+                          <p className="text-xs text-ink-500 truncate">
+                            {p.equipa} · {p.categoria}
+                          </p>
+                        </div>
+                        <p className="shrink-0 font-display text-xl text-white tabular-nums">
+                          {p.estatisticas.pontos}
+                          <span className="ml-1 text-xs text-ink-500">PTS</span>
                         </p>
-                        <p className="text-xs text-ink-500 truncate">
-                          {p.equipa} · {p.categoria}
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-display text-xl text-white tabular-nums">{p.estatisticas.pontos}</p>
-                        <p className="eyebrow text-ink-600">Pts</p>
-                      </div>
-                    </Link>
+                      </Link>
+                    </li>
                   ))}
-                </div>
+                </ol>
               )}
 
               {/* Mini tabela de equipas */}
               {topEquipas.length > 0 && (
-                <div className="mt-4 card p-4">
-                  <p className="eyebrow text-ink-500 mb-3">Equipas</p>
-                  <div className="grid gap-2.5 sm:grid-cols-3">
+                <div className="mt-8">
+                  <p className="eyebrow text-ink-500 mb-4">Equipas</p>
+                  <div className="grid gap-x-8 gap-y-3 sm:grid-cols-3">
                     {topEquipas.map((e) => (
                       <Link
                         key={e.slug}
                         href={`/equipas/${e.slug}`}
-                        className="group flex items-center gap-2.5"
+                        className="group flex items-center gap-3"
                       >
-                        <span className="font-display text-xs text-ink-600 tabular-nums w-4">{e.posicao}</span>
-                        <span className="h-6 w-1 shrink-0" style={{ background: e.cor }} />
+                        <span className="font-display text-base text-ink-500 tabular-nums w-4">{e.posicao}</span>
+                        <span className="h-7 w-1 shrink-0 rounded-full" style={{ background: e.cor }} />
                         <span className="min-w-0 flex-1 truncate text-sm text-ink-300 group-hover:text-white transition-colors">
                           {e.nome}
                         </span>
-                        <span className="font-display text-sm text-white tabular-nums">
+                        <span className="font-display text-base text-white tabular-nums">
                           {e.estatisticas.pontos}
                         </span>
                       </Link>
@@ -290,54 +291,56 @@ export default async function Home() {
                   />
                 </div>
               ) : (
-                <div className="mt-7 grid gap-3">
+                <ul className="mt-7">
                   {proximasProvas.map((e) => (
-                    <Link
-                      key={e.slug}
-                      href={`/calendario/${e.slug}`}
-                      className="group card card-hover flex items-stretch overflow-hidden"
-                    >
-                      <div className="grid w-20 shrink-0 place-content-center border-r border-ink-800 bg-ink-950 px-2 py-4 text-center">
-                        <span className="font-display text-2xl leading-none text-white">
-                          {new Date(e.dataInicio).getDate()}
-                        </span>
-                        <span className="eyebrow mt-1 text-mb-red">
-                          {new Date(e.dataInicio).toLocaleDateString("pt-PT", { month: "short" }).replace(".", "")}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1 p-4">
-                        <div className="flex items-center gap-2">
-                          <Tag tone="outline" className="!text-[9px]">{e.disciplina}</Tag>
-                          {e.estado === "bilhetes-abertos" && <Tag tone="red" className="!text-[9px]">Bilhetes</Tag>}
+                    <li key={e.slug} className="border-b border-white/6 last:border-0">
+                      <Link href={`/calendario/${e.slug}`} className="group flex items-center gap-5 py-4">
+                        <div className="w-14 shrink-0 text-center">
+                          <span className="block font-display text-3xl leading-none text-white">
+                            {new Date(e.dataInicio).getDate()}
+                          </span>
+                          <span className="eyebrow mt-1.5 block text-mb-red">
+                            {new Date(e.dataInicio).toLocaleDateString("pt-PT", { month: "short" }).replace(".", "")}
+                          </span>
                         </div>
-                        <h3 className="mt-2 font-display text-base uppercase leading-snug text-white line-clamp-2 group-hover:text-mb-red transition-colors">
-                          {e.titulo}
-                        </h3>
-                        <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-500">
-                          <Icon name="pin" className="size-3.5" />
-                          {e.localidade}, {e.provincia}
-                        </p>
-                      </div>
-                    </Link>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <Tag tone="outline" className="!text-[9px]">{e.disciplina}</Tag>
+                            {e.estado === "bilhetes-abertos" && <Tag tone="red" className="!text-[9px]">Bilhetes</Tag>}
+                          </div>
+                          <h3 className="mt-2 font-display text-lg uppercase leading-tight text-white line-clamp-2 transition-colors group-hover:text-mb-red">
+                            {e.titulo}
+                          </h3>
+                          <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-500">
+                            <Icon name="pin" className="size-3.5" />
+                            {e.localidade}, {e.provincia}
+                          </p>
+                        </div>
+                        <Icon
+                          name="arrow"
+                          className="size-5 shrink-0 text-ink-600 transition-all group-hover:translate-x-1 group-hover:text-white"
+                        />
+                      </Link>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
 
               {/* Último resultado */}
               {ultimaCorrida && (
-                <div className="mt-4 card p-5">
+                <div className="mt-8 rounded-card bg-ink-950 p-6">
                   <div className="flex items-center justify-between">
                     <p className="eyebrow text-ink-500">Último resultado</p>
-                    <Link href="/resultados" className="eyebrow text-mb-red hover:text-mb-red-light">
+                    <Link href="/resultados" className="font-ui text-sm text-white hover:text-mb-red transition-colors">
                       Arquivo →
                     </Link>
                   </div>
-                  <p className="mt-2.5 font-display text-lg uppercase text-white">
+                  <p className="mt-2.5 font-display text-xl uppercase text-white">
                     {ultimaCorrida.nome} · {ultimaCorrida.categoria}
                   </p>
-                  <div className="mt-4 space-y-2">
+                  <div className="mt-4">
                     {ultimaCorrida.resultados.slice(0, 3).map((r) => (
-                      <div key={r.posicao} className="flex items-center gap-3">
+                      <div key={r.posicao} className="flex items-center gap-3 border-b border-white/6 py-2.5 last:border-0">
                         <PosicaoBadge posicao={r.posicao} size="sm" />
                         <span className="min-w-0 flex-1 truncate text-sm text-ink-200">{r.piloto}</span>
                         <span className="font-mono text-xs text-ink-500 tabular-nums">{r.tempo}</span>
@@ -365,28 +368,24 @@ export default async function Home() {
                 <Link
                   key={v.slug}
                   href={`/videos#${v.slug}`}
-                  className="group card card-hover w-[280px] sm:w-[320px] shrink-0 overflow-hidden"
+                  className="group w-[280px] sm:w-[320px] shrink-0"
                 >
-                  <div className="relative aspect-video">
+                  <div className="media relative aspect-video">
                     <Placeholder nome={[v.slug, v.thumbnail]} className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0 grid place-items-center">
-                      <span className="grid size-14 place-items-center rounded-full bg-mb-red/90 text-white transition-transform group-hover:scale-110">
-                        <Icon name="play" className="size-5 translate-x-0.5" />
-                      </span>
-                    </div>
-                    <span className="absolute bottom-2 right-2 bg-ink-950/90 px-2 py-0.5 font-mono text-[11px] text-white">
+                    <span className="absolute bottom-3 left-3 grid size-10 place-items-center rounded-full bg-white/15 text-white ring-2 ring-white/80 backdrop-blur-sm transition-colors group-hover:bg-mb-red group-hover:ring-mb-red">
+                      <Icon name="play" className="size-4 translate-x-px" />
+                    </span>
+                    <span className="absolute bottom-3.5 right-3 font-mono text-xs text-white [text-shadow:0_1px_4px_rgb(0_0_0/0.8)]">
                       {v.duracao}
                     </span>
                   </div>
-                  <div className="p-4">
-                    <p className="eyebrow text-mb-red">{v.categoria}</p>
-                    <h3 className="mt-1.5 font-display text-sm uppercase leading-snug text-white line-clamp-2">
-                      {v.titulo}
-                    </h3>
-                    <p className="mt-2 text-xs text-ink-600">
-                      {v.visualizacoes.toLocaleString("pt-PT")} visualizações
-                    </p>
-                  </div>
+                  <p className="eyebrow mt-3 text-mb-red">{v.categoria}</p>
+                  <h3 className="mt-1.5 font-display text-lg uppercase leading-tight text-white line-clamp-2 transition-colors group-hover:text-mb-red">
+                    {v.titulo}
+                  </h3>
+                  <p className="mt-1.5 text-xs text-ink-500">
+                    {v.visualizacoes.toLocaleString("pt-PT")} visualizações
+                  </p>
                 </Link>
               ))}
             </div>
@@ -395,9 +394,9 @@ export default async function Home() {
       )}
 
       {/* ============ ACESSOS RÁPIDOS ============ */}
-      <section className="border-t border-ink-800 bg-ink-900">
+      <section className="bg-ink-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 href: "/bilhetes",
@@ -424,15 +423,15 @@ export default async function Home() {
                 texto: "Siga pilotos e equipas e receba aviso quando houver novidades.",
               },
             ].map((c) => (
-              <Link key={c.href} href={c.href} className="group card card-hover p-6">
-                <span className="grid size-11 place-items-center bg-mb-red/10 text-mb-red transition-colors group-hover:bg-mb-red group-hover:text-white">
+              <Link key={c.href} href={c.href} className="group block">
+                <span className="grid size-12 place-items-center rounded-full bg-mb-red/12 text-mb-red transition-colors group-hover:bg-mb-red group-hover:text-white">
                   <Icon name={c.icone} className="size-5" />
                 </span>
-                <h3 className="mt-4 font-display text-lg uppercase text-white">{c.titulo}</h3>
-                <p className="mt-2 text-sm text-ink-500 leading-relaxed">{c.texto}</p>
-                <span className="mt-4 inline-flex items-center gap-1.5 font-display text-[11px] uppercase tracking-widest text-mb-red">
+                <h3 className="mt-5 font-display text-2xl uppercase text-white">{c.titulo}</h3>
+                <p className="mt-2 text-sm text-ink-400 leading-relaxed">{c.texto}</p>
+                <span className="mt-4 inline-flex items-center gap-1.5 font-ui text-base text-white transition-colors group-hover:text-mb-red">
                   Aceder
-                  <Icon name="arrow" className="size-3.5 transition-transform group-hover:translate-x-1" />
+                  <Icon name="arrow" className="size-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </Link>
             ))}

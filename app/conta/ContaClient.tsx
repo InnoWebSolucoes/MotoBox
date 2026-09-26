@@ -59,7 +59,7 @@ function iniciais(n: string) {
 }
 
 const campo =
-  "h-11 w-full border border-ink-700 bg-ink-950 px-3 text-sm text-white placeholder:text-ink-600 focus:border-mb-red focus:outline-none";
+  "h-11 w-full bg-ink-950 px-3.5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
 
 export function ContaClient({
   eventos, pilotos, equipas, noticias,
@@ -138,7 +138,7 @@ export function ContaClient({
     return (
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         <div className="card h-40 animate-pulse" />
-        <div className="mt-6 h-12 animate-pulse bg-ink-900" />
+        <div className="mt-6 h-12 animate-pulse rounded-full bg-ink-900" />
       </div>
     );
   }
@@ -183,7 +183,7 @@ export function ContaClient({
         </div>
         {/* `relative` põe esta faixa por cima da imagem, que está posicionada. */}
         <div className="relative flex flex-wrap items-end gap-5 px-6 pb-6 -mt-10">
-          <span className="grid size-20 shrink-0 place-items-center border-2 border-ink-900 font-display text-2xl text-white"
+          <span className="grid size-20 shrink-0 place-items-center rounded-full font-display text-2xl text-white ring-4 ring-ink-900"
             style={{ backgroundColor: perfil?.avatar_cor ?? "#e10600" }}>
             {iniciais(nome)}
           </span>
@@ -212,19 +212,16 @@ export function ContaClient({
       </header>
 
       {/* Abas */}
-      <nav className="mt-6 flex gap-1 overflow-x-auto no-scrollbar border-b border-ink-800">
+      <nav className="mt-6 flex gap-1 overflow-x-auto no-scrollbar border-b border-white/6">
         {ABAS.map((a) => (
           <button
             key={a.id}
             onClick={() => setAba(a.id)}
             aria-pressed={aba === a.id}
-            className={`relative inline-flex h-12 shrink-0 items-center gap-2 px-4 font-display text-xs uppercase tracking-wider transition-colors ${
-              aba === a.id ? "text-white" : "text-ink-500 hover:text-ink-200"
-            }`}
+            className="tab gap-2"
           >
             <Icon name={a.icone} className="size-4" />
             {a.label}
-            {aba === a.id && <span className="absolute inset-x-2 bottom-0 h-[3px] bg-mb-red" aria-hidden />}
           </button>
         ))}
       </nav>
@@ -240,8 +237,8 @@ export function ContaClient({
                   { v: prefs.pilotos.length + prefs.equipas.length, l: "A seguir", i: "bell", a: "preferencias" as Aba },
                   { v: anunciosActivos, l: "Anúncios activos", i: "tag", a: "anuncios" as Aba },
                 ].map((s) => (
-                  <button key={s.l} onClick={() => setAba(s.a)} className="card p-5 text-left transition-colors hover:border-ink-600">
-                    <span className="grid size-9 place-items-center bg-mb-red/10 text-mb-red">
+                  <button key={s.l} onClick={() => setAba(s.a)} className="card card-hover p-5 text-left">
+                    <span className="grid size-9 place-items-center rounded-full bg-mb-red/12 text-mb-red">
                       <Icon name={s.i} className="size-4.5" />
                     </span>
                     <p className="mt-3 font-display text-3xl text-white">{s.v}</p>
@@ -254,7 +251,7 @@ export function ContaClient({
                 <div className="card p-6">
                   <div className="flex items-center justify-between">
                     <h2 className="eyebrow text-mb-red">Próximo evento</h2>
-                    <button onClick={() => setAba("bilhetes")} className="eyebrow text-ink-500 hover:text-white">
+                    <button onClick={() => setAba("bilhetes")} className="font-ui text-sm text-white transition-colors hover:text-mb-red">
                       Todos →
                     </button>
                   </div>
@@ -282,10 +279,10 @@ export function ContaClient({
                     ? "Com base nos pilotos, equipas e marcas que segue."
                     : "As notícias mais recentes. Siga pilotos, equipas e marcas para personalizar."}
                 </p>
-                <div className="space-y-3">
+                <div>
                   {feed.map((n) => (
-                    <Link key={n.slug} href={`/noticias/${n.slug}`} className="group flex gap-3.5">
-                      <Placeholder nome={[n.slug, n.imagem]} className="size-16 shrink-0" tamanhos="64px" />
+                    <Link key={n.slug} href={`/noticias/${n.slug}`} className="group flex gap-3.5 border-b border-white/6 py-3 first:pt-0 last:border-0 last:pb-0">
+                      <Placeholder nome={[n.slug, n.imagem]} className="media size-16 shrink-0" tamanhos="64px" />
                       <div className="min-w-0 flex-1">
                         <p className="eyebrow text-mb-red">{n.categoria}</p>
                         <p className="mt-1 text-sm text-white line-clamp-2 group-hover:text-mb-red transition-colors">{n.titulo}</p>
@@ -374,13 +371,13 @@ export function ContaClient({
                         ))}
                       </dl>
                       {b.evento && (
-                        <div className="mt-5 flex flex-wrap gap-2 border-t border-ink-800 pt-4">
+                        <div className="mt-5 flex flex-wrap gap-2 border-t border-white/6 pt-4">
                           <ButtonLink href={`/calendario/${b.evento.slug}`} variant="ghost" size="sm">Ver evento</ButtonLink>
                         </div>
                       )}
                     </div>
                     {pago && (
-                      <div className="flex flex-col items-center justify-center gap-2.5 border-t border-dashed border-ink-700 p-6 sm:border-l sm:border-t-0">
+                      <div className="flex flex-col items-center justify-center gap-2.5 border-t-2 border-dashed border-ink-950 p-6 sm:border-l-2 sm:border-t-0">
                         <QRCode valor={b.codigoQR || b.referencia} size={140} />
                         <p className="font-mono text-[11px] text-ink-500">{b.referencia}</p>
                       </div>
@@ -435,7 +432,7 @@ export function ContaClient({
               <div className="grid gap-2.5 sm:grid-cols-2">
                 {equipas.map((e) => (
                   <Escolha key={e.slug} on={prefs.equipas.includes(e.slug)} onClick={() => alternar("equipas", e.slug)}>
-                    <span className="grid size-9 shrink-0 place-items-center font-display text-[10px] text-white" style={{ background: e.cor }}>
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full font-display text-[10px] text-white" style={{ background: e.cor }}>
                       {e.logo}
                     </span>
                     <span className="min-w-0 flex-1">
@@ -455,9 +452,7 @@ export function ContaClient({
                   const on = prefs.marcas.includes(m);
                   return (
                     <button key={m} onClick={() => alternar("marcas", m)} aria-pressed={on}
-                      className={`h-9 px-4 font-display text-[11px] uppercase tracking-wider transition-colors ${
-                        on ? "bg-mb-red text-white" : "border border-ink-700 text-ink-400 hover:border-ink-500 hover:text-white"
-                      }`}>
+                      className="chip">
                       {m}
                     </button>
                   );
@@ -474,7 +469,7 @@ export function ContaClient({
             <section className="card p-6">
               <h2 className="eyebrow text-mb-red mb-1">O que quer receber</h2>
               <p className="text-xs text-ink-600 mb-5">Notificações personalizadas com base nas suas preferências.</p>
-              <div className="divide-y divide-ink-800">
+              <div className="divide-y divide-white/6">
                 {(
                   [
                     ["resultados", "Resultados de corridas", "Quando os pilotos e equipas que segue terminam uma prova."],
@@ -514,10 +509,12 @@ export function ContaClient({
                     <button key={k} disabled={!activo}
                       onClick={() => mudarPrefs({ ...prefs, canais: { ...prefs.canais, [k]: !prefs.canais[k] } })}
                       aria-pressed={on}
-                      className={`flex flex-col items-center gap-2.5 border p-5 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                        on ? "border-mb-red bg-mb-red/5" : "border-ink-800 hover:border-ink-600"
+                      className={`flex flex-col items-center gap-2.5 rounded-card p-5 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                        on ? "bg-mb-red/10 ring-2 ring-inset ring-mb-red/70" : "bg-ink-950 hover:bg-ink-800"
                       }`}>
-                      <Icon name={icone} className={`size-6 ${on ? "text-mb-red" : "text-ink-500"}`} />
+                      <span className={`grid size-11 place-items-center rounded-full ${on ? "bg-mb-red/15 text-mb-red" : "bg-ink-800 text-ink-500"}`}>
+                        <Icon name={icone} className="size-5" />
+                      </span>
                       <span className="text-center text-xs text-white">{label}</span>
                       {!activo && <span className="text-[10px] uppercase tracking-widest text-ink-500">Brevemente</span>}
                     </button>
@@ -544,7 +541,7 @@ export function ContaClient({
             </div>
 
             {perfil?.verificado && (
-              <div className="card border-ok/30 bg-ok/5 p-5">
+              <div className="card bg-ok/8 p-5">
                 <p className="flex items-center gap-2.5 text-sm text-ink-200">
                   <Icon name="verified" className="size-5 shrink-0 text-ok" />
                   <span>
@@ -560,22 +557,22 @@ export function ContaClient({
                 <p className="text-sm text-ink-400">Ainda não publicou nenhum anúncio.</p>
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
                 {dados.anuncios.map((a) => (
-                  <div key={a.id} className="card overflow-hidden">
-                    <Link href={`/marketplace/${a.id}`} className="relative block aspect-[4/3]">
+                  <div key={a.id}>
+                    <Link href={`/marketplace/${a.id}`} className="media relative block aspect-[4/3]">
                       <Placeholder nome={a.imagens[0] ?? a.categoria} className="absolute inset-0" />
                       <div className="absolute left-3 top-3"><Tag tone="ok">Activo</Tag></div>
                     </Link>
-                    <div className="p-4">
+                    <div className="pt-3.5">
                       <h3 className="font-display text-sm uppercase leading-snug text-white line-clamp-2">{a.titulo}</h3>
                       <p className="mt-2 font-display text-lg text-white">{formatKz(a.preco)}</p>
                       <p className="mt-1 flex items-center gap-1.5 text-[11px] text-ink-600">
                         <Icon name="eye" className="size-3" />
                         {a.visualizacoes.toLocaleString("pt-PT")} visualizações
                       </p>
-                      <div className="mt-4 flex gap-2 border-t border-ink-800 pt-3">
-                        <Button variant="ghost" size="sm" className="flex-1" onClick={() => setFormAnuncio(a)}>Editar</Button>
+                      <div className="mt-4 flex gap-2">
+                        <Button variant="dark" size="sm" className="flex-1" onClick={() => setFormAnuncio(a)}>Editar</Button>
                         <TerminarAnuncio id={a.id} aoTerminar={carregar} />
                       </div>
                     </div>
@@ -629,11 +626,11 @@ function EstadoGuardar({ estado }: { estado: EstadoGravacao }) {
 function Escolha({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button onClick={onClick} aria-pressed={on}
-      className={`flex items-center gap-3 border p-2.5 text-left transition-colors ${
-        on ? "border-mb-red bg-mb-red/5" : "border-ink-800 hover:border-ink-600"
+      className={`flex items-center gap-3 rounded-full py-1.5 pl-1.5 pr-3.5 text-left transition-colors ${
+        on ? "bg-mb-red/12 ring-1 ring-inset ring-mb-red/60" : "bg-ink-950 hover:bg-ink-800"
       }`}>
       {children}
-      <span className={`grid size-5 shrink-0 place-items-center ${on ? "bg-mb-red text-white" : "border border-ink-600"}`}>
+      <span className={`grid size-5 shrink-0 place-items-center rounded-full ${on ? "bg-mb-red text-white" : "border border-ink-600"}`}>
         {on && <Icon name="check" className="size-3" />}
       </span>
     </button>
@@ -651,10 +648,10 @@ function Janela({ titulo, aoFechar, children }: { titulo: string; aoFechar: () =
     <div className="fixed inset-0 z-100 flex items-end justify-center sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-black/75" onClick={aoFechar} aria-hidden />
       <div role="dialog" aria-modal="true" aria-label={titulo}
-        className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto border border-ink-700 bg-ink-900 p-6">
+        className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-2xl bg-ink-900 p-6 shadow-2xl shadow-black/60 ring-1 ring-white/5 sm:rounded-2xl">
         <div className="mb-5 flex items-center justify-between gap-3">
           <h2 className="font-display text-lg uppercase tracking-tight text-white">{titulo}</h2>
-          <button onClick={aoFechar} aria-label="Fechar" className="text-ink-400 hover:text-white">
+          <button onClick={aoFechar} aria-label="Fechar" className="-mr-2 grid size-9 place-items-center rounded-full text-ink-400 transition-colors hover:bg-white/8 hover:text-white">
             <Icon name="close" className="size-5" />
           </button>
         </div>
@@ -804,7 +801,7 @@ function TerminarAnuncio({ id, aoTerminar }: { id: string; aoTerminar: () => Pro
   const [erro, setErro] = useState<string | null>(null);
 
   if (!confirmar) {
-    return <Button variant="ghost" size="sm" className="flex-1" onClick={() => setConfirmar(true)}>Terminar</Button>;
+    return <Button variant="dark" size="sm" className="flex-1" onClick={() => setConfirmar(true)}>Terminar</Button>;
   }
   return (
     <Janela titulo="Terminar anúncio" aoFechar={() => setConfirmar(false)}>

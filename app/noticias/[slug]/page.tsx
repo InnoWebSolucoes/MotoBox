@@ -50,13 +50,13 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
   return (
     <>
       {/* Cabeçalho */}
-      <header className="relative overflow-hidden border-b border-ink-800">
+      <header className="relative overflow-hidden">
         <Placeholder nome={[noticia.slug, noticia.imagem]} className="absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/95 via-ink-950/65 to-ink-950/30" />
         <div className="relative mx-auto max-w-3xl px-4 sm:px-6 py-14 sm:py-20">
           <Link
             href="/noticias"
-            className="inline-flex items-center gap-2 font-display text-[11px] uppercase tracking-widest text-ink-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 font-ui text-base text-ink-300 hover:text-white transition-colors"
           >
             <span aria-hidden>←</span> Notícias
           </Link>
@@ -70,7 +70,7 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
 
           <p className="mt-5 text-base sm:text-lg text-ink-300 leading-relaxed">{noticia.resumo}</p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-ink-800 pt-5 text-xs text-ink-500">
+          <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/10 pt-5 text-xs text-ink-400">
             <span className="inline-flex items-center gap-2">
               <Icon name="user" className="size-3.5" />
               {noticia.autor}
@@ -106,7 +106,7 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
 
         {/* Fonte externa */}
         {noticia.fonte && (
-          <div className="mt-8 border-l-2 border-mb-red bg-ink-900 p-5">
+          <div className="mt-10 rounded-card bg-ink-900 p-5 sm:p-6">
             <p className="eyebrow text-mb-red mb-2">Fonte</p>
             <p className="text-sm text-ink-400">
               Conteúdo agregado automaticamente de{" "}
@@ -128,22 +128,22 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
         )}
 
         {/* Tags */}
-        <div className="mt-8 flex flex-wrap gap-2 border-t border-ink-800 pt-6">
+        <div className="mt-10 flex flex-wrap gap-2 border-t border-white/6 pt-6">
           {noticia.tags.map((t) => (
-            <span key={t} className="border border-ink-700 px-3 py-1 text-xs text-ink-400">
+            <span key={t} className="rounded-full bg-ink-800 px-3.5 py-1.5 font-ui text-sm text-ink-300">
               #{t}
             </span>
           ))}
         </div>
 
         {/* Partilhar */}
-        <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-ink-800 pt-6">
+        <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-white/6 pt-6">
           <span className="eyebrow text-ink-500">Partilhar</span>
           <div className="flex gap-2">
             {(["whatsapp", "facebook", "instagram", "share"] as const).map((r) => (
               <span
                 key={r}
-                className="grid size-10 cursor-pointer place-items-center border border-ink-700 text-ink-400 transition-colors hover:border-mb-red hover:text-white"
+                className="grid size-10 cursor-pointer place-items-center rounded-full bg-ink-800 text-ink-300 transition-colors hover:bg-mb-red hover:text-white"
               >
                 <Icon name={r} className="size-4.5" />
               </span>
@@ -154,29 +154,26 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
 
       {/* Relacionadas */}
       {relacionadas.length > 0 && (
-        <section className="border-t border-ink-800 bg-ink-900">
+        <section className="bg-ink-900">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14">
             <h2 className="title-xl text-2xl sm:text-3xl">Leia também</h2>
-            <div className="mt-8 grid gap-5 sm:grid-cols-3">
+            <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-3">
               {relacionadas.map((n) => (
-                <Link key={n.slug} href={`/noticias/${n.slug}`} className="group card card-hover overflow-hidden">
-                  <div className="relative aspect-[16/10]">
+                <Link key={n.slug} href={`/noticias/${n.slug}`} className="group block">
+                  <div className="media relative aspect-[16/10]">
                     <Placeholder
                       nome={[n.slug, n.imagem]}
                       className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                      tamanhos="(max-width: 640px) 100vw, 400px"
                     />
-                    <div className="absolute left-3 top-3">
-                      <Tag tone="red">{n.categoria}</Tag>
-                    </div>
                   </div>
-                  <div className="p-5">
-                    <h3 className="font-display text-base uppercase leading-snug text-white line-clamp-3 group-hover:text-mb-red transition-colors">
-                      {n.titulo}
-                    </h3>
-                    <p className="mt-2 text-xs text-ink-600">
-                      {formatData(n.data, { day: "2-digit", month: "short" })}
-                    </p>
-                  </div>
+                  <p className="eyebrow mt-4 text-mb-red">{n.categoria}</p>
+                  <h3 className="mt-2 font-display text-lg uppercase leading-tight text-white line-clamp-3 group-hover:text-mb-red transition-colors">
+                    {n.titulo}
+                  </h3>
+                  <p className="mt-2 text-xs text-ink-500">
+                    {formatData(n.data, { day: "2-digit", month: "short" })}
+                  </p>
                 </Link>
               ))}
             </div>

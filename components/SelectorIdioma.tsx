@@ -16,7 +16,7 @@ export function SelectorIdioma({ compacto = false }: { compacto?: boolean }) {
     <div
       role="group"
       aria-label={t("nav.mudarIdioma")}
-      className={`inline-flex border border-ink-700 ${compacto ? "" : "h-9"}`}
+      className={`inline-flex items-center rounded-full bg-white/8 p-0.5 ${compacto ? "h-8" : "h-9"}`}
     >
       {IDIOMAS.map((i) => {
         const activo = i === idioma;
@@ -27,12 +27,8 @@ export function SelectorIdioma({ compacto = false }: { compacto?: boolean }) {
             onClick={() => definirIdioma(i)}
             aria-pressed={activo}
             title={NOME_IDIOMA[i]}
-            className={`px-2.5 font-display text-[11px] uppercase tracking-widest transition-colors ${
-              compacto ? "py-1" : ""
-            } ${
-              activo
-                ? "bg-mb-red text-white"
-                : "text-ink-400 hover:bg-ink-800 hover:text-white"
+            className={`h-full rounded-full px-2.5 font-ui text-[13px] uppercase transition-colors ${
+              activo ? "bg-white text-ink-950" : "text-ink-400 hover:text-white"
             }`}
           >
             {CODIGO_IDIOMA[i]}
