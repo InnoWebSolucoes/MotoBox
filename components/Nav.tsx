@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { LogoLink } from "./Brand";
 import { Icon } from "./ui";
-import { SOCIAIS } from "@/lib/data";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { useAuth } from "@/lib/auth/contexto";
 import { SelectorIdioma } from "./SelectorIdioma";
+import type { LigacaoRede } from "@/lib/redes";
 
 type NavItem = { href: string; chave: string; filhos?: { href: string; chave: string; desc: string }[] };
 
@@ -58,7 +58,7 @@ const NAV: NavItem[] = [
   },
 ];
 
-export function Nav() {
+export function Nav({ redes = [] }: { redes?: LigacaoRede[] }) {
   const { t } = useIdioma();
   const { utilizador, perfil, equipa, sair } = useAuth();
   const pathname = usePathname();
@@ -190,12 +190,18 @@ export function Nav() {
                 )}
                 <Link
                   href="/conta"
-                  className="grid size-9 place-items-center rounded-full font-display text-sm text-white ring-2 ring-white/10 transition-shadow hover:ring-white/40"
+                  className="grid size-9 place-items-center overflow-hidden rounded-full font-display text-sm text-white ring-2 ring-white/10 transition-shadow hover:ring-white/40"
                   style={{ background: perfil?.avatarCor ?? "#e10600" }}
                   aria-label={t("auth.aMinhaConta")}
                   title={perfil?.nome ?? undefined}
                 >
-                  {(perfil?.nome ?? "?").slice(0, 1).toUpperCase()}
+                  {perfil?.avatarUrl ? (
+                    // A imagem já vem reduzida do envio (máx. 512 px); a cor fica por trás de um PNG transparente.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={perfil.avatarUrl} alt="" className="size-full object-cover" decoding="async" />
+                  ) : (
+                    (perfil?.nome ?? "?").slice(0, 1).toUpperCase()
+                  )}
                 </Link>
                 <button
                   type="button"
@@ -267,16 +273,16 @@ export function Nav() {
             </Link>
           </div>
           <div className="flex gap-2 px-5 pb-10">
-            {(["instagram", "facebook", "youtube"] as const).map((r) => (
+            {redes.map((r) => (
               <a
-                key={r}
-                href={SOCIAIS[r]}
+                key={r.rede}
+                href={r.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="grid size-11 place-items-center rounded-full bg-ink-800 text-ink-300 transition-colors hover:bg-ink-700 hover:text-white"
-                aria-label={r}
+                aria-label={r.nome}
               >
-                <Icon name={r} className="size-5" />
+                <Icon name={r.rede} className="size-5" />
               </a>
             ))}
           </div>

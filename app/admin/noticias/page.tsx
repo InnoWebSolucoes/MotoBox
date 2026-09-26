@@ -1,7 +1,7 @@
 "use client";
 
 import { PaginaRecurso } from "@/components/admin/Recurso";
-import { Campo, Input, Area, Seleccao, ListaTexto } from "@/components/admin/kit";
+import { Campo, CampoEndereco, Input, Area, Seleccao, ListaTexto } from "@/components/admin/kit";
 import { slugify } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
 import type { Noticia } from "@/lib/types";
@@ -47,9 +47,8 @@ export default function AdminNoticias() {
             <Input value={r.titulo}
               onChange={(e) => definir({ titulo: e.target.value, slug: novo && r.slug === slugify(r.titulo) ? slugify(e.target.value) : r.slug } as Partial<Noticia>)} />
           </Campo>
-          <Campo etiqueta="Slug" obrigatorio>
-            <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Noticia>)} />
-          </Campo>
+          <CampoEndereco prefixo="/noticias" novo={novo} valor={r.slug}
+            onChange={(slug) => definir({ slug } as Partial<Noticia>)} />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo etiqueta="Categoria">

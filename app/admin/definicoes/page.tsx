@@ -90,16 +90,22 @@ export default function AdminDefinicoes() {
           </div>
         </Painel>
 
-        <Painel titulo="Redes sociais">
+        <Painel titulo="Redes sociais" descricao="Ligações mostradas no rodapé, no menu e na página de contacto. Uma rede em branco não aparece.">
           <div className="space-y-4">
             <Campo etiqueta="Instagram">
-              <Input value={rascunho.instagram} onChange={(e) => set({ instagram: e.target.value })} />
+              <Input value={rascunho.instagram} placeholder="https://www.instagram.com/…" onChange={(e) => set({ instagram: e.target.value })} />
             </Campo>
             <Campo etiqueta="Facebook">
-              <Input value={rascunho.facebook} onChange={(e) => set({ facebook: e.target.value })} />
+              <Input value={rascunho.facebook} placeholder="https://www.facebook.com/…" onChange={(e) => set({ facebook: e.target.value })} />
             </Campo>
             <Campo etiqueta="YouTube">
-              <Input value={rascunho.youtube} placeholder="https://" onChange={(e) => set({ youtube: e.target.value })} />
+              <Input value={rascunho.youtube} placeholder="https://www.youtube.com/@…" onChange={(e) => set({ youtube: e.target.value })} />
+            </Campo>
+            <Campo etiqueta="LinkedIn">
+              <Input value={rascunho.linkedin ?? ""} placeholder="https://www.linkedin.com/company/…" onChange={(e) => set({ linkedin: e.target.value })} />
+            </Campo>
+            <Campo etiqueta="Google Business" ajuda="A ligação do perfil da Motobox no Google (a ficha que aparece no Google Maps). No perfil, carregue em Partilhar e copie a ligação.">
+              <Input value={rascunho.googleBusiness ?? ""} placeholder="https://maps.app.goo.gl/…" onChange={(e) => set({ googleBusiness: e.target.value })} />
             </Campo>
           </div>
         </Painel>

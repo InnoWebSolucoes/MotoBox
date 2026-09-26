@@ -134,6 +134,47 @@ export function Seleccao({
   );
 }
 
+/**
+ * Endereço da página (o "slug"): a parte final do URL, por exemplo
+ * /noticias/campeonato-decide-se-no-huambo. Nasce do título ao criar e
+ * pode ser afinado; mostra o endereço completo para não parecer um
+ * campo técnico por preencher.
+ */
+export function CampoEndereco({
+  valor, onChange, prefixo, novo,
+}: {
+  valor: string; onChange: (slug: string) => void;
+  /** Secção do site onde a página vive, ex. "/noticias". Vazio para a raiz. */
+  prefixo: string;
+  novo: boolean;
+}) {
+  const limpar = (texto: string) =>
+    texto
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+/, "");
+  return (
+    <Campo
+      etiqueta="Endereço da página"
+      ajuda={novo
+        ? "Preenche-se sozinho a partir do título. Só precisa de mexer se quiser um endereço mais curto."
+        : "Mudar o endereço de uma página já publicada parte as ligações que alguém tenha partilhado."}
+    >
+      <div className="flex items-center rounded-[0.625rem] border border-ink-700 bg-ink-950 focus-within:border-mb-red">
+        <span className="shrink-0 select-none pl-3 text-sm text-ink-500">{prefixo}/</span>
+        <input
+          value={valor}
+          onChange={(e) => onChange(limpar(e.target.value))}
+          onBlur={() => onChange(valor.replace(/-+$/, ""))}
+          placeholder="gerado-a-partir-do-titulo"
+          className="min-w-0 flex-1 bg-transparent py-2 pr-3 text-sm text-white outline-none placeholder:text-ink-600"
+        />
+      </div>
+    </Campo>
+  );
+}
+
 /** Interruptor booleano */
 export function Interruptor({
   activo, onChange, etiqueta, descricao, disabled,
@@ -158,9 +199,11 @@ export function Interruptor({
           activo ? "bg-ok" : "bg-ink-700"
         }`}
       >
+        {/* Âncora explícita à esquerda: sem `left`, o círculo ficava na posição
+            centrada do texto do botão e saía da pista verde ao ligar. */}
         <span
-          className={`absolute top-0.5 size-5 rounded-full bg-white transition-transform ${
-            activo ? "translate-x-5" : "translate-x-0.5"
+          className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition-transform ${
+            activo ? "translate-x-5" : "translate-x-0"
           }`}
         />
       </button>
@@ -190,11 +233,12 @@ const TONS_ESTADO: Record<string, string> = {
   reembolsado: "bg-ink-700/40 text-ink-300 border-ink-600",
 };
 
-export function Estado({ valor }: { valor: string }) {
+/** `rotulo` troca o texto quando o valor guardado não diz nada a quem lê. */
+export function Estado({ valor, rotulo }: { valor: string; rotulo?: string }) {
   const tom = TONS_ESTADO[valor] ?? "bg-ink-700/40 text-ink-300 border-ink-600";
   return (
     <span className={`inline-flex items-center border px-2 py-0.5 text-[10px] font-display uppercase tracking-widest ${tom}`}>
-      {valor.replace(/-/g, " ")}
+      {rotulo ?? valor.replace(/-/g, " ")}
     </span>
   );
 }

@@ -162,11 +162,30 @@ export function src(
   // entre itens e serve de reserva.
   const chaves = (Array.isArray(nome) ? nome : [nome]).filter(Boolean) as string[];
   for (const c of chaves) {
+    // Um endereço completo (miniatura do YouTube, imagem colada no painel,
+    // logótipo carregado) usa-se tal como está.
+    if (/^https:\/\//.test(c)) return c;
     // chaves derivadas do tipo "capacete-2" (galerias) caem na imagem base
     const base = TODAS[c] ?? TODAS[c.replace(/-\d+$/, "")];
     if (base) return `${base}?auto=format&fit=crop&w=${w}&q=${q}`;
   }
   return null;
+}
+
+/** Servidores de imagem que o optimizador do Next conhece (ver next.config.ts). */
+const OTIMIZAVEIS = [/^images\.unsplash\.com$/, /^i\.ytimg\.com$/, /^img\.youtube\.com$/, /\.supabase\.co$/];
+
+/**
+ * Verdadeiro quando o optimizador de imagens pode servir o endereço. Uma
+ * imagem de outro servidor mostra-se sem optimização em vez de partir a página.
+ */
+export function otimizavel(url: string): boolean {
+  try {
+    const { hostname } = new URL(url);
+    return OTIMIZAVEIS.some((r) => r.test(hostname));
+  } catch {
+    return false;
+  }
 }
 
 /**

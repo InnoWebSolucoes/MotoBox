@@ -1,7 +1,7 @@
 "use client";
 
 import { PaginaRecurso } from "@/components/admin/Recurso";
-import { Campo, Input, Seleccao } from "@/components/admin/kit";
+import { Campo, CampoEndereco, Input, Seleccao } from "@/components/admin/kit";
 import { slugify, useAdmin } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
 import type { Corrida, ResultadoCorrida } from "@/lib/types";
@@ -56,9 +56,8 @@ export default function AdminCorridas() {
               <Input value={r.nome}
                 onChange={(e) => definir({ nome: e.target.value, slug: novo && r.slug === slugify(r.nome) ? slugify(e.target.value) : r.slug } as Partial<Corrida>)} />
             </Campo>
-            <Campo etiqueta="Slug" obrigatorio>
-              <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Corrida>)} />
-            </Campo>
+            <CampoEndereco prefixo="/resultados" novo={novo} valor={r.slug}
+            onChange={(slug) => definir({ slug } as Partial<Corrida>)} />
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo etiqueta="Evento">

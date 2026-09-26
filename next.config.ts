@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/photo-**",
       },
+      // Miniaturas dos vídeos importados do YouTube.
+      { protocol: "https", hostname: "i.ytimg.com", pathname: "/vi/**" },
+      { protocol: "https", hostname: "img.youtube.com", pathname: "/vi/**" },
+      // Ficheiros públicos do Supabase Storage (logótipos das contas).
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
     ],
   },
 };

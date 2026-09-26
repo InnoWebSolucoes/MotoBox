@@ -395,4 +395,33 @@ export const interfaceEn: Record<string, string> = {
   "Novas provas no calendário.": "New races on the calendar.",
   "Quando abre a venda de bilhetes para uma prova.": "When tickets go on sale for a race.",
   "Precisa de entrar para ver a sua conta.": "You need to log in to see your account.",
+
+  /* ---------- Fórum ---------- */
+  "O sítio onde a comunidade motard angolana fala. Dúvidas de mecânica, organização de passeios, análise das corridas e tudo o resto.": "Where Angola's riding community talks. Mechanical questions, planning rides, race analysis and everything else.",
+  "Respeito em primeiro lugar. Sem insultos.": "Respect comes first. No insults.",
+  "Sem publicidade não autorizada.": "No unauthorised advertising.",
+  "Vendas só no Marketplace.": "Sales only in the Marketplace.",
+  "Pesquise antes de abrir um tópico novo.": "Search before starting a new thread.",
+  "Sem conteúdo fora do tema motard.": "Keep it about motorcycling.",
+  "Recentes": "Latest",
+  "Populares": "Popular",
+  "Sem resposta": "Unanswered",
+  "última resposta": "last reply",
+  "mensagens": "messages",
+  "desde": "since",
+  "Gosto": "Like",
+  "Citar": "Quote",
+  "Reportar": "Report",
+
+  /* ---------- Conta: logótipo e cor ---------- */
+  "Logótipo ou fotografia": "Logo or photo",
+  "JPG, PNG ou WebP, até 2 MB.": "JPG, PNG or WebP, up to 2 MB.",
+  "Carregar imagem": "Upload image",
+  "Trocar imagem": "Change image",
+  "Remover": "Remove",
+  "Cor": "Colour",
+  "A cor aparece por trás do logótipo e quando não há imagem.": "The colour shows behind your logo, and on its own when there's no image.",
+  "Use uma imagem JPG, PNG ou WebP.": "Use a JPG, PNG or WebP image.",
+  "A imagem tem mais de 2 MB.": "The image is larger than 2 MB.",
+  "Não foi possível contactar o servidor.": "Couldn't reach the server.",
 };

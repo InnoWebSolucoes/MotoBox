@@ -30,6 +30,8 @@ export interface EmailPreparado {
   assunto: string;
   html: string;
   texto: string;
+  /** Cabeçalhos próprios desta mensagem (ex.: List-Unsubscribe da newsletter). */
+  cabecalhos?: Record<string, string>;
 }
 
 /** Resumo devolvido por cada aviso, útil em testes e registos. */
@@ -396,6 +398,7 @@ export async function enviarEmails(emails: EmailPreparado[]): Promise<number> {
   for (let i = 0; i < emails.length; i += MAX_LOTE) {
     const lote = emails.slice(i, i + MAX_LOTE).map((e) => ({
       from: de, to: [e.para], subject: e.assunto, html: e.html, text: e.texto,
+      ...(e.cabecalhos ? { headers: e.cabecalhos } : {}),
     }));
     try {
       // A Resend limita os pedidos por segundo: espaça os lotes e

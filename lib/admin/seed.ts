@@ -122,7 +122,9 @@ export const definicoesSeed: Definicoes = {
   moeda: "Kz",
   instagram: "https://www.instagram.com/motobox_angola",
   facebook: "https://www.facebook.com/motoboxangola",
-  youtube: "",
+  youtube: "https://www.youtube.com/@motoboxangola",
+  linkedin: "",
+  googleBusiness: "",
   manutencao: false,
   registosAbertos: true,
   marketplaceAberto: true,
@@ -130,6 +132,7 @@ export const definicoesSeed: Definicoes = {
   bilheteiraAberta: true,
   cookieBanner: true,
   analytics: "",
+  newsletterAutomatica: true,
 };
 
 export const atividadeSeed: RegistoAtividade[] = [

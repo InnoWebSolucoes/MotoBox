@@ -97,8 +97,8 @@ export default function AdminPaginas() {
                   <Campo etiqueta="Título">
                     <Input value={pagina.titulo} onChange={(e) => definir({ titulo: e.target.value })} />
                   </Campo>
-                  <Campo etiqueta="Slug (URL)">
-                    <Input value={pagina.slug} disabled />
+                  <Campo etiqueta="Endereço da página">
+                    <Input value={`/${pagina.slug}`} disabled />
                   </Campo>
                 </div>
                 <Campo etiqueta="Descrição" ajuda="Usada nos metadados e no cabeçalho da página.">

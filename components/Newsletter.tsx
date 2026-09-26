@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "./ui";
+import { useT } from "@/lib/i18n/contexto";
 
 const INTERESSES = [
   "Campeonato Nacional",
@@ -11,45 +12,97 @@ const INTERESSES = [
   "Acções solidárias",
 ];
 
+/**
+ * Campo-armadilha: fora do ecrã e da ordem de tabulação, escondido
+ * dos leitores de ecrã. Só um robô o preenche; a API finge aceitar
+ * e não guarda nada.
+ */
+function Armadilha() {
+  return (
+    <div className="sr-only" aria-hidden="true">
+      <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
+    </div>
+  );
+}
+
 export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "cartao" | "rodape" }) {
+  const t = useT();
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
   const [interesses, setInteresses] = useState<string[]>(["Campeonato Nacional"]);
   const [estado, setEstado] = useState<"idle" | "a-enviar" | "ok" | "erro">("idle");
+  // "email": endereço recusado; "envio": o servidor ou a rede falharam.
+  const [motivo, setMotivo] = useState<"email" | "envio">("email");
 
   const alternar = (i: string) =>
     setInteresses((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
 
-  async function submeter(e: React.FormEvent) {
+  const falhar = (m: "email" | "envio") => {
+    setMotivo(m);
+    setEstado("erro");
+  };
+
+  async function submeter(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-      setEstado("erro");
+    if (estado === "a-enviar") return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+      falhar("email");
       return;
     }
+    const armadilha = new FormData(e.currentTarget).get("website");
     setEstado("a-enviar");
-    await new Promise((r) => setTimeout(r, 800));
-    setEstado("ok");
+    try {
+      const r = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          nome: nome.trim() || undefined,
+          // Ainda não guardados: a tabela de subscritores não tem coluna para eles.
+          interesses,
+          origem: variante,
+          website: typeof armadilha === "string" ? armadilha : "",
+        }),
+      });
+      if (r.ok) setEstado("ok");
+      else falhar(r.status === 400 ? "email" : "envio");
+    } catch {
+      falhar("envio");
+    }
   }
 
+  const [antesEmail, depoisEmail = ""] = t("newsletter.confirmacao").split("{email}");
+
   if (estado === "ok") {
-    return (
+    const confirmacao = (
       <div
+        role="status"
         className={
           variante === "rodape"
             ? "flex items-center gap-3 text-sm text-ink-200"
-            : "card p-8 text-center"
+            : variante === "faixa"
+              ? "card bg-ink-950 p-8 text-center"
+              : "card p-8 text-center"
         }
       >
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ok/20 text-ok">
+        <span className={`grid size-10 shrink-0 place-items-center rounded-full bg-ok/20 text-ok ${variante === "rodape" ? "" : "mx-auto"}`}>
           <Icon name="check" className="size-5" />
         </span>
         <div className={variante === "rodape" ? "" : "mt-4"}>
           <p className="font-display uppercase tracking-wide text-white">Subscrição confirmada</p>
           <p className="mt-1 text-sm text-ink-400">
-            Enviámos um email de confirmação para <span className="text-ink-200">{email}</span>.
+            {antesEmail}<span className="text-ink-200">{email.trim()}</span>{depoisEmail}
           </p>
         </div>
       </div>
+    );
+    // A faixa mantém a sua banda de fundo; a confirmação fica no lugar do formulário.
+    if (variante !== "faixa") return confirmacao;
+    return (
+      <section className="relative overflow-hidden bg-ink-900">
+        <div className="speed-lines absolute inset-0 opacity-30" aria-hidden />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-14">{confirmacao}</div>
+      </section>
     );
   }
 
@@ -57,6 +110,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
   if (variante === "rodape") {
     return (
       <form onSubmit={submeter} className="flex flex-col sm:flex-row gap-2">
+        <Armadilha />
         <label className="sr-only" htmlFor="nl-rodape">
           O seu email
         </label>
@@ -80,7 +134,9 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
           {estado === "a-enviar" ? "A enviar…" : "Subscrever"}
         </button>
         {estado === "erro" && (
-          <p className="text-xs text-mb-red-light sm:absolute sm:mt-12">Introduza um email válido.</p>
+          <p role="alert" className="text-xs text-mb-red-light sm:absolute sm:mt-12">
+            {motivo === "email" ? "Introduza um email válido." : t("newsletter.erroEnvio")}
+          </p>
         )}
       </form>
     );
@@ -114,6 +170,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
         </div>
 
         <form onSubmit={submeter} className={variante === "faixa" ? "" : "mt-6"}>
+          <Armadilha />
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="nl-nome" className="eyebrow block text-ink-500 mb-2">
@@ -167,7 +224,9 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
           </fieldset>
 
           {estado === "erro" && (
-            <p className="mt-3 text-xs text-mb-red-light">Introduza um endereço de email válido.</p>
+            <p role="alert" className="mt-3 text-xs text-mb-red-light">
+              {motivo === "email" ? "Introduza um endereço de email válido." : t("newsletter.erroEnvio")}
+            </p>
           )}
 
           <div className="mt-5 flex flex-wrap items-center gap-4">

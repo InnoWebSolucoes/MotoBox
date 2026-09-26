@@ -18,6 +18,7 @@ export default function AdminMensagens() {
   const [aberta, setAberta] = useState<Mensagem | null>(null);
   const [resposta, setResposta] = useState("");
   const [aApagar, setAApagar] = useState<Mensagem | null>(null);
+  const [aEnviar, setAEnviar] = useState(false);
 
   const filtradas = useMemo(() => {
     const q = procura.trim().toLowerCase();
@@ -44,11 +45,35 @@ export default function AdminMensagens() {
     if (!m.lida) atualizar("mensagens", m.id, { lida: true });
   };
 
-  const guardarResposta = (m: Mensagem) => {
-    atualizar("mensagens", m.id, { resposta, lida: true });
-    registar("respondeu", "Mensagem", m.assunto);
-    mostrar("Resposta guardada.");
+  /** Só guarda o texto, sem enviar: serve de rascunho. */
+  const guardarRascunho = async (m: Mensagem) => {
+    const falha = await atualizar("mensagens", m.id, { resposta, lida: true });
+    if (falha) { mostrar(falha, "erro"); return; }
+    mostrar("Rascunho guardado. Ainda não foi enviado.");
     setAberta(null);
+  };
+
+  /** Envia a resposta por email a quem escreveu e depois guarda-a na mensagem. */
+  const enviarResposta = async (m: Mensagem) => {
+    if (resposta.trim().length < 2) { mostrar("Escreva a resposta antes de enviar.", "erro"); return; }
+    setAEnviar(true);
+    try {
+      const r = await fetch("/api/admin/responder-mensagem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: m.id, resposta }),
+      });
+      const j = await r.json().catch(() => ({ erro: `Erro ${r.status}` }));
+      if (!r.ok) { mostrar(String(j.erro ?? `Erro ${r.status}`), "erro"); return; }
+      const falha = await atualizar("mensagens", m.id, { resposta, lida: true, respondidaEm: j.enviadoEm });
+      registar("respondeu por email", "Mensagem", m.assunto);
+      mostrar(falha ? `Email enviado, mas a resposta não ficou guardada: ${falha}` : `Resposta enviada para ${m.email}.`, falha ? "erro" : "ok");
+      setAberta(null);
+    } catch {
+      mostrar("Sem ligação ao servidor. A resposta não foi enviada.", "erro");
+    } finally {
+      setAEnviar(false);
+    }
   };
 
   const arquivar = (m: Mensagem, valor: boolean) => {
@@ -100,7 +125,9 @@ export default function AdminMensagens() {
                     </div>
                     <p className={`mt-0.5 truncate text-sm ${m.lida ? "text-ink-400" : "text-ink-200"}`}>{m.assunto}</p>
                     <p className="mt-0.5 truncate text-xs text-ink-500">{m.mensagem}</p>
-                    {m.resposta && <p className="mt-1 text-[11px] text-ok">Respondida</p>}
+                    {m.respondidaEm
+                      ? <p className="mt-1 text-[11px] text-ok">Respondida por email · {formatDataCurta(m.respondidaEm)}</p>
+                      : m.resposta && <p className="mt-1 text-[11px] text-gold">Resposta por enviar</p>}
                   </div>
                 </button>
               </li>
@@ -125,9 +152,13 @@ export default function AdminMensagens() {
               className="h-10 border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-ink-800">
               {aberta.arquivada ? "Repor" : "Arquivar"}
             </button>
-            <button type="button" onClick={() => guardarResposta(aberta)}
-              className="h-10 bg-mb-red px-5 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark">
-              Guardar resposta
+            <button type="button" onClick={() => void guardarRascunho(aberta)} disabled={aEnviar}
+              className="h-10 border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-ink-800 disabled:opacity-60">
+              Guardar rascunho
+            </button>
+            <button type="button" onClick={() => void enviarResposta(aberta)} disabled={aEnviar}
+              className="h-10 bg-mb-red px-5 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60">
+              {aEnviar ? "A enviar…" : aberta.respondidaEm ? "Enviar de novo" : "Enviar resposta"}
             </button>
           </>
         )}
@@ -144,14 +175,21 @@ export default function AdminMensagens() {
               <p className="whitespace-pre-wrap text-sm text-ink-200">{aberta.mensagem}</p>
             </div>
 
-            <Campo etiqueta="Resposta" ajuda="Registada internamente; o envio por email liga-se ao backend.">
+            {aberta.respondidaEm && (
+              <p className="border-l-2 border-ok pl-3 text-sm text-ink-300">
+                Resposta enviada para {aberta.email} em {formatDataCurta(aberta.respondidaEm)}.
+              </p>
+            )}
+
+            <Campo etiqueta="Resposta"
+              ajuda={`"Enviar resposta" manda este texto por email para ${aberta.email}, com a mensagem original citada. Se a pessoa responder, a resposta chega ao email de contacto das Definições.`}>
               <Area rows={6} value={resposta} onChange={(e) => setResposta(e.target.value)}
                 placeholder="Escreva a resposta…" />
             </Campo>
 
             <a href={`mailto:${aberta.email}?subject=${encodeURIComponent(`Re: ${aberta.assunto}`)}&body=${encodeURIComponent(resposta)}`}
               className="inline-flex h-10 items-center border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:border-mb-red">
-              Abrir no cliente de email
+              Responder pelo meu programa de email
             </a>
           </div>
         )}

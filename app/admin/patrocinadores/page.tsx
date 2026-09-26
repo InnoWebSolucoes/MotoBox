@@ -1,7 +1,7 @@
 "use client";
 
 import { PaginaRecurso } from "@/components/admin/Recurso";
-import { Campo, Input, Area, Seleccao } from "@/components/admin/kit";
+import { Campo, CampoEndereco, Input, Area, Seleccao } from "@/components/admin/kit";
 import { slugify } from "@/lib/admin/store";
 import type { Patrocinador } from "@/lib/types";
 
@@ -61,9 +61,8 @@ export default function AdminPatrocinadores() {
               <Input value={r.nome}
                 onChange={(e) => definir({ nome: e.target.value, slug: novo && r.slug === slugify(r.nome) ? slugify(e.target.value) : r.slug } as Partial<Patrocinador>)} />
             </Campo>
-            <Campo etiqueta="Slug" obrigatorio>
-              <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Patrocinador>)} />
-            </Campo>
+            <CampoEndereco prefixo="/patrocinadores" novo={novo} valor={r.slug}
+            onChange={(slug) => definir({ slug } as Partial<Patrocinador>)} />
             <Campo etiqueta="Nível">
               <Seleccao valor={r.nivel} opcoes={op(NIVEIS)}
                 onChange={(v) => definir({ nivel: v } as unknown as Partial<Patrocinador>)} />

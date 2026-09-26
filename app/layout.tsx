@@ -3,6 +3,8 @@ import { Barlow_Condensed, Inter } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { lerRedes } from "@/lib/redes";
+import { ForaDoPainel } from "@/components/ForaDoPainel";
 import CookieBanner from "@/components/CookieBanner";
 import { TraduzirPagina } from "@/components/TraduzirPagina";
 import { IdiomaProvider } from "@/lib/i18n/contexto";
@@ -53,7 +55,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const redes = await lerRedes();
   return (
     <html lang="pt-AO" className={`${display.variable} ${body.variable}`}>
       <body className="flex min-h-screen flex-col antialiased">
@@ -65,11 +68,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <IdiomaProvider>
         <AuthProvider>
-        <Nav />
+        <Nav redes={redes} />
         <main id="conteudo" className="flex-1">
           {children}
         </main>
-        <Footer />
+        <ForaDoPainel>
+          <Footer />
+        </ForaDoPainel>
         <CookieBanner />
         <TraduzirPagina />
         </AuthProvider>

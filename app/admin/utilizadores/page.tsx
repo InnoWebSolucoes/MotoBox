@@ -68,7 +68,7 @@ export default function AdminUtilizadores() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo etiqueta="Nome" obrigatorio>
               <Input value={r.nome}
-                onChange={(e) => definir({ nome: e.target.value, avatarCor: corPara(e.target.value) } as Partial<Utilizador>)} />
+                onChange={(e) => definir({ nome: e.target.value } as Partial<Utilizador>)} />
             </Campo>
             <Campo etiqueta="Email" obrigatorio>
               <Input type="email" value={r.email} onChange={(e) => definir({ email: e.target.value } as Partial<Utilizador>)} />

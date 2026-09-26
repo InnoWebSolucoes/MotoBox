@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button, Icon, PageHero } from "@/components/ui";
 import { SOCIAIS } from "@/lib/data";
+import type { LigacaoRede } from "@/lib/redes";
 
 const ASSUNTOS = [
   { id: "informacao", label: "Pedido de informação", desc: "Dúvidas sobre provas, calendário ou bilhetes." },
@@ -13,11 +14,13 @@ const ASSUNTOS = [
   { id: "outro", label: "Outro assunto", desc: "Tudo o resto." },
 ];
 
-export function ContactoClient() {
+export function ContactoClient({ redes }: { redes: LigacaoRede[] }) {
   const [assunto, setAssunto] = useState("informacao");
   const [form, setForm] = useState({ nome: "", email: "", telefone: "", organizacao: "", mensagem: "" });
   const [erros, setErros] = useState<Record<string, string>>({});
   const [estado, setEstado] = useState<"idle" | "a-enviar" | "ok">("idle");
+  // Armadilha para robôs: um campo que as pessoas não vêem.
+  const [site, setSite] = useState("");
 
   async function submeter(e: React.FormEvent) {
     e.preventDefault();
@@ -29,8 +32,27 @@ export function ContactoClient() {
     if (Object.keys(err).length > 0) return;
 
     setEstado("a-enviar");
-    await new Promise((r) => setTimeout(r, 900));
-    setEstado("ok");
+    try {
+      const r = await fetch("/api/contacto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          assunto: ASSUNTOS.find((a) => a.id === assunto)?.label ?? assunto,
+          site,
+        }),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        setErros({ geral: String(j.erro ?? "Não foi possível enviar. Tente de novo.") });
+        setEstado("idle");
+        return;
+      }
+      setEstado("ok");
+    } catch {
+      setErros({ geral: "Sem ligação à internet. Tente de novo." });
+      setEstado("idle");
+    }
   }
 
   return (
@@ -162,6 +184,13 @@ export function ContactoClient() {
                   )}
                 </fieldset>
 
+                <input type="text" tabIndex={-1} autoComplete="off" value={site}
+                  onChange={(e) => setSite(e.target.value)} className="hidden" aria-hidden />
+
+                {erros.geral && (
+                  <p role="alert" className="rounded-xl bg-mb-red/10 px-4 py-3 text-sm text-mb-red-light">{erros.geral}</p>
+                )}
+
                 <div className="flex flex-wrap items-center gap-5">
                   <Button type="submit" size="lg" disabled={estado === "a-enviar"}>
                     {estado === "a-enviar" ? "A enviar…" : "Enviar mensagem"}
@@ -216,11 +245,7 @@ export function ContactoClient() {
                 todos os dias.
               </p>
               <div className="mt-3">
-                {[
-                  { icone: "instagram", label: "@motobox_angola", href: SOCIAIS.instagram },
-                  { icone: "facebook", label: "Motobox Angola", href: SOCIAIS.facebook },
-                  { icone: "youtube", label: "Motobox TV", href: SOCIAIS.youtube },
-                ].map((r) => (
+                {redes.map((l) => ({ icone: l.rede, label: l.rede === "google" ? "Motobox no Google" : l.nome, href: l.url })).map((r) => (
                   <a
                     key={r.icone}
                     href={r.href}

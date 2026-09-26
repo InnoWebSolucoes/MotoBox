@@ -1,7 +1,7 @@
 "use client";
 
 import { PaginaRecurso } from "@/components/admin/Recurso";
-import { Campo, Input, Area, Seleccao, ListaTexto } from "@/components/admin/kit";
+import { Campo, CampoEndereco, Input, Area, Seleccao, ListaTexto } from "@/components/admin/kit";
 import { slugify, useAdmin } from "@/lib/admin/store";
 import type { Equipa } from "@/lib/types";
 
@@ -58,9 +58,8 @@ export default function AdminEquipas() {
                 <Input value={r.nome}
                   onChange={(e) => definir({ nome: e.target.value, slug: novo && r.slug === slugify(r.nome) ? slugify(e.target.value) : r.slug } as Partial<Equipa>)} />
               </Campo>
-              <Campo etiqueta="Slug" obrigatorio>
-                <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Equipa>)} />
-              </Campo>
+              <CampoEndereco prefixo="/equipas" novo={novo} valor={r.slug}
+            onChange={(slug) => definir({ slug } as Partial<Equipa>)} />
               <Campo etiqueta="Tipo">
                 <Seleccao valor={r.tipo} opcoes={op(["Equipa", "Clube"])}
                   onChange={(v) => definir({ tipo: v } as unknown as Partial<Equipa>)} />

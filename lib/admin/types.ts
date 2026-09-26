@@ -110,6 +110,8 @@ export interface Mensagem {
   lida: boolean;
   arquivada: boolean;
   resposta?: string;
+  /** ISO. Quando a resposta seguiu por email para quem escreveu. */
+  respondidaEm?: string;
 }
 
 export interface PaginaLegal {
@@ -133,6 +135,9 @@ export interface Definicoes {
   instagram: string;
   facebook: string;
   youtube: string;
+  linkedin: string;
+  /** Perfil da empresa no Google (Google Business / Maps). */
+  googleBusiness: string;
   manutencao: boolean;
   registosAbertos: boolean;
   marketplaceAberto: boolean;
@@ -140,6 +145,8 @@ export interface Definicoes {
   bilheteiraAberta: boolean;
   cookieBanner: boolean;
   analytics: string;
+  /** Envio semanal automático da newsletter. */
+  newsletterAutomatica: boolean;
 }
 
 export interface RegistoAtividade {

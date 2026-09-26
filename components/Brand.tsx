@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { src as fotoSrc } from "@/lib/imagens";
+import { src as fotoSrc, otimizavel } from "@/lib/imagens";
 
 /** Logótipo Motobox — reprodução em SVG do lettering com linhas de velocidade. */
 export function Logo({ className = "", height = 28 }: { className?: string; height?: number }) {
@@ -120,6 +120,7 @@ export function Placeholder({
           alt={label ?? ""}
           fill
           sizes={tamanhos}
+          unoptimized={!otimizavel(foto)}
           className="object-cover"
         />
       )}
@@ -187,6 +188,7 @@ export function Retrato({
           alt={iniciais ? `Retrato de ${nome}` : ""}
           fill
           sizes={tamanhos}
+          unoptimized={!otimizavel(foto)}
           className="object-cover"
         />
       )}

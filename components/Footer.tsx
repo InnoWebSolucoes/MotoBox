@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Logo } from "./Brand";
 import { Icon } from "./ui";
 import { Newsletter } from "./Newsletter";
-import { SOCIAIS, TEMPORADA } from "@/lib/data";
+import { TEMPORADA } from "@/lib/data";
+import { lerRedes } from "@/lib/redes";
 
 const COLUNAS: { titulo: string; links: { href: string; label: string }[] }[] = [
   {
@@ -44,7 +45,8 @@ const COLUNAS: { titulo: string; links: { href: string; label: string }[] }[] = 
   },
 ];
 
-export function Footer() {
+export async function Footer() {
+  const redes = await lerRedes();
   return (
     <footer className="mt-auto bg-ink-950">
       {/* Faixa newsletter */}
@@ -71,13 +73,8 @@ export function Footer() {
               A casa digital do motociclismo angolano. Um projecto sem fins lucrativos dedicado à
               comunidade motard de Angola, desde 2019.
             </p>
-            <div className="mt-6 flex gap-2">
-              {([
-                ["instagram", SOCIAIS.instagram, "Instagram"],
-                ["facebook", SOCIAIS.facebook, "Facebook"],
-                ["youtube", SOCIAIS.youtube, "YouTube"],
-                ["whatsapp", SOCIAIS.whatsapp, "WhatsApp"],
-              ] as const).map(([icone, url, label]) => (
+            <div className="mt-6 flex flex-wrap gap-2">
+              {redes.map(({ rede: icone, url, nome: label }) => (
                 <a
                   key={icone}
                   href={url}

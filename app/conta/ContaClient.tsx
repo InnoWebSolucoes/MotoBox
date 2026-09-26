@@ -9,6 +9,7 @@
    aberto fica no endereço (?aba=), para sobreviver a um reload.
    ============================================================ */
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -44,9 +45,17 @@ interface PerfilConta {
   avatar_cor: string; registado: string; verificado: boolean; newsletter: boolean; estado: string;
 }
 
+/** Cor e logótipo da conta, já resolvidos pelo servidor. */
+interface AvatarDados {
+  cor: string;
+  url: string | null;
+}
+
 interface DadosConta {
   perfil: PerfilConta | null;
   email: string;
+  /** Opcional: uma resposta antiga da API ainda não o traz. */
+  avatar?: AvatarDados;
   preferencias: Preferencias;
   encomendas: Encomenda[];
   anuncios: AnuncioMarketplace[];
@@ -56,6 +65,75 @@ type EstadoGravacao = "parado" | "a-guardar" | "guardado" | "erro";
 
 function iniciais(n: string) {
   return n.split(/\s+/).filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+}
+
+/* ---------- Avatar: cor e logótipo ---------- */
+
+/** Cores prontas: todas seguram a inicial a branco e assentam no fundo escuro do site. */
+const CORES_AVATAR = [
+  "#e10600", "#c2410c", "#b45309", "#15803d", "#0f766e",
+  "#0369a1", "#1d4ed8", "#6d28d9", "#be185d", "#475569",
+];
+const COR_PADRAO = "#e10600";
+const COR_HEX = /^#[0-9a-f]{6}$/i;
+const TIPOS_IMAGEM = ["image/jpeg", "image/png", "image/webp"];
+const IMAGEM_MAX = 2 * 1024 * 1024;
+/** Lado maior da imagem enviada. Aparece no máximo a 96 px; 512 chega para ecrãs densos. */
+const LADO_MAX = 512;
+
+const normalizarCor = (c: string | undefined) => (c && COR_HEX.test(c) ? c.toLowerCase() : COR_PADRAO);
+
+/**
+ * Reduz a imagem antes de a enviar, mantendo o formato (o PNG guarda a
+ * transparência de um logótipo). Assim a barra de navegação não descarrega
+ * 2 MB em cada página. Se o navegador não conseguir, segue o original.
+ */
+async function reduzir(f: File): Promise<Blob> {
+  try {
+    const bmp = await createImageBitmap(f);
+    const escala = Math.min(1, LADO_MAX / Math.max(bmp.width, bmp.height));
+    const tela = document.createElement("canvas");
+    const ctx = tela.getContext("2d");
+    if (escala === 1 || !ctx) { bmp.close(); return f; }
+    tela.width = Math.round(bmp.width * escala);
+    tela.height = Math.round(bmp.height * escala);
+    ctx.drawImage(bmp, 0, 0, tela.width, tela.height);
+    bmp.close();
+    const blob = await new Promise<Blob | null>((ok) => tela.toBlob(ok, f.type, 0.9));
+    // O Safari não escreve WebP e devolve PNG: serve na mesma, se for mais leve.
+    return blob && TIPOS_IMAGEM.includes(blob.type) && blob.size < f.size ? blob : f;
+  } catch {
+    return f;
+  }
+}
+
+async function enviarImagem(imagem: Blob): Promise<string | null> {
+  const dados = new FormData();
+  dados.append("ficheiro", imagem, `logotipo.${imagem.type.split("/")[1] ?? "jpg"}`);
+  try {
+    const r = await fetch("/api/conta/avatar", { method: "POST", body: dados });
+    if (r.ok) return null;
+    const j = await r.json().catch(() => ({}));
+    return String(j.erro ?? `Erro ${r.status}`);
+  } catch {
+    return "Não foi possível contactar o servidor.";
+  }
+}
+
+/** Círculo da conta: o logótipo por cima da cor escolhida, ou a inicial sobre ela. */
+function AvatarConta({ url, cor, nome, className = "" }: {
+  url: string | null; cor: string; nome: string; className?: string;
+}) {
+  return (
+    <span className={`relative grid shrink-0 place-items-center overflow-hidden rounded-full font-display text-white ${className}`}
+      style={{ backgroundColor: cor }}>
+      {url ? (
+        <Image src={url} alt="" fill sizes="112px" unoptimized={url.startsWith("blob:")} className="object-cover" />
+      ) : (
+        iniciais(nome)
+      )}
+    </span>
+  );
 }
 
 const campo =
@@ -154,6 +232,10 @@ export function ContaClient({
 
   const perfil = dados.perfil;
   const nome = perfil?.nome || dados.email;
+  const avatar: AvatarDados = {
+    cor: normalizarCor(dados.avatar?.cor ?? perfil?.avatar_cor),
+    url: dados.avatar?.url ?? null,
+  };
   const bilhetes = dados.encomendas.filter((e) => e.estado !== "cancelado" && e.estado !== "reembolsado");
   const hoje = new Date().toISOString().slice(0, 10);
   const bilhetesComEvento = bilhetes.map((b) => ({ ...b, evento: eventos.find((e) => e.slug === b.eventoSlug) }));
@@ -183,10 +265,14 @@ export function ContaClient({
         </div>
         {/* `relative` põe esta faixa por cima da imagem, que está posicionada. */}
         <div className="relative flex flex-wrap items-end gap-5 px-6 pb-6 -mt-10">
-          <span className="grid size-20 shrink-0 place-items-center rounded-full font-display text-2xl text-white ring-4 ring-ink-900"
-            style={{ backgroundColor: perfil?.avatar_cor ?? "#e10600" }}>
-            {iniciais(nome)}
-          </span>
+          <button type="button" onClick={() => setEditarPerfil(true)} aria-label="Alterar logótipo e cor"
+            title="Alterar logótipo e cor" className="group relative shrink-0 rounded-full">
+            <AvatarConta url={avatar.url} cor={avatar.cor} nome={nome} className="size-20 text-2xl ring-4 ring-ink-900" />
+            <span aria-hidden
+              className="absolute -bottom-0.5 -right-0.5 grid size-7 place-items-center rounded-full bg-ink-800 text-ink-200 ring-4 ring-ink-900 transition-colors group-hover:bg-white group-hover:text-ink-950">
+              <IconeCamara />
+            </span>
+          </button>
           <div className="min-w-0 flex-1 basis-56">
             <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl uppercase leading-tight text-white break-words">
               {nome}
@@ -477,7 +563,7 @@ export function ContaClient({
                     ["bilhetes", "Bilhetes", "Quando abre a venda de bilhetes para uma prova."],
                     ["marketplace", "Marketplace", "Novos anúncios das marcas que segue."],
                     ["forum", "Fórum", "Respostas aos seus tópicos e menções."],
-                    ["newsletter", "Newsletter semanal", "Resumo da semana, às sextas-feiras."],
+                    ["newsletter", "Newsletter semanal", "Resumo da semana, às segundas-feiras."],
                   ] as [TipoNotificacao, string, string][]
                 ).map(([k, titulo, desc]) => (
                   <label key={k} className="flex cursor-pointer items-start gap-4 py-4">
@@ -587,6 +673,8 @@ export function ContaClient({
       {editarPerfil && (
         <EditarPerfil
           perfil={perfil}
+          avatar={avatar}
+          nomeConta={nome}
           aoFechar={() => setEditarPerfil(false)}
           aoGuardar={async () => { setEditarPerfil(false); await Promise.all([carregar(), recarregarPerfil()]); }}
         />
@@ -684,18 +772,76 @@ async function enviar(url: string, metodo: string, corpo: unknown): Promise<stri
   }
 }
 
-function EditarPerfil({ perfil, aoFechar, aoGuardar }: {
-  perfil: PerfilConta | null; aoFechar: () => void; aoGuardar: () => Promise<void>;
+/** O que fazer à imagem ao guardar: nada, pôr uma nova, ou tirá-la. */
+type EscolhaImagem =
+  | { tipo: "manter" }
+  | { tipo: "nova"; blob: Blob; preview: string }
+  | { tipo: "remover" };
+
+function IconeCamara() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 8h3l2-3h6l2 3h3v11H4V8Z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </svg>
+  );
+}
+
+function EditarPerfil({ perfil, avatar, nomeConta, aoFechar, aoGuardar }: {
+  perfil: PerfilConta | null; avatar: AvatarDados; nomeConta: string;
+  aoFechar: () => void; aoGuardar: () => Promise<void>;
 }) {
   const [nome, setNome] = useState(perfil?.nome ?? "");
   const [telefone, setTelefone] = useState(perfil?.telefone ?? "");
   const [provincia, setProvincia] = useState(perfil?.provincia ?? "");
+  const [cor, setCor] = useState(avatar.cor);
+  const [hex, setHex] = useState(avatar.cor);
+  const [imagem, setImagem] = useState<EscolhaImagem>({ tipo: "manter" });
   const [erro, setErro] = useState<string | null>(null);
+  const [erroImagem, setErroImagem] = useState<string | null>(null);
   const [aGuardar, setAGuardar] = useState(false);
+  const seletor = useRef<HTMLInputElement>(null);
+
+  // Liberta a pré-visualização anterior quando muda, e a última ao fechar.
+  useEffect(() => () => {
+    if (imagem.tipo === "nova") URL.revokeObjectURL(imagem.preview);
+  }, [imagem]);
+
+  const urlMostrada = imagem.tipo === "nova" ? imagem.preview : imagem.tipo === "remover" ? null : avatar.url;
+  const personalizada = !CORES_AVATAR.includes(cor);
+
+  const mudarCor = (c: string) => { setCor(c); setHex(c); };
+  const escreverHex = (v: string) => {
+    const valor = v.trim().startsWith("#") ? v.trim() : `#${v.trim()}`;
+    setHex(v);
+    if (COR_HEX.test(valor)) setCor(valor.toLowerCase());
+  };
+
+  const escolherFicheiro = async (f: File | undefined) => {
+    setErroImagem(null);
+    if (!f) return;
+    if (!TIPOS_IMAGEM.includes(f.type)) { setErroImagem("Use uma imagem JPG, PNG ou WebP."); return; }
+    if (f.size > IMAGEM_MAX) { setErroImagem("A imagem tem mais de 2 MB."); return; }
+    const blob = await reduzir(f);
+    setImagem({ tipo: "nova", blob, preview: URL.createObjectURL(blob) });
+  };
 
   const guardar = async () => {
     setAGuardar(true);
-    const e = await enviar("/api/conta", "PATCH", { perfil: { nome, telefone, provincia } });
+    setErro(null);
+    // Só vai o que mudou: uma conta sem linha em `utilizadores` pode mudar a cor
+    // e o logótipo sem esbarrar na validação do nome.
+    const corpo: Record<string, unknown> = {};
+    if (nome !== (perfil?.nome ?? "") || telefone !== (perfil?.telefone ?? "") || provincia !== (perfil?.provincia ?? "")) {
+      corpo.perfil = { nome, telefone, provincia };
+    }
+    if (cor !== avatar.cor) corpo.avatarCor = cor;
+
+    let e: string | null = null;
+    if (Object.keys(corpo).length > 0) e = await enviar("/api/conta", "PATCH", corpo);
+    if (!e && imagem.tipo === "nova") e = await enviarImagem(imagem.blob);
+    if (!e && imagem.tipo === "remover") e = await enviar("/api/conta/avatar", "DELETE", undefined);
     setAGuardar(false);
     if (e) { setErro(e); return; }
     await aoGuardar();
@@ -703,6 +849,58 @@ function EditarPerfil({ perfil, aoFechar, aoGuardar }: {
 
   return (
     <Janela titulo="Editar perfil" aoFechar={aoFechar}>
+      {/* Logótipo e cor, com o resultado ao vivo no círculo grande */}
+      <section aria-label="Logótipo e cor" className="mb-6 border-b border-white/6 pb-6">
+        <div className="flex flex-wrap items-center gap-5">
+          <AvatarConta url={urlMostrada} cor={cor} nome={nome || nomeConta} className="size-24 text-3xl" />
+          <div className="min-w-0 flex-1 basis-44">
+            <p className="font-display text-base uppercase text-white">Logótipo ou fotografia</p>
+            <p className="mt-0.5 text-xs text-ink-500">JPG, PNG ou WebP, até 2 MB.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button type="button" variant="dark" size="sm" onClick={() => seletor.current?.click()}>
+                {urlMostrada ? "Trocar imagem" : "Carregar imagem"}
+              </Button>
+              {urlMostrada && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setImagem({ tipo: "remover" })}>
+                  Remover
+                </Button>
+              )}
+            </div>
+            <input ref={seletor} type="file" accept={TIPOS_IMAGEM.join(",")} className="sr-only" tabIndex={-1} aria-hidden
+              onChange={(e) => { void escolherFicheiro(e.target.files?.[0]); e.target.value = ""; }} />
+            {erroImagem && <p role="alert" className="mt-2 text-sm text-mb-red">{erroImagem}</p>}
+          </div>
+        </div>
+
+        <p className="eyebrow mb-2.5 mt-6 text-ink-500">Cor</p>
+        <div className="flex flex-wrap items-center gap-2.5">
+          {CORES_AVATAR.map((c) => (
+            <button key={c} type="button" onClick={() => mudarCor(c)} aria-pressed={cor === c} aria-label={`Cor ${c}`}
+              className={`size-8 rounded-full transition-transform hover:scale-110 ${
+                cor === c ? "ring-2 ring-white ring-offset-2 ring-offset-ink-900" : ""
+              }`}
+              style={{ backgroundColor: c }} />
+          ))}
+          {/* Cor livre, para acertar com a do logótipo */}
+          <label title="Cor personalizada"
+            className={`relative size-8 cursor-pointer overflow-hidden rounded-full transition-transform hover:scale-110 ${
+              personalizada ? "ring-2 ring-white ring-offset-2 ring-offset-ink-900" : ""
+            }`}
+            style={{
+              background: personalizada
+                ? cor
+                : "conic-gradient(#e10600, #f59e0b, #22c55e, #0ea5e9, #6d28d9, #be185d, #e10600)",
+            }}>
+            <input type="color" value={cor} onChange={(e) => mudarCor(e.target.value.toLowerCase())}
+              aria-label="Cor personalizada" className="absolute inset-0 size-full cursor-pointer opacity-0" />
+          </label>
+          <input value={hex} onChange={(e) => escreverHex(e.target.value)} maxLength={7} spellCheck={false}
+            aria-label="Código da cor (#rrggbb)"
+            className="h-8 w-24 bg-ink-950 px-3 font-mono text-xs uppercase text-white ring-1 ring-inset ring-white/10 outline-none focus:ring-2 focus:ring-mb-red" />
+        </div>
+        <p className="mt-3 text-xs text-ink-600">A cor aparece por trás do logótipo e quando não há imagem.</p>
+      </section>
+
       <div className="space-y-4">
         <Rotulo texto="Nome"><input className={campo} value={nome} onChange={(e) => setNome(e.target.value)} maxLength={80} /></Rotulo>
         <Rotulo texto="Telefone"><input className={campo} value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="+244 9xx xxx xxx" maxLength={30} /></Rotulo>

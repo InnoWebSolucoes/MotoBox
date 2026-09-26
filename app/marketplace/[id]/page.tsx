@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
+import { Denunciar } from "@/components/Denunciar";
 import { Button, Icon, Tag } from "@/components/ui";
 import { formatData, formatKz } from "@/lib/data";
 import { lerAnuncio, lerAnuncios } from "@/lib/supabase/publico";
@@ -208,6 +209,9 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
               A Motobox não intermedeia pagamentos. Combine sempre um encontro em local público,
               verifique a documentação e desconfie de preços muito abaixo do mercado.
             </p>
+            <div className="mt-3 pl-6.5">
+              <Denunciar tipo="marketplace" alvoId={anuncio.id} rotulo="Denunciar este anúncio" />
+            </div>
           </div>
         </aside>
       </div>

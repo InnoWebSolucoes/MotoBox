@@ -1,7 +1,7 @@
 "use client";
 
 import { PaginaRecurso } from "@/components/admin/Recurso";
-import { Campo, Input, Area, Seleccao, Estado, ListaTexto } from "@/components/admin/kit";
+import { Campo, CampoEndereco, Input, Area, Seleccao, Estado } from "@/components/admin/kit";
 import { slugify } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
 import type { Evento } from "@/lib/types";
@@ -54,9 +54,8 @@ export default function AdminEventos() {
             <Input value={r.titulo}
               onChange={(e) => definir({ titulo: e.target.value, slug: novo && r.slug === slugify(r.titulo) ? slugify(e.target.value) : r.slug } as Partial<Evento>)} />
           </Campo>
-          <Campo etiqueta="Slug (URL)" obrigatorio ajuda="Identificador único usado no endereço da página.">
-            <Input value={r.slug} onChange={(e) => definir({ slug: slugify(e.target.value) } as Partial<Evento>)} />
-          </Campo>
+          <CampoEndereco prefixo="/calendario" novo={novo} valor={r.slug}
+            onChange={(slug) => definir({ slug } as Partial<Evento>)} />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo etiqueta="Disciplina">

@@ -9,7 +9,7 @@
    ============================================================ */
 
 import { useMemo, useState, type ReactNode } from "react";
-import { useAdmin, chaveDe, type ColeccaoNome } from "@/lib/admin/store";
+import { useAdmin, chaveDe, slugify, type ColeccaoNome } from "@/lib/admin/store";
 import {
   CabecalhoPagina, Painel, Ferramentas, Procura, Seleccao, Tabela, Linha, Cel,
   AccaoIcone, Gaveta, Confirmar, useAviso, usePaginacao,
@@ -88,11 +88,16 @@ export function PaginaRecurso<T extends object>({
 
   const guardar = async () => {
     if (!rascunho || aGuardar) return;
-    const id = String((rascunho as Record<string, unknown>)[chave] ?? "").trim();
+    let registo = rascunho as Record<string, unknown>;
+    // Endereço apagado num registo novo: volta a nascer do título ou do nome.
+    if (chave === "slug" && !aEditar && !String(registo.slug ?? "").trim()) {
+      registo = { ...registo, slug: slugify(String(registo.titulo ?? registo.nome ?? "")) };
+    }
+    const id = String(registo[chave] ?? "").trim();
     if (!id) { mostrar("Preencha o nome ou o título antes de guardar.", "erro"); return; }
 
     if (!aEditar && dados.some((it) => String((it as Record<string, unknown>)[chave]) === id)) {
-      mostrar(`Já existe um registo com o endereço "${id}". Altere o slug.`, "erro");
+      mostrar(`Já existe uma página com o endereço "${id}". Mude o endereço da página.`, "erro");
       return;
     }
 
@@ -100,8 +105,8 @@ export function PaginaRecurso<T extends object>({
     // fica aberto com o que foi escrito para se poder corrigir.
     setAGuardar(true);
     const falha = aEditar
-      ? await atualizar(coleccao, aEditar, rascunho as Record<string, unknown>)
-      : await criar(coleccao, rascunho as Record<string, unknown>);
+      ? await atualizar(coleccao, aEditar, registo)
+      : await criar(coleccao, registo);
     setAGuardar(false);
 
     if (falha) { mostrar(falha, "erro"); return; }

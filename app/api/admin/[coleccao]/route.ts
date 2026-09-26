@@ -39,7 +39,7 @@ function erro(mensagem: string, codigo = 400) {
 /** Traduz os erros do Postgres para frases que a equipa entenda. */
 function erroDaBase(e: { code?: string; message: string; details?: string | null }) {
   const m = e.message;
-  if (e.code === "23505") return erro("Já existe um registo com este endereço (slug) ou email. Escolha outro.", 409);
+  if (e.code === "23505") return erro("Já existe um registo com este endereço de página ou este email. Escolha outro.", 409);
   if (e.code === "23503") return erro("A ligação escolhida (equipa, evento ou categoria) já não existe. Escolha outra.", 409);
   if (e.code === "23502") {
     const coluna = /column "([^"]+)"/.exec(m)?.[1];
@@ -185,10 +185,11 @@ export async function PATCH(
   // Definições: linha única, sem identificador
   if (coleccao === ("definicoes" as ColeccaoNome)) {
     const campos = corpo.campos ?? (corpo as unknown as Record<string, unknown>);
-    const { error } = await db
-      .from("definicoes")
-      .update(definicoesParaBase(campos))
-      .eq("id", 1);
+    // Com a mesma rede de segurança das coleções: antes de a migração
+    // correr, um campo novo (ex.: linkedin) não impede o resto de gravar.
+    const { error } = await escrever(definicoesParaBase(campos), (linha) =>
+      db.from("definicoes").update(linha).eq("id", 1),
+    );
     if (error) return erroDaBase(error);
     revalidar();
     return NextResponse.json({ ok: true });

@@ -62,6 +62,7 @@ const RENOMES: Partial<Record<ColeccaoNome, Record<string, string>>> = {
     precoUnitario: "preco_unitario", codigoQR: "codigo_qr",
   },
   denuncias: { alvoId: "alvo_id", alvoTitulo: "alvo_titulo" },
+  mensagens: { respondidaEm: "respondida_em" },
 };
 
 /** Colunas geridas pela base de dados, nunca escritas pela app. */
@@ -131,6 +132,8 @@ const DEFINICOES_COLUNAS: Record<string, string> = {
   forumAberto: "forum_aberto",
   bilheteiraAberta: "bilheteira_aberta",
   cookieBanner: "cookie_banner",
+  googleBusiness: "google_business",
+  newsletterAutomatica: "newsletter_automatica",
 };
 
 export function definicoesDaBase(linha: Record<string, unknown>) {

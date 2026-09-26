@@ -23,8 +23,22 @@ export interface Perfil {
   estado: string;
   provincia?: string;
   avatarCor: string;
+  /** Logótipo ou fotografia da conta (pasta pública `avatares`). Sem ele, a inicial sobre a cor. */
+  avatarUrl?: string;
   verificado: boolean;
   newsletter: boolean;
+}
+
+/**
+ * O logótipo vive no user_metadata, que o próprio utilizador também pode
+ * escrever com a chave pública. Só se aceita um endereço da sua pasta em
+ * `avatares`, que é onde /api/conta/avatar o põe.
+ */
+function avatarDe(u: User): string | undefined {
+  const url = u.user_metadata?.avatarUrl;
+  const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "");
+  if (!base || typeof url !== "string") return undefined;
+  return url.startsWith(`${base}/storage/v1/object/public/avatares/${u.id}/`) ? url : undefined;
 }
 
 interface ContextoAuth {
@@ -90,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         estado: data.estado as string,
         provincia: (data.provincia as string) ?? undefined,
         avatarCor: (data.avatar_cor as string) ?? "#e10600",
+        avatarUrl: avatarDe(u),
         verificado: Boolean(data.verificado),
         newsletter: Boolean(data.newsletter),
       });
@@ -170,8 +185,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [cliente]);
 
   const recarregarPerfil = useCallback(async () => {
-    await lerPerfil(sessao?.user ?? null);
-  }, [lerPerfil, sessao]);
+    if (!cliente || !sessao) { await lerPerfil(sessao?.user ?? null); return; }
+    // O servidor muda o user_metadata (o logótipo, por exemplo), mas a sessão
+    // guardada no navegador não se actualiza sozinha: um token novo traz o
+    // utilizador como está agora.
+    const { data } = await cliente.auth.refreshSession();
+    if (data.session) setSessao(data.session);
+    await lerPerfil(data.session?.user ?? sessao.user);
+  }, [cliente, lerPerfil, sessao]);
 
   const valor = useMemo<ContextoAuth>(() => ({
     utilizador: sessao?.user ?? null,

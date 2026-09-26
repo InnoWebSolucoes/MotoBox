@@ -174,7 +174,9 @@ export function ClassificacaoClient({
                       iniciais={iniciais(p.nome)}
                       className="size-10 shrink-0 rounded-full [container-type:size]"
                     />
-                    <div className="min-w-0">
+                    {/* Ocupa a coluna toda: a pista da barra fica com o mesmo
+                        comprimento em todas as linhas, seja qual for o nome. */}
+                    <div className="min-w-0 flex-1">
                       <p className="truncate font-display text-base uppercase text-white group-hover:text-mb-red transition-colors">
                         <span className="mr-2 text-ink-600 tabular-nums">{p.numero}</span>
                         {p.nome}

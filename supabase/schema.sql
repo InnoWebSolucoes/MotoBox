@@ -298,6 +298,7 @@ create table if not exists mensagens (
   lida       boolean not null default false,
   arquivada  boolean not null default false,
   resposta   text,
+  respondida_em timestamptz,
   criado_em  timestamptz not null default now()
 );
 
@@ -314,6 +315,8 @@ create table if not exists definicoes (
   instagram          text not null default '',
   facebook           text not null default '',
   youtube            text not null default '',
+  linkedin           text not null default '',
+  google_business    text not null default '',
   manutencao         boolean not null default false,
   registos_abertos   boolean not null default true,
   marketplace_aberto boolean not null default true,
@@ -321,6 +324,7 @@ create table if not exists definicoes (
   bilheteira_aberta  boolean not null default true,
   cookie_banner      boolean not null default true,
   analytics          text not null default '',
+  newsletter_automatica boolean not null default true,
   atualizado_em      timestamptz not null default now(),
   constraint definicoes_linha_unica check (id = 1)
 );

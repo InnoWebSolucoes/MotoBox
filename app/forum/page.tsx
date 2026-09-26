@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button, ButtonLink, EmptyState, Icon, PageHero, Tag } from "@/components/ui";
+import { ButtonLink, EmptyState, Icon, PageHero } from "@/components/ui";
 import { formatData } from "@/lib/data";
 import { lerCategoriasForum, lerTopicos } from "@/lib/supabase/publico";
 import type { TopicoForum } from "@/lib/types";
@@ -13,6 +13,31 @@ export const metadata: Metadata = {
   description:
     "O fórum da comunidade motard angolana: competição, mecânica, passeios, equipamento e conversa geral.",
 };
+
+/*
+ * Cor só no vermelho da marca, e pouco: o botão "Novo tópico", o marcador de
+ * fixado e o hover. As categorias têm um campo `cor` na base, mas aqui ficam
+ * todas neutras; só os avatares mantêm a cor de cada pessoa.
+ *
+ * Cada pedaço de texto fica no seu próprio nó (separadores à parte): é assim
+ * que o `TraduzirPagina` o encontra em `interface-en.ts`.
+ */
+
+const REGRAS = [
+  "Respeito em primeiro lugar. Sem insultos.",
+  "Sem publicidade não autorizada.",
+  "Vendas só no Marketplace.",
+  "Pesquise antes de abrir um tópico novo.",
+  "Sem conteúdo fora do tema motard.",
+];
+
+const MEMBROS_ACTIVOS = [
+  { n: "Bruno_T12", c: "#e10600", m: 1284 },
+  { n: "MecanicoDoBairro", c: "#f59e0b", m: 987 },
+  { n: "MiguelTrail", c: "#22c55e", m: 762 },
+  { n: "Bino_MX", c: "#0ea5e9", m: 645 },
+  { n: "AnalistaMX", c: "#a855f7", m: 519 },
+];
 
 export default async function ForumPage() {
   const [topicos, categoriasForum] = await Promise.all([lerTopicos(), lerCategoriasForum()]);
@@ -29,76 +54,63 @@ export default async function ForumPage() {
         titulo="Fórum"
         descricao="O sítio onde a comunidade motard angolana fala. Dúvidas de mecânica, organização de passeios, análise das corridas e tudo o resto."
       >
-        <div className="flex flex-wrap items-center gap-6">
+        <div className="flex flex-wrap items-center gap-x-10 gap-y-5">
           <ButtonLink href="/conta" size="lg">
             <Icon name="plus" className="size-4" />
             Novo tópico
           </ButtonLink>
-          <div className="flex gap-8">
-            {[
-              { v: totalTopicos.toLocaleString("pt-PT"), l: "Tópicos" },
-              { v: totalMensagens.toLocaleString("pt-PT"), l: "Mensagens" },
-              { v: "2.847", l: "Membros" },
-            ].map((s) => (
-              <div key={s.l}>
-                <p className="font-display text-2xl text-white">{s.v}</p>
-                <p className="eyebrow mt-0.5 text-ink-500">{s.l}</p>
-              </div>
-            ))}
-          </div>
+          <p className="flex flex-wrap gap-x-6 gap-y-1 text-[15px] text-ink-400">
+            <span>
+              <strong className="font-ui text-lg text-white">{totalTopicos.toLocaleString("pt-PT")}</strong> tópicos
+            </span>
+            <span>
+              <strong className="font-ui text-lg text-white">{totalMensagens.toLocaleString("pt-PT")}</strong> mensagens
+            </span>
+            <span>
+              <strong className="font-ui text-lg text-white">2.847</strong> membros
+            </span>
+          </p>
         </div>
       </PageHero>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
-        <div className="grid gap-8 lg:grid-cols-[1fr_20rem] lg:items-start">
-          <div className="space-y-10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14 sm:py-20">
+        <div className="grid gap-16 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-20 xl:grid-cols-[minmax(0,1fr)_19rem]">
+          <div className="min-w-0 space-y-20">
             {/* Categorias */}
-            <section>
-              <h2 className="eyebrow accent-bar text-white">Categorias</h2>
-              <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
+            <section aria-labelledby="forum-categorias">
+              <h2 id="forum-categorias" className="font-display text-2xl uppercase text-white">
+                Categorias
+              </h2>
+              <ul className="mt-6 grid gap-x-12 sm:grid-cols-2">
                 {categoriasForum.map((c) => (
-                  <Link
-                    key={c.slug}
-                    href={`/forum#${c.slug}`}
-                    className="group flex items-start gap-4"
-                  >
-                    <span
-                      className="grid size-11 shrink-0 place-items-center rounded-full text-white"
-                      style={{ background: c.cor }}
-                    >
-                      <Icon name={c.icone} className="size-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-display text-lg uppercase leading-tight text-white group-hover:text-mb-red transition-colors">
-                        {c.nome}
-                      </h3>
-                      <p className="mt-1 text-sm text-ink-400 leading-relaxed">{c.descricao}</p>
-                      <p className="mt-2 flex gap-4 text-xs text-ink-500">
-                        <span>{c.topicos.toLocaleString("pt-PT")} tópicos</span>
-                        <span>{c.mensagens.toLocaleString("pt-PT")} mensagens</span>
-                      </p>
-                    </div>
-                  </Link>
+                  <li key={c.slug} className="border-t border-white/6">
+                    <Link href={`/forum#${c.slug}`} className="group flex items-start gap-4 py-5 sm:py-6">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ink-800 text-ink-200">
+                        <Icon name={c.icone} className="size-[18px]" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-ui text-lg leading-tight text-white transition-colors group-hover:text-mb-red">
+                          {c.nome}
+                        </span>
+                        <span className="mt-1.5 block text-[15px] leading-relaxed text-ink-400">{c.descricao}</span>
+                        <span className="mt-2 flex flex-wrap gap-x-2 text-sm text-ink-500">
+                          <span>{c.topicos.toLocaleString("pt-PT")} tópicos</span>
+                          <Ponto />
+                          <span>{c.mensagens.toLocaleString("pt-PT")} mensagens</span>
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
 
-            {/* Tópicos fixados */}
-            {fixados.length > 0 && (
-              <section>
-                <h2 className="eyebrow accent-bar text-white">Fixados</h2>
-                <div>
-                  {fixados.map((t) => (
-                    <TopicoLinha key={t.id} topico={t} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Tópicos recentes */}
-            <section>
-              <div className="mb-2 flex flex-wrap items-end justify-between gap-3">
-                <h2 className="eyebrow accent-bar mb-0 text-white after:hidden">Discussões recentes</h2>
+            {/* Discussões: as fixadas primeiro, marcadas, e depois as recentes */}
+            <section aria-labelledby="forum-discussoes">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <h2 id="forum-discussoes" className="font-display text-2xl uppercase text-white">
+                  Discussões recentes
+                </h2>
                 <div className="flex gap-2 overflow-x-auto no-scrollbar">
                   {["Recentes", "Populares", "Sem resposta"].map((f, i) => (
                     <button key={f} aria-pressed={i === 0} className="chip h-8 px-3.5 text-sm">
@@ -107,77 +119,76 @@ export default async function ForumPage() {
                   ))}
                 </div>
               </div>
-              {recentes.length === 0 ? (
-                <EmptyState
-                  titulo="Sem discussões recentes"
-                  descricao="As conversas mais recentes da comunidade aparecem aqui."
-                />
-              ) : (
-                <div>
-                  {recentes.map((t) => (
-                    <TopicoLinha key={t.id} topico={t} />
-                  ))}
+
+              <ul className="mt-6 border-t border-white/6">
+                {fixados.map((t) => (
+                  <TopicoLinha key={t.id} topico={t} />
+                ))}
+                {recentes.map((t) => (
+                  <TopicoLinha key={t.id} topico={t} />
+                ))}
+              </ul>
+              {recentes.length === 0 && (
+                <div className="mt-6">
+                  <EmptyState
+                    titulo="Sem discussões recentes"
+                    descricao="As conversas mais recentes da comunidade aparecem aqui."
+                  />
                 </div>
               )}
             </section>
           </div>
 
-          {/* Barra lateral */}
-          <aside className="space-y-10">
-            <div className="card p-6">
-              <h2 className="eyebrow text-mb-red mb-3">Participar</h2>
-              <p className="text-sm text-ink-400 leading-relaxed">
+          {/* Barra lateral: por baixo da lista em ecrãs pequenos */}
+          <aside className="space-y-14">
+            <section className="card p-6">
+              <h2 className="font-display text-lg uppercase text-white">Participar</h2>
+              <p className="mt-2 text-[15px] text-ink-400 leading-relaxed">
                 Para publicar e responder precisa de uma conta Motobox. É gratuita e leva um minuto.
               </p>
-              <ButtonLink href="/conta" className="mt-4 w-full">
-                Criar conta
-              </ButtonLink>
-              <Button variant="ghost" className="mt-2 w-full">
-                Já tenho conta
-              </Button>
-            </div>
+              <div className="mt-5 flex flex-col gap-1.5">
+                <ButtonLink href="/conta" variant="light" className="w-full">
+                  Criar conta
+                </ButtonLink>
+                <ButtonLink href="/entrar?destino=/forum" variant="ghost" className="w-full">
+                  Já tenho conta
+                </ButtonLink>
+              </div>
+            </section>
 
-            <div>
-              <h2 className="eyebrow text-mb-red mb-4">Regras do fórum</h2>
-              <ul className="space-y-3">
-                {[
-                  "Respeito em primeiro lugar. Sem insultos.",
-                  "Sem publicidade não autorizada.",
-                  "Vendas só no Marketplace.",
-                  "Pesquise antes de abrir um tópico novo.",
-                  "Sem conteúdo fora do tema motard.",
-                ].map((r) => (
-                  <li key={r} className="flex gap-2.5 text-sm text-ink-400 leading-relaxed">
-                    <Icon name="check" className="size-4 shrink-0 text-mb-red mt-0.5" />
-                    {r}
+            <section>
+              <h2 className="eyebrow text-ink-400">Regras do fórum</h2>
+              <ol className="mt-3">
+                {REGRAS.map((r, i) => (
+                  <li
+                    key={r}
+                    className="flex gap-3 border-b border-white/6 py-3.5 text-[15px] leading-relaxed text-ink-300 last:border-0"
+                  >
+                    <span className="w-4 shrink-0 font-display text-ink-500 tabular-nums">{i + 1}</span>
+                    <span>{r}</span>
                   </li>
                 ))}
-              </ul>
-            </div>
+              </ol>
+            </section>
 
-            <div>
-              <h2 className="eyebrow text-mb-red mb-2">Membros activos</h2>
-              <div>
-                {[
-                  { n: "Bruno_T12", c: "#e10600", m: 1284 },
-                  { n: "MecanicoDoBairro", c: "#f59e0b", m: 987 },
-                  { n: "MiguelTrail", c: "#22c55e", m: 762 },
-                  { n: "Bino_MX", c: "#0ea5e9", m: 645 },
-                  { n: "AnalistaMX", c: "#a855f7", m: 519 },
-                ].map((m) => (
-                  <div key={m.n} className="flex items-center gap-3 border-b border-white/6 py-3 last:border-0">
+            <section>
+              <h2 className="eyebrow text-ink-400">Membros activos</h2>
+              <ul className="mt-3">
+                {MEMBROS_ACTIVOS.map((m) => (
+                  <li key={m.n} className="flex items-center gap-3 border-b border-white/6 py-3 last:border-0">
                     <span
-                      className="grid size-8 shrink-0 place-items-center rounded-full font-display text-[10px] text-white"
+                      className="grid size-7 shrink-0 place-items-center rounded-full font-display text-[10px] text-white"
                       style={{ background: m.c }}
+                      aria-hidden
                     >
                       {m.n.slice(0, 2).toUpperCase()}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-sm text-ink-300">{m.n}</span>
-                    <span className="font-display text-sm text-ink-400 tabular-nums">{m.m}</span>
-                  </div>
+                    <span className="min-w-0 flex-1 truncate text-[15px] text-ink-200">{m.n}</span>
+                    <span className="text-sm text-ink-500 tabular-nums">{m.m}</span>
+                  </li>
                 ))}
-              </div>
-            </div>
+              </ul>
+            </section>
           </aside>
         </div>
       </div>
@@ -185,64 +196,86 @@ export default async function ForumPage() {
   );
 }
 
+/** Separador discreto entre pedaços de uma linha de metadados. */
+function Ponto() {
+  return (
+    <span aria-hidden className="text-ink-600">
+      ·
+    </span>
+  );
+}
+
 function TopicoLinha({ topico: t }: { topico: TopicoForum }) {
   return (
-    <Link
-      href={`/forum/${t.id}`}
-      className="group flex gap-4 border-b border-white/6 py-5 last:border-0"
-    >
-      <span
-        className="grid size-10 shrink-0 place-items-center rounded-full font-display text-xs text-white"
-        style={{ background: t.avatarCor }}
-      >
-        {t.autorAvatar}
-      </span>
+    <li className="border-b border-white/6">
+      <Link href={`/forum/${t.id}`} className="group flex items-start gap-4 py-6 sm:gap-5 sm:py-7">
+        <span
+          className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full font-display text-[11px] text-white sm:size-10 sm:text-xs"
+          style={{ background: t.avatarCor }}
+          aria-hidden
+        >
+          {t.autorAvatar}
+        </span>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          {t.fixado && <Tag tone="red" className="!text-[9px] !px-1.5 !py-0.5">Fixado</Tag>}
-          {t.resolvido && (
-            <Tag tone="ok" className="!text-[9px] !px-1.5 !py-0.5">
-              <Icon name="check" className="size-2.5" />
-              Resolvido
-            </Tag>
-          )}
-          {t.bloqueado && (
-            <Tag tone="neutral" className="!text-[9px] !px-1.5 !py-0.5">
-              <Icon name="lock" className="size-2.5" />
-              Fechado
-            </Tag>
-          )}
-          <span className="text-[11px] text-ink-600">{t.categoria}</span>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-[17px] font-semibold leading-snug text-white transition-colors group-hover:text-mb-red sm:text-lg">
+            {t.titulo}
+          </h3>
+          <p className="mt-1.5 line-clamp-2 text-[15px] leading-relaxed text-ink-400">{t.excerto}</p>
+
+          <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-500">
+            {t.fixado && (
+              <>
+                <span className="inline-flex items-center gap-1 text-mb-red">
+                  <Icon name="pin" className="size-3.5" />
+                  Fixado
+                </span>
+                <Ponto />
+              </>
+            )}
+            {t.resolvido && (
+              <>
+                <span className="inline-flex items-center gap-1 text-ink-300">
+                  <Icon name="check" className="size-3.5" />
+                  Resolvido
+                </span>
+                <Ponto />
+              </>
+            )}
+            {t.bloqueado && (
+              <>
+                <span className="inline-flex items-center gap-1">
+                  <Icon name="lock" className="size-3.5" />
+                  Fechado
+                </span>
+                <Ponto />
+              </>
+            )}
+            <span className="text-ink-300">{t.categoria}</span>
+            <Ponto />
+            <span>{t.autor}</span>
+            <Ponto />
+            <span>{formatData(t.criado, { day: "2-digit", month: "short" })}</span>
+            {t.ultimaResposta.quando && (
+              <span className="hidden sm:contents">
+                <Ponto />
+                <span>última resposta</span>
+                <span>{t.ultimaResposta.quando}</span>
+              </span>
+            )}
+            {/* Em ecrã pequeno a contagem de respostas não tem coluna própria. */}
+            <span className="contents sm:hidden">
+              <Ponto />
+              <span>{t.respostas} respostas</span>
+            </span>
+          </p>
         </div>
 
-        <h3 className="mt-1.5 font-display text-base uppercase leading-snug text-white group-hover:text-mb-red transition-colors">
-          {t.titulo}
-        </h3>
-        <p className="mt-1.5 text-xs text-ink-500 leading-relaxed line-clamp-2">{t.excerto}</p>
-        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-600">
-          <span>{t.autor}</span>
-          <span className="size-1 rounded-full bg-ink-700" />
-          <span>{formatData(t.criado, { day: "2-digit", month: "short" })}</span>
-          {t.ultimaResposta.quando && (
-            <>
-              <span className="size-1 rounded-full bg-ink-700" />
-              <span>última resposta {t.ultimaResposta.quando}</span>
-            </>
-          )}
-        </p>
-      </div>
-
-      <div className="hidden shrink-0 sm:flex flex-col items-end justify-center gap-1 pl-2">
-        <span className="inline-flex items-center gap-1.5 font-display text-base text-white tabular-nums">
-          <Icon name="chat" className="size-3.5 text-ink-600" />
-          {t.respostas}
-        </span>
-        <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-600 tabular-nums">
-          <Icon name="eye" className="size-3" />
-          {t.visualizacoes.toLocaleString("pt-PT")}
-        </span>
-      </div>
-    </Link>
+        <div className="hidden w-20 shrink-0 pt-0.5 text-right sm:block">
+          <p className="font-display text-2xl leading-none text-white tabular-nums">{t.respostas}</p>
+          <p className="mt-1.5 text-xs text-ink-500">respostas</p>
+        </div>
+      </Link>
+    </li>
   );
 }

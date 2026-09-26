@@ -17,6 +17,9 @@ export const SOCIAIS = {
   instagram: "https://www.instagram.com/motobox_angola",
   facebook: "https://www.facebook.com/motoboxangola",
   youtube: "https://www.youtube.com/@motoboxangola",
+  // Ficam em branco até serem definidas no painel (Definições → Redes sociais).
+  linkedin: "",
+  googleBusiness: "",
   whatsapp: "https://wa.me/244923000000",
   email: "geral@motobox.ao",
   telefone: "+244 923 000 000",
