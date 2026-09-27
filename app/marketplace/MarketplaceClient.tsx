@@ -167,13 +167,17 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
                   className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
                   tamanhos="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
                 />
-                <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
-                  <Tag tone="neutral">{a.categoria}</Tag>
+                <div className="absolute left-3 top-3 flex items-center gap-1.5">
+                  {/* Com uma categoria escolhida, repeti-la em cada anúncio não diz nada. */}
+                  {categoria === "Todas" && <Tag tone="neutral">{a.categoria}</Tag>}
                   {a.vendedor.verificado && (
-                    <Tag tone="ok">
-                      <Icon name="verified" className="size-3" />
-                      Verificado
-                    </Tag>
+                    <span
+                      title="Vendedor verificado"
+                      className="grid size-6 place-items-center rounded-full bg-ok text-white shadow-md shadow-black/30"
+                    >
+                      <Icon name="check" className="size-3.5" />
+                      <span className="sr-only">Vendedor verificado</span>
+                    </span>
                   )}
                 </div>
                 <span className="absolute bottom-3 right-3 rounded-full bg-ink-950/80 px-2.5 py-1 text-[10px] leading-none text-ink-200 backdrop-blur-sm">
