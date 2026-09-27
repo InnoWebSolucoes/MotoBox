@@ -24,11 +24,12 @@ import {
   noticias as noticiasLocais, videos as videosLocais,
   patrocinadores as patrocinadoresLocais, anuncios as anunciosLocais,
   topicos as topicosLocais, categoriasForum as categoriasLocais,
+  clubes as clubesLocais,
 } from "@/lib/data";
 import { paginasLegaisSeed, definicoesSeed } from "@/lib/admin/seed";
 import type {
   Evento, Piloto, Equipa, Corrida, Noticia, Video,
-  Patrocinador, AnuncioMarketplace, TopicoForum, CategoriaForum,
+  Patrocinador, AnuncioMarketplace, TopicoForum, CategoriaForum, Clube,
 } from "@/lib/types";
 import type { PaginaLegal } from "@/lib/admin/types";
 
@@ -132,6 +133,11 @@ export const lerTopicos = () =>
   ler<TopicoForum>("topicos", topicosLocais, (a, b) => recentesPrimeiro(a.criado, b.criado));
 
 export const lerCategoriasForum = () => ler<CategoriaForum>("categoriasForum", categoriasLocais);
+
+/** Clubes em destaque primeiro, depois por nome. */
+export const lerClubes = () =>
+  ler<Clube>("clubes", clubesLocais, (a, b) =>
+    Number(Boolean(b.destaque)) - Number(Boolean(a.destaque)) || a.nome.localeCompare(b.nome));
 export const lerPaginasLegais  = () => ler<PaginaLegal>("paginasLegais", paginasLegaisSeed);
 
 /* ---------- Registos individuais ---------- */
@@ -140,6 +146,7 @@ export const lerPaginasLegais  = () => ler<PaginaLegal>("paginasLegais", paginas
 export const lerEvento   = async (slug: string) => (await lerEventos()).find((e) => e.slug === slug);
 export const lerPiloto   = async (slug: string) => (await lerPilotos()).find((p) => p.slug === slug);
 export const lerEquipa   = async (slug: string) => (await lerEquipas()).find((e) => e.slug === slug);
+export const lerClube    = async (slug: string) => (await lerClubes()).find((c) => c.slug === slug);
 export const lerCorrida  = async (slug: string) => (await lerCorridas()).find((c) => c.slug === slug);
 export const lerNoticia  = async (slug: string) => (await lerNoticias()).find((n) => n.slug === slug);
 export const lerAnuncio  = async (id: string) => (await lerAnuncios()).find((a) => a.id === id);

@@ -55,6 +55,10 @@ export default async function EquipasPage() {
       </PageHero>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+        <p className="mb-10 text-sm text-ink-400">
+          Anda de mota por lazer? Os clubes de passeio, moto-turismo e Lady Riders estão em{" "}
+          <Link href="/clubes" className="font-ui text-base text-white transition-colors hover:text-mb-red">Clubes →</Link>
+        </p>
         {equipas.length === 0 && (
           <div className="mb-14">
             <EmptyState

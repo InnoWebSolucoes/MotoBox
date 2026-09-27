@@ -5,6 +5,7 @@ import { paraBase, daBase } from "@/lib/supabase/mapeamento";
 import { utilizadorActual, perfilDe } from "@/lib/conta/sessao";
 import { notificarNovoAnuncio } from "@/lib/notificacoes";
 import type { AnuncioMarketplace } from "@/lib/types";
+import { ehProvincia } from "@/lib/provincias";
 
 /* ============================================================
    MOTOBOX — Anúncios publicados pelos utilizadores
@@ -18,10 +19,6 @@ export const dynamic = "force-dynamic";
 
 const CATEGORIAS = ["Motas", "Peças", "Equipamento", "Acessórios"];
 const ESTADOS = ["Nova", "Como nova", "Muito bom", "Bom", "Para peças"];
-const PROVINCIAS = [
-  "Luanda", "Benguela", "Huíla", "Huambo", "Namibe",
-  "Cabinda", "Malanje", "Bengo", "Cuanza Sul",
-];
 const MAXIMO_ACTIVOS = 20;
 
 function erro(mensagem: string, codigo = 400) {
@@ -39,7 +36,7 @@ function campos(c: Record<string, unknown>): Partial<AnuncioMarketplace> | strin
   const estado = String(c.estado ?? "");
   if (!ESTADOS.includes(estado)) return "Escolha o estado do artigo.";
   const provincia = String(c.provincia ?? "");
-  if (!PROVINCIAS.includes(provincia)) return "Escolha a província.";
+  if (!ehProvincia(provincia)) return "Escolha a província.";
   const descricao = typeof c.descricao === "string" ? c.descricao.trim() : "";
   if (descricao.length < 20 || descricao.length > 3000) return "A descrição tem de ter entre 20 e 3000 caracteres.";
   const marca = typeof c.marca === "string" ? c.marca.trim().slice(0, 40) : "";

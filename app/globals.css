@@ -48,8 +48,13 @@
   --fg: var(--color-ink-100);
 }
 
-* {
-  border-color: color-mix(in srgb, var(--color-ink-700) 60%, transparent);
+/* Cor de contorno por omissão. Em @layer base: fora de camada, esta regra
+   ganhava a todas as classes de cor (border-white/6, border-mb-red…), e
+   todos os contornos do site saíam no mesmo cinzento. */
+@layer base {
+  * {
+    border-color: color-mix(in srgb, var(--color-ink-700) 60%, transparent);
+  }
 }
 
 html {

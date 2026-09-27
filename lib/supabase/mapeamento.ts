@@ -18,6 +18,7 @@ export const TABELA: Record<ColeccaoNome, string> = {
   anuncios: "anuncios",
   topicos: "topicos",
   categoriasForum: "categorias_forum",
+  clubes: "clubes",
   utilizadores: "utilizadores",
   encomendas: "encomendas",
   denuncias: "denuncias",
@@ -31,7 +32,7 @@ export const TABELA: Record<ColeccaoNome, string> = {
 export const CHAVE_TABELA: Record<ColeccaoNome, string> = {
   eventos: "slug", pilotos: "slug", equipas: "slug", corridas: "slug",
   noticias: "slug", videos: "slug", patrocinadores: "slug",
-  paginasLegais: "slug", categoriasForum: "slug",
+  paginasLegais: "slug", categoriasForum: "slug", clubes: "slug",
   anuncios: "id", topicos: "id", utilizadores: "id", encomendas: "id",
   denuncias: "id", subscritores: "id", mensagens: "id", atividade: "id",
 };

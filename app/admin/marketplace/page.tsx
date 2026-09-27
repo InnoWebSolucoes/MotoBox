@@ -5,11 +5,11 @@ import { Campo, Input, Area, Seleccao, Interruptor } from "@/components/admin/ki
 import { novoId } from "@/lib/admin/store";
 import { formatKz, formatDataCurta } from "@/lib/data";
 import type { AnuncioMarketplace } from "@/lib/types";
+import { PROVINCIAS } from "@/lib/provincias";
 
 const CATEGORIAS = ["Motas", "Peças", "Equipamento", "Acessórios"];
 const ESTADOS_ARTIGO = ["Nova", "Como nova", "Muito bom", "Bom", "Para peças"];
-const PROVINCIAS = ["Luanda", "Benguela", "Huíla", "Huambo", "Namibe", "Cabinda", "Malanje", "Bengo", "Cuanza Sul"];
-const op = (v: string[]) => v.map((x) => ({ valor: x, nome: x }));
+const op = (v: readonly string[]) => v.map((x) => ({ valor: x, nome: x }));
 
 export default function AdminMarketplace() {
   return (

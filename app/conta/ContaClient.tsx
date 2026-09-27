@@ -28,6 +28,8 @@ import type { AnuncioMarketplace, Equipa, Evento, Noticia, Piloto } from "@/lib/
 import type { Encomenda } from "@/lib/admin/types";
 import { RecortarAvatar, useTextosRecorte, type EstadoRecorte } from "./RecortarAvatar";
 import { comBase } from "@/lib/base";
+import { hrefEvento } from "@/lib/desporto";
+import { PROVINCIAS } from "@/lib/provincias";
 
 type Aba = "resumo" | "bilhetes" | "preferencias" | "notificacoes" | "anuncios";
 
@@ -39,10 +41,6 @@ const ABAS: { id: Aba; label: string; icone: string }[] = [
   { id: "anuncios", label: "Anúncios", icone: "tag" },
 ];
 
-const PROVINCIAS = [
-  "Luanda", "Benguela", "Huíla", "Huambo", "Namibe",
-  "Cabinda", "Malanje", "Bengo", "Cuanza Sul",
-];
 
 interface PerfilConta {
   id: string; nome: string; email: string; telefone: string | null; provincia: string | null;
@@ -438,7 +436,7 @@ export function ContaClient({
                       </dl>
                       {b.evento && (
                         <div className="mt-5 flex flex-wrap gap-2 border-t border-white/6 pt-4">
-                          <ButtonLink href={`/calendario/${b.evento.slug}`} variant="ghost" size="sm">Ver evento</ButtonLink>
+                          <ButtonLink href={hrefEvento(b.evento)} variant="ghost" size="sm">Ver evento</ButtonLink>
                         </div>
                       )}
                     </div>

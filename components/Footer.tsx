@@ -2,45 +2,62 @@ import Link from "next/link";
 import { Logo } from "./Brand";
 import { Icon } from "./ui";
 import { Newsletter } from "./Newsletter";
+import { T } from "./T";
 import { TEMPORADA } from "@/lib/data";
 import { lerRedes } from "@/lib/redes";
 
-const COLUNAS: { titulo: string; links: { href: string; label: string }[] }[] = [
+/**
+ * As colunas seguem o menu (Motobox · Desporto · Comunidade · Notícias · Serviços).
+ * `chave` passa pelo dicionário; `nome` é um nome próprio que não se traduz.
+ */
+const COLUNAS: { titulo: string; links: { href: string; chave?: string; nome?: string }[] }[] = [
   {
-    titulo: "Competição",
+    titulo: "marca.motobox",
     links: [
-      { href: "/calendario", label: "Calendário" },
-      { href: "/resultados", label: "Resultados" },
-      { href: "/classificacao", label: "Classificação" },
-      { href: "/pilotos", label: "Pilotos" },
-      { href: "/equipas", label: "Equipas e clubes" },
+      { href: "/sobre", chave: "menu.sobreNos" },
+      { href: "/seguranca", chave: "nav.seguranca" },
+      { href: "/patrocinadores", chave: "nav.patrocinadores" },
+      { href: "/contacto", chave: "nav.contacto" },
+      { href: "/contacto#parcerias", chave: "menu.parcerias" },
     ],
   },
   {
-    titulo: "Conteúdo",
+    titulo: "nav.desporto",
     links: [
-      { href: "/noticias", label: "Notícias" },
-      { href: "/noticias?cat=Internacional", label: "Internacional" },
-      { href: "/videos", label: "Vídeos" },
-      { href: "/forum", label: "Fórum" },
+      { href: "/desporto", chave: "menu.todosDesportos" },
+      { href: "/desporto/motocross", nome: "Motocross" },
+      { href: "/calendario", chave: "nav.calendario" },
+      { href: "/resultados", chave: "nav.resultados" },
+      { href: "/classificacao", chave: "nav.classificacao" },
+      { href: "/pilotos", chave: "nav.pilotos" },
+      { href: "/equipas", chave: "nav.equipas" },
     ],
   },
   {
-    titulo: "Serviços",
+    titulo: "nav.comunidade",
     links: [
-      { href: "/bilhetes", label: "Bilhetes" },
-      { href: "/marketplace", label: "Marketplace" },
-      { href: "/conta", label: "A minha conta" },
-      { href: "/patrocinadores", label: "Patrocinadores" },
+      { href: "/eventos", chave: "nav.eventos" },
+      { href: "/clubes", chave: "nav.clubes" },
+      { href: "/clubes?tipo=lady-riders", chave: "menu.ladyRiders" },
+      { href: "/clubes/rotas", chave: "menu.rotas" },
+      { href: "/forum", chave: "nav.forum" },
     ],
   },
   {
-    titulo: "Motobox",
+    titulo: "nav.noticias",
     links: [
-      { href: "/sobre", label: "Sobre nós" },
-      { href: "/contacto", label: "Contacto" },
-      { href: "/sobre#equipa", label: "Equipa" },
-      { href: "/contacto#parcerias", label: "Parcerias" },
+      { href: "/noticias", chave: "menu.todasNoticias" },
+      { href: "/noticias?cat=Internacional", chave: "menu.internacional" },
+      { href: "/videos", chave: "nav.videos" },
+    ],
+  },
+  {
+    titulo: "nav.servicos",
+    links: [
+      { href: "/bilhetes", chave: "nav.bilhetes" },
+      { href: "/marketplace", chave: "nav.marketplace" },
+      { href: "/marketplace/importar", chave: "menu.importar" },
+      { href: "/conta", chave: "menu.minhaConta" },
     ],
   },
 ];
@@ -66,7 +83,7 @@ export async function Footer() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
-        <div className="grid gap-10 lg:grid-cols-[1.3fr_2.6fr]">
+        <div className="grid gap-10 lg:grid-cols-[1fr_3fr]">
           <div>
             <Logo height={32} className="text-white" />
             <p className="mt-5 max-w-xs text-sm text-ink-500 leading-relaxed">
@@ -89,18 +106,18 @@ export async function Footer() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-3 lg:grid-cols-5">
             {COLUNAS.map((c) => (
               <div key={c.titulo}>
-                <h3 className="font-ui text-base text-white">{c.titulo}</h3>
+                <h3 className="font-ui text-base text-white"><T k={c.titulo} /></h3>
                 <ul className="mt-4 space-y-2.5">
                   {c.links.map((l) => (
-                    <li key={l.href + l.label}>
+                    <li key={l.href}>
                       <Link
                         href={l.href}
                         className="text-sm text-ink-400 transition-colors hover:text-white"
                       >
-                        {l.label}
+                        {l.nome ?? <T k={l.chave ?? ""} />}
                       </Link>
                     </li>
                   ))}

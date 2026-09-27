@@ -11,6 +11,7 @@ import { TraduzirPagina } from "@/components/TraduzirPagina";
 import { IdiomaProvider } from "@/lib/i18n/contexto";
 import { AuthProvider } from "@/lib/auth/contexto";
 import { SessaoObrigatoriaProvider } from "@/components/SessaoObrigatoria";
+import { IntroCapacete } from "@/components/IntroCapacete";
 
 const display = Barlow_Condensed({
   variable: "--font-display",
@@ -79,6 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Footer />
         </ForaDoPainel>
         <CookieBanner />
+        <IntroCapacete />
         <TraduzirPagina />
         </SessaoObrigatoriaProvider>
         </AuthProvider>

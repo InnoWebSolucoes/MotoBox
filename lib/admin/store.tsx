@@ -18,10 +18,11 @@ import {
   corridas as corridasSeed, noticias as noticiasSeed, videos as videosSeed,
   patrocinadores as patrocinadoresSeed, anuncios as anunciosSeed,
   topicos as topicosSeed, categoriasForum as categoriasForumSeed,
+  clubes as clubesSeed,
 } from "@/lib/data";
 import type {
   Evento, Piloto, Equipa, Corrida, Noticia, Video, Patrocinador,
-  AnuncioMarketplace, TopicoForum, CategoriaForum,
+  AnuncioMarketplace, TopicoForum, CategoriaForum, Clube,
 } from "@/lib/types";
 import type {
   Utilizador, Encomenda, Denuncia, Subscritor, Mensagem,
@@ -59,6 +60,7 @@ export interface EstadoAdmin {
   anuncios: AnuncioMarketplace[];
   topicos: TopicoForum[];
   categoriasForum: CategoriaForum[];
+  clubes: Clube[];
   utilizadores: Utilizador[];
   encomendas: Encomenda[];
   denuncias: Denuncia[];
@@ -83,6 +85,7 @@ const estadoInicial = (): EstadoAdmin => ({
   anuncios: anunciosSeed,
   topicos: topicosSeed,
   categoriasForum: categoriasForumSeed,
+  clubes: clubesSeed,
   utilizadores: utilizadoresSeed,
   encomendas: encomendasSeed,
   denuncias: denunciasSeed,
@@ -97,7 +100,7 @@ const estadoInicial = (): EstadoAdmin => ({
 const CHAVE_PRIMARIA: Record<ColeccaoNome, string> = {
   eventos: "slug", pilotos: "slug", equipas: "slug", corridas: "slug",
   noticias: "slug", videos: "slug", patrocinadores: "slug",
-  paginasLegais: "slug", categoriasForum: "slug",
+  paginasLegais: "slug", categoriasForum: "slug", clubes: "slug",
   anuncios: "id", topicos: "id", utilizadores: "id", encomendas: "id",
   denuncias: "id", subscritores: "id", mensagens: "id", atividade: "id",
 };
@@ -191,7 +194,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const carregarTudo = useCallback(async () => {
     const coleccoes: ColeccaoNome[] = [
       "eventos", "pilotos", "equipas", "corridas", "noticias", "videos",
-      "patrocinadores", "anuncios", "topicos", "categoriasForum",
+      "patrocinadores", "anuncios", "topicos", "categoriasForum", "clubes",
       "utilizadores", "encomendas", "denuncias", "subscritores",
       "mensagens", "paginasLegais", "atividade",
     ];
@@ -449,7 +452,7 @@ function rotulo(c: ColeccaoNome): string {
   const rotulos: Record<ColeccaoNome, string> = {
     eventos: "Evento", pilotos: "Piloto", equipas: "Equipa", corridas: "Corrida",
     noticias: "Notícia", videos: "Vídeo", patrocinadores: "Patrocinador",
-    anuncios: "Anúncio", topicos: "Tópico", categoriasForum: "Categoria",
+    anuncios: "Anúncio", topicos: "Tópico", categoriasForum: "Categoria", clubes: "Clube",
     utilizadores: "Utilizador", encomendas: "Encomenda", denuncias: "Denúncia",
     subscritores: "Subscritor", mensagens: "Mensagem", paginasLegais: "Página legal",
     atividade: "Atividade",

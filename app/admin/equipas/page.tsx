@@ -4,9 +4,9 @@ import { PaginaRecurso } from "@/components/admin/Recurso";
 import { Campo, CampoEndereco, Input, Area, Seleccao, ListaTexto } from "@/components/admin/kit";
 import { slugify, useAdmin } from "@/lib/admin/store";
 import type { Equipa } from "@/lib/types";
+import { PROVINCIAS } from "@/lib/provincias";
 
-const PROVINCIAS = ["Luanda", "Benguela", "Huíla", "Huambo", "Namibe", "Cabinda", "Malanje", "Bengo", "Cuanza Sul"];
-const op = (v: string[]) => v.map((x) => ({ valor: x, nome: x }));
+const op = (v: readonly string[]) => v.map((x) => ({ valor: x, nome: x }));
 
 export default function AdminEquipas() {
   const { estado } = useAdmin();

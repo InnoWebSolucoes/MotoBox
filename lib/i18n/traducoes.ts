@@ -84,6 +84,11 @@ export const traducoes = {
     patrocinadores:  { pt: "Patrocinadores",  en: "Sponsors" },
     competicao:      { pt: "Competição",      en: "Competition" },
     comunidade:      { pt: "Comunidade",      en: "Community" },
+    desporto:        { pt: "Desporto",        en: "Sport" },
+    eventos:         { pt: "Eventos",         en: "Events" },
+    clubes:          { pt: "Clubes",          en: "Clubs" },
+    seguranca:       { pt: "Segurança",       en: "Safety" },
+    servicos:        { pt: "Serviços",        en: "Services" },
     menu:            { pt: "Menu",            en: "Menu" },
     abrirMenu:       { pt: "Abrir menu",      en: "Open menu" },
     fecharMenu:      { pt: "Fechar menu",     en: "Close menu" },
@@ -244,6 +249,42 @@ export const traducoes = {
     comprarBilhetes:   { pt: "Comprar bilhetes",          en: "Buy tickets" },
     saltarConteudo:    { pt: "Saltar para o conteúdo",  en: "Skip to content" },
     paginaInicial:     { pt: "Motobox Angola, página inicial", en: "Motobox Angola, home" },
+    // Menu novo: Motobox · Notícias · Desporto · Eventos · Clubes · Marketplace · Fórum
+    sobreNos:          { pt: "Sobre nós",                 en: "About us" },
+    segurancaDesc:     { pt: "Capacete, chuva e condução segura", en: "Helmets, rain and riding safely" },
+    internacional:     { pt: "Internacional",             en: "International" },
+    internacionalDesc: { pt: "O que se passa lá fora",    en: "What's happening abroad" },
+    motocrossDesc:     { pt: "Campeonato Nacional",       en: "National Championship" },
+    enduroDesc:        { pt: "Trilhos e resistência",     en: "Trails and endurance" },
+    rallyDesc:         { pt: "Navegação em terreno aberto", en: "Navigation across open terrain" },
+    todosDesportos:    { pt: "Todos os desportos",        en: "All sports" },
+    eventosDesc:       { pt: "Passeios, encontros e acções solidárias", en: "Rides, meet-ups and charity events" },
+    todosClubes:       { pt: "Todos os clubes",           en: "All clubs" },
+    todosClubesDesc:   { pt: "Lazer, turismo e convívio", en: "Leisure, touring and good company" },
+    ladyRiders:        { pt: "Lady Riders",               en: "Lady Riders" },
+    ladyRidersDesc:    { pt: "Clubes de mulheres motards", en: "Women's riding clubs" },
+    rotas:             { pt: "Moto-turismo e rotas",      en: "Moto-touring and routes" },
+    rotasDesc:         { pt: "Estradas para descobrir Angola", en: "Roads to discover Angola" },
+    anuncios:          { pt: "Anúncios",                  en: "Listings" },
+    anunciosDesc:      { pt: "Motas, peças e equipamento", en: "Bikes, parts and gear" },
+    importar:          { pt: "Importar do estrangeiro",   en: "Buy from abroad" },
+    importarCurto:     { pt: "Importar",                  en: "Buy abroad" },
+    importarDesc:      { pt: "Peças e motas lá de fora, com orçamento até Angola", en: "Parts and bikes from abroad, quoted to Angola" },
+    emBreve:           { pt: "Em breve",                  en: "Coming soon" },
+    minhaConta:        { pt: "A minha conta",             en: "My account" },
+    parcerias:         { pt: "Parcerias",                 en: "Partnerships" },
+  },
+
+  /* ---------------- Desporto ---------------- */
+  desporto: {
+    visaoGeral:        { pt: "Visão geral",               en: "Overview" },
+    caminho:           { pt: "Caminho",                   en: "Breadcrumb" },
+    seccoesMotocross:  { pt: "Secções de Motocross",      en: "Motocross sections" },
+    // Nomes das modalidades ainda sem provas (lib/desporto.ts), para o painel do menu.
+    velocidade:        { pt: "Velocidade",                en: "Road racing" },
+    moto4:             { pt: "Moto 4 e quads",            en: "Quads and ATVs" },
+    motosDeAgua:       { pt: "Motos de água",             en: "Jet skis" },
+    automobilismo:     { pt: "Karting e automobilismo",   en: "Karting and motorsport" },
   },
 
   /* ---------------- Autenticação ---------------- */
@@ -371,6 +412,40 @@ export const traducoes = {
     confirmacaoReenviada:{ pt: "Enviámos de novo o email de confirmação.", en: "We sent the confirmation email again." },
     entrarParaContinuar:{ pt: "Entre para continuar",  en: "Sign in to continue" },
     verifiqueEmailModal:{ pt: "Enviámos um email para confirmar a conta. Carregue na ligação e volta a esta página já com sessão iniciada.", en: "We emailed you a link to confirm your account. Click it and you'll come back to this page already signed in." },
+  },
+
+  /* ---------------- Abertura do site (capacete) ---------------- */
+  intro: {
+    rotulo:    { pt: "Boas-vindas à Motobox",               en: "Welcome to Motobox" },
+    titulo:    { pt: "Capacete posto?",                     en: "Helmet on?" },
+    sub:       { pt: "Segura-te, que vem aí muita emoção.", en: "Hold on tight, it's going to be a bumpy ride." },
+    entrar:    { pt: "Entrar",                              en: "Let's ride" },
+    dica:      { pt: "Toque em qualquer sítio ou carregue em Esc para saltar.", en: "Tap anywhere or press Esc to skip." },
+  },
+
+  /* ---------------- Segurança (destaque reutilizável) ---------------- */
+  seguranca: {
+    eyebrow:   { pt: "Segurança",                           en: "Safety" },
+    titulo:    { pt: "Capacete posto, correia apertada",    en: "Helmet on, strap done up" },
+    texto:     { pt: "O guia da Motobox para andar de mota em Angola com a cabeça no sítio: capacete, chuva, noite, equipamento, passageiros e o que fazer num acidente.",
+                 en: "The Motobox guide to riding in Angola with your head in the right place: helmets, rain, night riding, gear, passengers and what to do after a crash." },
+    numeroDesc:{ pt: "menos risco de morte num acidente, com o capacete bem usado", en: "lower risk of death in a crash with a correctly worn helmet" },
+    fonte:     { pt: "Fonte: Organização Mundial da Saúde", en: "Source: World Health Organization" },
+    cta:       { pt: "Ler o guia de segurança",             en: "Read the safety guide" },
+    atalhos:   { pt: "Atalhos do guia de segurança",        en: "Safety guide shortcuts" },
+    capacete:  { pt: "Capacete",                            en: "Helmet" },
+    chuva:     { pt: "À chuva",                             en: "In the rain" },
+    grupo:     { pt: "Em grupo",                            en: "Group rides" },
+    acidente:  { pt: "Em caso de acidente",                 en: "If there's a crash" },
+  },
+
+  /* ---------------- Marketplace: importar do estrangeiro ---------------- */
+  importar: {
+    novo:      { pt: "Novo",                                en: "New" },
+    titulo:    { pt: "Importar do estrangeiro",             en: "Buy from abroad" },
+    texto:     { pt: "Viu uma peça, um capacete ou uma mota numa loja de Portugal, Espanha ou do resto da Europa? Envie-nos a ligação e peça um orçamento com transporte e alfândega até Angola.",
+                 en: "Spotted a part, a helmet or a bike in a shop in Portugal, Spain or elsewhere in Europe? Send us the link and ask for a quote including shipping and customs to Angola." },
+    cta:       { pt: "Como funciona",                       en: "How it works" },
   },
 } as const;
 

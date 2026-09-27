@@ -64,6 +64,7 @@ export const NAVEGACAO: GrupoNav[] = [
   {
     grupo: "Comunidade",
     itens: [
+      { href: "/admin/clubes", nome: "Clubes", icone: "route" },
       { href: "/admin/marketplace", nome: "Marketplace", icone: "tag" },
       { href: "/admin/forum", nome: "Fórum", icone: "chat" },
       { href: "/admin/moderacao", nome: "Moderação", icone: "alert", contador: "denuncias" },
@@ -101,6 +102,7 @@ const CAMINHOS: Record<string, string> = {
   cart: "M9 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM19 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6",
   star: "m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z",
   tag: "M20.6 13.4 12 22l-9-9V3h10zM7.5 7.5h.01",
+  route: "M6 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 19h8.5a3.5 3.5 0 0 0 0-7h-9a3.5 3.5 0 0 1 0-7H16",
   chat: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
   alert: "M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
   users: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8",

@@ -1,4 +1,5 @@
 import type {
+  Clube,
   AnuncioMarketplace,
   CategoriaForum,
   Corrida,
@@ -684,6 +685,223 @@ export const pilotos: Piloto[] = [
 /* ============================================================
    EQUIPAS E CLUBES
    ============================================================ */
+
+/**
+ * Clubes de lazer e moto-turismo. Dados de partida; com o Supabase ligado
+ * a lista vem da tabela `clubes` (ver supabase/migracao-2026-09-28.sql).
+ *
+ * Tudo o que aqui está vem das páginas públicas dos próprios clubes ou de
+ * reportagens (ver `fonte`). Onde a sede não está publicada, a cidade fica
+ * vazia e a província é a da actividade documentada. Sem logótipos nem
+ * fotografias: não se copiam imagens das redes sociais; a equipa carrega-as
+ * no painel quando o clube as ceder.
+ */
+export const clubes: Clube[] = [
+  {
+    slug: "amigos-da-picada",
+    nome: "Amigos da Picada",
+    tipo: "Moto-turismo",
+    provincia: "Luanda",
+    cidade: "Luanda",
+    fundacao: 2006,
+    descricao:
+      "Grupo de motociclistas de Luanda vocacionado para o turismo e a aventura sobre rodas. Tudo começou em 2006, com a primeira viagem em grupo até à Namíbia, e o nome vem do estado das estradas nessa viagem: as picadas. O programa do clube junta saídas de fim-de-semana a pontos turísticos do país, um raide longo por ano e viagens a outros países africanos. Tem uma forte componente solidária, com distribuição de refeições em hospitais e de material escolar nas comunidades por onde passa, e vai todos os anos à Muxima pedir a bênção para a época. É apontado como o mentor do movimento motard angolano. Lema: «Sunny or Raining».",
+    actividades: [
+      "Saídas de fim-de-semana a pontos turísticos",
+      "Raide anual pelo país",
+      "Viagens a outros países africanos",
+      "Café da Picada, encontro social mensal",
+      "Acções solidárias em hospitais e comunidades",
+      "Bênção anual na Muxima",
+    ],
+    encontros: "Café da Picada: um encontro social por mês, segundo o programa que o clube descreveu em 2020.",
+    logo: "",
+    cor: "#c2410c",
+    redes: {
+      instagram: "https://www.instagram.com/amigosdapicada/",
+      facebook: "https://www.facebook.com/groups/amigosdapicada/",
+    },
+    fonte: [
+      "https://www.instagram.com/amigosdapicada/",
+      "https://www.facebook.com/groups/amigosdapicada/",
+      "https://bikersofafrica.com/2020/07/08/amigos-da-picada/",
+      "https://www.euronews.com/2021/03/10/the-bikers-making-angola-the-ride-of-their-lives",
+    ].join("\n"),
+    destaque: true,
+  },
+  {
+    slug: "ladies-in-2-wheels-angola",
+    nome: "Ladies in 2 Wheels in Angola",
+    tipo: "Lady Riders",
+    provincia: "Luanda",
+    cidade: "",
+    descricao:
+      "Motards femininas angolanas que viajam de mota, fazem turismo e acções filantrópicas, «and lots of fun». No perfil guardam viagens a Malanje e a países vizinhos, da Namíbia ao Botswana, à África do Sul e à RD Congo, e um raide ibérico. Levam a conversa sobre mulheres na estrada também à rádio. Lema: «Life is a ride kinda girls. Whatever we can do, you can too».",
+    actividades: [
+      "Viagens de mota em grupo",
+      "Turismo pelo país",
+      "Viagens à Namíbia, Botswana, África do Sul e RD Congo",
+      "Acções filantrópicas",
+    ],
+    logo: "",
+    cor: "#db2777",
+    redes: { instagram: "https://www.instagram.com/ladies_riders_ao/" },
+    fonte: [
+      "https://www.instagram.com/ladies_riders_ao/",
+      "https://www.instagram.com/ladies_riders_ao/reel/DWRpks4DKxj/",
+    ].join("\n"),
+    destaque: true,
+  },
+  {
+    slug: "motards-de-angola",
+    nome: "Motards de Angola",
+    tipo: "Moto-turismo",
+    provincia: "Luanda",
+    cidade: "Belas",
+    descricao:
+      "Grupo de motards de Luanda que tem como objectivo, nas suas palavras, «dar o melhor de si para o engrandecimento do turismo em Angola». Foi pela sua página que se divulgou a programação do Dia Nacional do Motard Angolano, em Luanda, em Julho de 2026.",
+    actividades: [
+      "Passeios e viagens de turismo",
+      "Divulgação de encontros motard",
+      "Dia do Motard Angolano",
+    ],
+    logo: "",
+    cor: "#0f766e",
+    redes: {
+      facebook: "https://www.facebook.com/100079850005166",
+      instagram: "https://www.instagram.com/motardsangola/",
+    },
+    fonte: [
+      "https://www.facebook.com/100079850005166",
+      "https://www.facebook.com/100079850005166/about_places",
+      "https://www.instagram.com/motardsangola/ (mesmo nome; ligação entre as contas por confirmar)",
+    ].join("\n"),
+    destaque: true,
+  },
+  {
+    slug: "amigos-do-capim",
+    nome: "Amigos do Capim",
+    tipo: "Outro",
+    provincia: "Luanda",
+    cidade: "Luanda",
+    descricao:
+      "Clube motard de Luanda com vocação solidária: «Mais do que amigos, somos uma família que ajuda outras famílias». Em Agosto de 2020 juntou-se a um grupo filantrópico de oficiais do Ministério do Interior numa campanha de prevenção da Covid-19 no Futungo, em Talatona, com distribuição de máscaras. Lema: «Ser solidário cuia bué».",
+    actividades: ["Acções solidárias", "Campanhas de sensibilização", "Passeios solidários"],
+    logo: "",
+    cor: "#4d7c0f",
+    redes: { instagram: "https://www.instagram.com/amigosdocapim/" },
+    fonte: [
+      "https://www.instagram.com/amigosdocapim/",
+      "https://bikersofafrica.com/2020/08/24/angola-club-amigos-do-capim-charity-run/",
+    ].join("\n"),
+  },
+  {
+    slug: "performance-bikers-2015",
+    nome: "Performance Bikers 2015",
+    tipo: "Moto-turismo",
+    provincia: "Luanda",
+    cidade: "Luanda",
+    fundacao: 2015,
+    descricao:
+      "Nasceu num domingo em Luanda, a 7 de Fevereiro de 2015, quando um grupo de motociclistas descobriu junto «o prazer de andar em grupo». Partilha viagens e momentos na estrada e sai em raide com outros clubes, como no Raid Benguela de 2022.",
+    actividades: ["Passeios em grupo", "Viagens pelo país", "Raides com outros clubes"],
+    logo: "",
+    cor: "#1d4ed8",
+    redes: { instagram: "https://www.instagram.com/performancebikers2015/" },
+    fonte: [
+      "https://www.instagram.com/performancebikers2015/",
+      "https://www.instagram.com/elite_motard_angola/p/ClE2xbmBYXh/",
+    ].join("\n"),
+  },
+  {
+    slug: "african-nomadas",
+    nome: "African Nómadas",
+    tipo: "Moto-turismo",
+    provincia: "Benguela",
+    cidade: "Lobito",
+    descricao:
+      "Clube de motociclistas do Lobito, com o lema «liberdade sobre rodas». Faz saídas em grupo ao longo do ano e vai recebendo novos membros na família.",
+    actividades: ["Saídas em grupo", "Convívio entre membros"],
+    logo: "",
+    cor: "#b45309",
+    redes: {
+      instagram: "https://www.instagram.com/africannomadas/",
+      facebook: "https://www.facebook.com/africannomadas/",
+    },
+    fonte: [
+      "https://www.facebook.com/africannomadas/",
+      "https://www.instagram.com/africannomadas/",
+    ].join("\n"),
+  },
+  {
+    slug: "300-km-a-norte",
+    nome: "300 km a Norte",
+    tipo: "Moto-turismo",
+    provincia: "Zaire",
+    cidade: "Soyo",
+    descricao:
+      "Motards residentes no Soyo, em Luanda e em Moçambique, unidos pela «paixão sobre duas rodas, adrenalina, aventura e filantropia». O aniversário do clube, no Soyo, já recebeu outros clubes em raide, como o Elite Motard em 2022.",
+    actividades: ["Raides", "Aventura", "Filantropia", "Aniversário do clube no Soyo"],
+    logo: "",
+    cor: "#15803d",
+    redes: { instagram: "https://www.instagram.com/300km_a_norte/" },
+    fonte: [
+      "https://www.instagram.com/300km_a_norte/",
+      "https://www.instagram.com/elite_motard_angola/p/ClE1cSDhjKC/",
+    ].join("\n"),
+  },
+  {
+    slug: "clube-anjos-bantu",
+    nome: "Clube Anjos Bantu",
+    tipo: "Moto-turismo",
+    provincia: "Luanda",
+    cidade: "",
+    fundacao: 2018,
+    descricao:
+      "Clube motard presidido por uma motociclista, que celebrou oito anos de existência em Julho de 2026. Os destaques do perfil guardam raides a Malanje e ao Soyo, e o clube assinala datas como o Dia da Mulher Africana e o Dia da Criança Africana.",
+    actividades: ["Raides pelo país", "Convívio entre membros", "Datas solidárias e comemorativas"],
+    logo: "",
+    cor: "#7c3aed",
+    redes: {
+      instagram: "https://www.instagram.com/clube.anjos.bantu/",
+      facebook: "https://www.facebook.com/clubeanjosbantu/",
+    },
+    contacto: "clube.anjos.bantu@hotmail.com",
+    fonte: [
+      "https://www.instagram.com/clube.anjos.bantu/",
+      "https://www.instagram.com/clube.anjos.bantu/p/DbBb_fRlVOl/",
+      "https://www.instagram.com/clube.anjos.bantu/reel/DZWkL6UitFR/",
+      "https://www.facebook.com/clubeanjosbantu/",
+    ].join("\n"),
+  },
+  {
+    slug: "tuaregs-motard-angola",
+    nome: "Tuaregs Motard Angola",
+    tipo: "Moto-turismo",
+    provincia: "Luanda",
+    cidade: "",
+    descricao:
+      "Associação de jovens e adultos de várias idades cujo objectivo principal é o «turismo sobre rodas»: explorar pontos naturais e de relevância histórica em Angola e além-fronteiras, em duas e quatro rodas. Esteve no Dia do Motard Angolano, no Autódromo de Luanda, em Julho de 2026, e junta-se a campanhas como o Outubro Rosa. Lema: «União sem limites».",
+    actividades: [
+      "Turismo sobre rodas",
+      "Visitas a locais naturais e históricos",
+      "Viagens além-fronteiras",
+      "Campanhas solidárias",
+    ],
+    logo: "",
+    cor: "#a16207",
+    redes: {
+      instagram: "https://www.instagram.com/tuaregs_motard_angola/",
+      facebook: "https://www.facebook.com/tuaregsmotardangola/",
+    },
+    contacto: "tuaregs.motardangola@gmail.com",
+    fonte: [
+      "https://www.facebook.com/tuaregsmotardangola/",
+      "https://www.instagram.com/tuaregs_motard_angola/",
+      "https://www.instagram.com/tuaregs_motard_angola/p/DavZJwkjAQW/",
+    ].join("\n"),
+  },
+];
 
 export const equipas: Equipa[] = [
   {

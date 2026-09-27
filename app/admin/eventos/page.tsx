@@ -5,18 +5,20 @@ import { Campo, CampoEndereco, Input, Area, Seleccao, Estado } from "@/component
 import { slugify } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
 import type { Evento } from "@/lib/types";
+import { eComunidade } from "@/lib/desporto";
+import { PROVINCIAS } from "@/lib/provincias";
 
-const DISCIPLINAS = ["Motocross", "Enduro", "Velocidade", "Passeio", "Solidária", "Rally"];
-const PROVINCIAS = ["Luanda", "Benguela", "Huíla", "Huambo", "Namibe", "Cabinda", "Malanje", "Bengo", "Cuanza Sul"];
+// Provas (calendário de Desporto) e, depois, eventos da comunidade (secção Eventos).
+const DISCIPLINAS = ["Motocross", "Enduro", "Velocidade", "Rally", "Passeio", "Solidária", "Encontro", "Formação"];
 const ESTADOS = ["agendado", "bilhetes-abertos", "esgotado", "a-decorrer", "concluido"];
-const op = (v: string[]) => v.map((x) => ({ valor: x, nome: x.replace(/-/g, " ") }));
+const op = (v: readonly string[]) => v.map((x) => ({ valor: x, nome: x.replace(/-/g, " ") }));
 
 export default function AdminEventos() {
   return (
     <PaginaRecurso<Evento>
       coleccao="eventos"
       titulo="Eventos"
-      descricao="Provas do calendário: datas, circuito, estado e horários."
+      descricao="Provas do calendário e eventos da comunidade (passeios, encontros, acções solidárias, formações): datas, local, estado e horários."
       procuraEm={(e) => `${e.titulo} ${e.circuito} ${e.provincia} ${e.organizador}`}
       ordenar={(a, b) => a.dataInicio.localeCompare(b.dataInicio)}
       filtros={[
@@ -54,7 +56,8 @@ export default function AdminEventos() {
             <Input value={r.titulo}
               onChange={(e) => definir({ titulo: e.target.value, slug: novo && r.slug === slugify(r.titulo) ? slugify(e.target.value) : r.slug } as Partial<Evento>)} />
           </Campo>
-          <CampoEndereco prefixo="/calendario" novo={novo} valor={r.slug}
+          {/* Os eventos da comunidade vivem em /eventos; as provas no calendário. */}
+          <CampoEndereco prefixo={eComunidade(r.disciplina) ? "/eventos" : "/calendario"} novo={novo} valor={r.slug}
             onChange={(slug) => definir({ slug } as Partial<Evento>)} />
 
           <div className="grid gap-4 sm:grid-cols-2">

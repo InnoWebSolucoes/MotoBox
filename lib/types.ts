@@ -1,15 +1,46 @@
-export type Provincia =
-  | "Luanda"
-  | "Benguela"
-  | "Huíla"
-  | "Huambo"
-  | "Namibe"
-  | "Cabinda"
-  | "Malanje"
-  | "Bengo"
-  | "Cuanza Sul";
+export type { Provincia } from "./provincias";
+import type { Provincia } from "./provincias";
 
-export type Disciplina = "Motocross" | "Enduro" | "Velocidade" | "Passeio" | "Solidária" | "Rally";
+/**
+ * As primeiras são provas (vão para o calendário de Desporto); as outras são
+ * eventos da comunidade (secção Eventos): passeios, acções solidárias,
+ * encontros de clubes, formações.
+ */
+export type Disciplina =
+  | "Motocross" | "Enduro" | "Velocidade" | "Rally"
+  | "Passeio" | "Solidária" | "Encontro" | "Formação";
+
+export type TipoClube =
+  | "Moto-turismo" | "Lady Riders" | "Todo-o-terreno" | "Clube de marca"
+  | "Clássicas" | "Scooters e urbano" | "Outro";
+
+/**
+ * Clube de lazer: pessoas que saem juntas, viajam, organizam encontros.
+ * Ao contrário das equipas (Desporto), não tem pilotos nem pontos.
+ */
+export interface Clube {
+  slug: string;
+  nome: string;
+  tipo: TipoClube;
+  provincia: Provincia;
+  cidade: string;
+  fundacao?: number;
+  descricao: string;
+  /** Ex.: "Passeios de fim-de-semana", "Viagens pelo país", "Acções solidárias". */
+  actividades: string[];
+  /** Quando e onde se juntam, em texto livre. Ex.: "Domingos às 7h, Marginal de Luanda". */
+  encontros?: string;
+  /** Endereço do logótipo (ou vazio). */
+  logo: string;
+  /** Fotografia de capa (endereço ou chave de lib/imagens.ts). */
+  imagem?: string;
+  cor: string;
+  redes: { instagram?: string; facebook?: string; whatsapp?: string; site?: string; tiktok?: string };
+  contacto?: string;
+  /** De onde veio a informação, para a equipa poder confirmar. Não aparece no site. */
+  fonte?: string;
+  destaque?: boolean;
+}
 
 export type EstadoEvento = "agendado" | "bilhetes-abertos" | "esgotado" | "a-decorrer" | "concluido";
 

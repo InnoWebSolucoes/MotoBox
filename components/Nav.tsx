@@ -9,54 +9,99 @@ import { useIdioma } from "@/lib/i18n/contexto";
 import { useAuth } from "@/lib/auth/contexto";
 import { SelectorIdioma } from "./SelectorIdioma";
 import type { LigacaoRede } from "@/lib/redes";
+import { MODALIDADES, MODALIDADE_PRINCIPAL, ROTAS_DESPORTO, SECCOES_MOTOCROSS } from "@/lib/desporto";
 
-type NavItem = { href: string; chave: string; filhos?: { href: string; chave: string; desc: string }[] };
+/** `chave` passa por t(); `nome` é um nome próprio que fica igual nas duas línguas. */
+type Filho = { href: string; chave?: string; nome?: string; desc?: string };
+
+type NavItem = {
+  href: string;
+  chave: string;
+  /** Rotas que também acendem o item (subpáginas que vivem noutra URL). */
+  activoEm?: string[];
+  /** No menu móvel, o primeiro filho repete o próprio item e fica de fora. */
+  filhos?: Filho[];
+  /** Desporto abre um painel largo com as modalidades, em vez da lista simples. */
+  mega?: boolean;
+};
+
+/** Modalidades já com provas, fora a principal (que tem bloco próprio no painel). */
+const OUTRAS_MODALIDADES = MODALIDADES.filter(
+  (m) => m.estado === "activo" && m.slug !== MODALIDADE_PRINCIPAL,
+);
+const DESC_MODALIDADE: Record<string, string> = { enduro: "menu.enduroDesc", rally: "menu.rallyDesc" };
+/** Modalidades anunciadas; o nome em lib/desporto.ts está em português, aqui passa pelo dicionário. */
+const EM_BREVE = MODALIDADES.filter((m) => m.estado === "em-breve");
+const CHAVE_MODALIDADE: Record<string, string> = {
+  velocidade: "desporto.velocidade",
+  "moto-4": "desporto.moto4",
+  "motos-de-agua": "desporto.motosDeAgua",
+  automobilismo: "desporto.automobilismo",
+};
 
 const NAV: NavItem[] = [
   {
-    href: "/calendario",
-    chave: "nav.calendario",
+    href: "/sobre",
+    chave: "marca.motobox",
+    activoEm: ["/sobre", "/seguranca", "/patrocinadores", "/contacto"],
     filhos: [
-      { href: "/calendario", chave: "menu.calendario2026", desc: "menu.calendarioDesc" },
-      { href: "/bilhetes", chave: "nav.bilhetes", desc: "menu.bilhetesDesc" },
-    ],
-  },
-  {
-    href: "/resultados",
-    chave: "nav.resultados",
-    filhos: [
-      { href: "/resultados", chave: "menu.arquivoResultados", desc: "menu.arquivoDesc" },
-      { href: "/classificacao", chave: "nav.classificacao", desc: "menu.classificacaoDesc" },
-    ],
-  },
-  {
-    href: "/pilotos",
-    chave: "nav.pilotos",
-    filhos: [
-      { href: "/pilotos", chave: "nav.pilotos", desc: "menu.pilotosDesc" },
-      { href: "/equipas", chave: "menu.equipasClubes", desc: "menu.equipasDesc" },
+      { href: "/sobre", chave: "menu.sobreNos", desc: "menu.sobreDesc" },
+      { href: "/seguranca", chave: "nav.seguranca", desc: "menu.segurancaDesc" },
+      { href: "/patrocinadores", chave: "nav.patrocinadores", desc: "menu.patrocinadoresDesc" },
+      { href: "/contacto", chave: "nav.contacto", desc: "menu.contactoDesc" },
     ],
   },
   {
     href: "/noticias",
     chave: "nav.noticias",
+    activoEm: ["/noticias", "/videos"],
     filhos: [
       { href: "/noticias", chave: "menu.todasNoticias", desc: "menu.noticiasDesc" },
+      { href: "/noticias?cat=Internacional", chave: "menu.internacional", desc: "menu.internacionalDesc" },
       { href: "/videos", chave: "nav.videos", desc: "menu.videosDesc" },
     ],
   },
-  { href: "/marketplace", chave: "nav.marketplace" },
-  { href: "/forum", chave: "nav.forum" },
   {
-    href: "/sobre",
-    chave: "marca.motobox",
+    href: "/desporto",
+    chave: "nav.desporto",
+    activoEm: ROTAS_DESPORTO,
+    mega: true,
     filhos: [
-      { href: "/sobre", chave: "menu.sobreMotobox", desc: "menu.sobreDesc" },
-      { href: "/patrocinadores", chave: "nav.patrocinadores", desc: "menu.patrocinadoresDesc" },
-      { href: "/contacto", chave: "nav.contacto", desc: "menu.contactoDesc" },
+      { href: "/desporto", chave: "menu.todosDesportos" },
+      { href: `/desporto/${MODALIDADE_PRINCIPAL}`, nome: "Motocross" },
+      ...SECCOES_MOTOCROSS.slice(1),
+      ...OUTRAS_MODALIDADES.map((m) => ({ href: `/desporto/${m.slug}`, nome: m.nome })),
     ],
   },
+  { href: "/eventos", chave: "nav.eventos" },
+  {
+    href: "/clubes",
+    chave: "nav.clubes",
+    filhos: [
+      { href: "/clubes", chave: "menu.todosClubes", desc: "menu.todosClubesDesc" },
+      { href: "/clubes?tipo=lady-riders", chave: "menu.ladyRiders", desc: "menu.ladyRidersDesc" },
+      { href: "/clubes/rotas", chave: "menu.rotas", desc: "menu.rotasDesc" },
+    ],
+  },
+  {
+    href: "/marketplace",
+    chave: "nav.marketplace",
+    filhos: [
+      { href: "/marketplace", chave: "menu.anuncios", desc: "menu.anunciosDesc" },
+      { href: "/marketplace/importar", chave: "menu.importar", desc: "menu.importarDesc" },
+    ],
+  },
+  { href: "/forum", chave: "nav.forum" },
 ];
+
+/** Seta pequena do item Motobox: o único acento vermelho fixo da barra. */
+function Seta({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export function Nav({ redes = [] }: { redes?: LigacaoRede[] }) {
   const { t } = useIdioma();
@@ -89,7 +134,9 @@ export function Nav({ redes = [] }: { redes?: LigacaoRede[] }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const activo = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const emRota = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const activo = (item: NavItem) => (item.activoEm ?? [item.href]).some(emRota);
+  const rotulo = (f: Filho) => f.nome ?? t(f.chave ?? "");
 
   const abrir = (label: string) => {
     if (fecharTimer.current) clearTimeout(fecharTimer.current);
@@ -114,55 +161,82 @@ export function Nav({ redes = [] }: { redes?: LigacaoRede[] }) {
 
           <LogoLink height={26} />
 
-          <ul className="ml-2 xl:ml-5 hidden lg:flex items-center">
-            {NAV.map((item) => (
-              <li
-                key={item.chave}
-                className="relative"
-                onMouseEnter={() => item.filhos && abrir(item.chave)}
-                onMouseLeave={fechar}
-              >
-                <Link
-                  href={item.href}
-                  aria-current={activo(item.href) ? "page" : undefined}
-                  className={`relative flex h-16 items-center px-2.5 xl:px-3.5 font-ui text-base xl:text-[17px] transition-colors ${
-                    activo(item.href) ? "text-white" : "text-ink-300 hover:text-white"
-                  }`}
+          <ul className="ml-1 xl:ml-4 hidden lg:flex items-center">
+            {NAV.map((item, i) => {
+              const aceso = activo(item);
+              // O primeiro item (Motobox) destaca-se: letra um pouco maior, sempre branca,
+              // seta vermelha e um traço fino a separá-lo das secções.
+              const marca = i === 0;
+              return (
+                <li
+                  key={item.chave}
+                  className={`relative flex items-center ${marca ? "mr-1 xl:mr-2" : ""}`}
+                  onMouseEnter={() => item.filhos && abrir(item.chave)}
+                  onMouseLeave={fechar}
+                  onFocus={() => item.filhos && abrir(item.chave)}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) fechar();
+                  }}
                 >
-                  {t(item.chave)}
-                  {activo(item.href) && (
-                    <span className="absolute inset-x-2.5 xl:inset-x-3.5 bottom-0 h-[3px] rounded-t-full bg-mb-red" aria-hidden />
-                  )}
-                </Link>
-
-                {item.filhos && dropdown === item.chave && (
-                  <div
-                    className="absolute left-0 top-full pt-2"
-                    onMouseEnter={() => abrir(item.chave)}
-                    onMouseLeave={fechar}
+                  <Link
+                    href={item.href}
+                    aria-current={aceso ? "page" : undefined}
+                    className={`relative flex h-16 items-center transition-colors ${
+                      marca
+                        ? "gap-1 px-2.5 xl:px-3.5 font-display text-[18px] xl:text-[19px] text-white"
+                        : `px-2 xl:px-3.5 font-ui text-base xl:text-[17px] ${aceso ? "text-white" : "text-ink-300 hover:text-white"}`
+                    }`}
                   >
-                    <div className="w-72 rounded-2xl bg-ink-900 p-2 shadow-2xl shadow-black/60 ring-1 ring-white/5">
-                      {item.filhos.map((f) => (
-                        <Link
-                          key={f.href}
-                          href={f.href}
-                          className="group block rounded-xl px-4 py-3 transition-colors hover:bg-ink-800"
-                        >
-                          <span className="flex items-center justify-between font-ui text-base text-white">
-                            {t(f.chave)}
-                            <Icon
-                              name="arrow"
-                              className="size-4 text-mb-red opacity-0 transition-opacity group-hover:opacity-100"
-                            />
-                          </span>
-                          <span className="mt-0.5 block text-xs text-ink-400">{t(f.desc)}</span>
-                        </Link>
-                      ))}
+                    {t(item.chave)}
+                    {marca && (
+                      <Seta
+                        className={`size-3.5 text-mb-red transition-transform ${dropdown === item.chave ? "rotate-180" : ""}`}
+                      />
+                    )}
+                    {aceso && (
+                      <span
+                        className={`absolute bottom-0 h-[3px] rounded-t-full bg-mb-red ${
+                          marca ? "inset-x-2.5 xl:inset-x-3.5" : "inset-x-2 xl:inset-x-3.5"
+                        }`}
+                        aria-hidden
+                      />
+                    )}
+                  </Link>
+                  {marca && <span className="ml-1 xl:ml-2 h-5 w-px bg-white/15" aria-hidden />}
+
+                  {item.filhos && dropdown === item.chave && (
+                    <div
+                      className="absolute left-0 top-full pt-2"
+                      onMouseEnter={() => abrir(item.chave)}
+                      onMouseLeave={fechar}
+                    >
+                      {item.mega ? (
+                        <PainelDesporto />
+                      ) : (
+                        <div className="w-72 rounded-2xl bg-ink-900 p-2 shadow-2xl shadow-black/60 ring-1 ring-white/5">
+                          {item.filhos.map((f) => (
+                            <Link
+                              key={f.href}
+                              href={f.href}
+                              className="group block rounded-xl px-4 py-3 transition-colors hover:bg-ink-800"
+                            >
+                              <span className="flex items-center justify-between font-ui text-base text-white">
+                                {rotulo(f)}
+                                <Icon
+                                  name="arrow"
+                                  className="size-4 text-mb-red opacity-0 transition-opacity group-hover:opacity-100"
+                                />
+                              </span>
+                              {f.desc && <span className="mt-0.5 block text-xs text-ink-400">{t(f.desc)}</span>}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
-              </li>
-            ))}
+                  )}
+                </li>
+              );
+            })}
           </ul>
 
           <div className="ml-auto flex items-center gap-2">
@@ -232,24 +306,30 @@ export function Nav({ redes = [] }: { redes?: LigacaoRede[] }) {
       {aberto && (
         <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto bg-ink-950 border-t border-ink-800">
           <ul className="px-5 py-3">
-            {NAV.map((item) => (
+            {NAV.map((item, i) => (
               <li key={item.chave} className="border-b border-white/6 last:border-0">
                 <Link
                   href={item.href}
-                  aria-current={activo(item.href) ? "page" : undefined}
-                  className={`flex items-center justify-between py-4 font-ui text-2xl ${
-                    activo(item.href) ? "text-mb-red" : "text-white"
-                  }`}
+                  aria-current={activo(item) ? "page" : undefined}
+                  className={`flex items-center justify-between py-4 ${
+                    i === 0 ? "font-display text-[28px]" : "font-ui text-2xl"
+                  } ${activo(item) ? "text-mb-red" : "text-white"}`}
                 >
-                  {t(item.chave)}
+                  <span className="flex items-center gap-2">
+                    {t(item.chave)}
+                    {i === 0 && <span className="size-2 rounded-full bg-mb-red" aria-hidden />}
+                  </span>
                   <Icon name="arrow" className="size-5 text-ink-600" />
                 </Link>
                 {item.filhos && item.filhos.length > 1 && (
-                  <ul className="-mt-1 flex flex-wrap gap-x-5 gap-y-1 pb-4">
+                  <ul className="-mt-1 flex flex-wrap gap-x-5 gap-y-1.5 pb-4">
                     {item.filhos.slice(1).map((f) => (
                       <li key={f.href}>
-                        <Link href={f.href} className="text-[15px] text-ink-400 hover:text-white">
-                          {t(f.chave)}
+                        <Link
+                          href={f.href}
+                          className={`hover:text-white ${f.nome ? "font-ui text-base text-ink-100" : "text-[15px] text-ink-400"}`}
+                        >
+                          {rotulo(f)}
                         </Link>
                       </li>
                     ))}
@@ -269,7 +349,7 @@ export function Nav({ redes = [] }: { redes?: LigacaoRede[] }) {
               href="/conta"
               className="flex-1 h-12 grid place-items-center rounded-full bg-white font-ui text-base text-ink-950"
             >
-              A minha conta
+              {t("menu.minhaConta")}
             </Link>
           </div>
           <div className="flex gap-2 px-5 pb-10">
@@ -289,5 +369,72 @@ export function Nav({ redes = [] }: { redes?: LigacaoRede[] }) {
         </div>
       )}
     </header>
+  );
+}
+
+/**
+ * Painel de Desporto: o Motocross à esquerda com as suas secções (é onde vive
+ * todo o campeonato), as outras modalidades à direita e a ligação para todas.
+ */
+function PainelDesporto() {
+  const { t } = useIdioma();
+  return (
+    <div className="grid w-[34rem] grid-cols-[1.1fr_1fr] gap-1 rounded-2xl bg-ink-900 p-2 shadow-2xl shadow-black/60 ring-1 ring-white/5">
+      <div className="rounded-xl bg-ink-950/60 px-4 pt-4 pb-2">
+        <Link href={`/desporto/${MODALIDADE_PRINCIPAL}`} className="group block">
+          <span className="eyebrow block text-mb-red">{t("menu.motocrossDesc")}</span>
+          <span className="mt-1 flex items-center justify-between font-display text-2xl uppercase leading-none text-white transition-colors group-hover:text-mb-red">
+            Motocross
+            <Icon name="arrow" className="size-4 text-mb-red" />
+          </span>
+        </Link>
+        <ul className="mt-3">
+          {SECCOES_MOTOCROSS.slice(1).map((s) => (
+            <li key={s.href} className="border-t border-white/6">
+              <Link href={s.href} className="block py-2 font-ui text-[15px] text-ink-300 transition-colors hover:text-white">
+                {t(s.chave)}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="flex flex-col">
+        {OUTRAS_MODALIDADES.map((m) => (
+          <Link
+            key={m.slug}
+            href={`/desporto/${m.slug}`}
+            className="group block rounded-xl px-4 py-3 transition-colors hover:bg-ink-800"
+          >
+            <span className="flex items-center justify-between font-ui text-base text-white">
+              {m.nome}
+              <Icon name="arrow" className="size-4 text-mb-red opacity-0 transition-opacity group-hover:opacity-100" />
+            </span>
+            {DESC_MODALIDADE[m.slug] && (
+              <span className="mt-0.5 block text-xs text-ink-400">{t(DESC_MODALIDADE[m.slug])}</span>
+            )}
+          </Link>
+        ))}
+        {/* O que vem a seguir: a Motobox é sobre tudo o que tem motor, não só corridas. */}
+        <div className="mx-4 mt-2 border-t border-white/6 pt-3">
+          <p className="eyebrow text-ink-500">{t("menu.emBreve")}</p>
+          <ul className="mt-2 space-y-1">
+            {EM_BREVE.map((m) => (
+              <li key={m.slug} className="text-[13px] text-ink-400">
+                {CHAVE_MODALIDADE[m.slug] ? t(CHAVE_MODALIDADE[m.slug]) : m.nome}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <Link
+          href="/desporto"
+          className="group mt-auto block rounded-xl px-4 py-3 transition-colors hover:bg-ink-800"
+        >
+          <span className="flex items-center gap-2 font-ui text-base text-white">
+            {t("menu.todosDesportos")}
+            <Icon name="arrow" className="size-4 text-mb-red transition-transform group-hover:translate-x-1" />
+          </span>
+        </Link>
+      </div>
+    </div>
   );
 }

@@ -37,8 +37,16 @@ function erro(mensagem: string, codigo = 400) {
 }
 
 /** Traduz os erros do Postgres para frases que a equipa entenda. */
+/** A tabela ainda não existe: falta correr uma migração em supabase/. */
+function tabelaEmFalta(e: { code?: string } | null): boolean {
+  return e?.code === "42P01" || e?.code === "PGRST205";
+}
+
 function erroDaBase(e: { code?: string; message: string; details?: string | null }) {
   const m = e.message;
+  if (tabelaEmFalta(e)) {
+    return erro("Esta secção precisa de uma actualização da base de dados: corra no Supabase o ficheiro de migração mais recente da pasta supabase/.", 503);
+  }
   if (e.code === "23505") return erro("Já existe um registo com este endereço de página ou este email. Escolha outro.", 409);
   if (e.code === "23503") return erro("A ligação escolhida (equipa, evento ou categoria) já não existe. Escolha outra.", 409);
   if (e.code === "23502") {
@@ -142,6 +150,9 @@ export async function GET(
   }
 
   const { data, error } = await db.from(TABELA[coleccao]).select("*");
+  // Uma tabela nova ainda por criar não pode tirar o painel inteiro do ar:
+  // devolve-se vazia, com o aviso para a página a mostrar.
+  if (tabelaEmFalta(error)) return NextResponse.json({ dados: [], emFalta: true });
   if (error) return erroDaBase(error);
   return NextResponse.json({ dados: listaDaBase(coleccao, data) });
 }

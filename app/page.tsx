@@ -20,6 +20,17 @@ import {
   lerPilotos,
   lerVideos,
 } from "@/lib/supabase/publico";
+import { eComunidade, eProva, instante } from "@/lib/desporto";
+import { CartaoEvento, LinhaEventoCompacta } from "@/app/calendario/ListaEventos";
+
+/** Atalhos para as secções novas, logo abaixo do destaque. */
+const EXPLORAR = [
+  { href: "/desporto", icone: "flag", chave: "nav.desporto", texto: "Motocross, enduro e rally-raid" },
+  { href: "/eventos", icone: "calendar", chave: "nav.eventos", texto: "Passeios, encontros e solidariedade" },
+  { href: "/clubes", icone: "bike", chave: "nav.clubes", texto: "Lazer, turismo e Lady Riders" },
+  { href: "/seguranca", icone: "shield", chave: "nav.seguranca", texto: "Capacete, chuva e boas práticas" },
+  { href: "/marketplace/importar", icone: "map", chave: "menu.importarCurto", texto: "Lojas que enviam para Angola" },
+];
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -35,7 +46,9 @@ export default async function Home() {
   ]);
 
   // Cada secção tolera a sua lista vazia: o painel pode apagar tudo.
-  const proximo = proximoEvento(eventos);
+  // O destaque e "A seguir" são provas; os eventos da comunidade têm bloco próprio.
+  const provas = eventos.filter((e) => eProva(e.disciplina));
+  const proximo = proximoEvento(provas);
   const destaques = noticias.filter((n) => n.destaque);
   const principal = destaques[0] ?? noticias[0];
   const secundarias = noticias.filter((n) => n.slug !== principal?.slug).slice(0, 4);
@@ -43,8 +56,11 @@ export default async function Home() {
   const topEquipas = classificacaoEquipas(equipas).slice(0, 3);
   const corEquipa = new Map(equipas.map((e) => [e.slug, e.cor]));
   const ultimaCorrida = corridas.at(-1);
-  const proximasProvas = eventos
-    .filter((e) => new Date(e.dataInicio).getTime() > Date.now())
+  const proximasProvas = provas
+    .filter((e) => new Date(e.dataInicio).getTime() > instante())
+    .slice(0, 3);
+  const proximosEventos = eventos
+    .filter((e) => eComunidade(e.disciplina) && new Date(e.dataFim).getTime() >= instante())
     .slice(0, 3);
   const videosDestaque = videos.slice(0, 5);
 
@@ -110,6 +126,31 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ============ EXPLORAR ============ */}
+      <nav aria-label="Explorar" className="mx-auto max-w-7xl px-4 sm:px-6 pt-2 pb-6">
+        <p className="eyebrow mb-4 text-ink-500">Explorar</p>
+        <ul className="-mx-4 flex gap-2 overflow-x-auto no-scrollbar px-4 sm:mx-0 sm:px-0 lg:grid lg:grid-cols-5 lg:gap-6">
+          {EXPLORAR.map((x) => (
+            <li key={x.href} className="shrink-0">
+              <Link
+                href={x.href}
+                className="group flex items-center gap-3 rounded-full bg-ink-900 py-1.5 pl-1.5 pr-5 transition-colors hover:bg-ink-800 lg:rounded-none lg:bg-transparent lg:p-0 lg:hover:bg-transparent"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-mb-red/12 text-mb-red transition-colors group-hover:bg-mb-red group-hover:text-white lg:size-11">
+                  <Icon name={x.icone} className="size-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-ui text-base text-white transition-colors lg:text-lg lg:group-hover:text-mb-red">
+                    <T k={x.chave} />
+                  </span>
+                  <span className="hidden text-xs text-ink-500 lg:block">{x.texto}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {/* ============ FAIXA DE PATROCINADORES ============ */}
       {patrocinadores.length > 0 && (
@@ -293,35 +334,7 @@ export default async function Home() {
               ) : (
                 <ul className="mt-7">
                   {proximasProvas.map((e) => (
-                    <li key={e.slug} className="border-b border-white/6 last:border-0">
-                      <Link href={`/calendario/${e.slug}`} className="group flex items-center gap-5 py-4">
-                        <div className="w-14 shrink-0 text-center">
-                          <span className="block font-display text-3xl leading-none text-white">
-                            {new Date(e.dataInicio).getDate()}
-                          </span>
-                          <span className="eyebrow mt-1.5 block text-mb-red">
-                            {new Date(e.dataInicio).toLocaleDateString("pt-PT", { month: "short" }).replace(".", "")}
-                          </span>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <Tag tone="outline" className="!text-[9px]">{e.disciplina}</Tag>
-                            {e.estado === "bilhetes-abertos" && <Tag tone="red" className="!text-[9px]">Bilhetes</Tag>}
-                          </div>
-                          <h3 className="mt-2 font-display text-lg uppercase leading-tight text-white line-clamp-2 transition-colors group-hover:text-mb-red">
-                            {e.titulo}
-                          </h3>
-                          <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-500">
-                            <Icon name="pin" className="size-3.5" />
-                            {e.localidade}, {e.provincia}
-                          </p>
-                        </div>
-                        <Icon
-                          name="arrow"
-                          className="size-5 shrink-0 text-ink-600 transition-all group-hover:translate-x-1 group-hover:text-white"
-                        />
-                      </Link>
-                    </li>
+                    <LinhaEventoCompacta key={e.slug} e={e} />
                   ))}
                 </ul>
               )}
@@ -389,6 +402,23 @@ export default async function Home() {
                 </Link>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ============ PRÓXIMOS EVENTOS (COMUNIDADE) ============ */}
+      {proximosEventos.length > 0 && (
+        <section className={`mx-auto max-w-7xl px-4 sm:px-6 pb-16 ${videosDestaque.length > 0 ? "" : "pt-16"}`}>
+          <SectionHead
+            eyebrow="Comunidade"
+            titulo="Próximos eventos"
+            acao={{ href: "/eventos", texto: "Todos os eventos" }}
+          />
+          <div className="mt-9 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {proximosEventos.map((e) => (
+              // Já vêm filtrados aos que ainda não acabaram: nenhum fica esbatido.
+              <CartaoEvento key={e.slug} e={e} agora={0} />
+            ))}
           </div>
         </section>
       )}

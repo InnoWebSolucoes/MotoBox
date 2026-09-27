@@ -6,6 +6,7 @@ import { utilizadorActual, perfilDe } from "@/lib/conta/sessao";
 import { normalizarPreferencias } from "@/lib/conta/preferencias";
 import type { AnuncioMarketplace } from "@/lib/types";
 import type { Encomenda } from "@/lib/admin/types";
+import { ehProvincia } from "@/lib/provincias";
 
 /* ============================================================
    MOTOBOX — API da conta do utilizador
@@ -19,10 +20,6 @@ import type { Encomenda } from "@/lib/admin/types";
 
 export const dynamic = "force-dynamic";
 
-const PROVINCIAS = [
-  "Luanda", "Benguela", "Huíla", "Huambo", "Namibe",
-  "Cabinda", "Malanje", "Bengo", "Cuanza Sul",
-];
 
 const COR_HEX = /^#[0-9a-f]{6}$/i;
 const COR_PADRAO = "#e10600";
@@ -108,7 +105,7 @@ export async function PATCH(req: NextRequest) {
       campos.telefone = tel || null;
     }
     if (typeof p.provincia === "string") {
-      if (p.provincia && !PROVINCIAS.includes(p.provincia)) return erro("Província inválida.");
+      if (p.provincia && !ehProvincia(p.provincia)) return erro("Província inválida.");
       campos.provincia = p.provincia || null;
     }
     if (Object.keys(campos).length > 0) {

@@ -154,6 +154,32 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+        {/* Entrada para "Importar do estrangeiro", logo a seguir aos filtros */}
+        <Link
+          href="/marketplace/importar"
+          className="group relative isolate mb-10 flex flex-col gap-4 overflow-hidden rounded-card bg-gradient-to-r from-mb-red/18 via-ink-900 to-ink-900 p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6"
+        >
+          <span className="stripes absolute inset-0 -z-10" aria-hidden />
+          <span className="grid size-12 shrink-0 place-items-center rounded-full bg-mb-red text-white">
+            <Icon name="map" className="size-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-center gap-2.5">
+              <Tag tone="red">{t("importar.novo")}</Tag>
+              <span className="font-display text-xl uppercase leading-tight text-white transition-colors group-hover:text-mb-red-light">
+                {t("importar.titulo")}
+              </span>
+            </span>
+            <span className="mt-1.5 block max-w-3xl text-sm text-ink-300 leading-relaxed">{t("importar.texto")}</span>
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-3 font-ui text-base text-white">
+            {t("importar.cta")}
+            <span aria-hidden className="grid size-9 place-items-center rounded-full bg-ink-800 transition-colors group-hover:bg-mb-red">
+              <Icon name="arrow" className="size-4" />
+            </span>
+          </span>
+        </Link>
+
         <p className="mb-6 text-sm text-ink-500">
           {filtrados.length} {filtrados.length === 1 ? "anúncio" : "anúncios"}
         </p>

@@ -5,9 +5,9 @@ import { Campo, CampoEndereco, Input, Seleccao } from "@/components/admin/kit";
 import { slugify, useAdmin } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
 import type { Corrida, ResultadoCorrida } from "@/lib/types";
+import { PROVINCIAS } from "@/lib/provincias";
 
-const PROVINCIAS = ["Luanda", "Benguela", "Huíla", "Huambo", "Namibe", "Cabinda", "Malanje", "Bengo", "Cuanza Sul"];
-const op = (v: string[]) => v.map((x) => ({ valor: x, nome: x }));
+const op = (v: readonly string[]) => v.map((x) => ({ valor: x, nome: x }));
 
 export default function AdminCorridas() {
   const { estado } = useAdmin();

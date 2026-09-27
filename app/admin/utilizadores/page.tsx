@@ -6,10 +6,10 @@ import { novoId } from "@/lib/admin/store";
 import { corPara } from "@/lib/admin/seed";
 import { PAPEIS, PERMISSOES_POR_PAPEL, type Utilizador, type Papel } from "@/lib/admin/types";
 import { formatDataCurta } from "@/lib/data";
+import { PROVINCIAS } from "@/lib/provincias";
 
-const PROVINCIAS = ["Luanda", "Benguela", "Huíla", "Huambo", "Namibe", "Cabinda", "Malanje", "Bengo", "Cuanza Sul"];
 const ESTADOS = ["ativo", "pendente", "suspenso", "banido"];
-const op = (v: string[]) => v.map((x) => ({ valor: x, nome: x }));
+const op = (v: readonly string[]) => v.map((x) => ({ valor: x, nome: x }));
 
 export default function AdminUtilizadores() {
   return (

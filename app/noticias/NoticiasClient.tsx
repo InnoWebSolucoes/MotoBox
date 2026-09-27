@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
 import { Icon, PageHero, Tag } from "@/components/ui";
 import { formatData } from "@/lib/data";
@@ -10,6 +11,20 @@ import { useIdioma } from "@/lib/i18n/contexto";
 import { useConteudo } from "@/lib/i18n/useConteudo";
 
 const CATEGORIAS = ["Todas", "Angola", "Internacional", "Entrevista", "Comunidade", "Solidária"];
+
+/**
+ * Lê "?cat=" (as ligações "Internacional" do menu e do rodapé) e aplica-o.
+ * Fica à parte e dentro de <Suspense> para a página continuar a ser gerada
+ * em estático: só este pedaço espera pelo endereço no navegador.
+ */
+function CategoriaDoEndereco({ aoLer }: { aoLer: (c: string) => void }) {
+  const params = useSearchParams();
+  const pedida = params.get("cat");
+  useEffect(() => {
+    if (pedida && CATEGORIAS.includes(pedida)) aoLer(pedida);
+  }, [pedida, aoLer]);
+  return null;
+}
 
 export function NoticiasClient({ noticias: originais }: { noticias: Noticia[] }) {
   const { t } = useIdioma();
@@ -37,6 +52,9 @@ export function NoticiasClient({ noticias: originais }: { noticias: Noticia[] })
 
   return (
     <>
+      <Suspense fallback={null}>
+        <CategoriaDoEndereco aoLer={setCategoria} />
+      </Suspense>
       <PageHero
         imagem="noticias"
         eyebrow={t("paginas.motobox")}
