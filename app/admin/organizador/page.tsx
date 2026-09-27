@@ -20,6 +20,7 @@ import { formatKz } from "@/lib/data";
 import {
   CabecalhoPagina, Painel, Campo, Input, Area, Seleccao, Confirmar, useAviso,
 } from "@/components/admin/kit";
+import { comBase } from "@/lib/base";
 
 const CHAVE_RASCUNHO = "motobox-organizador-v1";
 
@@ -206,7 +207,7 @@ export default function OrganizadorPage() {
   // Mostra logo como ligar o Organizador, antes de alguém colar material.
   useEffect(() => {
     let activo = true;
-    fetch("/api/admin/organizador", { cache: "no-store" })
+    fetch(comBase("/api/admin/organizador"), { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((j: { configurado?: boolean; instrucoes?: string | null } | null) => {
         if (activo && j && j.configurado === false) setSemChave(j.instrucoes ?? "Falta a variável ANTHROPIC_API_KEY no servidor.");
@@ -241,7 +242,7 @@ export default function OrganizadorPage() {
     }
     setAAnalisar(true); setErro(null);
     try {
-      const r = await fetch("/api/admin/organizador", {
+      const r = await fetch(comBase("/api/admin/organizador"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texto, ficheiros: anexos.map(({ nome, tipo, dados }) => ({ nome, tipo, dados })) }),

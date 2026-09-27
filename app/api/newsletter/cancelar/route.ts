@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { filtroEmail, normalizarEmail, tokenValido } from "@/lib/newsletter";
+import { redireccionar } from "@/lib/redireccionar";
 
 /* ============================================================
    MOTOBOX — Cancelar a newsletter
@@ -42,14 +43,11 @@ export async function GET(req: NextRequest) {
   const { email, token } = lerParametros(req);
   const estado = await cancelar(email, token);
 
-  const destino = req.nextUrl.clone();
-  destino.pathname = "/newsletter/cancelada";
-  destino.search = "";
-  destino.searchParams.set("estado", estado);
-  if (estado !== "invalido") destino.searchParams.set("email", email);
+  const q = new URLSearchParams({ estado });
+  if (estado !== "invalido") q.set("email", email);
   // Com erro, a página oferece "tentar de novo" com o mesmo token.
-  if (estado === "erro") destino.searchParams.set("token", token);
-  return NextResponse.redirect(destino, 303);
+  if (estado === "erro") q.set("token", token);
+  return redireccionar(`/newsletter/cancelada?${q}`, 303);
 }
 
 export async function POST(req: NextRequest) {

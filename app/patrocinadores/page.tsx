@@ -63,6 +63,16 @@ const VANTAGENS = [
   },
 ];
 
+/**
+ * Site do patrocinador, aberto num separador novo. Vazio ou "#" quer dizer que
+ * não há; sem protocolo ("www.marca.ao") seria um caminho dentro do nosso site.
+ */
+function siteDe(website: string): string | null {
+  const w = website.trim();
+  if (!w || w === "#") return null;
+  return /^https?:\/\//i.test(w) ? w : `https://${w}`;
+}
+
 export default async function PatrocinadoresPage() {
   const patrocinadores = await lerPatrocinadores();
 
@@ -98,48 +108,51 @@ export default async function PatrocinadoresPage() {
               </div>
 
               <div className={`grid gap-x-6 gap-y-10 ${nivel.cols}`}>
-                {lista.map((p) => (
-                  <a
-                    key={p.slug}
-                    href={p.website}
-                    target={p.website !== "#" ? "_blank" : undefined}
-                    rel="noopener noreferrer"
-                    className="group block"
-                  >
-                    {/* Bloco do logótipo: arredondado, sem moldura */}
-                    <div
-                      className={`media relative grid ${nivel.altura} place-items-center bg-ink-900 transition-colors group-hover:bg-ink-850`}
+                {lista.map((p) => {
+                  const site = siteDe(p.website);
+                  return (
+                    <a
+                      key={p.slug}
+                      href={site ?? "#"}
+                      target={site ? "_blank" : undefined}
+                      rel="noopener noreferrer"
+                      className="group block"
                     >
-                      <div className="speed-lines absolute inset-0 opacity-20" aria-hidden />
-                      <span
-                        className={`relative font-display text-white/80 transition-colors group-hover:text-white ${
-                          nivel.id === "Principal" ? "text-5xl" : "text-3xl"
-                        }`}
+                      {/* Bloco do logótipo: arredondado, sem moldura */}
+                      <div
+                        className={`media relative grid ${nivel.altura} place-items-center bg-ink-900 transition-colors group-hover:bg-ink-850`}
                       >
-                        {p.logo}
-                      </span>
-                    </div>
-
-                    <div className="pt-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="font-display text-lg uppercase text-white group-hover:text-mb-red transition-colors">
-                            {p.nome}
-                          </h3>
-                          <p className="mt-0.5 text-xs text-ink-600">{p.setor}</p>
-                        </div>
-                        <span className="shrink-0 text-[11px] text-ink-600">desde {p.desde}</span>
-                      </div>
-                      <p className="mt-3 text-sm text-ink-500 leading-relaxed">{p.descricao}</p>
-                      {p.website !== "#" && (
-                        <span className="mt-3 inline-flex items-center gap-1.5 font-ui text-base text-white transition-colors group-hover:text-mb-red">
-                          Visitar
-                          <Icon name="arrow" className="size-3.5 transition-transform group-hover:translate-x-1" />
+                        <div className="speed-lines absolute inset-0 opacity-20" aria-hidden />
+                        <span
+                          className={`relative font-display text-white/80 transition-colors group-hover:text-white ${
+                            nivel.id === "Principal" ? "text-5xl" : "text-3xl"
+                          }`}
+                        >
+                          {p.logo}
                         </span>
-                      )}
-                    </div>
-                  </a>
-                ))}
+                      </div>
+
+                      <div className="pt-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h3 className="font-display text-lg uppercase text-white group-hover:text-mb-red transition-colors">
+                              {p.nome}
+                            </h3>
+                            <p className="mt-0.5 text-xs text-ink-600">{p.setor}</p>
+                          </div>
+                          <span className="shrink-0 text-[11px] text-ink-600">desde {p.desde}</span>
+                        </div>
+                        <p className="mt-3 text-sm text-ink-500 leading-relaxed">{p.descricao}</p>
+                        {site && (
+                          <span className="mt-3 inline-flex items-center gap-1.5 font-ui text-base text-white transition-colors group-hover:text-mb-red">
+                            Visitar
+                            <Icon name="arrow" className="size-3.5 transition-transform group-hover:translate-x-1" />
+                          </span>
+                        )}
+                      </div>
+                    </a>
+                  );
+                })}
               </div>
             </section>
           );

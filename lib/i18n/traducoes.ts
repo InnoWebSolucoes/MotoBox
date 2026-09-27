@@ -364,6 +364,13 @@ export const traducoes = {
     semAcessoTexto:    { pt: "A sua conta não tem permissão para o painel de gestão. Fale com um administrador da Motobox.", en: "Your account does not have permission for the management panel. Contact a Motobox administrator." },
     aMinhaConta:       { pt: "A minha conta",          en: "My account" },
     ola:               { pt: "Olá",                   en: "Hello" },
+    mostrarPalavra:    { pt: "Mostrar palavra-passe",  en: "Show password" },
+    esconderPalavra:   { pt: "Esconder palavra-passe", en: "Hide password" },
+    ligacaoInvalida:   { pt: "A ligação expirou ou já foi usada. Peça uma nova.", en: "The link has expired or was already used. Request a new one." },
+    reenviarConfirmacao:{ pt: "Reenviar email de confirmação", en: "Resend confirmation email" },
+    confirmacaoReenviada:{ pt: "Enviámos de novo o email de confirmação.", en: "We sent the confirmation email again." },
+    entrarParaContinuar:{ pt: "Entre para continuar",  en: "Sign in to continue" },
+    verifiqueEmailModal:{ pt: "Enviámos um email para confirmar a conta. Carregue na ligação e volta a esta página já com sessão iniciada.", en: "We emailed you a link to confirm your account. Click it and you'll come back to this page already signed in." },
   },
 } as const;
 

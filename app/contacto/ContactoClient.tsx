@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button, Icon, PageHero } from "@/components/ui";
 import { SOCIAIS } from "@/lib/data";
 import type { LigacaoRede } from "@/lib/redes";
+import { comBase } from "@/lib/base";
 
 const ASSUNTOS = [
   { id: "informacao", label: "Pedido de informação", desc: "Dúvidas sobre provas, calendário ou bilhetes." },
@@ -33,7 +34,7 @@ export function ContactoClient({ redes }: { redes: LigacaoRede[] }) {
 
     setEstado("a-enviar");
     try {
-      const r = await fetch("/api/contacto", {
+      const r = await fetch(comBase("/api/contacto"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

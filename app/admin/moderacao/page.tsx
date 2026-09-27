@@ -8,6 +8,7 @@ import {
   Estado, Gaveta, Campo, Area, Confirmar, useAviso,
 } from "@/components/admin/kit";
 import type { Denuncia, EstadoModeracao } from "@/lib/admin/types";
+import { comBase } from "@/lib/base";
 
 const TIPOS: { valor: Denuncia["tipo"]; nome: string }[] = [
   { valor: "forum", nome: "Fórum" },
@@ -307,7 +308,7 @@ export default function AdminModeracao() {
                     <p key={i} className="mt-1 line-clamp-3 text-ink-400">{l}</p>
                   ))}
                   {opcoes.alvo.href && (
-                    <a href={opcoes.alvo.href} target="_blank" rel="noopener noreferrer"
+                    <a href={comBase(opcoes.alvo.href)} target="_blank" rel="noopener noreferrer"
                       className="mt-2 inline-block text-xs text-white underline hover:text-mb-red">
                       Abrir no site
                     </a>

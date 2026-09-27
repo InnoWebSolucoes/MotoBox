@@ -295,10 +295,15 @@ body {
   html { scroll-behavior: auto; }
 }
 
-/* ---------- Focus visível e acessível ---------- */
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-mb-red-light);
-  outline-offset: 2px;
+/* ---------- Focus visível e acessível ----------
+   Em @layer base: um campo que desenha o seu próprio anel (`outline-none`
+   + `focus:ring-*`) fica só com esse anel, em vez de dois vermelhos. Tudo o
+   resto (ligações, botões, campos sem estilo próprio) mantém este contorno. */
+@layer base {
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-mb-red-light);
+    outline-offset: 2px;
+  }
 }
 
 /* ---------- Utilitário: bandeira quadriculada ---------- */

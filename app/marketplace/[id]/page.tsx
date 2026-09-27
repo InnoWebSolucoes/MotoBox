@@ -3,9 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
 import { Denunciar } from "@/components/Denunciar";
-import { Button, Icon, Tag } from "@/components/ui";
+import { SeloVerificado } from "@/components/SeloVerificado";
+import { Icon, Tag } from "@/components/ui";
 import { formatData, formatKz } from "@/lib/data";
 import { lerAnuncio, lerAnuncios } from "@/lib/supabase/publico";
+import { GaleriaAnuncio } from "./GaleriaAnuncio";
+import { AccoesAnuncio } from "./AccoesAnuncio";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -62,37 +65,10 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
       <div className="mt-6 grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:items-start">
         {/* Galeria e descrição */}
         <div>
-          <div className="media relative aspect-[4/3]">
-            <Placeholder
-              nome={anuncio.imagens[0]}
-              className="absolute inset-0"
-              tamanhos="(max-width: 1024px) 100vw, 760px"
-            />
-            <div className="absolute left-4 top-4 flex gap-2">
-              <Tag tone="neutral">{anuncio.categoria}</Tag>
-              <Tag tone="neutral">{anuncio.estado}</Tag>
-            </div>
-          </div>
-
-          {/* Miniaturas */}
-          <div className="mt-3 grid grid-cols-4 gap-2 sm:gap-3">
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className={`media relative aspect-[4/3] cursor-pointer transition-opacity ${
-                  i === 0
-                    ? "ring-2 ring-mb-red ring-offset-2 ring-offset-ink-950"
-                    : "opacity-50 hover:opacity-100"
-                }`}
-              >
-                <Placeholder
-                  nome={`${anuncio.imagens[0]}-${i}`}
-                  className="absolute inset-0"
-                  tamanhos="200px"
-                />
-              </div>
-            ))}
-          </div>
+          <GaleriaAnuncio imagens={anuncio.imagens ?? []} titulo={anuncio.titulo}>
+            <Tag tone="neutral">{anuncio.categoria}</Tag>
+            <Tag tone="neutral">{anuncio.estado}</Tag>
+          </GaleriaAnuncio>
 
           <section className="mt-10">
             <h2 className="eyebrow accent-bar text-white">Descrição</h2>
@@ -141,26 +117,13 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
               </span>
             </p>
 
-            <div className="mt-6 space-y-2">
-              <Button className="w-full" size="lg">
-                <Icon name="whatsapp" className="size-4" />
-                Contactar vendedor
-              </Button>
-              <Button variant="outline" className="w-full">
-                <Icon name="mail" className="size-4" />
-                Enviar mensagem
-              </Button>
-              <div className="flex gap-2">
-                <Button variant="dark" className="flex-1">
-                  <Icon name="heart" className="size-4" />
-                  Guardar
-                </Button>
-                <Button variant="dark" className="flex-1">
-                  <Icon name="share" className="size-4" />
-                  Partilhar
-                </Button>
-              </div>
-            </div>
+            <AccoesAnuncio
+              anuncioId={anuncio.id}
+              titulo={anuncio.titulo}
+              preco={anuncio.preco}
+              vendedorNome={anuncio.vendedor.nome}
+              vendedorAuthId={anuncio.vendedor.authId}
+            />
           </div>
 
           {/* Vendedor */}
@@ -177,9 +140,7 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 font-display text-base uppercase text-white">
                   <span className="truncate">{anuncio.vendedor.nome}</span>
-                  {anuncio.vendedor.verificado && (
-                    <Icon name="verified" className="size-4 shrink-0 text-ok" />
-                  )}
+                  {anuncio.vendedor.verificado && <SeloVerificado tamanho={16} />}
                 </p>
                 <p className="text-xs text-ink-500">
                   Membro desde {anuncio.vendedor.desde}

@@ -8,6 +8,7 @@ import {
   useAviso, Confirmar,
 } from "@/components/admin/kit";
 import type { PaginaLegal } from "@/lib/admin/types";
+import { comBase } from "@/lib/base";
 
 export default function AdminPaginas() {
   const { estado, criar, atualizar, remover } = useAdmin();
@@ -81,7 +82,7 @@ export default function AdminPaginas() {
               descricao={`/${pagina.slug} · atualizada em ${formatDataCurta(pagina.atualizado)}`}
               accoes={
                 <>
-                  <a href={`/${pagina.slug}`} target="_blank" rel="noreferrer"
+                  <a href={comBase(`/${pagina.slug}`)} target="_blank" rel="noreferrer"
                     className="border border-ink-600 px-3 py-1.5 font-display text-[11px] uppercase tracking-wider text-white transition-colors hover:border-mb-red">
                     Pré-visualizar
                   </a>

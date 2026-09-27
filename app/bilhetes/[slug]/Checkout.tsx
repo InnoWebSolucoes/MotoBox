@@ -1,17 +1,102 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Logo, Placeholder } from "@/components/Brand";
 import { QRCode } from "@/components/QRCode";
+import { useExigirSessao } from "@/components/SessaoObrigatoria";
 import { Button, ButtonLink, Icon, Tag } from "@/components/ui";
+import { useAuth } from "@/lib/auth/contexto";
 import { formatData, formatKz } from "@/lib/data";
-import type { Evento } from "@/lib/types";
+import type { Evento, TipoBilhete } from "@/lib/types";
 
 /* Comissão que a Motobox retém sobre cada bilhete vendido. */
 const TAXA_MOTOBOX = 0.07;
 
 type Passo = 1 | 2 | 3 | 4;
+
+type Comprador = { nome: string; email: string; telefone: string; bi: string };
+
+/* ---------- Compra guardada no navegador ----------
+   A sessão é pedida entre os dados e o pagamento. Quem cria conta na janela
+   confirma-a por email, e a ligação abre esta página de novo (em geral noutro
+   separador). Para lá chegar com tudo como estava:
+   · sessionStorage guarda a compra em curso (sobrevive a recarregar o separador);
+   · localStorage guarda uma cópia só quando a janela abre (sem o BI), válida uma
+     hora e apagada assim que é retomada ou a compra termina, para o separador
+     da confirmação a encontrar.
+   Nunca se guarda nada do pagamento. */
+
+interface Rascunho {
+  passo: 1 | 2;
+  quantidades: Record<string, number>;
+  comprador: Comprador;
+  /** A janela de sessão abriu ao seguir para o pagamento: retomar logo que haja sessão. */
+  aEntrar?: boolean;
+  guardado: number;
+}
+
+const VALIDADE_COPIA_MS = 60 * 60 * 1000;
+const chaveRascunho = (slug: string) => `motobox-checkout-${slug}`;
+
+function lerGuardado(loja: Storage, slug: string): Partial<Rascunho> | null {
+  try {
+    const bruto = loja.getItem(chaveRascunho(slug));
+    const v = bruto ? JSON.parse(bruto) : null;
+    return v && typeof v === "object" ? (v as Partial<Rascunho>) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Só o que faz sentido para este evento: tipos que existem, quantidades dentro dos limites. */
+function limpar(v: Partial<Rascunho>, tipos: TipoBilhete[]): Omit<Rascunho, "guardado"> {
+  const q = (v.quantidades ?? {}) as Record<string, unknown>;
+  const quantidades = Object.fromEntries(tipos.map((t) => {
+    const n = Math.trunc(Number(q[t.id]) || 0);
+    return [t.id, Math.min(Math.max(0, n), Math.min(t.disponiveis, 10))];
+  }));
+  const c = (v.comprador ?? {}) as Record<string, unknown>;
+  const campo = (k: keyof Comprador) => (typeof c[k] === "string" ? (c[k] as string).slice(0, 200) : "");
+  const algum = Object.values(quantidades).some((n) => n > 0);
+  return {
+    passo: v.passo === 2 && algum ? 2 : 1,
+    quantidades,
+    comprador: { nome: campo("nome"), email: campo("email"), telefone: campo("telefone"), bi: campo("bi") },
+    aEntrar: v.aEntrar === true,
+  };
+}
+
+function lerRascunho(slug: string, tipos: TipoBilhete[]): Omit<Rascunho, "guardado"> | null {
+  try {
+    const doSeparador = lerGuardado(sessionStorage, slug);
+    const copia = lerGuardado(localStorage, slug);
+    const copiaValida = copia && Date.now() - Number(copia.guardado) < VALIDADE_COPIA_MS ? copia : null;
+    const base = doSeparador ?? copiaValida;
+    if (!base) return null;
+    return { ...limpar(base, tipos), aEntrar: copiaValida?.aEntrar === true };
+  } catch {
+    return null;
+  }
+}
+
+function escrever(loja: "session" | "local", slug: string, r: Omit<Rascunho, "guardado"> | null) {
+  try {
+    const s = loja === "session" ? sessionStorage : localStorage;
+    if (r) s.setItem(chaveRascunho(slug), JSON.stringify({ ...r, guardado: Date.now() }));
+    else s.removeItem(chaveRascunho(slug));
+  } catch { /* indisponível */ }
+}
+
+function errosDe(c: Comprador): Record<string, string> {
+  const e: Record<string, string> = {};
+  if (c.nome.trim().length < 3) e.nome = "Indique o nome completo.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c.email)) e.email = "Email inválido.";
+  if (c.telefone.replace(/\D/g, "").length < 9) e.telefone = "Telefone inválido.";
+  return e;
+}
+
+const semSubscricao = () => () => {};
 
 type MetodoPagamento = "multicaixa" | "transferencia" | "cartao";
 
@@ -43,16 +128,31 @@ function gerarCodigo(eventoSlug: string) {
 }
 
 export function Checkout({ evento }: { evento: Evento }) {
+  // O rascunho só existe no navegador: o servidor desenha a compra vazia e, logo
+  // depois de hidratar, a compra volta a montar-se já com o que ficou guardado.
+  const noNavegador = useSyncExternalStore(semSubscricao, () => true, () => false);
+  return <Compra key={noNavegador ? "navegador" : "servidor"} evento={evento} restaurar={noNavegador} />;
+}
+
+function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
   const tipos = evento.bilhetes!;
-  const [passo, setPasso] = useState<Passo>(1);
+  const slug = evento.slug;
+  const { utilizador, perfil } = useAuth();
+  const exigirSessao = useExigirSessao();
+  const [inicial] = useState(() => (restaurar ? lerRascunho(slug, tipos) : null));
+  const [passo, setPasso] = useState<Passo>(inicial?.passo ?? 1);
   const [quantidades, setQuantidades] = useState<Record<string, number>>(
-    Object.fromEntries(tipos.map((t) => [t.id, 0])),
+    inicial?.quantidades ?? Object.fromEntries(tipos.map((t) => [t.id, 0])),
   );
-  const [comprador, setComprador] = useState({ nome: "", email: "", telefone: "", bi: "" });
+  const [comprador, setComprador] = useState<Comprador>(
+    inicial?.comprador ?? { nome: "", email: "", telefone: "", bi: "" },
+  );
   const [metodo, setMetodo] = useState<MetodoPagamento>("multicaixa");
   const [aVerificar, setAVerificar] = useState(false);
   const [erros, setErros] = useState<Record<string, string>>({});
   const [codigos, setCodigos] = useState<{ id: string; tipo: string; codigo: string }[]>([]);
+  /** Veio da confirmação da conta a meio da compra: segue para o pagamento quando a sessão chegar. */
+  const [retomar, setRetomar] = useState(inicial?.aEntrar ?? false);
 
   const linhas = useMemo(
     () =>
@@ -76,12 +176,77 @@ export function Checkout({ evento }: { evento: Evento }) {
   }
 
   function validarComprador() {
-    const e: Record<string, string> = {};
-    if (comprador.nome.trim().length < 3) e.nome = "Indique o nome completo.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(comprador.email)) e.email = "Email inválido.";
-    if (comprador.telefone.replace(/\D/g, "").length < 9) e.telefone = "Telefone inválido.";
+    const e = errosDe(comprador);
     setErros(e);
     return Object.keys(e).length === 0;
+  }
+
+  // A compra em curso fica no separador; ao chegar ao bilhete, apaga-se tudo.
+  useEffect(() => {
+    // A montagem do servidor dura um instante e vem vazia: não pode apagar o rascunho.
+    if (!restaurar) return;
+    if (passo === 4) {
+      escrever("session", slug, null);
+      escrever("local", slug, null);
+      return;
+    }
+    const algo = totalBilhetes > 0 || Object.values(comprador).some((v) => v.trim());
+    // No pagamento guarda-se o passo dos dados: nada do pagamento fica guardado.
+    escrever("session", slug, algo ? { passo: passo === 1 ? 1 : 2, quantidades, comprador } : null);
+  }, [restaurar, passo, quantidades, comprador, totalBilhetes, slug]);
+
+  // A cópia para o separador da confirmação só serve uma vez e só durante uma hora.
+  // Quem a apaga é quem a usa: o separador original também recebe a sessão (o
+  // Supabase avisa os outros separadores) e, se a apagasse ao seguir, podia
+  // fazê-lo antes de o separador da confirmação a ler.
+  useEffect(() => {
+    if (!restaurar) return;
+    const copia = lerGuardado(localStorage, slug);
+    const expirada = copia && !(Date.now() - Number(copia.guardado) < VALIDADE_COPIA_MS);
+    if (inicial?.aEntrar || expirada) escrever("local", slug, null);
+  }, [restaurar, inicial, slug]);
+
+  // Chegou com a conta acabada de confirmar: a sessão aparece um instante depois
+  // de a página abrir e a compra segue para o pagamento, como na janela.
+  if (retomar && utilizador) {
+    setRetomar(false);
+    if (passo === 2 && totalBilhetes > 0 && Object.keys(errosDe(comprador)).length === 0) setPasso(3);
+  }
+
+  const emailConta = utilizador?.email ?? "";
+  const nomeMeta = utilizador?.user_metadata?.nome;
+  const nomeConta = perfil?.nome || (typeof nomeMeta === "string" ? nomeMeta : "");
+
+  function irParaDados() {
+    // Com sessão e o email ainda vazio, parte-se dos dados da conta; o que a
+    // pessoa já escreveu nunca é substituído.
+    if (emailConta && !comprador.email.trim()) {
+      setComprador((c) => ({
+        ...c,
+        nome: c.nome.trim() ? c.nome : nomeConta,
+        email: emailConta,
+        telefone: c.telefone.trim() ? c.telefone : perfil?.telefone ?? "",
+      }));
+    }
+    setPasso(2);
+  }
+
+  function irParaPagamento() {
+    setPasso(3);
+  }
+
+  function seguirParaPagamento() {
+    if (!validarComprador()) return;
+    const jaTinhaSessao = exigirSessao(() => irParaPagamento(), {
+      continuar: true,
+      motivo: "Entre ou crie conta para concluir a compra. O que escolheu e escreveu fica tudo como está.",
+    });
+    // Sem sessão: se criar conta, a confirmação chega por email e abre esta página
+    // de novo. Fica uma cópia para essa página retomar a compra onde estava
+    // (sem o BI, que é opcional e o dado mais sensível).
+    if (!jaTinhaSessao) {
+      escrever("local", slug, { passo: 2, quantidades, comprador: { ...comprador, bi: "" }, aEntrar: true });
+    }
   }
 
   async function pagar() {
@@ -270,6 +435,19 @@ export function Checkout({ evento }: { evento: Evento }) {
                     {erros[c.k] && <p className="mt-1.5 text-xs text-mb-red-light">{erros[c.k]}</p>}
                   </div>
                 ))}
+
+                {emailConta && (
+                  <p className="flex gap-2.5 text-xs text-ink-500 leading-relaxed">
+                    <Icon name="user" className="size-4 shrink-0 text-ink-600" />
+                    <span>
+                      <span>Sessão iniciada como</span>{" "}
+                      <span className="text-ink-200">{emailConta}</span>
+                      {comprador.email.trim() && comprador.email.trim().toLowerCase() !== emailConta.toLowerCase() && (
+                        <span className="block">O bilhete segue para o email indicado acima.</span>
+                      )}
+                    </span>
+                  </p>
+                )}
 
                 <p className="flex gap-2.5 border-t border-white/6 pt-4 text-xs text-ink-500 leading-relaxed">
                   <Icon name="lock" className="size-4 shrink-0 text-ink-600" />
@@ -510,7 +688,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                   <Button
                     className="w-full"
                     disabled={totalBilhetes === 0}
-                    onClick={() => setPasso(2)}
+                    onClick={irParaDados}
                   >
                     Continuar
                     <Icon name="arrow" className="size-4" />
@@ -520,7 +698,7 @@ export function Checkout({ evento }: { evento: Evento }) {
                   <>
                     <Button
                       className="w-full"
-                      onClick={() => validarComprador() && setPasso(3)}
+                      onClick={seguirParaPagamento}
                     >
                       Ir para pagamento
                       <Icon name="arrow" className="size-4" />

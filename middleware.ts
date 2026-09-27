@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseMiddleware, authConfigurada } from "@/lib/auth/clientes";
+import { redireccionarAbsoluto } from "@/lib/redireccionar";
 
 /* ============================================================
    MOTOBOX — Proteção de rotas
@@ -35,10 +36,7 @@ export async function middleware(pedido: NextRequest) {
   /* ---------- Área de conta do visitante ---------- */
   if (areaConta) {
     if (!user) {
-      const url = pedido.nextUrl.clone();
-      url.pathname = "/entrar";
-      url.searchParams.set("destino", caminho);
-      return NextResponse.redirect(url);
+      return redireccionarAbsoluto(pedido, `/entrar?destino=${encodeURIComponent(caminho)}`);
     }
     return resposta;
   }
@@ -52,10 +50,7 @@ export async function middleware(pedido: NextRequest) {
         { status: 401 },
       );
     }
-    const url = pedido.nextUrl.clone();
-    url.pathname = "/entrar";
-    url.searchParams.set("destino", caminho);
-    return NextResponse.redirect(url);
+    return redireccionarAbsoluto(pedido, `/entrar?destino=${encodeURIComponent(caminho)}`);
   }
 
   // O papel vive na tabela `utilizadores`, indexada pelo email.
@@ -81,9 +76,7 @@ export async function middleware(pedido: NextRequest) {
         { status: 403 },
       );
     }
-    const url = pedido.nextUrl.clone();
-    url.pathname = "/sem-acesso";
-    return NextResponse.redirect(url);
+    return redireccionarAbsoluto(pedido, "/sem-acesso");
   }
 
   return resposta;

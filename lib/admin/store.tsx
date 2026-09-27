@@ -32,6 +32,7 @@ import {
   mensagensSeed, paginasLegaisSeed, definicoesSeed, atividadeSeed,
 } from "./seed";
 import { useAuth } from "@/lib/auth/contexto";
+import { comBase } from "@/lib/base";
 
 const CHAVE = "motobox-admin-v1";
 
@@ -149,7 +150,7 @@ async function enviar(
   query = "",
 ): Promise<string | null> {
   try {
-    const r = await fetch(`/api/admin/${coleccao}${query}`, {
+    const r = await fetch(comBase(`/api/admin/${coleccao}${query}`), {
       method: metodo,
       headers: corpo ? { "Content-Type": "application/json" } : undefined,
       body: corpo ? JSON.stringify(corpo) : undefined,
@@ -198,7 +199,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     try {
       const respostas = await Promise.all(
         [...coleccoes, "definicoes" as const].map(async (c) => {
-          const r = await fetch(`/api/admin/${c}`, { cache: "no-store" });
+          const r = await fetch(comBase(`/api/admin/${c}`), { cache: "no-store" });
           return { c, ok: r.ok, estado: r.status, json: await r.json().catch(() => null) };
         }),
       );

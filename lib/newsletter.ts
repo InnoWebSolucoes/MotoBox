@@ -20,6 +20,7 @@ import { classificacaoPilotos } from "@/lib/data";
 import { src } from "@/lib/imagens";
 import { enviarEmails, type EmailPreparado } from "@/lib/notificacoes";
 import type { Corrida, Evento, Noticia, Piloto } from "@/lib/types";
+import { urlPublica } from "@/lib/base";
 
 /* ---------------- Constantes ---------------- */
 
@@ -63,12 +64,8 @@ const FONTE = "Arial,Helvetica,sans-serif";
 
 /** Endereço público do site, como em lib/notificacoes (nunca localhost). */
 export function urlBase(): string {
-  const definido =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : undefined);
-  return (definido ?? "https://moto-box-wc4x.vercel.app").replace(/\/$/, "");
+  // O site vive em innoweb.agency/motobox: ver lib/base.ts.
+  return urlPublica();
 }
 
 export const normalizarEmail = (email: unknown) => String(email ?? "").trim().toLowerCase();

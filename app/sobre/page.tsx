@@ -261,7 +261,8 @@ export default async function SobrePage() {
                 <ButtonLink href="/contacto#parcerias" size="lg">
                   Falar connosco
                 </ButtonLink>
-                <ButtonLink href={SOCIAIS.instagram} variant="outline" size="lg">
+                {/* Separador novo: quem vai ao Instagram não perde o site. */}
+                <ButtonLink href={SOCIAIS.instagram} target="_blank" rel="noopener noreferrer" variant="outline" size="lg">
                   <Icon name="instagram" className="size-4" />
                   Seguir no Instagram
                 </ButtonLink>

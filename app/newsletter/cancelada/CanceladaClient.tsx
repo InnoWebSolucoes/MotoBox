@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ButtonLink, Button, Icon } from "@/components/ui";
 import { useT } from "@/lib/i18n/contexto";
+import { BASE, comBase } from "@/lib/base";
 
 export type EstadoCancelamento = "ok" | "invalido" | "erro";
 
@@ -16,7 +17,7 @@ export function CanceladaClient({
   async function voltar() {
     setRegresso("a-enviar");
     try {
-      const r = await fetch("/api/newsletter", {
+      const r = await fetch(comBase("/api/newsletter"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, origem: "rodape" }),
@@ -69,7 +70,7 @@ export function CanceladaClient({
           {estado === "erro" && email && token && (
             // Rota de API, não página: navegação normal, sem o <Link> do Next.
             <a
-              href={`/api/newsletter/cancelar?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`}
+              href={`${BASE}/api/newsletter/cancelar?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`}
               className="inline-flex h-11 items-center justify-center rounded-full bg-mb-red px-6 font-ui text-base text-white transition-colors hover:bg-mb-red-dark"
             >
               {t("newsletter.tentarDeNovo")}

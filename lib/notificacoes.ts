@@ -15,6 +15,7 @@ import "server-only";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { normalizarPreferencias, type Preferencias } from "@/lib/conta/preferencias";
 import type { AnuncioMarketplace, Corrida, Evento, ResultadoCorrida } from "@/lib/types";
+import { urlPublica } from "@/lib/base";
 
 /** Uma conta que pode receber avisos por email. */
 export interface Destinatario {
@@ -60,12 +61,8 @@ const VAZIO: ResumoEnvio = { destinatarios: 0, enviados: 0 };
  * o site publicado, nunca localhost.
  */
 function urlBase(): string {
-  const definido =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : undefined);
-  return (definido ?? "https://moto-box-wc4x.vercel.app").replace(/\/$/, "");
+  // O site vive em innoweb.agency/motobox: ver lib/base.ts.
+  return urlPublica();
 }
 
 /** Verdadeiro quando há pelo menos um tipo de bilhete. */

@@ -11,6 +11,7 @@
 
 import { createBrowserClient, createServerClient } from "@supabase/ssr";
 import type { NextRequest, NextResponse } from "next/server";
+import { urlPublica } from "@/lib/base";
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -26,15 +27,8 @@ export const authConfigurada = Boolean(URL && ANON);
  * nunca gera uma ligação para localhost.
  */
 export function urlBase(): string {
-  const definido =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : undefined);
-
-  if (definido) return definido.replace(/\/$/, "");
-  if (typeof window !== "undefined") return window.location.origin;
-  return "http://localhost:3000";
+  // O site vive em innoweb.agency/motobox: ver lib/base.ts.
+  return urlPublica();
 }
 
 /** Cliente para componentes marcados com "use client". */

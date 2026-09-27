@@ -8,6 +8,7 @@ import {
   Gaveta, Campo, Area, useAviso, Confirmar,
 } from "@/components/admin/kit";
 import type { Mensagem } from "@/lib/admin/types";
+import { comBase } from "@/lib/base";
 
 export default function AdminMensagens() {
   const { estado, atualizar, remover, registar } = useAdmin();
@@ -58,7 +59,7 @@ export default function AdminMensagens() {
     if (resposta.trim().length < 2) { mostrar("Escreva a resposta antes de enviar.", "erro"); return; }
     setAEnviar(true);
     try {
-      const r = await fetch("/api/admin/responder-mensagem", {
+      const r = await fetch(comBase("/api/admin/responder-mensagem"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: m.id, resposta }),

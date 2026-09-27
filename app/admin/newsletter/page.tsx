@@ -10,6 +10,7 @@ import {
   Interruptor, Gaveta,
 } from "@/components/admin/kit";
 import type { Subscritor } from "@/lib/admin/types";
+import { comBase } from "@/lib/base";
 
 const ORIGENS = ["rodapé", "faixa", "cartão", "checkout", "manual"];
 
@@ -47,7 +48,7 @@ function proximoEnvio(): Date {
 
 async function lerInfo(): Promise<{ info: InfoEnvio } | { erro: string }> {
   try {
-    const r = await fetch("/api/admin/newsletter", { cache: "no-store" });
+    const r = await fetch(comBase("/api/admin/newsletter"), { cache: "no-store" });
     const j = await r.json().catch(() => null);
     if (!r.ok || !j) return { erro: String(j?.erro ?? `HTTP ${r.status}`) };
     return { info: j as InfoEnvio };
@@ -111,7 +112,7 @@ export default function AdminNewsletter() {
   const enviarAgora = async () => {
     setAEnviar(true);
     try {
-      const r = await fetch("/api/admin/newsletter", {
+      const r = await fetch(comBase("/api/admin/newsletter"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ utilizador: perfil?.nome ?? "" }),

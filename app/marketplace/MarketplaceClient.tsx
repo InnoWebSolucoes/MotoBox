@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Placeholder } from "@/components/Brand";
+import { SeloVerificado } from "@/components/SeloVerificado";
 import { ButtonLink, Icon, PageHero, Tag } from "@/components/ui";
 import { formatData, formatKz } from "@/lib/data";
 import type { AnuncioMarketplace } from "@/lib/types";
@@ -69,7 +70,7 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
             Publicar anúncio
           </ButtonLink>
           <p className="flex items-center gap-2 text-xs text-ink-500">
-            <Icon name="verified" className="size-4 text-ok" />
+            <SeloVerificado tamanho={16} decorativo />
             Todos os vendedores são verificados pela Motobox
           </p>
         </div>
@@ -171,13 +172,7 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
                   {/* Com uma categoria escolhida, repeti-la em cada anúncio não diz nada. */}
                   {categoria === "Todas" && <Tag tone="neutral">{a.categoria}</Tag>}
                   {a.vendedor.verificado && (
-                    <span
-                      title="Vendedor verificado"
-                      className="grid size-6 place-items-center rounded-full bg-ok text-white shadow-md shadow-black/30"
-                    >
-                      <Icon name="check" className="size-3.5" />
-                      <span className="sr-only">Vendedor verificado</span>
-                    </span>
+                    <SeloVerificado tamanho={18} className="drop-shadow-[0_1px_2px_rgb(0_0_0/0.55)]" />
                   )}
                 </div>
                 <span className="absolute bottom-3 right-3 rounded-full bg-ink-950/80 px-2.5 py-1 text-[10px] leading-none text-ink-200 backdrop-blur-sm">

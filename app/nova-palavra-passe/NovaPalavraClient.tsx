@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth/contexto";
 import { useIdioma } from "@/lib/i18n/contexto";
+import { CampoPalavraPasse } from "@/components/CampoPalavraPasse";
 
 export function NovaPalavraClient() {
   const { t } = useIdioma();
@@ -16,7 +17,7 @@ export function NovaPalavraClient() {
   const [ocupado, setOcupado] = useState(false);
 
   const campo =
-    "h-12 w-full bg-ink-900 px-4 text-sm text-white ring-1 ring-inset ring-white/10 " +
+    "h-12 w-full rounded-[0.625rem] bg-ink-900 px-4 text-sm text-white ring-1 ring-inset ring-white/10 " +
     "placeholder:text-ink-600 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
   const etiqueta =
     "mb-1.5 block text-[11px] font-display uppercase tracking-widest text-ink-300";
@@ -49,14 +50,14 @@ export function NovaPalavraClient() {
       <form onSubmit={submeter} className="space-y-4">
         <label className="block">
           <span className={etiqueta}>{t("auth.novaPalavra")}</span>
-          <input className={campo} type="password" value={palavra} required minLength={8}
+          <CampoPalavraPasse className={campo} value={palavra} required minLength={8}
             autoComplete="new-password" placeholder={t("auth.minimoCaracteres")}
             onChange={(e) => setPalavra(e.target.value)} />
         </label>
 
         <label className="block">
           <span className={etiqueta}>{t("auth.confirmarPalavra")}</span>
-          <input className={campo} type="password" value={confirmacao} required
+          <CampoPalavraPasse className={campo} value={confirmacao} required
             autoComplete="new-password" placeholder="••••••••"
             onChange={(e) => setConfirmacao(e.target.value)} />
         </label>

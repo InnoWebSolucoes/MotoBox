@@ -15,6 +15,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Logo, Placeholder, Retrato } from "@/components/Brand";
 import { QRCode } from "@/components/QRCode";
+import { SeloVerificado } from "@/components/SeloVerificado";
+import { AnunciosGuardados } from "@/components/AnunciosGuardados";
 import { Button, ButtonLink, Icon, Tag } from "@/components/ui";
 import { formatData, formatKz } from "@/lib/data";
 import { useAuth } from "@/lib/auth/contexto";
@@ -24,6 +26,8 @@ import {
 } from "@/lib/conta/preferencias";
 import type { AnuncioMarketplace, Equipa, Evento, Noticia, Piloto } from "@/lib/types";
 import type { Encomenda } from "@/lib/admin/types";
+import { RecortarAvatar, useTextosRecorte, type EstadoRecorte } from "./RecortarAvatar";
+import { comBase } from "@/lib/base";
 
 type Aba = "resumo" | "bilhetes" | "preferencias" | "notificacoes" | "anuncios";
 
@@ -77,41 +81,17 @@ const CORES_AVATAR = [
 const COR_PADRAO = "#e10600";
 const COR_HEX = /^#[0-9a-f]{6}$/i;
 const TIPOS_IMAGEM = ["image/jpeg", "image/png", "image/webp"];
-const IMAGEM_MAX = 2 * 1024 * 1024;
-/** Lado maior da imagem enviada. Aparece no máximo a 96 px; 512 chega para ecrãs densos. */
-const LADO_MAX = 512;
+// A fotografia escolhida só serve para recortar: o que sobe é o recorte de
+// 512 px (bem abaixo dos 2 MB do servidor). Fotografias de telemóvel passam.
+const IMAGEM_MAX = 20 * 1024 * 1024;
 
 const normalizarCor = (c: string | undefined) => (c && COR_HEX.test(c) ? c.toLowerCase() : COR_PADRAO);
-
-/**
- * Reduz a imagem antes de a enviar, mantendo o formato (o PNG guarda a
- * transparência de um logótipo). Assim a barra de navegação não descarrega
- * 2 MB em cada página. Se o navegador não conseguir, segue o original.
- */
-async function reduzir(f: File): Promise<Blob> {
-  try {
-    const bmp = await createImageBitmap(f);
-    const escala = Math.min(1, LADO_MAX / Math.max(bmp.width, bmp.height));
-    const tela = document.createElement("canvas");
-    const ctx = tela.getContext("2d");
-    if (escala === 1 || !ctx) { bmp.close(); return f; }
-    tela.width = Math.round(bmp.width * escala);
-    tela.height = Math.round(bmp.height * escala);
-    ctx.drawImage(bmp, 0, 0, tela.width, tela.height);
-    bmp.close();
-    const blob = await new Promise<Blob | null>((ok) => tela.toBlob(ok, f.type, 0.9));
-    // O Safari não escreve WebP e devolve PNG: serve na mesma, se for mais leve.
-    return blob && TIPOS_IMAGEM.includes(blob.type) && blob.size < f.size ? blob : f;
-  } catch {
-    return f;
-  }
-}
 
 async function enviarImagem(imagem: Blob): Promise<string | null> {
   const dados = new FormData();
   dados.append("ficheiro", imagem, `logotipo.${imagem.type.split("/")[1] ?? "jpg"}`);
   try {
-    const r = await fetch("/api/conta/avatar", { method: "POST", body: dados });
+    const r = await fetch(comBase("/api/conta/avatar"), { method: "POST", body: dados });
     if (r.ok) return null;
     const j = await r.json().catch(() => ({}));
     return String(j.erro ?? `Erro ${r.status}`);
@@ -188,7 +168,7 @@ export function ContaClient({
     if (temporizador.current) clearTimeout(temporizador.current);
     temporizador.current = setTimeout(async () => {
       try {
-        const r = await fetch("/api/conta", {
+        const r = await fetch(comBase("/api/conta"), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ preferencias: proximas }),
@@ -209,7 +189,7 @@ export function ContaClient({
   const terminarSessao = async () => {
     setASair(true);
     await sair();
-    window.location.replace("/");
+    window.location.replace(comBase("/"));
   };
 
   if (carregando || (utilizador && !dados && !erroCarregar)) {
@@ -276,7 +256,7 @@ export function ContaClient({
           <div className="min-w-0 flex-1 basis-56">
             <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl uppercase leading-tight text-white break-words">
               {nome}
-              {perfil?.verificado && <Icon name="verified" className="size-5 shrink-0 text-ok" />}
+              {perfil?.verificado && <SeloVerificado tamanho={20} rotulo="Conta verificada" />}
             </h1>
             <p className="mt-0.5 text-sm text-ink-500 break-words">
               {dados.email}
@@ -629,7 +609,7 @@ export function ContaClient({
             {perfil?.verificado && (
               <div className="card bg-ok/8 p-5">
                 <p className="flex items-center gap-2.5 text-sm text-ink-200">
-                  <Icon name="verified" className="size-5 shrink-0 text-ok" />
+                  <SeloVerificado tamanho={20} decorativo />
                   <span>
                     <strong className="text-white">Conta verificada.</strong> Os seus anúncios aparecem
                     com o selo de vendedor verificado.
@@ -666,6 +646,13 @@ export function ContaClient({
                 ))}
               </div>
             )}
+
+            {/* Anúncios de outras pessoas que guardou com o coração */}
+            <section className="border-t border-white/6 pt-8">
+              <h2 className="font-display text-xl uppercase text-white">Guardados</h2>
+              <p className="mt-1 text-sm text-ink-500">Os anúncios que guardou no marketplace.</p>
+              <AnunciosGuardados className="mt-5" />
+            </section>
           </div>
         )}
       </div>
@@ -696,7 +683,7 @@ export function ContaClient({
 
 async function lerConta(): Promise<{ dados?: DadosConta; erro?: string }> {
   try {
-    const r = await fetch("/api/conta", { cache: "no-store" });
+    const r = await fetch(comBase("/api/conta"), { cache: "no-store" });
     const j = await r.json();
     return r.ok ? { dados: j as DadosConta } : { erro: String(j.erro ?? `Erro ${r.status}`) };
   } catch {
@@ -760,7 +747,7 @@ function Rotulo({ texto, children }: { texto: string; children: ReactNode }) {
 
 async function enviar(url: string, metodo: string, corpo: unknown): Promise<string | null> {
   try {
-    const r = await fetch(url, {
+    const r = await fetch(comBase(url), {
       method: metodo, headers: { "Content-Type": "application/json" },
       body: corpo === undefined ? undefined : JSON.stringify(corpo),
     });
@@ -772,10 +759,13 @@ async function enviar(url: string, metodo: string, corpo: unknown): Promise<stri
   }
 }
 
-/** O que fazer à imagem ao guardar: nada, pôr uma nova, ou tirá-la. */
+/**
+ * O que fazer à imagem ao guardar: nada, pôr uma nova, ou tirá-la. A nova
+ * guarda o ficheiro original e o enquadramento, para se poder voltar a ajustar.
+ */
 type EscolhaImagem =
   | { tipo: "manter" }
-  | { tipo: "nova"; blob: Blob; preview: string }
+  | { tipo: "nova"; blob: Blob; preview: string; original: File; recorte: EstadoRecorte }
   | { tipo: "remover" };
 
 function IconeCamara() {
@@ -801,7 +791,19 @@ function EditarPerfil({ perfil, avatar, nomeConta, aoFechar, aoGuardar }: {
   const [erro, setErro] = useState<string | null>(null);
   const [erroImagem, setErroImagem] = useState<string | null>(null);
   const [aGuardar, setAGuardar] = useState(false);
+  /** Imagem aberta no recorte (a janela mostra-o em vez do formulário). */
+  const [recorte, setRecorte] = useState<{ original: File; inicial?: EstadoRecorte } | null>(null);
   const seletor = useRef<HTMLInputElement>(null);
+  const secaoImagem = useRef<HTMLElement>(null);
+  const voltarFoco = useRef(false);
+  const tx = useTextosRecorte();
+
+  // Ao sair do recorte, o foco volta aos botões da imagem em vez de cair no início da página.
+  useEffect(() => {
+    if (recorte || !voltarFoco.current) return;
+    voltarFoco.current = false;
+    secaoImagem.current?.querySelector<HTMLButtonElement>("[data-foco-imagem]")?.focus();
+  }, [recorte]);
 
   // Liberta a pré-visualização anterior quando muda, e a última ao fechar.
   useEffect(() => () => {
@@ -818,13 +820,21 @@ function EditarPerfil({ perfil, avatar, nomeConta, aoFechar, aoGuardar }: {
     if (COR_HEX.test(valor)) setCor(valor.toLowerCase());
   };
 
-  const escolherFicheiro = async (f: File | undefined) => {
+  const escolherFicheiro = (f: File | undefined) => {
     setErroImagem(null);
     if (!f) return;
     if (!TIPOS_IMAGEM.includes(f.type)) { setErroImagem("Use uma imagem JPG, PNG ou WebP."); return; }
-    if (f.size > IMAGEM_MAX) { setErroImagem("A imagem tem mais de 2 MB."); return; }
-    const blob = await reduzir(f);
-    setImagem({ tipo: "nova", blob, preview: URL.createObjectURL(blob) });
+    if (f.size > IMAGEM_MAX) { setErroImagem("A imagem tem mais de 20 MB."); return; }
+    setRecorte({ original: f });
+  };
+
+  const fecharRecorte = () => { voltarFoco.current = true; setRecorte(null); };
+
+  // O recorte já sai a 512 px: é esse que se mostra e se envia ao guardar.
+  const aplicarRecorte = (blob: Blob, estado: EstadoRecorte) => {
+    if (!recorte) return;
+    setImagem({ tipo: "nova", blob, preview: URL.createObjectURL(blob), original: recorte.original, recorte: estado });
+    fecharRecorte();
   };
 
   const guardar = async () => {
@@ -847,17 +857,34 @@ function EditarPerfil({ perfil, avatar, nomeConta, aoFechar, aoGuardar }: {
     await aoGuardar();
   };
 
+  if (recorte) {
+    // Esc, o fundo e o X fecham só o recorte: o que já se escreveu no perfil fica.
+    return (
+      <Janela titulo={tx.titulo} aoFechar={fecharRecorte}>
+        <RecortarAvatar fonte={recorte.original} inicial={recorte.inicial} cor={cor}
+          aoAplicar={aplicarRecorte} aoCancelar={fecharRecorte} />
+      </Janela>
+    );
+  }
+
   return (
     <Janela titulo="Editar perfil" aoFechar={aoFechar}>
       {/* Logótipo e cor, com o resultado ao vivo no círculo grande */}
-      <section aria-label="Logótipo e cor" className="mb-6 border-b border-white/6 pb-6">
+      <section ref={secaoImagem} aria-label="Logótipo e cor" className="mb-6 border-b border-white/6 pb-6">
         <div className="flex flex-wrap items-center gap-5">
           <AvatarConta url={urlMostrada} cor={cor} nome={nome || nomeConta} className="size-24 text-3xl" />
           <div className="min-w-0 flex-1 basis-44">
             <p className="font-display text-base uppercase text-white">Logótipo ou fotografia</p>
-            <p className="mt-0.5 text-xs text-ink-500">JPG, PNG ou WebP, até 2 MB.</p>
+            <p className="mt-0.5 text-xs text-ink-500">JPG, PNG ou WebP, até 20 MB.</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button type="button" variant="dark" size="sm" onClick={() => seletor.current?.click()}>
+              {imagem.tipo === "nova" && (
+                <Button type="button" variant="dark" size="sm" data-foco-imagem
+                  onClick={() => setRecorte({ original: imagem.original, inicial: imagem.recorte })}>
+                  {tx.ajustar}
+                </Button>
+              )}
+              <Button type="button" variant="dark" size="sm" data-foco-imagem={imagem.tipo === "nova" ? undefined : true}
+                onClick={() => seletor.current?.click()}>
                 {urlMostrada ? "Trocar imagem" : "Carregar imagem"}
               </Button>
               {urlMostrada && (
@@ -867,7 +894,7 @@ function EditarPerfil({ perfil, avatar, nomeConta, aoFechar, aoGuardar }: {
               )}
             </div>
             <input ref={seletor} type="file" accept={TIPOS_IMAGEM.join(",")} className="sr-only" tabIndex={-1} aria-hidden
-              onChange={(e) => { void escolherFicheiro(e.target.files?.[0]); e.target.value = ""; }} />
+              onChange={(e) => { escolherFicheiro(e.target.files?.[0]); e.target.value = ""; }} />
             {erroImagem && <p role="alert" className="mt-2 text-sm text-mb-red">{erroImagem}</p>}
           </div>
         </div>

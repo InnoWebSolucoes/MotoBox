@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // O site é servido em innoweb.agency/motobox: o projecto principal da
+  // Innoweb encaminha /motobox/* para aqui. Tem de coincidir com BASE em
+  // lib/base.ts (o fetch à própria API e os redireccionamentos usam-no).
+  basePath: "/motobox",
   images: {
     // Fotografias de demonstração (ver lib/imagens.ts). Quando o arquivo
     // fotográfico da Motobox entrar, este padrão deixa de ser necessário.

@@ -1,0 +1,214 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/lib/auth/contexto";
+import { useExigirSessao } from "@/components/SessaoObrigatoria";
+import { Button, Icon } from "@/components/ui";
+import { formatKz } from "@/lib/data";
+import { ContactarVendedor } from "./ContactarVendedor";
+import { comBase } from "@/lib/base";
+
+interface Aviso {
+  texto: string;
+  tipo: "ok" | "erro";
+  /** Texto a enviar pelo WhatsApp, quando o aviso vem da partilha. */
+  whatsapp?: string;
+}
+
+/** Coração do botão Guardar: cheio quando o anúncio está guardado. */
+function Coracao({ cheio }: { cheio: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className={`size-4 ${cheio ? "text-mb-red" : ""}`} aria-hidden="true">
+      <path
+        d="M12 20s-7-4.4-7-9.2A4.1 4.1 0 0 1 12 8a4.1 4.1 0 0 1 7 2.8C19 15.6 12 20 12 20Z"
+        fill={cheio ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Acções da coluna de compra: contactar o vendedor, guardar o anúncio
+ * na conta (user_metadata.favoritos, via /api/conta/favoritos) e partilhar.
+ */
+export function AccoesAnuncio({
+  anuncioId, titulo, preco, vendedorNome, vendedorAuthId,
+}: {
+  anuncioId: string;
+  titulo: string;
+  preco: number;
+  vendedorNome: string;
+  vendedorAuthId?: string;
+}) {
+  const { utilizador } = useAuth();
+  const exigirSessao = useExigirSessao();
+  const uid = utilizador?.id;
+
+  // Aviso curto no fundo do ecrã (partilha e erros ao guardar).
+  const [aviso, setAviso] = useState<Aviso | null>(null);
+  useEffect(() => {
+    if (!aviso) return;
+    const t = window.setTimeout(() => setAviso(null), aviso.whatsapp ? 8000 : 5000);
+    return () => window.clearTimeout(t);
+  }, [aviso]);
+
+  /* ---------- Guardar ---------- */
+  // A lista fica marcada com a conta a que pertence: ao trocar de conta, a
+  // antiga deixa de contar sem ser preciso limpá-la num efeito.
+  const [favoritos, setFavoritos] = useState<{ dono: string; ids: string[] } | null>(null);
+  const [aGuardar, setAGuardar] = useState(false);
+  const guardado = Boolean(uid && favoritos?.dono === uid && favoritos.ids.includes(anuncioId));
+  // Cada escrita incrementa: uma leitura que chegue depois de uma escrita já não manda.
+  const operacao = useRef(0);
+  const uidRef = useRef(uid);
+  useEffect(() => { uidRef.current = uid; }, [uid]);
+
+  useEffect(() => {
+    if (!uid) return;
+    const versao = operacao.current;
+    let vivo = true;
+    fetch(comBase("/api/conta/favoritos"), { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (vivo && versao === operacao.current && Array.isArray(j?.ids)) setFavoritos({ dono: uid, ids: j.ids });
+      })
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, [uid]);
+
+  const aplicar = (ids: string[], guardar: boolean) =>
+    guardar ? [anuncioId, ...ids.filter((x) => x !== anuncioId)] : ids.filter((x) => x !== anuncioId);
+
+  async function gravar(guardar: boolean) {
+    const versao = ++operacao.current;
+    const dono = uidRef.current ?? "";
+    // Mostra já o resultado; se o servidor recusar, volta atrás.
+    setFavoritos((f) => ({ dono, ids: aplicar(f?.dono === dono ? f.ids : [], guardar) }));
+    setAGuardar(true);
+    try {
+      const r = await fetch(comBase("/api/conta/favoritos"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: anuncioId, guardar }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (versao !== operacao.current) return;
+      if (!r.ok) {
+        setFavoritos((f) => ({ dono, ids: aplicar(f?.ids ?? [], !guardar) }));
+        setAviso({ tipo: "erro", texto: String(j.erro ?? "Não foi possível guardar. Tente de novo.") });
+        return;
+      }
+      setFavoritos({ dono: uidRef.current ?? dono, ids: Array.isArray(j.ids) ? j.ids : [] });
+    } catch {
+      if (versao !== operacao.current) return;
+      setFavoritos((f) => ({ dono, ids: aplicar(f?.ids ?? [], !guardar) }));
+      setAviso({ tipo: "erro", texto: "Sem ligação à internet. Tente de novo." });
+    } finally {
+      if (versao === operacao.current) setAGuardar(false);
+    }
+  }
+
+  function carregarGuardar() {
+    if (aGuardar) return;
+    const guardar = !guardado;
+    exigirSessao(() => gravar(guardar), {
+      continuar: true,
+      motivo: "Para guardar anúncios precisa de sessão.",
+    });
+  }
+
+  /* ---------- Partilhar ---------- */
+  async function partilhar() {
+    const url = `${window.location.origin}/marketplace/${encodeURIComponent(anuncioId)}`;
+    const texto = `${titulo} · ${formatKz(preco)}`;
+    const dados = { title: titulo, text: texto, url };
+
+    // Telemóvel (e alguns computadores): a folha de partilha do sistema.
+    if (typeof navigator.share === "function" && (navigator.canShare?.(dados) ?? true)) {
+      try {
+        await navigator.share(dados);
+        return;
+      } catch (e) {
+        // Fechar a folha sem escolher não é um erro. Outra falha segue para copiar.
+        if ((e as DOMException)?.name === "AbortError") return;
+      }
+    }
+
+    let copiado = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      copiado = true;
+    } catch { /* sem permissão ou ligação não segura */ }
+    setAviso({
+      tipo: copiado ? "ok" : "erro",
+      texto: copiado ? "Ligação copiada" : "Não foi possível copiar a ligação",
+      whatsapp: `${texto}\n${url}`,
+    });
+  }
+
+  return (
+    <>
+      <div className="mt-6 space-y-2">
+        <ContactarVendedor
+          anuncioId={anuncioId}
+          titulo={titulo}
+          preco={preco}
+          vendedorNome={vendedorNome}
+          vendedorAuthId={vendedorAuthId}
+        />
+        <div className="flex gap-2">
+          <Button
+            variant="dark"
+            className="flex-1"
+            onClick={carregarGuardar}
+            aria-pressed={guardado}
+            aria-busy={aGuardar || undefined}
+          >
+            <Coracao cheio={guardado} />
+            {guardado ? "Guardado" : "Guardar"}
+          </Button>
+          <Button variant="dark" className="flex-1" onClick={partilhar}>
+            <Icon name="share" className="size-4" />
+            Partilhar
+          </Button>
+        </div>
+      </div>
+
+      {/* Aviso curto no fundo do ecrã. A região existe sempre, para ser anunciada. */}
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-5 z-[80] flex justify-center px-4">
+        {aviso && (
+          <div className="pointer-events-auto flex max-w-full items-center gap-3 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-sm text-ink-950 shadow-2xl shadow-black/40">
+            <Icon
+              name={aviso.tipo === "ok" ? "check" : "help"}
+              className={`size-4 shrink-0 ${aviso.tipo === "ok" ? "text-ok" : "text-mb-red"}`}
+            />
+            <span className="font-ui text-base leading-tight">{aviso.texto}</span>
+            {aviso.whatsapp && (
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(aviso.whatsapp)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Partilhar por WhatsApp"
+                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-ink-950 px-3 font-ui text-sm text-white transition-colors hover:bg-ink-800"
+              >
+                <Icon name="whatsapp" className="size-4 text-[#25d366]" />
+                WhatsApp
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => setAviso(null)}
+              aria-label="Fechar aviso"
+              className="grid size-8 shrink-0 place-items-center rounded-full text-ink-600 transition-colors hover:bg-ink-950/8 hover:text-ink-950"
+            >
+              <Icon name="close" className="size-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}

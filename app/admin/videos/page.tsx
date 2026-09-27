@@ -7,6 +7,7 @@ import { slugify, useAdmin } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
 import { idYoutube } from "@/lib/youtube";
 import type { Video } from "@/lib/types";
+import { comBase } from "@/lib/base";
 
 const CATEGORIAS = ["Highlights", "Entrevista", "Documentário", "Onboard", "Resumo"];
 const op = (v: string[]) => v.map((x) => ({ valor: x, nome: x }));
@@ -41,7 +42,7 @@ function ImportarYoutube({ r, definir, novo }: {
     }
     setEstado("a-importar");
     try {
-      const resposta = await fetch(`/api/admin/youtube?url=${encodeURIComponent(texto)}`);
+      const resposta = await fetch(comBase(`/api/admin/youtube?url=${encodeURIComponent(texto)}`));
       const j = await resposta.json().catch(() => ({ erro: `Erro ${resposta.status}` }));
       if (!resposta.ok) { setErro(String(j.erro ?? `Erro ${resposta.status}`)); return; }
       const v = j as Importado;

@@ -12,6 +12,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useAdmin, limparDadosLocais } from "@/lib/admin/store";
 import { useAuth } from "@/lib/auth/contexto";
 import { PAPEIS } from "@/lib/admin/types";
+import { comBase } from "@/lib/base";
 
 interface ItemNav {
   href: string;
@@ -136,8 +137,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
   // A navegação é completa para que nada do painel fique em memória.
   useEffect(() => {
     if (carregando || aSair) return;
-    if (!utilizador) window.location.replace(`/entrar?destino=${encodeURIComponent(caminho)}`);
-    else if (perfil && !equipa) window.location.replace("/sem-acesso");
+    if (!utilizador) window.location.replace(comBase(`/entrar?destino=${encodeURIComponent(caminho)}`));
+    else if (perfil && !equipa) window.location.replace(comBase("/sem-acesso"));
   }, [carregando, utilizador, perfil, equipa, aSair, caminho]);
 
   // Fecha o menu da conta ao clicar fora dele
@@ -154,7 +155,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     setASair(true);
     await sair();
     limparDadosLocais();
-    window.location.replace("/entrar");
+    window.location.replace(comBase("/entrar"));
   };
 
   const nome = perfil?.nome || utilizador?.email || "";

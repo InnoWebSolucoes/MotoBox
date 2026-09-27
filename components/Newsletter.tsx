@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Icon } from "./ui";
 import { useT } from "@/lib/i18n/contexto";
+import { comBase } from "@/lib/base";
 
 const INTERESSES = [
   "Campeonato Nacional",
@@ -52,7 +53,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
     const armadilha = new FormData(e.currentTarget).get("website");
     setEstado("a-enviar");
     try {
-      const r = await fetch("/api/newsletter", {
+      const r = await fetch(comBase("/api/newsletter"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

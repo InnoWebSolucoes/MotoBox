@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MOTIVOS_DENUNCIA } from "@/lib/denuncias";
 import { Icon } from "./ui";
+import { comBase } from "@/lib/base";
 
 /**
  * Botão discreto "Denunciar" com uma janela para escolher o motivo.
@@ -48,7 +49,7 @@ export function Denunciar({
     setEstado("a-enviar");
     setErro(null);
     try {
-      const r = await fetch("/api/denunciar", {
+      const r = await fetch(comBase("/api/denunciar"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tipo, alvoId, motivo, detalhe, site }),

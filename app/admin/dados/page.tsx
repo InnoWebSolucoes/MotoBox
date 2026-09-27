@@ -5,6 +5,7 @@ import { useAdmin, type ColeccaoNome } from "@/lib/admin/store";
 import {
   CabecalhoPagina, Painel, Estatistica, useAviso, Confirmar, Area,
 } from "@/components/admin/kit";
+import { comBase } from "@/lib/base";
 
 const COLECCOES: { chave: ColeccaoNome; nome: string }[] = [
   { chave: "eventos", nome: "Eventos" },
@@ -37,7 +38,7 @@ export default function AdminDados() {
   const semear = async () => {
     setSemeando(true);
     try {
-      const r = await fetch("/api/admin/semear", { method: "POST" });
+      const r = await fetch(comBase("/api/admin/semear"), { method: "POST" });
       const j = await r.json();
       if (r.ok) {
         mostrar("Base de dados semeada com o conteúdo de demonstração.");

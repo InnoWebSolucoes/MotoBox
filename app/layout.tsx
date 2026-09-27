@@ -4,11 +4,13 @@ import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { lerRedes } from "@/lib/redes";
+import { urlPublica } from "@/lib/base";
 import { ForaDoPainel } from "@/components/ForaDoPainel";
 import CookieBanner from "@/components/CookieBanner";
 import { TraduzirPagina } from "@/components/TraduzirPagina";
 import { IdiomaProvider } from "@/lib/i18n/contexto";
 import { AuthProvider } from "@/lib/auth/contexto";
+import { SessaoObrigatoriaProvider } from "@/components/SessaoObrigatoria";
 
 const display = Barlow_Condensed({
   variable: "--font-display",
@@ -24,7 +26,7 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://motobox.ao"),
+  metadataBase: new URL(`${urlPublica()}/`),
   title: {
     default: "Motobox Angola | A casa do motociclismo angolano",
     template: "%s | Motobox Angola",
@@ -68,6 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </a>
         <IdiomaProvider>
         <AuthProvider>
+        <SessaoObrigatoriaProvider>
         <Nav redes={redes} />
         <main id="conteudo" className="flex-1">
           {children}
@@ -77,6 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </ForaDoPainel>
         <CookieBanner />
         <TraduzirPagina />
+        </SessaoObrigatoriaProvider>
         </AuthProvider>
         </IdiomaProvider>
       </body>

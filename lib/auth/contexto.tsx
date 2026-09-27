@@ -13,6 +13,7 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import { supabaseNavegador, authConfigurada, urlBase } from "./clientes";
 import type { Papel } from "@/lib/admin/types";
+import { comBase } from "@/lib/base";
 
 export interface Perfil {
   id: string;
@@ -51,9 +52,14 @@ interface ContextoAuth {
   entrar: (email: string, palavra: string) => Promise<string | null>;
   registar: (dados: {
     nome: string; email: string; palavra: string; newsletter: boolean;
+    /** Página para onde a ligação de confirmação traz a pessoa. */
+    destino?: string;
   }) => Promise<string | null>;
+  /** Verdadeiro só quando o Google está activo no Supabase. */
+  googleActivo: boolean;
   entrarComGoogle: () => Promise<string | null>;
   recuperar: (email: string) => Promise<string | null>;
+  reenviarConfirmacao: (email: string, destino?: string) => Promise<string | null>;
   definirPalavra: (nova: string) => Promise<string | null>;
   sair: () => Promise<void>;
   recarregarPerfil: () => Promise<void>;
@@ -141,18 +147,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error ? mensagem(error.message) : null;
   }, [cliente]);
 
+  /**
+   * O registo e a recuperação passam pelo servidor do site, que envia
+   * os emails pela Resend. O servidor de email do Supabase (limitado e
+   * que não chegava ao Gmail) deixa de ser usado nestes dois casos.
+   */
+  const pedirAoServidor = useCallback(async (rota: string, corpo: unknown): Promise<string | null> => {
+    try {
+      const r = await fetch(comBase(rota), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(corpo),
+      });
+      if (r.ok) return null;
+      const j = await r.json().catch(() => ({}));
+      return String(j.erro ?? `Erro ${r.status}. Tente de novo.`);
+    } catch {
+      return "Sem ligação à internet. Tente de novo.";
+    }
+  }, []);
+
   const registar = useCallback<ContextoAuth["registar"]>(async (d) => {
     if (!cliente) return semAuth;
-    const { error } = await cliente.auth.signUp({
-      email: d.email.trim().toLowerCase(),
-      password: d.palavra,
-      options: {
-        data: { nome: d.nome.trim(), newsletter: d.newsletter },
-        emailRedirectTo: `${urlBase()}/entrar?confirmado=1`,
-      },
+    return pedirAoServidor("/api/conta/registar", {
+      nome: d.nome, email: d.email, palavra: d.palavra, newsletter: d.newsletter,
+      destino: d.destino ?? "/conta",
     });
-    return error ? mensagem(error.message) : null;
-  }, [cliente]);
+  }, [cliente, pedirAoServidor]);
+
+  const reenviarConfirmacao = useCallback<ContextoAuth["reenviarConfirmacao"]>(async (email, destino) => {
+    if (!cliente) return semAuth;
+    return pedirAoServidor("/api/conta/reenviar", { email, destino: destino ?? "/conta" });
+  }, [cliente, pedirAoServidor]);
+
+  // O botão do Google só aparece quando o fornecedor está activo no Supabase:
+  // sem isso, carregar nele devolvia "provider is not enabled".
+  const [googleActivo, setGoogleActivo] = useState(false);
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const chave = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !chave) return;
+    let vivo = true;
+    fetch(`${url.replace(/\/$/, "")}/auth/v1/settings`, { headers: { apikey: chave } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (vivo) setGoogleActivo(Boolean(d?.external?.google)); })
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, []);
 
   const entrarComGoogle = useCallback<ContextoAuth["entrarComGoogle"]>(async () => {
     if (!cliente) return semAuth;
@@ -165,12 +206,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const recuperar = useCallback<ContextoAuth["recuperar"]>(async (email) => {
     if (!cliente) return semAuth;
-    const { error } = await cliente.auth.resetPasswordForEmail(
-      email.trim().toLowerCase(),
-      { redirectTo: `${urlBase()}/nova-palavra-passe` },
-    );
-    return error ? mensagem(error.message) : null;
-  }, [cliente]);
+    return pedirAoServidor("/api/conta/recuperar", { email });
+  }, [cliente, pedirAoServidor]);
 
   const definirPalavra = useCallback<ContextoAuth["definirPalavra"]>(async (nova) => {
     if (!cliente) return semAuth;
@@ -203,10 +240,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       perfil && PAPEIS_EQUIPA.includes(perfil.papel) &&
       !["suspenso", "banido"].includes(perfil.estado),
     ),
-    entrar, registar, entrarComGoogle, recuperar, definirPalavra, sair,
-    recarregarPerfil,
-  }), [sessao, perfil, carregando, entrar, registar, entrarComGoogle,
-       recuperar, definirPalavra, sair, recarregarPerfil]);
+    entrar, registar, googleActivo, entrarComGoogle, recuperar, reenviarConfirmacao,
+    definirPalavra, sair, recarregarPerfil,
+  }), [sessao, perfil, carregando, entrar, registar, googleActivo, entrarComGoogle,
+       recuperar, reenviarConfirmacao, definirPalavra, sair, recarregarPerfil]);
 
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }

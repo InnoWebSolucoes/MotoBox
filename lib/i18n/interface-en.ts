@@ -413,6 +413,34 @@ export const interfaceEn: Record<string, string> = {
   "Citar": "Quote",
   "Reportar": "Report",
 
+  /* ---------- Fórum: responder ---------- */
+  "Fórum fechado": "Forum closed",
+  "De momento o fórum não aceita novas respostas.": "The forum isn't accepting new replies right now.",
+  "A responder como": "Replying as",
+  "Ao publicar, pedimos que entre ou crie conta.": "When you post, we'll ask you to sign in or create an account.",
+  "A publicar…": "Posting…",
+  "Resposta publicada.": "Reply posted.",
+  "Para responder no fórum precisa de sessão.": "You need to be signed in to reply in the forum.",
+  "Escreva a sua resposta antes de publicar.": "Write your reply before posting.",
+  "A sua sessão terminou. Entre de novo para publicar.": "Your session has ended. Sign in again to post.",
+  "Sem ligação à internet. Tente de novo.": "No internet connection. Please try again.",
+  "As respostas do fórum ficam disponíveis depois de a base de dados ser actualizada.": "Forum replies will be available once the database has been updated.",
+  "A sua conta não pode publicar no fórum. Contacte a Motobox.": "Your account can't post in the forum. Please contact Motobox.",
+  "O fórum está fechado de momento.": "The forum is closed right now.",
+  "Este tópico já não existe.": "This thread no longer exists.",
+  "Este tópico está fechado e não aceita novas respostas.": "This thread is closed and isn't accepting new replies.",
+  "Esta resposta já foi publicada.": "This reply has already been posted.",
+  "Está a responder muito depressa. Aguarde uns minutos e tente de novo.": "You're replying too quickly. Wait a few minutes and try again.",
+  "Não foi possível publicar a resposta. Tente de novo.": "Couldn't post your reply. Please try again.",
+  "De momento não é possível responder. Tente mais tarde.": "Replying isn't possible right now. Please try again later.",
+  "Não foi possível confirmar o tópico. Tente mais tarde.": "Couldn't check the thread. Please try again later.",
+  "A resposta pode ter no máximo 5000 caracteres.": "Replies can be at most 5000 characters long.",
+
+  /* ---------- Bilhetes: sessão antes do pagamento ---------- */
+  "Entre ou crie conta para concluir a compra. O que escolheu e escreveu fica tudo como está.": "Sign in or create an account to complete your purchase. Everything you chose and typed stays as it is.",
+  "Sessão iniciada como": "Signed in as",
+  "O bilhete segue para o email indicado acima.": "The ticket will be sent to the email address above.",
+
   /* ---------- Conta: logótipo e cor ---------- */
   "Logótipo ou fotografia": "Logo or photo",
   "JPG, PNG ou WebP, até 2 MB.": "JPG, PNG or WebP, up to 2 MB.",
