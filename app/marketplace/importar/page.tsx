@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Globe2 } from "lucide-react";
+import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { ImportarClient } from "./ImportarClient";
 
 export const metadata: Metadata = {
@@ -8,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function ImportarPage() {
-  return <ImportarClient />;
+  return (
+    <PaginaInterior icone={<Globe2 />}>
+      <ImportarClient />
+    </PaginaInterior>
+  );
 }

@@ -94,7 +94,7 @@ export function GaleriaAnuncio({
               type="button"
               onClick={() => mostrar(activa - 1)}
               aria-label="Fotografia anterior"
-              className="absolute left-3 top-1/2 z-20 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-ink-950/70 text-white backdrop-blur-sm transition-colors hover:bg-ink-950/90"
+              className="absolute left-3 top-1/2 z-20 grid size-10 -translate-y-1/2 place-items-center rounded-[var(--raio)] bg-black/60 text-white backdrop-blur-sm transition-colors hover:bg-ink-950/90"
             >
               <Icon name="arrow" className="size-4 rotate-180" />
             </button>
@@ -102,13 +102,13 @@ export function GaleriaAnuncio({
               type="button"
               onClick={() => mostrar(activa + 1)}
               aria-label="Fotografia seguinte"
-              className="absolute right-3 top-1/2 z-20 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-ink-950/70 text-white backdrop-blur-sm transition-colors hover:bg-ink-950/90"
+              className="absolute right-3 top-1/2 z-20 grid size-10 -translate-y-1/2 place-items-center rounded-[var(--raio)] bg-black/60 text-white backdrop-blur-sm transition-colors hover:bg-ink-950/90"
             >
               <Icon name="arrow" className="size-4" />
             </button>
             <span
               aria-hidden
-              className="absolute bottom-3 right-3 z-20 rounded-full bg-ink-950/75 px-2.5 py-1 font-ui text-xs leading-none text-white tabular-nums backdrop-blur-sm"
+              className="absolute bottom-3 right-3 z-20 rounded-[4px] bg-black/65 px-2.5 py-1 font-ui text-xs leading-none text-white tabular-nums backdrop-blur-sm"
             >
               {activa + 1} / {total}
             </span>

@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ButtonLink, EmptyState, Icon, PageHero } from "@/components/ui";
-import { formatData } from "@/lib/data";
+import { CheckCircle2, Lock, MessagesSquare, Pin } from "lucide-react";
 import { lerCategoriasForum, lerTopicos } from "@/lib/supabase/publico";
+import { dataArtigo } from "@/lib/motobox";
 import type { TopicoForum } from "@/lib/types";
+import { PaginaInterior } from "@/components/painel/PaginaInterior";
+import { Abertura, BotaoMB, Pilulas, Seccao } from "@/components/painel/blocos";
+import { Seta } from "@/components/painel/kit";
+import { Icon } from "@/components/ui";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -11,17 +15,8 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Fórum",
   description:
-    "O fórum da comunidade motard angolana: competição, mecânica, passeios, equipamento e conversa geral.",
+    "O fórum da comunidade motard angolana: passeios e viagens, mecânica, equipamento, primeira mota, clubes e conversa geral.",
 };
-
-/*
- * Cor só no vermelho da marca, e pouco: o botão "Novo tópico", o marcador de
- * fixado e o hover. As categorias têm um campo `cor` na base, mas aqui ficam
- * todas neutras; só os avatares mantêm a cor de cada pessoa.
- *
- * Cada pedaço de texto fica no seu próprio nó (separadores à parte): é assim
- * que o `TraduzirPagina` o encontra em `interface-en.ts`.
- */
 
 const REGRAS = [
   "Respeito em primeiro lugar. Sem insultos.",
@@ -31,251 +26,125 @@ const REGRAS = [
   "Sem conteúdo fora do tema motard.",
 ];
 
-const MEMBROS_ACTIVOS = [
-  { n: "Bruno_T12", c: "#e10600", m: 1284 },
-  { n: "MecanicoDoBairro", c: "#f59e0b", m: 987 },
-  { n: "MiguelTrail", c: "#22c55e", m: 762 },
-  { n: "Bino_MX", c: "#0ea5e9", m: 645 },
-  { n: "AnalistaMX", c: "#a855f7", m: 519 },
-];
+export default async function Forum({ searchParams }: { searchParams: Promise<{ categoria?: string }> }) {
+  const { categoria } = await searchParams;
+  const [topicos, categorias] = await Promise.all([lerTopicos(), lerCategoriasForum()]);
 
-export default async function ForumPage() {
-  const [topicos, categoriasForum] = await Promise.all([lerTopicos(), lerCategoriasForum()]);
-  const fixados = topicos.filter((t) => t.fixado);
-  const recentes = topicos.filter((t) => !t.fixado);
-  const totalMensagens = categoriasForum.reduce((s, c) => s + c.mensagens, 0);
-  const totalTopicos = categoriasForum.reduce((s, c) => s + c.topicos, 0);
+  const activa = categorias.find((c) => c.slug === categoria);
+  const lista = activa ? topicos.filter((t) => t.categoriaSlug === activa.slug) : topicos;
+  const fixados = lista.filter((t) => t.fixado);
+  const recentes = lista.filter((t) => !t.fixado);
+  const contar = (slug: string) => topicos.filter((t) => t.categoriaSlug === slug).length;
 
   return (
-    <>
-      <PageHero
-        imagem="forum"
-        eyebrow="Comunidade"
+    <PaginaInterior icone={<MessagesSquare />}>
+      <Abertura
+        compacta
+        foto="banner-forum"
+        sobretitulo="Comunidade"
         titulo="Fórum"
-        descricao="O sítio onde a comunidade motard angolana fala. Dúvidas de mecânica, organização de passeios, análise das corridas e tudo o resto."
+        texto="Onde quem anda de mota em Angola conversa: dúvidas de mecânica, passeios por organizar, a primeira mota e tudo o resto."
       >
-        <div className="flex flex-wrap items-center gap-x-10 gap-y-5">
-          <ButtonLink href="/conta" size="lg">
-            <Icon name="plus" className="size-4" />
-            Novo tópico
-          </ButtonLink>
-          <p className="flex flex-wrap gap-x-6 gap-y-1 text-[15px] text-ink-400">
-            <span>
-              <strong className="font-ui text-lg text-white">{totalTopicos.toLocaleString("pt-PT")}</strong> tópicos
-            </span>
-            <span>
-              <strong className="font-ui text-lg text-white">{totalMensagens.toLocaleString("pt-PT")}</strong> mensagens
-            </span>
-            <span>
-              <strong className="font-ui text-lg text-white">2.847</strong> membros
-            </span>
-          </p>
-        </div>
-      </PageHero>
+        <BotaoMB href="/conta">Abrir um tópico</BotaoMB>
+      </Abertura>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14 sm:py-20">
-        <div className="grid gap-16 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-20 xl:grid-cols-[minmax(0,1fr)_19rem]">
-          <div className="min-w-0 space-y-20">
-            {/* Categorias */}
-            <section aria-labelledby="forum-categorias">
-              <h2 id="forum-categorias" className="font-display text-2xl uppercase text-white">
-                Categorias
-              </h2>
-              <ul className="mt-6 grid gap-x-12 sm:grid-cols-2">
-                {categoriasForum.map((c) => (
-                  <li key={c.slug} className="border-t border-white/6">
-                    <Link href={`/forum#${c.slug}`} className="group flex items-start gap-4 py-5 sm:py-6">
-                      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ink-800 text-ink-200">
-                        <Icon name={c.icone} className="size-[18px]" />
+      <Seccao>
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div className="min-w-0">
+            <Pilulas
+              rotulo="Categorias do fórum"
+              activa={activa?.slug ?? "todas"}
+              itens={[
+                { chave: "todas", texto: "Todas", href: "/forum" },
+                ...categorias.map((c) => ({ chave: c.slug, texto: c.nome, href: `/forum?categoria=${c.slug}` })),
+              ]}
+            />
+
+            {activa && <p className="mt-6 text-[15px] text-white/70">{activa.descricao}</p>}
+
+            {lista.length ? (
+              <ol className="mt-8 grid gap-[var(--intervalo)]">
+                {[...fixados, ...recentes].map((t) => (
+                  <li key={t.id}>
+                    <LinhaTopico topico={t} />
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <div className="painel painel-escuro mt-8 p-10">
+                <p className="text-lg font-semibold">Ainda não há tópicos nesta categoria</p>
+                <p className="mt-2 text-sm text-white/60">Comece a conversa: abra o primeiro.</p>
+              </div>
+            )}
+          </div>
+
+          <aside className="grid content-start gap-[var(--intervalo)]">
+            <div className="painel painel-escuro p-6">
+              <h2 className="text-lg font-semibold">Categorias</h2>
+              <ul className="mt-4 divide-y divide-white/8">
+                {categorias.map((c) => (
+                  <li key={c.slug}>
+                    <Link href={`/forum?categoria=${c.slug}`} className="group flex items-center gap-3 py-3">
+                      <span className="grid size-8 shrink-0 place-items-center rounded-[4px] bg-white/8 text-white transition-colors group-hover:bg-mb-red">
+                        <Icon name={c.icone} className="size-4" />
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block font-ui text-lg leading-tight text-white transition-colors group-hover:text-mb-red">
-                          {c.nome}
-                        </span>
-                        <span className="mt-1.5 block text-[15px] leading-relaxed text-ink-400">{c.descricao}</span>
-                        <span className="mt-2 flex flex-wrap gap-x-2 text-sm text-ink-500">
-                          <span>{c.topicos.toLocaleString("pt-PT")} tópicos</span>
-                          <Ponto />
-                          <span>{c.mensagens.toLocaleString("pt-PT")} mensagens</span>
-                        </span>
-                      </span>
+                      <span className="min-w-0 flex-1 text-sm">{c.nome}</span>
+                      <span className="text-xs text-white/45 tabular-nums">{contar(c.slug)}</span>
                     </Link>
                   </li>
                 ))}
               </ul>
-            </section>
-
-            {/* Discussões: as fixadas primeiro, marcadas, e depois as recentes */}
-            <section aria-labelledby="forum-discussoes">
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <h2 id="forum-discussoes" className="font-display text-2xl uppercase text-white">
-                  Discussões recentes
-                </h2>
-                <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                  {["Recentes", "Populares", "Sem resposta"].map((f, i) => (
-                    <button key={f} aria-pressed={i === 0} className="chip h-8 px-3.5 text-sm">
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <ul className="mt-6 border-t border-white/6">
-                {fixados.map((t) => (
-                  <TopicoLinha key={t.id} topico={t} />
-                ))}
-                {recentes.map((t) => (
-                  <TopicoLinha key={t.id} topico={t} />
-                ))}
-              </ul>
-              {recentes.length === 0 && (
-                <div className="mt-6">
-                  <EmptyState
-                    titulo="Sem discussões recentes"
-                    descricao="As conversas mais recentes da comunidade aparecem aqui."
-                  />
-                </div>
-              )}
-            </section>
-          </div>
-
-          {/* Barra lateral: por baixo da lista em ecrãs pequenos */}
-          <aside className="space-y-14">
-            <section className="card p-6">
-              <h2 className="font-display text-lg uppercase text-white">Participar</h2>
-              <p className="mt-2 text-[15px] text-ink-400 leading-relaxed">
-                Para publicar e responder precisa de uma conta Motobox. É gratuita e leva um minuto.
-              </p>
-              <div className="mt-5 flex flex-col gap-1.5">
-                <ButtonLink href="/conta" variant="light" className="w-full">
-                  Criar conta
-                </ButtonLink>
-                <ButtonLink href="/entrar?destino=/forum" variant="ghost" className="w-full">
-                  Já tenho conta
-                </ButtonLink>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="eyebrow text-ink-400">Regras do fórum</h2>
-              <ol className="mt-3">
+            </div>
+            <div className="painel painel-escuro p-6">
+              <h2 className="text-lg font-semibold">Regras da casa</h2>
+              <ol className="mt-4 space-y-2.5 text-sm text-white/75">
                 {REGRAS.map((r, i) => (
-                  <li
-                    key={r}
-                    className="flex gap-3 border-b border-white/6 py-3.5 text-[15px] leading-relaxed text-ink-300 last:border-0"
-                  >
-                    <span className="w-4 shrink-0 font-display text-ink-500 tabular-nums">{i + 1}</span>
-                    <span>{r}</span>
+                  <li key={r} className="flex gap-3">
+                    <span className="text-mb-red-light tabular-nums">{i + 1}</span>
+                    {r}
                   </li>
                 ))}
               </ol>
-            </section>
-
-            <section>
-              <h2 className="eyebrow text-ink-400">Membros activos</h2>
-              <ul className="mt-3">
-                {MEMBROS_ACTIVOS.map((m) => (
-                  <li key={m.n} className="flex items-center gap-3 border-b border-white/6 py-3 last:border-0">
-                    <span
-                      className="grid size-7 shrink-0 place-items-center rounded-full font-display text-[10px] text-white"
-                      style={{ background: m.c }}
-                      aria-hidden
-                    >
-                      {m.n.slice(0, 2).toUpperCase()}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-[15px] text-ink-200">{m.n}</span>
-                    <span className="text-sm text-ink-500 tabular-nums">{m.m}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+              <Link href="/regulamento" className="mt-5 inline-flex text-sm">
+                <span className="sublinhado">Regulamento da comunidade</span>
+              </Link>
+            </div>
           </aside>
         </div>
-      </div>
-    </>
+      </Seccao>
+    </PaginaInterior>
   );
 }
 
-/** Separador discreto entre pedaços de uma linha de metadados. */
-function Ponto() {
+function LinhaTopico({ topico: t }: { topico: TopicoForum }) {
   return (
-    <span aria-hidden className="text-ink-600">
-      ·
-    </span>
-  );
-}
-
-function TopicoLinha({ topico: t }: { topico: TopicoForum }) {
-  return (
-    <li className="border-b border-white/6">
-      <Link href={`/forum/${t.id}`} className="group flex items-start gap-4 py-6 sm:gap-5 sm:py-7">
-        <span
-          className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full font-display text-[11px] text-white sm:size-10 sm:text-xs"
-          style={{ background: t.avatarCor }}
-          aria-hidden
-        >
-          {t.autorAvatar}
+    <Link href={`/forum/${t.id}`} className="painel painel-escuro group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 p-4 md:p-5">
+      <span
+        aria-hidden
+        className="grid size-11 place-items-center rounded-[4px] text-sm font-semibold text-white"
+        style={{ background: t.avatarCor || "#e10600" }}
+      >
+        {t.autorAvatar}
+      </span>
+      <span className="min-w-0">
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/55">
+          <span className="text-mb-red-light">{t.categoria}</span>
+          {t.fixado && (
+            <span className="inline-flex items-center gap-1"><Pin className="size-3" aria-hidden /> Fixado</span>
+          )}
+          {t.resolvido && (
+            <span className="inline-flex items-center gap-1"><CheckCircle2 className="size-3" aria-hidden /> Resolvido</span>
+          )}
+          {t.bloqueado && (
+            <span className="inline-flex items-center gap-1"><Lock className="size-3" aria-hidden /> Fechado</span>
+          )}
         </span>
-
-        <div className="min-w-0 flex-1">
-          <h3 className="text-[17px] font-semibold leading-snug text-white transition-colors group-hover:text-mb-red sm:text-lg">
-            {t.titulo}
-          </h3>
-          <p className="mt-1.5 line-clamp-2 text-[15px] leading-relaxed text-ink-400">{t.excerto}</p>
-
-          <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-500">
-            {t.fixado && (
-              <>
-                <span className="inline-flex items-center gap-1 text-mb-red">
-                  <Icon name="pin" className="size-3.5" />
-                  Fixado
-                </span>
-                <Ponto />
-              </>
-            )}
-            {t.resolvido && (
-              <>
-                <span className="inline-flex items-center gap-1 text-ink-300">
-                  <Icon name="check" className="size-3.5" />
-                  Resolvido
-                </span>
-                <Ponto />
-              </>
-            )}
-            {t.bloqueado && (
-              <>
-                <span className="inline-flex items-center gap-1">
-                  <Icon name="lock" className="size-3.5" />
-                  Fechado
-                </span>
-                <Ponto />
-              </>
-            )}
-            <span className="text-ink-300">{t.categoria}</span>
-            <Ponto />
-            <span>{t.autor}</span>
-            <Ponto />
-            <span>{formatData(t.criado, { day: "2-digit", month: "short" })}</span>
-            {t.ultimaResposta.quando && (
-              <span className="hidden sm:contents">
-                <Ponto />
-                <span>última resposta</span>
-                <span>{t.ultimaResposta.quando}</span>
-              </span>
-            )}
-            {/* Em ecrã pequeno a contagem de respostas não tem coluna própria. */}
-            <span className="contents sm:hidden">
-              <Ponto />
-              <span>{t.respostas} respostas</span>
-            </span>
-          </p>
-        </div>
-
-        <div className="hidden w-20 shrink-0 pt-0.5 text-right sm:block">
-          <p className="font-display text-2xl leading-none text-white tabular-nums">{t.respostas}</p>
-          <p className="mt-1.5 text-xs text-ink-500">respostas</p>
-        </div>
-      </Link>
-    </li>
+        <span className="mt-1 block text-[15px] font-medium leading-snug md:text-base">{t.titulo}</span>
+        <span className="mt-1 block truncate text-sm text-white/55">
+          {t.autor} · {dataArtigo(t.criado)}
+        </span>
+      </span>
+      <Seta className="size-3.5" />
+    </Link>
   );
 }

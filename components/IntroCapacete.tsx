@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { useIdioma } from "@/lib/i18n/contexto";
-import { Logo } from "./Brand";
+import { comBase } from "@/lib/base";
 
 /* ============================================================
    MOTOBOX — Abertura "Capacete posto?"
-   Uma vez por sessão do navegador, ao entrar no site: as cinco
-   luzes de partida acendem, apagam e a cortina sobe como uma
-   viseira. Dura pouco mais de dois segundos e salta-se com um
+   Uma vez por sessão do navegador, ao entrar no site: o MB, uma
+   linha vermelha que enche como um conta-rotações e a cortina
+   sobe como uma viseira. Dura pouco mais de dois segundos e salta-se com um
    clique, com Esc ou com o botão.
 
    O servidor nunca a desenha: a página está sempre por baixo,
@@ -69,9 +69,8 @@ function Abertura() {
     if (calmo) {
       relogios.push(window.setTimeout(sair, 1500));
     } else {
-      // 0,35 s a 1,35 s acendem; às 1,75 s apagam ("lights out") e a cortina sobe: ~2,3 s no total.
+      // A linha enche entre 0,35 s e 1,35 s; a cortina sobe às 1,85 s: ~2,3 s no total.
       for (let i = 1; i <= 5; i++) relogios.push(window.setTimeout(() => setAcesas(i), 100 + i * 250));
-      relogios.push(window.setTimeout(() => setAcesas(0), 1750));
       relogios.push(window.setTimeout(sair, 1850));
     }
     return () => relogios.forEach(clearTimeout);
@@ -101,61 +100,44 @@ function Abertura() {
         transition: `transform ${saidaMs}ms cubic-bezier(0.7, 0, 0.84, 0)`,
       };
 
+  // A linha vermelha enche como um conta-rotações, ao ritmo das cinco fases.
+  const progresso = calmo ? 100 : aSair ? 100 : Math.min(100, acesas * 20);
+
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label={t("intro.rotulo")}
       onClick={sair}
-      className="fixed inset-0 z-[98] flex cursor-pointer items-center justify-center overflow-hidden bg-ink-950 px-6"
+      className="fixed inset-0 z-[98] flex cursor-pointer items-center justify-center overflow-hidden bg-black px-6"
       style={estiloSaida}
     >
-      <div className="stripes absolute inset-0" aria-hidden />
-      <div
-        className="absolute left-1/2 top-1/2 size-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-25 blur-3xl"
-        style={{ background: "radial-gradient(circle, #e10600 0%, transparent 65%)" }}
-        aria-hidden
-      />
-      {/* Linhas de velocidade do logótipo, ao fundo */}
-      <div className="speed-lines absolute inset-x-0 bottom-0 h-1/3 opacity-40" aria-hidden />
+      <div className="relative flex w-full max-w-xl flex-col items-center text-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={comBase("/marca/mb-marca-480.png")} alt="" className="w-24" />
 
-      <div className="relative flex max-w-3xl flex-col items-center text-center">
-        <Logo height={30} className="text-white" />
-
-        {/* Luzes de partida: cinco colunas de duas luzes, como na grelha */}
-        <div className="mt-10 flex gap-2.5 sm:gap-4" aria-hidden>
-          {[1, 2, 3, 4, 5].map((n) => {
-            const acesa = calmo || n <= acesas;
-            return (
-              <span key={n} className="flex flex-col gap-2 rounded-full bg-ink-900 p-1.5 ring-1 ring-white/10 sm:gap-2.5 sm:p-2">
-                {[0, 1].map((l) => (
-                  <span
-                    key={l}
-                    className={`block size-6 rounded-full transition-[background-color,box-shadow] duration-150 sm:size-9 ${
-                      acesa ? "bg-mb-red shadow-[0_0_22px_4px_rgb(225_6_0/0.65)]" : "bg-ink-800"
-                    }`}
-                  />
-                ))}
-              </span>
-            );
-          })}
+        <div className="mt-10 h-[3px] w-full max-w-xs overflow-hidden rounded-full bg-white/10" aria-hidden>
+          <div
+            className="h-full bg-mb-red transition-[width] duration-200 ease-out"
+            style={{ width: `${progresso}%` }}
+          />
         </div>
 
-        <h2 className="title-xl mt-10 text-5xl sm:text-7xl lg:text-8xl">{t("intro.titulo")}</h2>
-        <p className="mt-4 max-w-xl font-ui text-xl sm:text-2xl text-ink-200">{t("intro.sub")}</p>
+        <h2 className="titulo-1 mt-10">{t("intro.titulo")}</h2>
+        <p className="texto-lead mt-4 max-w-md text-white/80">{t("intro.sub")}</p>
 
         <button
           ref={botao}
           type="button"
           onClick={(e) => { e.stopPropagation(); sair(); }}
-          className="mt-9 inline-flex h-12 items-center gap-2 rounded-full bg-mb-red px-8 focus-visible:outline-offset-4 font-ui text-lg text-white transition-colors hover:bg-mb-red-dark"
+          className="mt-9 inline-flex h-[50px] w-[13rem] items-center justify-between rounded-[6px] bg-mb-red px-5 text-[15px] text-white transition-colors hover:bg-mb-red-dark focus-visible:outline-offset-4"
         >
           {t("intro.entrar")}
-          <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
-            <path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <svg viewBox="0 0 14 14" className="size-3.5" aria-hidden="true">
+            <path fill="currentColor" d="M0 11.6 9.6 2H1V0h12v12h-2V3.4L1.4 13z" />
           </svg>
         </button>
-        <p className="mt-4 text-xs text-ink-500">{t("intro.dica")}</p>
+        <p className="mt-4 text-xs text-white/45">{t("intro.dica")}</p>
       </div>
     </div>
   );

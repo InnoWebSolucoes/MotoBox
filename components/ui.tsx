@@ -1,29 +1,27 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { ReactNode } from "react";
-import { banner } from "@/lib/imagens";
 
 /* ---------------- Botão ---------------- */
 
 type BtnVariant = "primary" | "ghost" | "outline" | "dark" | "light";
 type BtnSize = "sm" | "md" | "lg";
 
-// Botões em pílula, texto em minúsculas como na F1 ("Sign In", "View full standings").
+// Botões do painel: cantos de 6px, vermelho da marca para a acção principal.
 const btnBase =
-  "inline-flex items-center justify-center gap-2 rounded-full font-ui whitespace-nowrap transition-colors disabled:opacity-45 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-[var(--raio)] whitespace-nowrap transition-colors disabled:opacity-45 disabled:pointer-events-none";
 
 const btnVariants: Record<BtnVariant, string> = {
   primary: "bg-mb-red text-white hover:bg-mb-red-dark",
-  ghost: "text-ink-200 hover:text-white hover:bg-white/8",
-  outline: "border-2 border-ink-500 text-white hover:border-white",
-  dark: "bg-ink-800 text-white hover:bg-ink-700",
-  light: "bg-white text-ink-950 hover:bg-ink-200",
+  ghost: "text-white/75 hover:text-white hover:bg-white/8",
+  outline: "bg-white/8 text-white hover:bg-white/15",
+  dark: "bg-white/8 text-white hover:bg-white/15",
+  light: "bg-white text-black hover:bg-white/85",
 };
 
 const btnSizes: Record<BtnSize, string> = {
   sm: "text-sm px-4 h-9",
-  md: "text-base px-6 h-11",
-  lg: "text-lg px-8 h-13",
+  md: "text-[15px] px-5 h-11",
+  lg: "text-[15px] px-6 h-14",
 };
 
 export function Button({
@@ -83,17 +81,14 @@ export function Tag({
 }) {
   const tones = {
     red: "bg-mb-red text-white",
-    neutral: "bg-ink-800 text-ink-200",
-    // Sem contorno: pílula escura translúcida, legível sobre fotografia clara e sobre fundo liso.
-    outline: "bg-ink-800/85 text-ink-100 backdrop-blur-sm",
-    gold: "bg-gold text-ink-950",
+    neutral: "bg-black/60 text-white/90 backdrop-blur-sm",
+    outline: "bg-black/60 text-white/90 backdrop-blur-sm",
+    gold: "bg-gold text-black",
     live: "bg-live text-white",
     ok: "bg-ok text-white",
   } as const;
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] leading-none font-display uppercase tracking-widest ${tones[tone]} ${className}`}
-    >
+    <span className={`inline-flex items-center gap-1.5 rounded-[4px] px-2 py-1 text-xs leading-none ${tones[tone]} ${className}`}>
       {children}
     </span>
   );
@@ -117,22 +112,13 @@ export function SectionHead({
   return (
     <div className={`flex flex-wrap items-end justify-between gap-4 ${className}`}>
       <div className="max-w-2xl">
-        {eyebrow && <p className="eyebrow text-mb-red mb-2">{eyebrow}</p>}
-        <h2 className="title-xl text-3xl sm:text-4xl">{titulo}</h2>
-        {descricao && <p className="mt-3 text-sm text-ink-400 leading-relaxed">{descricao}</p>}
+        {eyebrow && <p className="sobretitulo mb-3 text-white/60">{eyebrow}</p>}
+        <h2 className="titulo-3">{titulo}</h2>
+        {descricao && <p className="mt-3 text-sm leading-relaxed text-white/70">{descricao}</p>}
       </div>
       {acao && (
-        <Link
-          href={acao.href}
-          className="group inline-flex items-center gap-3 font-ui text-base text-white transition-colors hover:text-ink-200"
-        >
+        <Link href={acao.href} className="sublinhado text-sm text-white">
           {acao.texto}
-          <span
-            aria-hidden
-            className="grid size-9 place-items-center rounded-full bg-ink-800 transition-colors group-hover:bg-mb-red"
-          >
-            <Icon name="arrow" className="size-4" />
-          </span>
         </Link>
       )}
     </div>
@@ -141,54 +127,26 @@ export function SectionHead({
 
 /* ---------------- Cabeçalho de página ---------------- */
 
+/** Cabeçalho simples, para páginas dentro de <PaginaInterior>. */
 export function PageHero({
   eyebrow,
   titulo,
   descricao,
   children,
-  imagem,
 }: {
   eyebrow: string;
   titulo: string;
   descricao?: string;
   children?: ReactNode;
-  /** Chave de `BANNERS` (lib/imagens.ts) — fotografia de fundo do cabeçalho. */
+  /** Mantido por compatibilidade; a fotografia vive agora no fundo do painel. */
   imagem?: string;
 }) {
-  const foto = imagem ? banner(imagem) : null;
   return (
-    <header className="relative border-b border-ink-800 bg-ink-900 overflow-hidden">
-      {foto && (
-        <>
-          <Image
-            src={foto}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover opacity-25"
-          />
-          {/* Escurecer para o texto manter contraste sobre qualquer fotografia. */}
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-ink-900 via-ink-900/85 to-ink-900/40"
-            aria-hidden
-          />
-        </>
-      )}
-      <div className="stripes absolute inset-0" aria-hidden />
-      <div
-        className="absolute -right-24 -top-24 size-96 rounded-full blur-3xl opacity-20"
-        style={{ background: "radial-gradient(circle, #e10600 0%, transparent 70%)" }}
-        aria-hidden
-      />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-        <p className="eyebrow text-mb-red">{eyebrow}</p>
-        <h1 className="title-xl mt-3 text-4xl sm:text-5xl lg:text-6xl">{titulo}</h1>
-        {descricao && (
-          <p className="mt-4 max-w-2xl text-sm sm:text-base text-ink-400 leading-relaxed">{descricao}</p>
-        )}
-        {children && <div className="mt-7">{children}</div>}
-      </div>
+    <header className="coluna pb-8 pt-28 lg:pt-32">
+      <p className="sobretitulo surgir text-white/80">{eyebrow}</p>
+      <h1 className="titulo-1 surgir mt-4 max-w-[16ch] text-balance">{titulo}</h1>
+      {descricao && <p className="texto-lead surgir mt-6 max-w-[52ch] text-white/85">{descricao}</p>}
+      {children && <div className="surgir mt-8">{children}</div>}
     </header>
   );
 }
@@ -197,24 +155,19 @@ export function PageHero({
 
 export function EmptyState({ titulo, descricao }: { titulo: string; descricao: string }) {
   return (
-    <div className="card px-8 py-14 text-center">
-      <p className="font-display text-lg uppercase tracking-wide text-ink-300">{titulo}</p>
-      <p className="mt-2 text-sm text-ink-500">{descricao}</p>
+    <div className="painel painel-escuro px-8 py-14 text-center">
+      <p className="text-lg font-semibold text-white/85">{titulo}</p>
+      <p className="mt-2 text-sm text-white/55">{descricao}</p>
     </div>
   );
 }
 
-/* ---------------- Número de posição ----------------
-   Só o número, sem caixa nem cor de medalha — como nas tabelas da F1. */
+/* ---------------- Número de posição ---------------- */
 
 export function PosicaoBadge({ posicao, size = "md" }: { posicao: number; size?: "sm" | "md" }) {
   const dim = size === "sm" ? "w-6 text-lg" : "w-9 text-2xl";
   return (
-    <span
-      className={`shrink-0 font-display leading-none tabular-nums ${dim} ${
-        posicao === 0 ? "text-sm text-ink-500" : "text-white"
-      }`}
-    >
+    <span className={`shrink-0 font-semibold leading-none tabular-nums ${dim} ${posicao === 0 ? "text-sm text-white/50" : "text-white"}`}>
       {posicao === 0 ? "NC" : posicao}
     </span>
   );

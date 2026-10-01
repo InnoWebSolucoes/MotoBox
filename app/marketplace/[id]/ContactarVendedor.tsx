@@ -144,7 +144,7 @@ function JanelaContacto({
         aria-modal="true"
         aria-labelledby="contactar-titulo"
         onKeyDown={prenderFoco}
-        className="relative my-auto w-full max-w-md rounded-2xl bg-ink-900 p-6 shadow-2xl ring-1 ring-white/10 sm:p-7"
+        className="relative my-auto w-full max-w-md rounded-[var(--raio)] bg-near-black p-6 shadow-2xl ring-1 ring-white/10 sm:p-7"
       >
         <button
           type="button"
@@ -160,7 +160,7 @@ function JanelaContacto({
             <span className="mx-auto grid size-12 place-items-center rounded-full bg-ok/15 text-ok">
               <Icon name="check" className="size-6" />
             </span>
-            <h2 id="contactar-titulo" className="mt-4 font-display text-xl uppercase text-white">
+            <h2 id="contactar-titulo" className="mt-4 text-xl font-semibold text-white">
               Mensagem enviada
             </h2>
             <p className="mt-2 text-sm text-ink-400 leading-relaxed">
@@ -172,7 +172,7 @@ function JanelaContacto({
               ref={botaoFechar}
               type="button"
               onClick={aoFechar}
-              className="mt-6 h-11 rounded-full bg-white px-6 font-ui text-base text-ink-950 transition-colors hover:bg-ink-200"
+              className="mt-6 h-11 rounded-[var(--raio)] bg-white px-6 text-base text-ink-950 transition-colors hover:bg-ink-200"
             >
               Fechar
             </button>
@@ -180,14 +180,14 @@ function JanelaContacto({
         ) : (
           // Sem validação do navegador: as mensagens ficam em português, como as do servidor.
           <form onSubmit={enviar} noValidate>
-            <h2 id="contactar-titulo" className="pr-10 font-display text-xl uppercase text-white">
+            <h2 id="contactar-titulo" className="pr-10 text-xl font-semibold text-white">
               Contactar vendedor
             </h2>
             <p className="mt-1.5 pr-6 text-sm text-ink-400 line-clamp-2">{titulo}</p>
-            <p className="mt-1 font-display text-lg leading-none text-white tabular-nums">{formatKz(preco)}</p>
+            <p className="mt-1 text-lg font-semibold leading-none text-white tabular-nums">{formatKz(preco)}</p>
 
             <label className="mt-5 block">
-              <span className="eyebrow mb-2 block text-ink-500">Mensagem para {vendedorNome}</span>
+              <span className="mb-2 block text-sm text-white/60">Mensagem para {vendedorNome}</span>
               <textarea
                 ref={campo}
                 value={mensagem}
@@ -214,14 +214,14 @@ function JanelaContacto({
               <button
                 type="button"
                 onClick={aoFechar}
-                className="h-11 rounded-full px-5 font-ui text-base text-ink-300 transition-colors hover:text-white"
+                className="h-11 rounded-[var(--raio)] px-5 text-base text-ink-300 transition-colors hover:text-white"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={estado === "a-enviar"}
-                className="inline-flex h-11 items-center gap-2 rounded-full bg-mb-red px-6 font-ui text-base text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60"
+                className="inline-flex h-11 items-center gap-2 rounded-[var(--raio)] bg-mb-red px-6 text-base text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60"
               >
                 <Icon name="mail" className="size-4" />
                 {estado === "a-enviar" ? "A enviar…" : "Enviar mensagem"}

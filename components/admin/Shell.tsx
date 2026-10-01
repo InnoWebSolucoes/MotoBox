@@ -37,34 +37,17 @@ export const NAVEGACAO: GrupoNav[] = [
     ],
   },
   {
-    grupo: "Desporto",
-    itens: [
-      { href: "/admin/eventos", nome: "Eventos", icone: "calendar" },
-      { href: "/admin/corridas", nome: "Resultados", icone: "flag" },
-      { href: "/admin/pilotos", nome: "Pilotos", icone: "user" },
-      { href: "/admin/equipas", nome: "Equipas", icone: "shield" },
-    ],
-  },
-  {
     grupo: "Conteúdo",
     itens: [
-      { href: "/admin/noticias", nome: "Notícias", icone: "news" },
-      { href: "/admin/videos", nome: "Vídeos", icone: "play" },
+      { href: "/admin/noticias", nome: "Artigos", icone: "news" },
+      { href: "/admin/eventos", nome: "Eventos", icone: "calendar" },
+      { href: "/admin/clubes", nome: "Clubes", icone: "route" },
       { href: "/admin/paginas", nome: "Páginas legais", icone: "doc" },
-    ],
-  },
-  {
-    grupo: "Comercial",
-    itens: [
-      { href: "/admin/bilheteira", nome: "Bilheteira", icone: "ticket" },
-      { href: "/admin/encomendas", nome: "Encomendas", icone: "cart", contador: "encomendas" },
-      { href: "/admin/patrocinadores", nome: "Patrocinadores", icone: "star" },
     ],
   },
   {
     grupo: "Comunidade",
     itens: [
-      { href: "/admin/clubes", nome: "Clubes", icone: "route" },
       { href: "/admin/marketplace", nome: "Marketplace", icone: "tag" },
       { href: "/admin/forum", nome: "Fórum", icone: "chat" },
       { href: "/admin/moderacao", nome: "Moderação", icone: "alert", contador: "denuncias" },

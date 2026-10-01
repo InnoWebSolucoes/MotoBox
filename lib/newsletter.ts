@@ -319,7 +319,7 @@ export async function construirResumo(
   const rotulo = intervaloDatas(inicio, fim);
   return {
     semana: { inicio, fim, hoje, eventosAte, rotulo },
-    assunto: `Motobox: a semana de ${rotulo}`,
+    assunto: `MotoBox: a semana de ${rotulo}`,
     noticias,
     eventos,
     corridas,
@@ -370,7 +370,7 @@ function blocoNoticias(r: ResumoSemanal, base: string) {
   // Nas fotografias do Unsplash pede-se JPEG recortado a 2:1; outros
   // endereços (imagem carregada no painel) seguem tal como estão.
   const imagem = foto?.startsWith("https://images.unsplash.com/") ? `${foto}&h=544&fm=jpg` : foto;
-  const urlDestaque = `${base}/noticias/${destaque.slug}`;
+  const urlDestaque = `${base}/artigos/${destaque.slug}`;
   const topo = `${imagem
     ? `<a href="${escapar(urlDestaque)}"><img src="${escapar(imagem)}" width="544" alt="${escapar(destaque.titulo)}" style="display:block;width:100%;max-width:544px;height:auto;border:0;border-radius:10px"></a>`
     : ""}
@@ -380,9 +380,9 @@ function blocoNoticias(r: ResumoSemanal, base: string) {
 ${destaque.resumo ? meta(escapar(destaque.resumo)) : ""}
 </div>`;
   const lista = resto
-    .map((n) => linhaComData(n.data, `${titulo(n.titulo, `${base}/noticias/${n.slug}`)}${n.resumo ? meta(escapar(n.resumo)) : ""}`))
+    .map((n) => linhaComData(n.data, `${titulo(n.titulo, `${base}/artigos/${n.slug}`)}${n.resumo ? meta(escapar(n.resumo)) : ""}`))
     .join("\n");
-  return seccao(`${eyebrow("Notícias da semana", { texto: "Todas", url: `${base}/noticias` })}${topo}${lista}`);
+  return seccao(`${eyebrow("Artigos da semana", { texto: "Todas", url: `${base}/artigos` })}${topo}${lista}`);
 }
 
 function blocoEventos(r: ResumoSemanal, base: string) {
@@ -394,11 +394,11 @@ function blocoEventos(r: ResumoSemanal, base: string) {
       const preco = comBilhetes && precoMinimo > 0
         ? meta(`Bilhetes à venda, desde <strong style="color:${COR.texto}">${escapar(kwanzas(precoMinimo))}</strong>`)
         : "";
-      const bilhetes = comBilhetes ? botao("Comprar bilhetes", `${base}/bilhetes/${e.slug}`) : "";
-      return linhaComData(e.dataInicio, `${titulo(e.titulo, `${base}/calendario/${e.slug}`)}${meta(detalhe)}${preco}${bilhetes}`);
+      const bilhetes = comBilhetes ? botao("Comprar bilhetes", `${base}/eventos/${e.slug}`) : "";
+      return linhaComData(e.dataInicio, `${titulo(e.titulo, `${base}/eventos/${e.slug}`)}${meta(detalhe)}${preco}${bilhetes}`);
     })
     .join("\n");
-  return seccao(`${eyebrow("Próximos eventos", { texto: "Calendário", url: `${base}/calendario` })}${lista}`);
+  return seccao(`${eyebrow("Próximos eventos", { texto: "Todos os eventos", url: `${base}/eventos` })}${lista}`);
 }
 
 function blocoResultados(r: ResumoSemanal, base: string) {
@@ -498,12 +498,12 @@ ${blocoResultados(r, base)}
 ${blocoEventos(r, base)}
 ${blocoPilotos(r, base)}
 <tr><td align="center" style="padding:32px 28px 30px">
-<a href="${escapar(base)}" style="display:inline-block;background:${COR.topo};color:#ffffff;border-radius:999px;padding:12px 26px;font-family:${FONTE};font-size:14px;font-weight:700;text-decoration:none">Ir para o site Motobox</a>
+<a href="${escapar(base)}" style="display:inline-block;background:${COR.topo};color:#ffffff;border-radius:999px;padding:12px 26px;font-family:${FONTE};font-size:14px;font-weight:700;text-decoration:none">Ir para o site MotoBox</a>
 </td></tr>
 <tr><td style="padding:20px 28px 24px;border-top:1px solid ${COR.linha};font-family:${FONTE};font-size:12px;line-height:1.6;color:${COR.tenue};border-radius:0 0 14px 14px">
-Recebe este email porque subscreveu a newsletter da Motobox Angola.<br>
+Recebe este email porque subscreveu a newsletter da MotoBox Angola.<br>
 <a href="${escapar(cancelar)}" style="color:${COR.suave};text-decoration:underline">Cancelar subscrição</a> · <a href="${escapar(base)}" style="color:${COR.suave};text-decoration:underline">${escapar(base.replace(/^https?:\/\//, ""))}</a><br>
-Motobox Angola · Luanda, Angola
+MotoBox Angola · Luanda, Angola
 </td></tr>
 </table>
 </td></tr>
@@ -540,9 +540,9 @@ function textoDaNewsletter(
     for (const n of r.noticias) {
       l.push("", `* ${n.titulo} (${diaCurto(n.data)})`);
       if (n.resumo) l.push(`  ${n.resumo}`);
-      l.push(`  ${x.base}/noticias/${n.slug}`);
+      l.push(`  ${x.base}/artigos/${n.slug}`);
     }
-    l.push("", `Todas as notícias: ${x.base}/noticias`);
+    l.push("", `Todos os artigos: ${x.base}/artigos`);
   }
 
   if (r.corridas.length) {
@@ -559,12 +559,12 @@ function textoDaNewsletter(
     for (const { evento: e, comBilhetes, precoMinimo } of r.eventos) {
       const onde = [e.circuito, e.localidade || e.provincia].filter(Boolean).join(", ");
       l.push("", `* ${e.titulo}`, `  ${[quandoEvento(e), onde].filter(Boolean).join(" · ")}`);
-      l.push(`  ${x.base}/calendario/${e.slug}`);
+      l.push(`  ${x.base}/eventos/${e.slug}`);
       if (comBilhetes) {
-        l.push(`  Bilhetes${precoMinimo > 0 ? ` desde ${kwanzas(precoMinimo)}` : ""}: ${x.base}/bilhetes/${e.slug}`);
+        l.push(`  Bilhetes${precoMinimo > 0 ? ` desde ${kwanzas(precoMinimo)}` : ""}: ${x.base}/eventos/${e.slug}`);
       }
     }
-    l.push("", `Calendário: ${x.base}/calendario`);
+    l.push("", `Eventos: ${x.base}/eventos`);
   }
 
   if (r.classificacao.length || r.pilotosNovos.length) {
@@ -585,7 +585,7 @@ function textoDaNewsletter(
   l.push(
     "",
     "--",
-    "Recebe este email porque subscreveu a newsletter da Motobox Angola.",
+    "Recebe este email porque subscreveu a newsletter da MotoBox Angola.",
     `Cancelar subscrição: ${x.cancelar}`,
     x.base,
   );
@@ -747,7 +747,7 @@ export async function enviarNewsletterSemanal(opcoes: {
     const id = opcoes.automatico && !opcoes.forcar
       ? `a-newsletter-${resumo.semana.inicio}`
       : `a-newsletter-${Date.now().toString(36)}`;
-    const utilizador = opcoes.utilizador?.trim() || (opcoes.automatico ? "Envio automático" : "Equipa Motobox");
+    const utilizador = opcoes.utilizador?.trim() || (opcoes.automatico ? "Envio automático" : "Equipa MotoBox");
     const rotulo = `Semana de ${resumo.semana.rotulo}`;
     const { error: erroTrava } = await db.from("atividade").insert({
       id, utilizador, accao: ACCAO_ATIVIDADE, entidade: ENTIDADE_ATIVIDADE,

@@ -416,7 +416,7 @@ export const traducoes = {
 
   /* ---------------- Abertura do site (capacete) ---------------- */
   intro: {
-    rotulo:    { pt: "Boas-vindas à Motobox",               en: "Welcome to Motobox" },
+    rotulo:    { pt: "Boas-vindas à MotoBox",               en: "Welcome to MotoBox" },
     titulo:    { pt: "Capacete posto?",                     en: "Helmet on?" },
     sub:       { pt: "Segura-te, que vem aí muita emoção.", en: "Hold on tight, it's going to be a bumpy ride." },
     entrar:    { pt: "Entrar",                              en: "Let's ride" },

@@ -4,9 +4,9 @@ import { PaginaRecurso } from "@/components/admin/Recurso";
 import { Campo, CampoEndereco, Input, Area, Seleccao, ListaTexto } from "@/components/admin/kit";
 import { slugify } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
-import type { Noticia } from "@/lib/types";
+import { CATEGORIAS_ARTIGO, type Noticia } from "@/lib/types";
 
-const CATEGORIAS = ["Angola", "Internacional", "Comunidade", "Entrevista", "Solidária"];
+const CATEGORIAS: string[] = [...CATEGORIAS_ARTIGO];
 const op = (v: string[]) => v.map((x) => ({ valor: x, nome: x }));
 
 export default function AdminNoticias() {
@@ -37,7 +37,7 @@ export default function AdminNoticias() {
         { cabecalho: "Leitura", celula: (n) => <span className="tabular-nums text-ink-500">{n.leitura} min</span> },
       ]}
       novoRegisto={() => ({
-        slug: "", titulo: "", resumo: "", corpo: [""], categoria: "Angola",
+        slug: "", titulo: "", resumo: "", corpo: [""], categoria: "Comunidade",
         tags: [], autor: "Redação Motobox", data: new Date().toISOString().slice(0, 10),
         imagem: "", leitura: 3, destaque: false,
       }) as Noticia}
@@ -47,7 +47,7 @@ export default function AdminNoticias() {
             <Input value={r.titulo}
               onChange={(e) => definir({ titulo: e.target.value, slug: novo && r.slug === slugify(r.titulo) ? slugify(e.target.value) : r.slug } as Partial<Noticia>)} />
           </Campo>
-          <CampoEndereco prefixo="/noticias" novo={novo} valor={r.slug}
+          <CampoEndereco prefixo="/artigos" novo={novo} valor={r.slug}
             onChange={(slug) => definir({ slug } as Partial<Noticia>)} />
 
           <div className="grid gap-4 sm:grid-cols-2">

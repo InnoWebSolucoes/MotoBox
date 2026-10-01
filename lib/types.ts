@@ -2,13 +2,25 @@ export type { Provincia } from "./provincias";
 import type { Provincia } from "./provincias";
 
 /**
- * As primeiras são provas (vão para o calendário de Desporto); as outras são
- * eventos da comunidade (secção Eventos): passeios, acções solidárias,
- * encontros de clubes, formações.
+ * Tipo de evento. Os da comunidade vêm primeiro (passeios, raides,
+ * encontros, concentrações, acções solidárias, formações); "Prova" junta
+ * qualquer competição. Motocross, Enduro, Velocidade e Rally ficam por
+ * compatibilidade com eventos antigos e contam como prova.
  */
+export const TIPOS_EVENTO = [
+  "Passeio", "Raide", "Encontro", "Concentração", "Solidária", "Formação", "Prova",
+] as const;
+
 export type Disciplina =
-  | "Motocross" | "Enduro" | "Velocidade" | "Rally"
-  | "Passeio" | "Solidária" | "Encontro" | "Formação";
+  | (typeof TIPOS_EVENTO)[number]
+  | "Motocross" | "Enduro" | "Velocidade" | "Rally";
+
+/** Categorias dos artigos, a secção principal do site. */
+export const CATEGORIAS_ARTIGO = [
+  "Comunidade", "Clubes", "Viagens", "Segurança", "Guias", "Oficina", "Entrevista", "Desporto", "Mundo",
+] as const;
+
+export type CategoriaArtigo = (typeof CATEGORIAS_ARTIGO)[number];
 
 export type TipoClube =
   | "Moto-turismo" | "Lady Riders" | "Todo-o-terreno" | "Clube de marca"
@@ -22,7 +34,8 @@ export interface Clube {
   slug: string;
   nome: string;
   tipo: TipoClube;
-  provincia: Provincia;
+  /** Vazia quando a sede do clube não está publicada. */
+  provincia: Provincia | "";
   cidade: string;
   fundacao?: number;
   descricao: string;
@@ -154,7 +167,7 @@ export interface Noticia {
   titulo: string;
   resumo: string;
   corpo: string[];
-  categoria: "Angola" | "Internacional" | "Comunidade" | "Entrevista" | "Solidária";
+  categoria: CategoriaArtigo;
   tags: string[];
   autor: string;
   data: string;

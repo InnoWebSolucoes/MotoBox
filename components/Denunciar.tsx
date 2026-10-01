@@ -75,7 +75,7 @@ export function Denunciar({
         <div className="fixed inset-0 z-[90] flex items-end justify-center p-4 sm:items-center">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setAberto(false)} aria-hidden />
           <div role="dialog" aria-modal="true" aria-labelledby="denunciar-titulo"
-            className="relative w-full max-w-md rounded-2xl bg-ink-900 p-6 shadow-2xl ring-1 ring-white/10">
+            className="relative w-full max-w-md rounded-[6px] bg-near-black p-6 shadow-2xl ring-1 ring-white/10">
             <button type="button" onClick={() => setAberto(false)} aria-label="Fechar"
               className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-ink-400 transition-colors hover:bg-white/8 hover:text-white">
               <Icon name="close" className="size-4" />
@@ -91,7 +91,7 @@ export function Denunciar({
                   A equipa de moderação vai rever este conteúdo. Não precisa de fazer mais nada.
                 </p>
                 <button type="button" onClick={() => setAberto(false)}
-                  className="mt-6 h-11 rounded-full bg-white px-6 font-ui text-base text-ink-950 hover:bg-ink-200">
+                  className="mt-6 h-11 rounded-[6px] bg-white px-6 text-[15px] text-ink-950 hover:bg-ink-200">
                   Fechar
                 </button>
               </div>
@@ -129,11 +129,11 @@ export function Denunciar({
 
                 <div className="mt-6 flex justify-end gap-2">
                   <button type="button" onClick={() => setAberto(false)}
-                    className="h-11 rounded-full px-5 font-ui text-base text-ink-300 hover:text-white">
+                    className="h-11 rounded-[6px] px-5 text-[15px] text-ink-300 hover:text-white">
                     Cancelar
                   </button>
                   <button type="submit" disabled={estado === "a-enviar"}
-                    className="h-11 rounded-full bg-mb-red px-6 font-ui text-base text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60">
+                    className="h-11 rounded-[6px] bg-mb-red px-6 text-[15px] text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60">
                     {estado === "a-enviar" ? "A enviar…" : "Enviar denúncia"}
                   </button>
                 </div>

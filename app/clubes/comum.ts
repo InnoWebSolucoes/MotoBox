@@ -24,10 +24,11 @@ export const tipoPorSlug = (slug?: string) => TIPOS_CLUBE.find((t) => t.slug ===
 export const nomeTipo = (tipo: TipoClube) => TIPOS_CLUBE.find((t) => t.tipo === tipo)?.nome ?? tipo;
 export const slugTipo = (tipo: TipoClube) => TIPOS_CLUBE.find((t) => t.tipo === tipo)?.slug ?? slugTexto(tipo);
 
-/** "Lobito, Benguela"; só a província quando a sede não está publicada. */
+/** "Lobito, Benguela"; só a província quando a sede não está publicada; "Angola" sem nenhuma. */
 export function localClube(c: Pick<Clube, "cidade" | "provincia">): string {
   const cidade = c.cidade?.trim();
-  return cidade && cidade !== c.provincia ? `${cidade}, ${c.provincia}` : c.provincia;
+  if (cidade && c.provincia && cidade !== c.provincia) return `${cidade}, ${c.provincia}`;
+  return c.provincia || cidade || "Angola";
 }
 
 /** Iniciais para o monograma, sem artigos nem números soltos: "Amigos da Picada" → "AP". */

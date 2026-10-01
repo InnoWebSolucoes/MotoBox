@@ -88,7 +88,7 @@ function JanelaSessao({ pedido, aoFechar }: { pedido: Pedido; aoFechar: () => vo
     <div className="fixed inset-0 z-[95] flex items-end justify-center overflow-y-auto p-4 sm:items-center">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={aoFechar} aria-hidden />
       <div role="dialog" aria-modal="true" aria-label="Entrar na Motobox"
-        className="relative my-auto w-full max-w-md rounded-2xl bg-ink-950 p-6 shadow-2xl ring-1 ring-white/10 sm:p-8">
+        className="relative my-auto w-full max-w-md rounded-[6px] bg-near-black p-6 shadow-2xl ring-1 ring-white/10 sm:p-8">
         <button type="button" onClick={aoFechar} aria-label="Fechar"
           className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-ink-400 transition-colors hover:bg-white/8 hover:text-white">
           <Icon name="close" className="size-4" />

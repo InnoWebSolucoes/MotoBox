@@ -1,3 +1,5 @@
+import { KeyRound } from "lucide-react";
+import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import type { Metadata } from "next";
 import { NovaPalavraClient } from "./NovaPalavraClient";
 
@@ -7,5 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default function PaginaNovaPalavra() {
-  return <NovaPalavraClient />;
+  return (
+    <PaginaInterior icone={<KeyRound />}>
+      <div className="coluna pt-20">
+        <NovaPalavraClient />
+      </div>
+    </PaginaInterior>
+  );
 }

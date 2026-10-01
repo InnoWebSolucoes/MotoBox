@@ -12,6 +12,9 @@ export type TipoNotificacao =
 export type Canal = "email" | "push" | "whatsapp";
 
 export interface Preferencias {
+  /** Clubes seguidos (slugs de `clubes`). */
+  clubes: string[];
+  /** Herdados da versão de competição; já não aparecem no site. */
   pilotos: string[];
   equipas: string[];
   marcas: string[];
@@ -20,13 +23,15 @@ export interface Preferencias {
 }
 
 export const MARCAS = [
-  "KTM", "Honda", "Yamaha", "Husqvarna", "Kawasaki", "Suzuki", "BMW", "Royal Enfield",
+  "Honda", "Yamaha", "Suzuki", "Kawasaki", "KTM", "BMW", "Harley-Davidson", "Triumph",
+  "Ducati", "Royal Enfield", "Vespa", "Piaggio", "Bajaj", "Husqvarna",
 ];
 
 /** Canais que já entregam mensagens. Os restantes aparecem como "brevemente". */
 export const CANAIS_ACTIVOS: Canal[] = ["email"];
 
 export const PREFERENCIAS_PADRAO: Preferencias = {
+  clubes: [],
   pilotos: [],
   equipas: [],
   marcas: [],
@@ -55,6 +60,7 @@ const bools = <K extends string>(v: unknown, base: Record<K, boolean>): Record<K
 export function normalizarPreferencias(v: unknown): Preferencias {
   const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
   return {
+    clubes: lista(o.clubes),
     pilotos: lista(o.pilotos),
     equipas: lista(o.equipas),
     marcas: lista(o.marcas).filter((m) => MARCAS.includes(m)),

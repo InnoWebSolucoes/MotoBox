@@ -30,7 +30,7 @@ export async function enviarEmailUnico(e: EmailUnico): Promise<string | null> {
       method: "POST",
       headers: { Authorization: `Bearer ${chave}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM ?? "Motobox Angola <onboarding@resend.dev>",
+        from: process.env.RESEND_FROM ?? "MotoBox Angola <onboarding@resend.dev>",
         to: [e.para],
         subject: e.assunto,
         html: e.html,
@@ -46,7 +46,7 @@ export async function enviarEmailUnico(e: EmailUnico): Promise<string | null> {
   console.error(`[email] Resend ${r.status}: ${await r.text().catch(() => "")}`);
   // Sem domínio verificado, a Resend só entrega na caixa da própria conta.
   if (r.status === 403) {
-    return "O email não seguiu: o serviço de envio ainda não tem um domínio verificado. Fale com a equipa Motobox.";
+    return "O email não seguiu: o serviço de envio ainda não tem um domínio verificado. Fale com a equipa MotoBox.";
   }
   return `O serviço de email recusou o envio (${r.status}). Tente de novo.`;
 }

@@ -5,11 +5,11 @@ import { Campo, CampoEndereco, Input, Area, Seleccao, Estado } from "@/component
 import { slugify } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
 import type { Evento } from "@/lib/types";
-import { eComunidade } from "@/lib/desporto";
 import { PROVINCIAS } from "@/lib/provincias";
+import { TIPOS_EVENTO } from "@/lib/types";
 
 // Provas (calendário de Desporto) e, depois, eventos da comunidade (secção Eventos).
-const DISCIPLINAS = ["Motocross", "Enduro", "Velocidade", "Rally", "Passeio", "Solidária", "Encontro", "Formação"];
+const DISCIPLINAS = [...TIPOS_EVENTO];
 const ESTADOS = ["agendado", "bilhetes-abertos", "esgotado", "a-decorrer", "concluido"];
 const op = (v: readonly string[]) => v.map((x) => ({ valor: x, nome: x.replace(/-/g, " ") }));
 
@@ -57,7 +57,7 @@ export default function AdminEventos() {
               onChange={(e) => definir({ titulo: e.target.value, slug: novo && r.slug === slugify(r.titulo) ? slugify(e.target.value) : r.slug } as Partial<Evento>)} />
           </Campo>
           {/* Os eventos da comunidade vivem em /eventos; as provas no calendário. */}
-          <CampoEndereco prefixo={eComunidade(r.disciplina) ? "/eventos" : "/calendario"} novo={novo} valor={r.slug}
+          <CampoEndereco prefixo="/eventos" novo={novo} valor={r.slug}
             onChange={(slug) => definir({ slug } as Partial<Evento>)} />
 
           <div className="grid gap-4 sm:grid-cols-2">

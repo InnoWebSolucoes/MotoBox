@@ -1,3 +1,5 @@
+import { Mail } from "lucide-react";
+import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import type { Metadata } from "next";
 import { CanceladaClient, type EstadoCancelamento } from "./CanceladaClient";
 
@@ -21,5 +23,11 @@ export default async function PaginaNewsletterCancelada({
   const p = await searchParams;
   const pedido = primeiro(p.estado) as EstadoCancelamento;
   const estado = ESTADOS.includes(pedido) ? pedido : "invalido";
-  return <CanceladaClient estado={estado} email={primeiro(p.email)} token={primeiro(p.token)} />;
+  return (
+    <PaginaInterior icone={<Mail />}>
+      <div className="coluna pt-20">
+        <CanceladaClient estado={estado} email={primeiro(p.email)} token={primeiro(p.token)} />
+      </div>
+    </PaginaInterior>
+  );
 }

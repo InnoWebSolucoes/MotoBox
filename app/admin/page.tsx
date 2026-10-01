@@ -48,11 +48,11 @@ export default function PainelAdmin() {
   );
 
   const atalhos = [
-    { href: "/admin/noticias", nome: "Nova notícia", icone: "news" },
+    { href: "/admin/noticias", nome: "Novo artigo", icone: "news" },
     { href: "/admin/eventos", nome: "Novo evento", icone: "calendar" },
-    { href: "/admin/pilotos", nome: "Novo piloto", icone: "user" },
+    { href: "/admin/clubes", nome: "Novo clube", icone: "route" },
     { href: "/admin/utilizadores", nome: "Nova conta", icone: "users" },
-    { href: "/admin/encomendas", nome: "Encomendas", icone: "cart" },
+    { href: "/admin/mensagens", nome: "Mensagens", icone: "mail" },
     { href: "/admin/moderacao", nome: "Moderação", icone: "alert" },
   ];
 

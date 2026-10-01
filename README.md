@@ -1,136 +1,71 @@
-# Motobox Angola
+# MotoBox Angola
 
-A casa digital do motociclismo angolano. Plataforma desenvolvida pela **Innoweb** para a **Motobox
-Angola**, correspondente ao **Plano Completo** da proposta de serviços.
+A casa de quem anda de mota em Angola. Um site de comunidade: a secção principal são os **artigos**,
+e à volta deles ficam os **clubes** de todo o país, os **eventos**, as **rotas** de moto-turismo, o
+guia de **segurança**, o **marketplace** e o **fórum**. Todos os tipos de mota, da scooter à moto de
+viagem; a competição é só um tipo de evento, não o centro do site.
 
-Linguagem visual inspirada no site oficial da Formula 1: fundo escuro, vermelho de marca como acento
-único, tipografia condensada em caixa alta, cartões de alto contraste e densidade de informação
-elevada.
+Plataforma desenvolvida pela **Innoweb** para a **MotoBox Angola**.
 
-## Stack
+## Design
 
-- **Next.js 16** (App Router) + **React 19** + **TypeScript**
-- **Tailwind CSS 4** (design tokens em `app/globals.css`)
-- **qrcode** para os bilhetes digitais
-- Build totalmente estático (SSG) — 60+ páginas pré-renderizadas
+Painel de comando, inspirado em [363sudbury.com](https://363sudbury.com/), com a identidade da
+MotoBox (logótipo MB, vermelho `#e10600` sobre preto):
+
+- **Vídeo de fundo** (`components/painel/Fundo.tsx`), nítido na entrada e desfocado no resto do site.
+- **Moldura** com margens de 20/50px e **painéis** escuros translúcidos, cantos de 6px e 5px de intervalo.
+- **Quadrado do logótipo** no canto superior esquerdo; os painéis grandes têm o corte à volta dele.
+- **Quadrados de ícone vermelhos** e a seta ↗ que troca de lugar ao passar o rato.
+- **Botão de acção** único por baixo da moldura: Explorar (entrada), Fechar (painel), Voltar ao painel
+  (todas as outras páginas). No telemóvel é uma barra vermelha fixa.
+- Nas páginas interiores o conteúdo **rola dentro do painel** no computador.
+- Letra **Instrument Sans**; a Barlow Condensed fica só no painel de gestão.
+
+Tokens e componentes visuais em `app/globals.css`; peças em `components/painel/`.
+
+## Páginas
+
+| Rota | O que é |
+| --- | --- |
+| `/` | Entrada: vídeo, a frase da casa, o tempo em Luanda e o artigo mais recente |
+| `/explorar` | Painel: artigo em destaque, clubes, eventos, história, clube do mês, rotas, segurança, marketplace, fórum |
+| `/artigos`, `/artigos/[slug]` | Secção principal, com filtro por categoria |
+| `/clubes`, `/clubes/[slug]` | Todos os clubes, filtros por tipo e província, formulário "Junte o seu clube" |
+| `/eventos`, `/eventos/[slug]` | Passeios, raides, encontros, concentrações, solidárias, formações, provas; ficheiro .ics |
+| `/rotas`, `/rotas/[slug]` | Moto-turismo, com fontes |
+| `/seguranca` | Guia com fontes |
+| `/marketplace`, `/marketplace/[id]`, `/marketplace/importar` | Compra e venda e pedidos de importação |
+| `/forum`, `/forum/[id]` | Fórum |
+| `/sobre`, `/contacto` | A história da MotoBox e contacto |
+| `/entrar`, `/conta` | Sessão e área de conta (clubes e marcas seguidos, notificações, anúncios) |
+| `/admin` | Painel de gestão |
+
+Os endereços antigos (`/noticias`, `/calendario`, `/bilhetes`, `/pilotos`...) redireccionam para a
+secção nova mais próxima (`next.config.ts`).
+
+## Conteúdo
+
+- **Clubes, rotas e segurança**: factos com fonte pública (campo `fonte` nos clubes, `lib/rotas.ts`,
+  `app/seguranca/conteudo.ts`).
+- **Artigos**: escritos a partir desses factos, assinados pela Redacção MotoBox.
+- **Demonstração**: os eventos futuros, os anúncios do marketplace e os tópicos do fórum.
+- **Fotografias** do Unsplash (`lib/imagens.ts`) e **vídeo de fundo** do Mixkit (licença livre), em
+  `public/videos/`. Trocar pelo arquivo da MotoBox quando existir.
+- **Marca**: `public/marca/` (ícone MB, logótipo e o MB recortado).
+
+Com o Supabase ligado, o site lê as tabelas e o conteúdo acima é só a reserva. Para levar este
+conteúdo para uma base nova: correr os SQL de `supabase/` e, no painel, **Dados → Semear**.
 
 ## Arrancar
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
-npm run build    # build de produção
-npm run start    # servir o build
+npm run dev      # http://localhost:3000/motobox
+npm run build
 ```
 
-## Funcionalidades implementadas
-
-Todas as funcionalidades do Plano Completo da proposta:
-
-### Base (Plano Essencial)
-
-| Funcionalidade | Onde |
-| --- | --- |
-| Website informativo com página inicial | `/` |
-| Página "Sobre a Motobox" (história, missão, equipa) | `/sobre` |
-| Formulário de contacto e pedido de informações | `/contacto` |
-| Links para redes sociais (Instagram, Facebook) | rodapé, menu móvel, `/contacto` |
-| Sistema de newsletter com subscrição por email | componente `Newsletter` (3 variantes) |
-| Calendário estático de eventos e provas | `/calendario` |
-| Design responsivo (telemóvel, tablet, computador) | todo o site |
-
-### Comunidade (Plano Comunidade)
-
-| Funcionalidade | Onde |
-| --- | --- |
-| Calendário dinâmico com detalhes completos | `/calendario/[slug]` — horários, circuito, recorde de volta |
-| Notícias internacionais (agregação automática) | `/noticias` — categoria Internacional, com atribuição de fonte |
-| Notícias e cobertura de Angola | `/noticias` — categorias Angola, Entrevista, Comunidade, Solidária |
-| Arquivo de resultados e histórico de corridas | `/resultados`, `/resultados/[slug]` |
-| Tabela de classificação nacional | `/classificacao` — pilotos e equipas, filtro por categoria |
-| Perfis de pilotos (fotos, estatísticas, redes) | `/pilotos`, `/pilotos/[slug]` |
-| Perfis de equipas e clubes | `/equipas`, `/equipas/[slug]` |
-| Página de patrocinadores | `/patrocinadores` — 4 níveis + proposta comercial |
-| Secção de vídeos e highlights | `/videos` — leitor em destaque + grelha filtrável |
-
-### Completo (Plano Completo)
-
-| Funcionalidade | Onde |
-| --- | --- |
-| Venda de bilhetes online com pagamento integrado | `/bilhetes/[slug]` — checkout de 4 passos |
-| Bilhetes digitais com código QR | gerados no cliente (`components/QRCode.tsx`) |
-| Verificação automática de pagamentos | passo 3 do checkout, com estado de verificação |
-| Sistema de comissões para a Motobox | `TAXA_MOTOBOX` no checkout, discriminada no resumo |
-| Marketplace verificado | `/marketplace`, `/marketplace/[id]` |
-| Contas de utilizador com preferências | `/conta` — 5 separadores |
-| Notificações personalizadas | `/conta` → Notificações (tipo + canal) |
-| Fórum comunitário | `/forum`, `/forum/[id]` |
-
-## Estrutura
-
-```
-app/
-  page.tsx                  Homepage — hero com contagem decrescente, notícias,
-                            classificação, próximas provas, vídeos
-  calendario/               Lista (filtros, vista lista/grelha) + detalhe do evento
-  bilhetes/                 Listagem + checkout com QR
-  resultados/               Arquivo + detalhe de corrida
-  classificacao/            Pilotos e equipas
-  pilotos/ equipas/         Perfis
-  noticias/ videos/         Conteúdo editorial
-  marketplace/ forum/       Comunidade
-  conta/                    Área de utilizador
-  sobre/ patrocinadores/ contacto/
-components/
-  Nav.tsx                   Navegação com dropdowns e menu móvel
-  Footer.tsx                Rodapé + newsletter
-  Brand.tsx                 Logótipo SVG, imagens de marcador, retratos
-  ui.tsx                    Botões, etiquetas, cabeçalhos, biblioteca de ícones
-  Countdown.tsx             Contagem decrescente para a próxima prova
-  Newsletter.tsx            Subscrição (faixa / cartão / rodapé)
-  QRCode.tsx                Código QR do bilhete
-lib/
-  types.ts                  Modelo de dados
-  data.ts                   Conteúdo de demonstração + helpers
-```
-
-## Conteúdo
-
-O conteúdo (pilotos, equipas, provas, notícias, anúncios) é de **demonstração**, escrito para
-representar de forma realista o motociclismo angolano — circuitos do Kilamba, Tundavala, Caála,
-dunas do Namibe; províncias, clubes e valores em kwanzas. Vive todo em `lib/data.ts`, pronto a ser
-substituído pelos dados reais da Motobox ou ligado a um CMS.
-
-As fotografias são de demonstração: cada chave de imagem usada em `lib/data.ts` está mapeada em
-`lib/imagens.ts` para uma fotografia livre do Unsplash, servida por `next/image` (domínio
-autorizado em `next.config.ts`). O gradiente determinístico por nome mantém-se por baixo, como
-reserva para qualquer chave sem fotografia.
-
-Cada prova, notícia, vídeo, corrida, equipa e piloto tem fotografia própria (`POR_SLUG`), e cada
-cabeçalho de página tem a sua imagem de fundo (`BANNERS`, consumido por `PageHero`) — incluindo os
-cabeçalhos que não são `PageHero`: a ficha de piloto, as páginas legais e o ecrã de entrar. Os
-componentes aceitam uma lista de chaves por ordem de preferência — `[slug, chaveGenérica]` — para
-que o item use a sua fotografia e caia na do local da prova apenas se não tiver uma.
-
-O leitor de `/videos` reproduz vídeo real: `Video.videoId` (em `lib/data.ts`) aponta para vídeos
-públicos dos canais oficiais MXGP-TV e Dakar — o mais próximo de motociclismo real disponível sem
-arquivo próprio. Clicar no leitor troca a miniatura por um `iframe` do youtube-nocookie.com; sem
-`videoId`, o botão de reprodução fica desativado. Quando o arquivo de vídeo da Motobox existir,
-substituir por ficheiros próprios (self-hosted ou um player como Mux/Cloudflare Stream).
-
-Para passar ao arquivo real da Motobox basta trocar os URLs em `lib/imagens.ts` — as chaves e a
-assinatura de `Placeholder` / `Retrato` não mudam, pelo que nenhuma página precisa de ser tocada.
-Os logótipos de equipas e patrocinadores, e os avatares do fórum, continuam a ser monogramas de
-texto, por opção de design.
-
-## Próximos passos para produção
-
-1. **Fotografias** — trocar os URLs de demonstração em `lib/imagens.ts` pelo arquivo do Gonçalo.
-2. **Backend** — ligar `lib/data.ts` a um CMS (Sanity, Payload) ou API própria.
-3. **Pagamentos** — integrar Multicaixa Express / EMIS e um gateway de cartão no passo 3 do checkout.
-4. **Autenticação** — contas reais em `/conta` (NextAuth ou equivalente).
-5. **Agregação de notícias** — cron que consome feeds RSS internacionais para a secção Internacional.
-6. **Validação de bilhetes** — aplicação de leitura de QR para o staff à entrada dos recintos.
+O site corre com `basePath: "/motobox"` (ver `lib/base.ts`). Variáveis de ambiente em `.env.example`
+e `SUPABASE.md`.
 
 ---
 

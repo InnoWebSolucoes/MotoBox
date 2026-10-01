@@ -130,7 +130,7 @@ function montar(d: Destinatario, c: Conteudo): EmailPreparado {
 ${c.paragrafos.map((p) => `<p style="margin:0 0 12px">${escapar(p)}</p>`).join("\n")}
 <div style="margin:20px 0">${botoes}</div>
 <hr style="border:none;border-top:1px solid #dddddd;margin:24px 0 12px">
-<p style="margin:0;font-size:12px;color:#555555">Recebe este email porque o pediu na sua conta Motobox. <a href="${escapar(preferencias)}" style="color:#555555">Alterar preferências de notificação</a></p>
+<p style="margin:0;font-size:12px;color:#555555">Recebe este email porque o pediu na sua conta MotoBox. <a href="${escapar(preferencias)}" style="color:#555555">Alterar preferências de notificação</a></p>
 </div>
 </body></html>`;
 
@@ -182,10 +182,10 @@ export function planearNovoEvento(evento: Evento, destinatarios: Destinatario[])
         : `Novo evento no calendário: ${evento.titulo}`;
       paragrafos.push(
         bilhetes
-          ? "Há um novo evento no calendário Motobox e os bilhetes já estão à venda."
-          : "Há um novo evento no calendário Motobox.",
+          ? "Há um novo evento no calendário MotoBox e os bilhetes já estão à venda."
+          : "Há um novo evento no calendário MotoBox.",
       );
-      ligacoes.push({ texto: "Ver evento", url: `${base}/calendario/${evento.slug}` });
+      ligacoes.push({ texto: "Ver evento", url: `${base}/eventos/${evento.slug}` });
     } else {
       assunto = `Bilhetes à venda: ${evento.titulo}`;
       paragrafos.push("Os bilhetes para este evento já estão à venda.");
@@ -194,7 +194,7 @@ export function planearNovoEvento(evento: Evento, destinatarios: Destinatario[])
     if (evento.resumo) paragrafos.push(evento.resumo);
     if (bilhetes) {
       if (precoMin > 0) paragrafos.push(`Bilhetes a partir de ${kwanzas(precoMin)}.`);
-      ligacoes.push({ texto: "Comprar bilhetes", url: `${base}/bilhetes/${evento.slug}` });
+      ligacoes.push({ texto: "Comprar bilhetes", url: `${base}/eventos/${evento.slug}` });
     }
 
     saida.push(montar(d, { assunto, titulo: evento.titulo, paragrafos, ligacoes }));
@@ -222,7 +222,7 @@ export function planearBilhetesAbertos(evento: Evento, destinatarios: Destinatar
           ...(quando ? [`Data: ${quando}.`] : []),
           ...(precoMin > 0 ? [`Bilhetes a partir de ${kwanzas(precoMin)}.`] : []),
         ],
-        ligacoes: [{ texto: "Comprar bilhetes", url: `${base}/bilhetes/${evento.slug}` }],
+        ligacoes: [{ texto: "Comprar bilhetes", url: `${base}/eventos/${evento.slug}` }],
       }),
     );
 }
@@ -326,7 +326,7 @@ export function planearNovoAnuncio(anuncio: AnuncioMarketplace, destinatarios: D
         assunto: `Novo anúncio ${anuncio.marca}: ${anuncio.titulo}`,
         titulo: anuncio.titulo,
         paragrafos: [
-          `Há um novo anúncio da marca ${anuncio.marca} no marketplace Motobox.`,
+          `Há um novo anúncio da marca ${anuncio.marca} no marketplace MotoBox.`,
           ...(detalhes ? [`${detalhes}.`] : []),
           ...(preco ? [preco] : []),
         ],
@@ -389,7 +389,7 @@ export async function enviarEmails(emails: EmailPreparado[]): Promise<number> {
     console.warn(`[notificacoes] RESEND_API_KEY em falta; ${emails.length} email(s) por enviar.`);
     return 0;
   }
-  const de = process.env.RESEND_FROM ?? "Motobox Angola <onboarding@resend.dev>";
+  const de = process.env.RESEND_FROM ?? "MotoBox Angola <onboarding@resend.dev>";
 
   let enviados = 0;
   for (let i = 0; i < emails.length; i += MAX_LOTE) {

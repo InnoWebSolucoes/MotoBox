@@ -20,6 +20,7 @@ import type {
   TipoBilhete, Provincia, ResultadoCorrida,
 } from "@/lib/types";
 import { PROVINCIAS as PROVINCIAS_ANGOLA } from "@/lib/provincias";
+import { CATEGORIAS_ARTIGO, TIPOS_EVENTO } from "@/lib/types";
 
 export const MODELO = "claude-opus-5";
 
@@ -36,12 +37,10 @@ const TEMPO_MAXIMO_MS = 280_000;
 
 // Lista partilhada com o resto do site (lib/provincias.ts): as 21 províncias.
 const PROVINCIAS = PROVINCIAS_ANGOLA;
-// Provas primeiro, depois eventos da comunidade (secção Eventos do site).
-const DISCIPLINAS = [
-  "Motocross", "Enduro", "Velocidade", "Rally", "Passeio", "Solidária", "Encontro", "Formação",
-] as const;
+// Tipos de evento da comunidade; "Prova" junta qualquer competição.
+const DISCIPLINAS = TIPOS_EVENTO;
 const ESTADOS_EVENTO = ["agendado", "bilhetes-abertos", "esgotado", "a-decorrer", "concluido"] as const;
-const CATEGORIAS_NOTICIA = ["Angola", "Internacional", "Comunidade", "Entrevista", "Solidária"] as const;
+const CATEGORIAS_NOTICIA = CATEGORIAS_ARTIGO;
 const CATEGORIAS_VIDEO = ["Highlights", "Entrevista", "Documentário", "Onboard", "Resumo"] as const;
 const NIVEIS = ["Principal", "Oficial", "Apoio", "Media"] as const;
 const ESTADOS_RESULTADO = ["DNF", "DNS", "DSQ"] as const;

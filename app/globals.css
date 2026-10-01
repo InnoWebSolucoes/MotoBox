@@ -2,10 +2,11 @@
 
 /* ============================================================
    MOTOBOX ANGOLA — Design System
-   Inspirado na linguagem visual da Formula 1: fundo escuro,
-   vermelho de marca como acento único, botões em pílula,
-   fotografias com cantos arredondados e listas separadas por
-   linhas finas em vez de caixas com contorno.
+   Painel de comando: um vídeo de fundo, por cima uma grelha de
+   painéis escuros e translúcidos com cantos de 6px e 5px de
+   intervalo entre eles. Um só acento, o vermelho da marca, nos
+   quadrados de ícone e no botão de acção. Tipografia sem serifa,
+   em caixa normal, com títulos grandes e curtos.
    ============================================================ */
 
 @theme {
@@ -14,7 +15,13 @@
   --color-mb-red-dark: #b30500;
   --color-mb-red-light: #ff2b1f;
 
-  /* Neutros — escala escura */
+  /* Neutros do painel */
+  --color-near-black: #1a1a1a;
+  --color-dark-grey: #4d4d4d;
+  --color-grey: #b3b3b3;
+  --color-light-grey: #f6f6f6;
+
+  /* Neutros, escala escura (painel de gestão e formulários) */
   --color-ink-950: #0a0a0c;
   --color-ink-900: #121216;
   --color-ink-850: #17171c;
@@ -34,188 +41,405 @@
   --color-live: #ff2b1f;
   --color-ok: #16a34a;
 
-  --font-display: var(--font-display), "Arial Narrow", sans-serif;
-  --font-sans: var(--font-body), system-ui, sans-serif;
+  /* Letra do site e letra do logótipo (condensada, só no painel de gestão). */
+  --font-sans: var(--font-mb), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: var(--font-logo), "Arial Narrow", sans-serif;
 
-  /* Cantos: cartões e fotografias arredondados, botões em pílula. */
-  --radius-card: 0.875rem;
-  --radius-media: 0.625rem;
+  --radius-card: 0.375rem;
+  --radius-media: 0.375rem;
+
+  --ease-in-circ: cubic-bezier(0.6, 0.04, 0.98, 0.335);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
   color-scheme: dark;
-  --bg: var(--color-ink-950);
-  --fg: var(--color-ink-100);
+  --bg: #000;
+  --fg: #fff;
+
+  /* Medidas da moldura (iguais em todas as páginas) */
+  --gutter: 1.25rem;
+  --intervalo: 5px;
+  --raio: 6px;
+  --tile: 5rem; /* 80px: quadrado do logótipo e das redes */
+  --zona-accao: 8.125rem; /* 130px por baixo da moldura, onde vive o botão */
+  --moldura-h: calc(100dvh - var(--gutter) - var(--zona-accao));
+  --recorte: calc(var(--tile) + var(--intervalo));
 }
 
-/* Cor de contorno por omissão. Em @layer base: fora de camada, esta regra
-   ganhava a todas as classes de cor (border-white/6, border-mb-red…), e
-   todos os contornos do site saíam no mesmo cinzento. */
-@layer base {
-  * {
-    border-color: color-mix(in srgb, var(--color-ink-700) 60%, transparent);
+@media (min-width: 768px) {
+  :root {
+    --gutter: 3.125rem;
   }
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-/* O preflight do Tailwind tira o raio aos campos; aqui ficam todos com canto suave.
-   Fica em @layer base para que um `rounded-*` no próprio campo continue a mandar. */
 @layer base {
+  * {
+    border-color: rgb(255 255 255 / 0.08);
+  }
+
   input:where(:not([type="checkbox"], [type="radio"], [type="range"], [type="color"])),
   select,
   textarea {
-    border-radius: 0.625rem;
+    border-radius: var(--raio);
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-mb-red-light);
+    outline-offset: 2px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 }
 
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
+/* ============================================================
+   Componentes (em camada própria: um utilitário do Tailwind no
+   mesmo elemento ganha-lhes sempre)
+   ============================================================ */
 
-/* ---------- Tipografia utilitária ---------- */
-.font-display {
-  font-family: var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.01em;
-}
-
-.title-xl {
-  font-family: var(--font-display);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  line-height: 0.92;
-}
-
-.eyebrow {
-  font-family: var(--font-display);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.6875rem;
-}
-
-/* ---------- Barra de acento vermelha (marca F1-like) ---------- */
-.accent-bar::before {
-  content: "";
-  display: block;
-  width: 2.5rem;
-  height: 4px;
-  background: var(--color-mb-red);
-  margin-bottom: 0.875rem;
-}
-
-/* ---------- Corte diagonal característico ---------- */
-.clip-slant {
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 1.75rem 100%, 0 calc(100% - 1.75rem));
-}
-
-.clip-tab {
-  clip-path: polygon(0 0, calc(100% - 0.875rem) 0, 100% 100%, 0 100%);
-}
-
-/* ---------- Efeito de velocidade (linhas do logo) ---------- */
-.speed-lines {
-  background-image: repeating-linear-gradient(
-    100deg,
-    transparent 0 6px,
-    color-mix(in srgb, var(--color-mb-red) 22%, transparent) 6px 7px,
-    transparent 7px 26px
-  );
-}
-
-/* Componentes novos numa camada própria: um utilitário do Tailwind no mesmo
-   elemento (`h-8`, `px-3`, `rounded-lg`…) ganha-lhes. A tipografia acima fica
-   fora de camada de propósito — é assim que o site sempre foi desenhado. */
 @layer components {
-  /* Letra dos botões, menus e pílulas: a condensada da marca, sem caixa alta
-     forçada, como os botões da F1 ("Sign In", "View full standings"). */
-  .font-ui {
-    font-family: var(--font-display);
-    font-weight: 700;
-    letter-spacing: 0.01em;
+  /* ---------- Tipografia ---------- */
+
+  /* Pequeno título espaçado, por cima dos títulos grandes. */
+  .sobretitulo {
+    font-size: 0.8125rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    line-height: 1.2;
   }
 
-  /* ---------- Riscas diagonais largas (fundo da barra de navegação F1) ---------- */
-  .stripes {
-    background-image: repeating-linear-gradient(
-      120deg,
-      transparent 0 44px,
-      rgb(255 255 255 / 0.035) 44px 52px,
-      transparent 52px 64px,
-      rgb(255 255 255 / 0.025) 64px 70px,
-      transparent 70px 180px
+  .titulo-1 {
+    font-size: clamp(2.75rem, 6.2vw, 5.5rem);
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .titulo-2 {
+    font-size: clamp(2.25rem, 4.4vw, 3.75rem);
+    line-height: 1.02;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .titulo-3 {
+    font-size: clamp(1.75rem, 2.7vw, 2.375rem);
+    line-height: 1.05;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .titulo-4 {
+    font-size: clamp(1.375rem, 1.9vw, 1.75rem);
+    line-height: 1.08;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .texto-lead {
+    font-size: clamp(1rem, 1.25vw, 1.1875rem);
+    line-height: 1.5;
+  }
+
+  /* Corpo de artigo: coluna de leitura confortável. */
+  .prosa p {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: rgb(255 255 255 / 0.86);
+  }
+  .prosa p + p {
+    margin-top: 1.25em;
+  }
+  .prosa p:first-child::first-letter {
+    float: left;
+    font-size: 3.6em;
+    line-height: 0.9;
+    font-weight: 600;
+    margin: 0.06em 0.12em 0 0;
+    color: var(--color-mb-red);
+  }
+
+  /* Texto que brilha uma vez ao entrar: um reflexo passa da direita para a esquerda. */
+  .brilho {
+    background: linear-gradient(110deg, #fff 0%, #fff 42%, rgb(255 255 255 / 0.45) 50%, #fff 58%, #fff 100%) 100% 0 / 260% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: mb-brilho 2.6s 0.3s var(--ease-out-expo) both;
+  }
+
+  /* ---------- Moldura e painéis ---------- */
+
+  .moldura {
+    position: relative;
+    width: calc(100% - var(--gutter) * 2);
+    margin: var(--gutter) auto 0;
+  }
+
+  @media (min-width: 1024px) {
+    .moldura-fixa {
+      height: var(--moldura-h);
+      min-height: 34rem;
+    }
+  }
+
+  .painel {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--raio);
+    background: rgb(0 0 0 / 0.5);
+    isolation: isolate;
+  }
+
+  /* Painel liso, mais escuro em baixo (as fichas pequenas do painel). */
+  .painel-escuro {
+    background: linear-gradient(to top, rgb(26 26 26 / 0.95), rgb(26 26 26 / 0.55));
+  }
+
+  /* Corte no canto superior esquerdo, onde assenta o quadrado do logótipo. */
+  .recorte {
+    clip-path: polygon(
+      var(--recorte) 0,
+      100% 0,
+      100% 100%,
+      0 100%,
+      0 var(--recorte),
+      var(--recorte) var(--recorte)
     );
   }
 
-  /* ---------- Cartões ----------
-     Sem contorno: a superfície distingue-se só pelo tom e pelos cantos. */
+  /* Quadrado de ícone vermelho. */
+  .chip-mb {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 4px;
+    background: var(--color-mb-red);
+    color: #fff;
+  }
+  .chip-mb svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .chip-mb-lg {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  .chip-mb-lg svg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  /* Fotografia dentro de um painel: aproxima-se devagar ao passar o rato. */
+  .foto-painel {
+    transition: transform 1.2s var(--ease-out-expo);
+  }
+  .group:hover .foto-painel,
+  .group:focus-visible .foto-painel {
+    transform: scale(1.04);
+  }
+
+  /* Rolagem interior das páginas (no computador, o conteúdo rola dentro do painel). */
+  @media (min-width: 1024px) {
+    .rolagem {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 4.5rem), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 4.5rem), transparent);
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-mb-red) transparent;
+    }
+  }
+
+  /* Coluna de conteúdo das páginas interiores. */
+  .coluna {
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .coluna {
+      padding-inline: 3rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .coluna {
+      padding-inline: 6rem;
+    }
+  }
+
+  /* Pílula de filtro. */
+  .pilula {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.375rem;
+    height: 2.25rem;
+    padding: 0 0.95rem;
+    border-radius: 4px;
+    background: rgb(255 255 255 / 0.07);
+    color: rgb(255 255 255 / 0.75);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .pilula:hover {
+    background: rgb(255 255 255 / 0.14);
+    color: #fff;
+  }
+  .pilula[aria-pressed="true"],
+  .pilula[aria-current="page"] {
+    background: var(--color-mb-red);
+    color: #fff;
+  }
+
+  /* Ligação sublinhada (como "Member Login"). */
+  .sublinhado {
+    position: relative;
+    display: inline-block;
+    transition: color 0.3s ease;
+  }
+  .sublinhado::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: currentColor;
+  }
+  .sublinhado:hover,
+  .group:hover .sublinhado {
+    color: var(--color-mb-red-light);
+  }
+
+  /* Campo de formulário sobre painel escuro. */
+  .campo {
+    width: 100%;
+    height: 3rem;
+    padding: 0 1rem;
+    background: rgb(255 255 255 / 0.06);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    color: #fff;
+    font-size: 0.9375rem;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  textarea.campo {
+    height: auto;
+    min-height: 8rem;
+    padding: 0.85rem 1rem;
+    line-height: 1.5;
+  }
+  select.campo {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='white' stroke-width='1.5' d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 0.75rem;
+    padding-right: 2.5rem;
+  }
+  select.campo option {
+    background: #1a1a1a;
+  }
+  .campo::placeholder {
+    color: rgb(255 255 255 / 0.4);
+  }
+  .campo:focus {
+    outline: none;
+    border-color: var(--color-mb-red);
+    background-color: rgb(255 255 255 / 0.09);
+  }
+
+  /* ---------- Herdados (painel de gestão e formulários de conta) ---------- */
+
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .title-xl {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .font-ui {
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
   .card {
-    background: var(--color-ink-900);
-    border-radius: var(--radius-card);
+    background: rgb(26 26 26 / 0.75);
+    border-radius: var(--raio);
     transition: background 0.2s ease;
   }
-
   .card-hover:hover {
-    background: var(--color-ink-850);
+    background: rgb(40 40 40 / 0.85);
   }
 
-  /* Fotografia de cartão: cantos arredondados, sem moldura. */
   .media {
-    border-radius: var(--radius-media);
+    border-radius: var(--raio);
     overflow: hidden;
     isolation: isolate;
   }
 
-  /* ---------- Pílulas de filtro (os atalhos "News · Videos · Live Timing" da F1) ---------- */
   .chip {
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
     gap: 0.375rem;
     height: 2.25rem;
-    padding: 0 1rem;
-    border-radius: 9999px;
-    background: var(--color-ink-800);
-    color: var(--color-ink-300);
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.9375rem;
-    letter-spacing: 0.01em;
+    padding: 0 0.95rem;
+    border-radius: 4px;
+    background: rgb(255 255 255 / 0.07);
+    color: rgb(255 255 255 / 0.75);
+    font-size: 0.875rem;
     white-space: nowrap;
     transition: background 0.2s ease, color 0.2s ease;
   }
   .chip:hover {
-    background: var(--color-ink-700);
+    background: rgb(255 255 255 / 0.14);
     color: #fff;
   }
   .chip[aria-pressed="true"],
   .chip[aria-current="page"],
   .chip[aria-selected="true"] {
-    background: #fff;
-    color: var(--color-ink-950);
+    background: var(--color-mb-red);
+    color: #fff;
   }
 
-  /* ---------- Separadores sublinhados (Drivers / Teams da F1) ---------- */
   .tab {
     position: relative;
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
-    height: 3.25rem;
+    height: 3rem;
     padding: 0 1rem;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1rem;
-    letter-spacing: 0.01em;
-    color: var(--color-ink-400);
+    font-size: 0.9375rem;
+    color: rgb(255 255 255 / 0.55);
     transition: color 0.2s ease;
   }
   .tab:hover {
@@ -233,45 +457,57 @@ body {
     position: absolute;
     inset-inline: 0.75rem;
     bottom: 0;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
+    height: 2px;
     background: var(--color-mb-red);
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 
-/* ---------- Scrollbar ---------- */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-ink-950);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-ink-700);
-  border-radius: 9999px;
-  border: 2px solid var(--color-ink-950);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-mb-red);
+/* ============================================================
+   Animações
+   ============================================================ */
+
+@keyframes mb-brilho {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
 }
 
-/* ---------- Scroll horizontal sem barra ---------- */
-.no-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/* Painéis que se abrem de baixo para cima ao entrar no painel. */
+@keyframes mb-revelar {
+  from { clip-path: inset(100% 0 0 0 round var(--raio)); }
+  to { clip-path: inset(0 0 0 0 round var(--raio)); }
 }
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+/* O painel com o corte do logótipo abre-se mantendo o corte. */
+@keyframes mb-revelar-recorte {
+  from {
+    clip-path: polygon(var(--recorte) 100%, 100% 100%, 100% 100%, 0 100%, 0 100%, var(--recorte) 100%);
+  }
+  to {
+    clip-path: polygon(var(--recorte) 0, 100% 0, 100% 100%, 0 100%, 0 var(--recorte), var(--recorte) var(--recorte));
+  }
+}
+@keyframes mb-surgir {
+  from { opacity: 0; transform: translateY(0.75rem); }
+  to { opacity: 1; transform: none; }
 }
 
-/* ---------- Animações ---------- */
-@keyframes mb-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+.revelar {
+  animation: mb-revelar 0.9s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
 }
-.live-dot {
-  animation: mb-pulse 1.4s ease-in-out infinite;
+.revelar.recorte {
+  animation-name: mb-revelar-recorte;
+}
+.surgir {
+  animation: mb-surgir 0.8s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 80ms + 150ms);
 }
 
 @keyframes mb-marquee {
@@ -281,8 +517,13 @@ body {
 .marquee-track {
   animation: mb-marquee 38s linear infinite;
 }
-.marquee-track:hover {
-  animation-play-state: paused;
+
+@keyframes mb-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.live-dot {
+  animation: mb-pulse 1.4s ease-in-out infinite;
 }
 
 @keyframes mb-rise {
@@ -294,29 +535,41 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track, .live-dot, .rise {
+  .revelar, .surgir, .brilho, .marquee-track, .live-dot, .rise {
     animation: none !important;
   }
-  html { scroll-behavior: auto; }
-}
-
-/* ---------- Focus visível e acessível ----------
-   Em @layer base: um campo que desenha o seu próprio anel (`outline-none`
-   + `focus:ring-*`) fica só com esse anel, em vez de dois vermelhos. Tudo o
-   resto (ligações, botões, campos sem estilo próprio) mantém este contorno. */
-@layer base {
-  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-    outline: 2px solid var(--color-mb-red-light);
-    outline-offset: 2px;
+  .brilho {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: #fff;
   }
+  .foto-painel { transition: none; }
+  html, .rolagem { scroll-behavior: auto; }
 }
 
-/* ---------- Utilitário: bandeira quadriculada ---------- */
-.checkered {
-  background-image:
-    linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%),
-    linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%);
-  background-size: 12px 12px;
-  background-position: 0 0, 6px 6px;
-  background-color: #000;
+/* ---------- Componentes herdados no site público ----------
+   A letra condensada em caixa alta fica só no painel de gestão: no
+   site público, os componentes antigos que a pedem passam à letra do
+   painel. Fora de camada de propósito, para ganhar ao `uppercase`. */
+body:not(:has(.painel-gestao)) .font-display {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+/* ---------- Barras de deslocação ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.18);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-mb-red);
 }

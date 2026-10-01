@@ -3,8 +3,8 @@
 /* ============================================================
    MOTOBOX — Área de conta
    Tudo o que aqui aparece vem da conta de quem tem sessão:
-   perfil, bilhetes (encomendas com o email da conta),
-   preferências, notificações e anúncios próprios. As
+   perfil, clubes e marcas seguidos, notificações e anúncios
+   próprios. As
    preferências guardam-se sozinhas a cada clique, e o separador
    aberto fica no endereço (?aba=), para sobreviver a um reload.
    ============================================================ */
@@ -13,8 +13,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Logo, Placeholder, Retrato } from "@/components/Brand";
-import { QRCode } from "@/components/QRCode";
+import { Placeholder } from "@/components/Brand";
+import { Monograma } from "@/components/painel/kit";
 import { SeloVerificado } from "@/components/SeloVerificado";
 import { AnunciosGuardados } from "@/components/AnunciosGuardados";
 import { Button, ButtonLink, Icon, Tag } from "@/components/ui";
@@ -24,19 +24,17 @@ import {
   MARCAS, CANAIS_ACTIVOS, PREFERENCIAS_PADRAO,
   type Preferencias, type TipoNotificacao, type Canal,
 } from "@/lib/conta/preferencias";
-import type { AnuncioMarketplace, Equipa, Evento, Noticia, Piloto } from "@/lib/types";
+import type { AnuncioMarketplace, Clube, Noticia } from "@/lib/types";
 import type { Encomenda } from "@/lib/admin/types";
 import { RecortarAvatar, useTextosRecorte, type EstadoRecorte } from "./RecortarAvatar";
 import { comBase } from "@/lib/base";
-import { hrefEvento } from "@/lib/desporto";
 import { PROVINCIAS } from "@/lib/provincias";
 
-type Aba = "resumo" | "bilhetes" | "preferencias" | "notificacoes" | "anuncios";
+type Aba = "resumo" | "preferencias" | "notificacoes" | "anuncios";
 
 const ABAS: { id: Aba; label: string; icone: string }[] = [
   { id: "resumo", label: "Resumo", icone: "user" },
-  { id: "bilhetes", label: "Bilhetes", icone: "ticket" },
-  { id: "preferencias", label: "Preferências", icone: "settings" },
+  { id: "preferencias", label: "Clubes e marcas", icone: "flag" },
   { id: "notificacoes", label: "Notificações", icone: "bell" },
   { id: "anuncios", label: "Anúncios", icone: "tag" },
 ];
@@ -118,11 +116,9 @@ const campo =
   "h-11 w-full bg-ink-950 px-3.5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
 
 export function ContaClient({
-  eventos, pilotos, equipas, noticias,
+  clubes, noticias,
 }: {
-  eventos: Evento[];
-  pilotos: Piloto[];
-  equipas: Equipa[];
+  clubes: Clube[];
   noticias: Noticia[];
 }) {
   const router = useRouter();
@@ -179,7 +175,7 @@ export function ContaClient({
   };
   useEffect(() => () => { if (temporizador.current) clearTimeout(temporizador.current); }, []);
 
-  const alternar = (chave: "pilotos" | "equipas" | "marcas", valor: string) => {
+  const alternar = (chave: "clubes" | "marcas", valor: string) => {
     const lista = prefs[chave];
     mudarPrefs({ ...prefs, [chave]: lista.includes(valor) ? lista.filter((x) => x !== valor) : [...lista, valor] });
   };
@@ -192,7 +188,7 @@ export function ContaClient({
 
   if (carregando || (utilizador && !dados && !erroCarregar)) {
     return (
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      <div className="py-2">
         <div className="card h-40 animate-pulse" />
         <div className="mt-6 h-12 animate-pulse rounded-full bg-ink-900" />
       </div>
@@ -201,7 +197,7 @@ export function ContaClient({
 
   if (!utilizador || erroCarregar || !dados) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-20 text-center">
+      <div className="py-20 text-center">
         <p className="text-sm text-ink-400">{erroCarregar ?? "Precisa de entrar para ver a sua conta."}</p>
         <ButtonLink href="/entrar?destino=/conta" className="mt-5">Entrar</ButtonLink>
       </div>
@@ -214,31 +210,22 @@ export function ContaClient({
     cor: normalizarCor(dados.avatar?.cor ?? perfil?.avatar_cor),
     url: dados.avatar?.url ?? null,
   };
-  const bilhetes = dados.encomendas.filter((e) => e.estado !== "cancelado" && e.estado !== "reembolsado");
-  const hoje = new Date().toISOString().slice(0, 10);
-  const bilhetesComEvento = bilhetes.map((b) => ({ ...b, evento: eventos.find((e) => e.slug === b.eventoSlug) }));
-  const validos = bilhetesComEvento.filter(
-    (b) => b.estado === "pago" && (!b.evento || b.evento.dataFim >= hoje),
-  );
   const anunciosActivos = dados.anuncios.length;
+  const clubesSeguidos = clubes.filter((c) => prefs.clubes.includes(c.slug));
 
-  // Notícias dos pilotos, equipas e marcas seguidos; sem nada seguido, as mais recentes.
-  const termos = [
-    ...pilotos.filter((p) => prefs.pilotos.includes(p.slug)).map((p) => p.nome),
-    ...equipas.filter((e) => prefs.equipas.includes(e.slug)).map((e) => e.nome),
-    ...prefs.marcas,
-  ].map((t) => t.toLowerCase());
+  // Artigos dos clubes e marcas seguidos; sem nada seguido, os mais recentes.
+  const termos = [...clubesSeguidos.map((c) => c.nome), ...prefs.marcas].map((t) => t.toLowerCase());
   const relevantes = termos.length
     ? noticias.filter((n) => termos.some((t) => `${n.titulo} ${n.resumo} ${n.tags.join(" ")}`.toLowerCase().includes(t)))
     : [];
   const feed = (relevantes.length ? relevantes : noticias).slice(0, 4);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    <div className="py-2">
       {/* Cabeçalho do perfil */}
       <header className="card overflow-hidden">
         <div className="relative h-28">
-          <Placeholder nome="kilamba" className="absolute inset-0" />
+          <Placeholder nome="painel-clubes" className="absolute inset-0" />
           <div className="absolute inset-0 bg-gradient-to-t from-ink-900 to-transparent" />
         </div>
         {/* `relative` põe esta faixa por cima da imagem, que está posicionada. */}
@@ -297,8 +284,8 @@ export function ContaClient({
             <div className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-3">
                 {[
-                  { v: validos.length, l: "Bilhetes activos", i: "ticket", a: "bilhetes" as Aba },
-                  { v: prefs.pilotos.length + prefs.equipas.length, l: "A seguir", i: "bell", a: "preferencias" as Aba },
+                  { v: clubesSeguidos.length, l: "Clubes que segue", i: "flag", a: "preferencias" as Aba },
+                  { v: prefs.marcas.length, l: "Marcas de interesse", i: "bike", a: "preferencias" as Aba },
                   { v: anunciosActivos, l: "Anúncios activos", i: "tag", a: "anuncios" as Aba },
                 ].map((s) => (
                   <button key={s.l} onClick={() => setAba(s.a)} className="card card-hover p-5 text-left">
@@ -311,41 +298,16 @@ export function ContaClient({
                 ))}
               </div>
 
-              {validos[0]?.evento && (
-                <div className="card p-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="eyebrow text-mb-red">Próximo evento</h2>
-                    <button onClick={() => setAba("bilhetes")} className="font-ui text-sm text-white transition-colors hover:text-mb-red">
-                      Todos →
-                    </button>
-                  </div>
-                  <div className="mt-4 flex flex-wrap items-center gap-5">
-                    <QRCode valor={validos[0].codigoQR || validos[0].referencia} size={110} />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-display text-xl uppercase leading-tight text-white">{validos[0].evento.titulo}</p>
-                      <p className="mt-1.5 text-sm text-ink-400">
-                        {validos[0].tipoBilheteNome} · {validos[0].quantidade}{" "}
-                        {validos[0].quantidade === 1 ? "bilhete" : "bilhetes"}
-                      </p>
-                      <p className="mt-1 text-xs text-ink-600">
-                        {formatData(validos[0].evento.dataInicio)} · {validos[0].evento.circuito}
-                      </p>
-                      <p className="mt-2 font-mono text-xs text-ink-500">{validos[0].referencia}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               <div className="card p-6">
                 <h2 className="eyebrow text-mb-red mb-1">Para si</h2>
                 <p className="text-xs text-ink-600 mb-5">
                   {relevantes.length
-                    ? "Com base nos pilotos, equipas e marcas que segue."
-                    : "As notícias mais recentes. Siga pilotos, equipas e marcas para personalizar."}
+                    ? "Com base nos clubes e marcas que segue."
+                    : "Os artigos mais recentes. Siga clubes e marcas para personalizar."}
                 </p>
                 <div>
                   {feed.map((n) => (
-                    <Link key={n.slug} href={`/noticias/${n.slug}`} className="group flex gap-3.5 border-b border-white/6 py-3 first:pt-0 last:border-0 last:pb-0">
+                    <Link key={n.slug} href={`/artigos/${n.slug}`} className="group flex gap-3.5 border-b border-white/6 py-3 first:pt-0 last:border-0 last:pb-0">
                       <Placeholder nome={[n.slug, n.imagem]} className="media size-16 shrink-0" tamanhos="64px" />
                       <div className="min-w-0 flex-1">
                         <p className="eyebrow text-mb-red">{n.categoria}</p>
@@ -360,20 +322,18 @@ export function ContaClient({
 
             <aside className="space-y-4">
               <div className="card p-5">
-                <h2 className="eyebrow text-mb-red mb-4">Pilotos que segue</h2>
-                {prefs.pilotos.length === 0 && (
-                  <p className="text-sm text-ink-500">Ainda não segue nenhum piloto.</p>
+                <h2 className="eyebrow text-mb-red mb-4">Clubes que segue</h2>
+                {clubesSeguidos.length === 0 && (
+                  <p className="text-sm text-ink-500">Ainda não segue nenhum clube.</p>
                 )}
                 <div className="space-y-3">
-                  {pilotos.filter((p) => prefs.pilotos.includes(p.slug)).map((p) => (
-                    <Link key={p.slug} href={`/pilotos/${p.slug}`} className="group flex items-center gap-3">
-                      <Retrato nome={p.slug} iniciais={iniciais(p.nome)}
-                        className="size-10 shrink-0 rounded-full [container-type:size]" tamanhos="40px" />
+                  {clubesSeguidos.map((c) => (
+                    <Link key={c.slug} href={`/clubes/${c.slug}`} className="group flex items-center gap-3">
+                      <Monograma nome={c.nome} cor={c.cor} className="size-10 text-xs" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm text-white group-hover:text-mb-red transition-colors">{p.nome}</p>
-                        <p className="truncate text-xs text-ink-600">{p.equipa}</p>
+                        <p className="truncate text-sm text-white transition-colors group-hover:text-mb-red-light">{c.nome}</p>
+                        <p className="truncate text-xs text-ink-500">{c.tipo === "Outro" ? "Convívio e solidariedade" : c.tipo}</p>
                       </div>
-                      <span className="font-display text-sm text-white tabular-nums">{p.estatisticas.pontos}</span>
                     </Link>
                   ))}
                 </div>
@@ -393,73 +353,6 @@ export function ContaClient({
           </div>
         )}
 
-        {/* ---------- BILHETES ---------- */}
-        {aba === "bilhetes" && (
-          <div className="space-y-4">
-            {bilhetesComEvento.length === 0 && (
-              <div className="card p-8 text-center">
-                <p className="text-sm text-ink-400">
-                  Ainda não tem bilhetes associados a {dados.email}.
-                </p>
-              </div>
-            )}
-            {bilhetesComEvento.map((b) => {
-              const usado = b.estado === "usado" || (b.evento ? b.evento.dataFim < hoje : false);
-              const pago = b.estado === "pago" || b.estado === "usado";
-              return (
-                <article key={b.id} className={`card overflow-hidden ${usado ? "opacity-60" : ""}`}>
-                  <div className="flex flex-col sm:flex-row">
-                    <div className="min-w-0 flex-1 p-6">
-                      <div className="flex items-center justify-between gap-3">
-                        <Logo height={18} className="text-white" />
-                        <Tag tone={pago && !usado ? "ok" : "neutral"}>
-                          {!pago ? "A aguardar pagamento" : usado ? "Utilizado" : "Válido"}
-                        </Tag>
-                      </div>
-                      <h2 className="mt-4 font-display text-xl uppercase leading-tight text-white">
-                        {b.evento?.titulo ?? b.eventoTitulo}
-                      </h2>
-                      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3.5 sm:grid-cols-3">
-                        {[
-                          ["Tipo", b.tipoBilheteNome],
-                          ["Quantidade", `${b.quantidade}`],
-                          ["Data", b.evento ? formatData(b.evento.dataInicio, { day: "2-digit", month: "short", year: "numeric" }) : ""],
-                          ["Local", b.evento?.circuito ?? ""],
-                          ["Total", formatKz(b.total)],
-                          ["Comprado", formatData(b.criado, { day: "2-digit", month: "short" })],
-                        ].map(([k, v]) => (
-                          <div key={k}>
-                            <dt className="eyebrow text-ink-600">{k}</dt>
-                            <dd className="mt-0.5 text-sm text-white">{v}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                      {b.evento && (
-                        <div className="mt-5 flex flex-wrap gap-2 border-t border-white/6 pt-4">
-                          <ButtonLink href={hrefEvento(b.evento)} variant="ghost" size="sm">Ver evento</ButtonLink>
-                        </div>
-                      )}
-                    </div>
-                    {pago && (
-                      <div className="flex flex-col items-center justify-center gap-2.5 border-t-2 border-dashed border-ink-950 p-6 sm:border-l-2 sm:border-t-0">
-                        <QRCode valor={b.codigoQR || b.referencia} size={140} />
-                        <p className="font-mono text-[11px] text-ink-500">{b.referencia}</p>
-                      </div>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
-            <div className="card p-6 text-center">
-              <p className="text-sm text-ink-400">Quer ir a mais provas?</p>
-              <ButtonLink href="/bilhetes" className="mt-3">
-                <Icon name="ticket" className="size-4" />
-                Ver bilhetes disponíveis
-              </ButtonLink>
-            </div>
-          </div>
-        )}
-
         {/* ---------- PREFERÊNCIAS ---------- */}
         {aba === "preferencias" && (
           <div className="space-y-6 max-w-4xl">
@@ -472,36 +365,15 @@ export function ContaClient({
             </div>
 
             <section className="card p-6">
-              <h2 className="eyebrow text-mb-red mb-1">Pilotos</h2>
-              <p className="text-xs text-ink-600 mb-5">
-                Receba aviso quando estes pilotos correm, pontuam ou sobem ao pódio.
-              </p>
+              <h2 className="eyebrow text-mb-red mb-1">Clubes</h2>
+              <p className="text-xs text-ink-600 mb-5">Artigos, passeios e encontros dos clubes que segue, primeiro.</p>
               <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                {pilotos.map((p) => (
-                  <Escolha key={p.slug} on={prefs.pilotos.includes(p.slug)} onClick={() => alternar("pilotos", p.slug)}>
-                    <Retrato nome={p.slug} iniciais={iniciais(p.nome)}
-                      className="size-9 shrink-0 rounded-full [container-type:size]" tamanhos="36px" />
+                {clubes.map((c) => (
+                  <Escolha key={c.slug} on={prefs.clubes.includes(c.slug)} onClick={() => alternar("clubes", c.slug)}>
+                    <Monograma nome={c.nome} cor={c.cor} className="size-9 text-[11px]" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm text-white">{p.nome}</span>
-                      <span className="block truncate text-[11px] text-ink-600">{p.categoria}</span>
-                    </span>
-                  </Escolha>
-                ))}
-              </div>
-            </section>
-
-            <section className="card p-6">
-              <h2 className="eyebrow text-mb-red mb-1">Equipas e clubes</h2>
-              <p className="text-xs text-ink-600 mb-5">Novidades, resultados e eventos das estruturas que segue.</p>
-              <div className="grid gap-2.5 sm:grid-cols-2">
-                {equipas.map((e) => (
-                  <Escolha key={e.slug} on={prefs.equipas.includes(e.slug)} onClick={() => alternar("equipas", e.slug)}>
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full font-display text-[10px] text-white" style={{ background: e.cor }}>
-                      {e.logo}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm text-white">{e.nome}</span>
-                      <span className="block truncate text-[11px] text-ink-600">{e.tipo}</span>
+                      <span className="block truncate text-sm text-white">{c.nome}</span>
+                      <span className="block truncate text-[11px] text-ink-500">{c.tipo === "Outro" ? "Convívio e solidariedade" : c.tipo}</span>
                     </span>
                   </Escolha>
                 ))}
@@ -536,12 +408,10 @@ export function ContaClient({
               <div className="divide-y divide-white/6">
                 {(
                   [
-                    ["resultados", "Resultados de corridas", "Quando os pilotos e equipas que segue terminam uma prova."],
-                    ["calendario", "Calendário", "Novas provas no calendário."],
-                    ["bilhetes", "Bilhetes", "Quando abre a venda de bilhetes para uma prova."],
+                    ["calendario", "Eventos", "Novos passeios, encontros e raides no calendário."],
                     ["marketplace", "Marketplace", "Novos anúncios das marcas que segue."],
                     ["forum", "Fórum", "Respostas aos seus tópicos e menções."],
-                    ["newsletter", "Newsletter semanal", "Resumo da semana, às segundas-feiras."],
+                    ["newsletter", "Newsletter semanal", "Os artigos da semana, às segundas-feiras."],
                   ] as [TipoNotificacao, string, string][]
                 ).map(([k, titulo, desc]) => (
                   <label key={k} className="flex cursor-pointer items-start gap-4 py-4">

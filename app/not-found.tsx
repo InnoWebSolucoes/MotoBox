@@ -1,24 +1,26 @@
-import { ButtonLink } from "@/components/ui";
+import Link from "next/link";
+import { Compass } from "lucide-react";
+import { PaginaInterior } from "@/components/painel/PaginaInterior";
+import { BotaoMB } from "@/components/painel/blocos";
 
-export default function NotFound() {
+export default function NaoEncontrada() {
   return (
-    <div className="relative overflow-hidden">
-      <div className="stripes absolute inset-0" aria-hidden />
-      <div className="relative mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center px-6 py-20 text-center">
-        <p className="font-display text-[9rem] leading-none text-mb-red/25 sm:text-[12rem]">404</p>
-        <h1 className="title-xl -mt-6 text-3xl sm:text-4xl">Saiu de pista</h1>
-        <p className="mt-4 max-w-md text-sm text-ink-400 leading-relaxed">
-          A página que procura não existe ou mudou de sítio. Volte ao traçado principal.
+    <PaginaInterior icone={<Compass />} rodape={false}>
+      <div className="coluna flex min-h-full flex-col justify-center pb-16 pt-28">
+        <p className="sobretitulo text-white/70">Erro 404</p>
+        <h1 className="titulo-1 mt-4 max-w-[13ch]">Esta estrada não leva a lado nenhum</h1>
+        <p className="texto-lead mt-6 max-w-[46ch] text-white/80">
+          A página que procura não existe ou mudou de sítio. Volte ao painel e escolha outro caminho.
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <ButtonLink href="/" size="lg">
-            Página inicial
-          </ButtonLink>
-          <ButtonLink href="/calendario" variant="outline" size="lg">
-            Calendário
-          </ButtonLink>
+        <div className="mt-10 flex flex-wrap gap-[var(--intervalo)]">
+          <BotaoMB href="/explorar">Ir para o painel</BotaoMB>
+          <BotaoMB href="/artigos" variante="escuro">Ler os artigos</BotaoMB>
         </div>
+        <p className="mt-10 text-sm text-white/55">
+          Procura uma página antiga de corridas ou classificações?{" "}
+          <Link href="/eventos" className="sublinhado text-white">Os eventos estão aqui</Link>.
+        </p>
       </div>
-    </div>
+    </PaginaInterior>
   );
 }

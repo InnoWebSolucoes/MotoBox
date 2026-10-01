@@ -1,3 +1,5 @@
+import { Lock } from "lucide-react";
+import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import type { Metadata } from "next";
 import { SemAcessoClient } from "./SemAcessoClient";
 
@@ -7,5 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default function PaginaSemAcesso() {
-  return <SemAcessoClient />;
+  return (
+    <PaginaInterior icone={<Lock />}>
+      <div className="coluna pt-20">
+        <SemAcessoClient />
+      </div>
+    </PaginaInterior>
+  );
 }

@@ -93,7 +93,7 @@ export function FormularioSessao({
     "h-12 w-full rounded-[0.625rem] bg-ink-900 px-4 text-sm text-white ring-1 ring-inset ring-white/10 " +
     "placeholder:text-ink-600 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
   const etiqueta =
-    "mb-1.5 block text-[11px] font-display uppercase tracking-widest text-ink-300";
+    "mb-1.5 block text-sm text-white/70";
 
   const titulo =
     modo === "entrar" ? t("auth.entrar")
@@ -174,7 +174,7 @@ export function FormularioSessao({
         )}
 
         <button type="submit" disabled={ocupado}
-          className="h-12 w-full rounded-full bg-mb-red font-ui text-base text-white transition-colors hover:bg-mb-red-dark disabled:opacity-50">
+          className="h-12 w-full rounded-[6px] bg-mb-red text-[15px] text-white transition-colors hover:bg-mb-red-dark disabled:opacity-50">
           {ocupado ? t("auth.aguarde") : titulo}
         </button>
       </form>
@@ -188,7 +188,7 @@ export function FormularioSessao({
           </div>
 
           <button type="button" onClick={google} disabled={ocupado}
-            className="flex h-12 w-full items-center justify-center gap-3 rounded-full bg-ink-800 font-ui text-base text-white transition-colors hover:bg-ink-700 disabled:opacity-50">
+            className="flex h-12 w-full items-center justify-center gap-3 rounded-[6px] bg-white/10 text-[15px] text-white transition-colors hover:bg-white/20 disabled:opacity-50">
             <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
               <path fill="#4285F4" d="M22.6 12.2c0-.8-.1-1.4-.2-2.1H12v3.9h6c-.1 1-.8 2.5-2.2 3.5l3.4 2.6c2-1.8 3.4-4.6 3.4-7.9Z"/>
               <path fill="#34A853" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.4-2.6c-.9.6-2.1 1.1-3.8 1.1-2.9 0-5.3-1.9-6.2-4.5l-3.5 2.7C4.1 20.6 7.8 23 12 23Z"/>

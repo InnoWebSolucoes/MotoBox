@@ -1,37 +1,36 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Placeholder } from "@/components/Brand";
+import { Clock, Eye, MapPin, ShieldCheck, Star, Store } from "lucide-react";
 import { Denunciar } from "@/components/Denunciar";
 import { SeloVerificado } from "@/components/SeloVerificado";
-import { Icon, Tag } from "@/components/ui";
-import { formatData, formatKz } from "@/lib/data";
+import { Tag } from "@/components/ui";
+import { formatKz } from "@/lib/data";
+import { dataArtigo } from "@/lib/motobox";
 import { lerAnuncio, lerAnuncios } from "@/lib/supabase/publico";
+import { PaginaInterior } from "@/components/painel/PaginaInterior";
+import { Seccao } from "@/components/painel/blocos";
+import { Foto, Monograma, Seta } from "@/components/painel/kit";
 import { GaleriaAnuncio } from "./GaleriaAnuncio";
 import { AccoesAnuncio } from "./AccoesAnuncio";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
 
-// Anúncios criados depois do build são gerados no primeiro pedido
-// (`dynamicParams` fica no valor por omissão, `true`).
+// Anúncios criados depois do build são gerados no primeiro pedido.
 export async function generateStaticParams() {
   const anuncios = await lerAnuncios();
   return anuncios.map((a) => ({ id: a.id }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const a = await lerAnuncio(id);
   if (!a) return { title: "Anúncio não encontrado" };
   return { title: a.titulo, description: a.descricao.slice(0, 155) };
 }
 
-export default async function AnuncioPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AnuncioPagina({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const anuncio = await lerAnuncio(id);
   if (!anuncio) notFound();
@@ -45,161 +44,128 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
     ["Marca", anuncio.marca],
     anuncio.modelo && ["Modelo", anuncio.modelo],
     anuncio.ano && ["Ano", String(anuncio.ano)],
-    anuncio.quilometragem !== undefined && [
-      "Quilometragem",
-      `${anuncio.quilometragem.toLocaleString("pt-PT")} km`,
-    ],
+    anuncio.quilometragem !== undefined && ["Quilometragem", `${anuncio.quilometragem.toLocaleString("pt-PT")} km`],
     ["Estado", anuncio.estado],
     ["Localização", anuncio.provincia],
   ].filter((x): x is [string, string] => Boolean(x));
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
-      <Link
-        href="/marketplace"
-        className="inline-flex items-center gap-2 font-ui text-base text-ink-400 hover:text-white transition-colors"
-      >
-        <span aria-hidden>←</span> Marketplace
-      </Link>
-
-      <div className="mt-6 grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:items-start">
-        {/* Galeria e descrição */}
-        <div>
-          <GaleriaAnuncio imagens={anuncio.imagens ?? []} titulo={anuncio.titulo}>
-            <Tag tone="neutral">{anuncio.categoria}</Tag>
-            <Tag tone="neutral">{anuncio.estado}</Tag>
-          </GaleriaAnuncio>
-
-          <section className="mt-10">
-            <h2 className="eyebrow accent-bar text-white">Descrição</h2>
-            <p className="text-base text-ink-300 leading-relaxed whitespace-pre-line">
-              {anuncio.descricao}
-            </p>
-          </section>
-
-          <section className="mt-10">
-            <h2 className="eyebrow accent-bar text-white">Ficha técnica</h2>
-            <dl className="grid gap-x-10 sm:grid-cols-2">
-              {ficha.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 border-b border-white/6 py-3.5">
-                  <dt className="text-sm text-ink-500">{k}</dt>
-                  <dd className="text-sm text-white text-right">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        </div>
-
-        {/* Coluna de compra */}
-        <aside className="space-y-4 lg:sticky lg:top-24">
-          <div className="card p-6">
-            <h1 className="font-display text-xl sm:text-2xl uppercase leading-tight text-white">
-              {anuncio.titulo}
-            </h1>
-
-            <p className="mt-4 font-display text-4xl leading-none text-white tabular-nums">{formatKz(anuncio.preco)}</p>
-            <p className="mt-1 text-xs text-ink-500">
-              {anuncio.negociavel ? "Preço negociável" : "Preço fixo"}
-            </p>
-
-            <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-white/6 pt-4 text-xs text-ink-500">
-              <span className="inline-flex items-center gap-1.5">
-                <Icon name="pin" className="size-3.5" />
-                {anuncio.provincia}
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Icon name="eye" className="size-3.5" />
-                {anuncio.visualizacoes.toLocaleString("pt-PT")} visualizações
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Icon name="clock" className="size-3.5" />
-                {formatData(anuncio.publicado, { day: "2-digit", month: "short" })}
-              </span>
-            </p>
-
-            <AccoesAnuncio
-              anuncioId={anuncio.id}
-              titulo={anuncio.titulo}
-              preco={anuncio.preco}
-              vendedorNome={anuncio.vendedor.nome}
-              vendedorAuthId={anuncio.vendedor.authId}
-            />
-          </div>
-
-          {/* Vendedor */}
-          <div className="card p-6">
-            <h2 className="eyebrow text-mb-red mb-4">Vendedor</h2>
-            <div className="flex items-center gap-3">
-              <span className="grid size-12 shrink-0 place-items-center rounded-full bg-ink-800 font-display text-sm text-white">
-                {anuncio.vendedor.nome
-                  .split(" ")
-                  .map((p) => p[0])
-                  .slice(0, 2)
-                  .join("")}
-              </span>
-              <div className="min-w-0">
-                <p className="flex items-center gap-1.5 font-display text-base uppercase text-white">
-                  <span className="truncate">{anuncio.vendedor.nome}</span>
-                  {anuncio.vendedor.verificado && <SeloVerificado tamanho={16} />}
-                </p>
-                <p className="text-xs text-ink-500">
-                  Membro desde {anuncio.vendedor.desde}
-                </p>
-              </div>
-            </div>
-
-            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-white/6 pt-4">
-              <div>
-                <dd className="font-display text-lg text-white">{anuncio.vendedor.anuncios}</dd>
-                <dt className="eyebrow text-ink-600">Anúncios</dt>
-              </div>
-              <div>
-                <dd className="flex items-center gap-1.5 font-display text-lg text-white">
-                  {anuncio.vendedor.avaliacao.toFixed(1)}
-                  <Icon name="star" className="size-4 text-gold" />
-                </dd>
-                <dt className="eyebrow text-ink-600">Avaliação</dt>
-              </div>
-            </dl>
-          </div>
-
-          {/* Aviso */}
-          <div className="px-1 pt-1">
-            <p className="flex gap-2.5 text-xs text-ink-500 leading-relaxed">
-              <Icon name="shield" className="size-4 shrink-0 text-ink-600" />
-              A Motobox não intermedeia pagamentos. Combine sempre um encontro em local público,
-              verifique a documentação e desconfie de preços muito abaixo do mercado.
-            </p>
-            <div className="mt-3 pl-6.5">
-              <Denunciar tipo="marketplace" alvoId={anuncio.id} rotulo="Denunciar este anúncio" />
-            </div>
-          </div>
-        </aside>
+    <PaginaInterior icone={<Store />}>
+      <div className="coluna pb-6 pt-28 lg:pt-32">
+        <Link href="/marketplace" className="group inline-flex items-center gap-2 text-sm text-white/70 hover:text-white">
+          <Seta para="direita" className="size-3 rotate-180" />
+          Marketplace
+        </Link>
       </div>
 
-      {/* Semelhantes */}
-      {semelhantes.length > 0 && (
-        <section className="mt-16">
-          <h2 className="title-xl text-2xl sm:text-3xl">Anúncios semelhantes</h2>
-          <div className="mt-8 grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
-            {semelhantes.map((a) => (
-              <Link key={a.id} href={`/marketplace/${a.id}`} className="group block">
-                <div className="media relative aspect-[4/3]">
-                  <Placeholder
-                    nome={a.imagens[0]}
-                    className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
-                    tamanhos="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
-                  />
+      <Seccao className="!pt-0">
+        <div className="grid gap-[var(--intervalo)] lg:grid-cols-[1.6fr_1fr] lg:items-start">
+          <div className="painel painel-escuro p-[var(--intervalo)]">
+            <GaleriaAnuncio imagens={anuncio.imagens ?? []} titulo={anuncio.titulo}>
+              <Tag>{anuncio.categoria}</Tag>
+              <Tag>{anuncio.estado}</Tag>
+            </GaleriaAnuncio>
+
+            <div className="p-5 md:p-8">
+              <h2 className="text-lg font-semibold">Descrição</h2>
+              <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-white/80">{anuncio.descricao}</p>
+
+              <h2 className="mt-10 text-lg font-semibold">Ficha técnica</h2>
+              <dl className="mt-3 grid gap-x-10 sm:grid-cols-2">
+                {ficha.map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-4 border-b border-white/8 py-3">
+                    <dt className="text-sm text-white/55">{k}</dt>
+                    <dd className="text-right text-sm">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+
+          <aside className="grid gap-[var(--intervalo)] lg:sticky lg:top-6">
+            <div className="painel painel-escuro p-6">
+              <h1 className="text-xl font-semibold leading-snug md:text-2xl">{anuncio.titulo}</h1>
+              <p className="mt-5 text-4xl font-semibold tabular-nums tracking-tight">{formatKz(anuncio.preco)}</p>
+              <p className="mt-1 text-xs text-white/55">{anuncio.negociavel ? "Preço negociável" : "Preço fixo"}</p>
+
+              <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-white/8 pt-4 text-xs text-white/55">
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="size-3.5" aria-hidden /> {anuncio.provincia}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Eye className="size-3.5" aria-hidden /> {anuncio.visualizacoes.toLocaleString("pt-PT")} visualizações
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="size-3.5" aria-hidden /> {dataArtigo(anuncio.publicado)}
+                </span>
+              </p>
+
+              <AccoesAnuncio
+                anuncioId={anuncio.id}
+                titulo={anuncio.titulo}
+                preco={anuncio.preco}
+                vendedorNome={anuncio.vendedor.nome}
+                vendedorAuthId={anuncio.vendedor.authId}
+              />
+            </div>
+
+            <div className="painel painel-escuro p-6">
+              <p className="text-sm text-white/55">Vendedor</p>
+              <div className="mt-3 flex items-center gap-3">
+                <Monograma nome={anuncio.vendedor.nome} cor="#2a2a2a" className="size-12 text-sm" />
+                <div className="min-w-0">
+                  <p className="flex items-center gap-1.5 font-medium">
+                    <span className="truncate">{anuncio.vendedor.nome}</span>
+                    {anuncio.vendedor.verificado && <SeloVerificado tamanho={16} />}
+                  </p>
+                  <p className="text-xs text-white/55">Membro desde {anuncio.vendedor.desde}</p>
                 </div>
-                <p className="mt-3.5 font-display text-2xl leading-none text-white tabular-nums">{formatKz(a.preco)}</p>
-                <h3 className="mt-2.5 font-display text-base uppercase leading-snug text-white line-clamp-2 group-hover:text-mb-red transition-colors">
-                  {a.titulo}
-                </h3>
+              </div>
+              <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-white/8 pt-4">
+                <div>
+                  <dd className="text-lg font-semibold">{anuncio.vendedor.anuncios}</dd>
+                  <dt className="text-xs text-white/55">Anúncios</dt>
+                </div>
+                <div>
+                  <dd className="flex items-center gap-1.5 text-lg font-semibold">
+                    {anuncio.vendedor.avaliacao ? anuncio.vendedor.avaliacao.toFixed(1) : "Sem avaliações"}
+                    {anuncio.vendedor.avaliacao > 0 && <Star className="size-4 fill-gold text-gold" aria-hidden />}
+                  </dd>
+                  <dt className="text-xs text-white/55">Avaliação</dt>
+                </div>
+              </dl>
+            </div>
+
+            <div className="painel painel-escuro p-5">
+              <p className="flex gap-2.5 text-xs leading-relaxed text-white/60">
+                <ShieldCheck className="size-4 shrink-0 text-mb-red-light" aria-hidden />
+                A MotoBox não intermedeia pagamentos. Veja a mota e os documentos antes de pagar, combine o encontro
+                num sítio público e desconfie de preços muito abaixo do mercado.
+              </p>
+              <div className="mt-3 pl-6.5">
+                <Denunciar tipo="marketplace" alvoId={anuncio.id} rotulo="Denunciar este anúncio" />
+              </div>
+            </div>
+          </aside>
+        </div>
+      </Seccao>
+
+      {semelhantes.length > 0 && (
+        <Seccao className="!pt-0">
+          <h2 className="titulo-3">Anúncios semelhantes</h2>
+          <div className="mt-8 grid gap-[var(--intervalo)] sm:grid-cols-2 xl:grid-cols-4">
+            {semelhantes.map((a) => (
+              <Link key={a.id} href={`/marketplace/${a.id}`} className="painel painel-escuro group flex flex-col p-[var(--intervalo)]">
+                <Foto nome={a.imagens[0] ?? ""} className="aspect-[4/3]" largura={600} tamanhos="(max-width: 640px) 100vw, 25vw" />
+                <div className="p-4">
+                  <p className="text-xl font-semibold tabular-nums">{formatKz(a.preco)}</p>
+                  <h3 className="mt-2 line-clamp-2 text-sm leading-snug text-white/85">{a.titulo}</h3>
+                </div>
               </Link>
             ))}
           </div>
-        </section>
+        </Seccao>
       )}
-    </div>
+    </PaginaInterior>
   );
 }

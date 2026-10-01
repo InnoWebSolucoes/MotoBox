@@ -1,189 +1,229 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
-import { Placeholder } from "@/components/Brand";
-import { ButtonLink, Icon } from "@/components/ui";
+import { Flag, HeartHandshake, MapPinned, Route, Users, Venus } from "lucide-react";
 import { lerClubes } from "@/lib/supabase/publico";
 import { ROTAS } from "@/lib/rotas";
-import { ClubesFiltrados, ListaClubes } from "./ClubesClient";
+import { PaginaInterior } from "@/components/painel/PaginaInterior";
+import {
+  Abertura, BotaoMB, Cabecalho, CartaoIcone, CartaoNumerado, Numeros, Pilulas, Seccao,
+} from "@/components/painel/blocos";
+import { CartaoClube } from "@/components/painel/cartoes";
+import { Chip, Foto, Seta } from "@/components/painel/kit";
 import { JuntarClube } from "./JuntarClube";
-
-// O Next exige um literal aqui, não aceita constante importada.
-export const revalidate = 60;
+import { TIPOS_CLUBE, tipoPorSlug } from "./comum";
 
 export const metadata: Metadata = {
   title: "Clubes",
   description:
-    "Clubes de mota de lazer e moto-turismo em Angola: grupos de passeio, Lady Riders, raides e viagens. Encontre um clube na sua província e as melhores rotas para ir de mota.",
+    "Todos os clubes de motas de Angola: moto-turismo, Lady Riders, scooters, clássicas e convívio. Encontre um clube perto de si ou junte o seu à MotoBox.",
 };
 
-export default async function ClubesPage() {
+export default async function Clubes({
+  searchParams,
+}: {
+  searchParams: Promise<{ tipo?: string; provincia?: string }>;
+}) {
+  const { tipo, provincia } = await searchParams;
   const clubes = await lerClubes();
-  const provincias = new Set(clubes.map((c) => c.provincia)).size;
-  const rotas = ROTAS.slice(0, 4);
 
-  const ladyRiders = (
-    <section className="mt-16 grid items-center gap-8 lg:grid-cols-[1fr_1.1fr]" aria-labelledby="lady-riders">
-      <Placeholder
-        nome="joana-ferraz"
-        label="Fotografia ilustrativa: motociclista de capacete na estrada"
-        className="media aspect-[16/10]"
-        tamanhos="(max-width: 1024px) 100vw, 45vw"
-      />
-      <div>
-        <p className="eyebrow text-mb-red">Lady Riders</p>
-        <h2 id="lady-riders" className="title-xl mt-2 text-3xl sm:text-4xl">Elas também conduzem</h2>
-        <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink-400">
-          Há motociclistas angolanas a viajar juntas pelo país e além-fronteiras: as Ladies in 2 Wheels in
-          Angola já rodaram até à Namíbia, ao Botswana e à África do Sul, com a filantropia na bagagem. E há
-          clubes mistos presididos por mulheres, como o Anjos Bantu. Como elas dizem, «a lady rider é a
-          motorista, não a pendura».
-        </p>
-        <Link
-          href="/clubes?tipo=lady-riders"
-          className="group mt-6 inline-flex items-center gap-3 font-ui text-base text-white transition-colors hover:text-ink-200"
-        >
-          Ver clubes Lady Riders
-          <span aria-hidden className="grid size-9 place-items-center rounded-full bg-ink-800 transition-colors group-hover:bg-mb-red">
-            <Icon name="arrow" className="size-4" />
-          </span>
-        </Link>
-      </div>
-    </section>
+  const tipoActivo = tipoPorSlug(tipo);
+  const tiposPresentes = TIPOS_CLUBE.filter((t) => clubes.some((c) => c.tipo === t.tipo));
+  const provincias = [...new Set(clubes.map((c) => c.provincia).filter(Boolean))].sort((a, b) =>
+    a === "Luanda" ? -1 : b === "Luanda" ? 1 : a.localeCompare(b),
   );
+  const provinciaActiva = provincias.find((p) => p === provincia);
+
+  const lista = clubes.filter(
+    (c) => (!tipoActivo || c.tipo === tipoActivo.tipo) && (!provinciaActiva || c.provincia === provinciaActiva),
+  );
+  const ladyRiders = clubes.filter((c) => c.tipo === "Lady Riders" || /presidido por uma motociclista/i.test(c.descricao));
+
+  // Ligações dos filtros, mantendo o outro filtro escolhido.
+  const ligacao = (t?: string, p?: string) => {
+    const q = new URLSearchParams();
+    if (t) q.set("tipo", t);
+    if (p) q.set("provincia", p);
+    const s = q.toString();
+    return `/clubes${s ? `?${s}` : ""}`;
+  };
 
   return (
-    <>
-      {/* ============ CABEÇALHO ============ */}
-      <header className="relative overflow-hidden">
-        <Placeholder nome="passeios" className="absolute inset-0" tamanhos="100vw" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/75 to-ink-950/30" aria-hidden />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" aria-hidden />
-        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
-          <div className="max-w-2xl rise">
-            <p className="eyebrow text-mb-red">Lazer e turismo</p>
-            <h1 className="title-xl mt-3 text-5xl sm:text-6xl lg:text-7xl">Clubes</h1>
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-300 sm:text-lg">
-              Quem anda de mota por gosto: grupos de passeio, raides pelo país, viagens aos países vizinhos e
-              muita solidariedade pelo caminho. Sem pilotos nem pontos, só estrada.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink href="#lista">
-                Encontrar um clube
-              </ButtonLink>
-              <ButtonLink href="/clubes/rotas" variant="outline">
-                <Icon name="map" className="size-4" />
-                Rotas de moto-turismo
-              </ButtonLink>
-            </div>
-          </div>
-
-          <dl className="mt-12 flex flex-wrap gap-x-10 gap-y-4">
-            {[
-              { v: clubes.length, l: clubes.length === 1 ? "Clube" : "Clubes" },
-              { v: provincias, l: provincias === 1 ? "Província" : "Províncias" },
-              { v: ROTAS.length, l: "Rotas" },
-            ].map((s) => (
-              <div key={s.l}>
-                <dd className="font-display text-3xl text-white tabular-nums">{s.v}</dd>
-                <dt className="eyebrow mt-1 text-ink-500">{s.l}</dt>
-              </div>
-            ))}
-          </dl>
+    <PaginaInterior icone={<Users />}>
+      <Abertura
+        foto="banner-clubes"
+        sobretitulo="Clubes de Angola"
+        titulo="Quem anda de mota em grupo"
+        texto="Grupos de passeio, Lady Riders, scooters e clássicas, raides pelo país e viagens além-fronteiras. Os clubes de motas de Angola, todos no mesmo sítio."
+      >
+        <div className="flex flex-wrap gap-[var(--intervalo)]">
+          <BotaoMB href="#lista">Encontrar um clube</BotaoMB>
+          <BotaoMB href="#juntar" variante="escuro">Juntar o meu clube</BotaoMB>
         </div>
-      </header>
+      </Abertura>
 
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        {/* ============ INTRODUÇÃO ============ */}
-        <section className="mb-12 grid gap-6 border-b border-white/6 pb-12 lg:grid-cols-[1fr_1.4fr]" aria-label="Andar de mota por lazer em Angola">
-          <h2 className="title-xl text-2xl sm:text-3xl">Andar de mota por lazer em Angola</h2>
-          <div className="space-y-4 text-sm leading-relaxed text-ink-400 sm:text-base">
-            <p>
-              O movimento motard angolano ganhou forma no início dos anos 2000, com grupos de amigos que saíam
-              juntos por Luanda. Em 2006, os Amigos da Picada saíram do país pela primeira vez, numa viagem em grupo
-              até à Namíbia, e abriram caminho a uma ideia simples: conhecer Angola de mota.
-            </p>
-            <p>
-              Hoje os clubes juntam saídas de domingo à volta das cidades, raides a Malanje, a Benguela ou ao
-              Soyo, viagens além-fronteiras e acções solidárias em hospitais e comunidades. Em Julho
-              de 2026, a primeira edição do Dia do Motard Angolano juntou clubes no Autódromo de Luanda.
-            </p>
+      {/* ---------- O movimento ---------- */}
+      <Seccao>
+        <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
+          <Cabecalho
+            icone={<Flag />}
+            titulo="Andar de mota por gosto, em Angola"
+            texto={
+              <>
+                <p>
+                  O movimento motard angolano ganhou forma no início dos anos 2000, com grupos de amigos que saíam
+                  juntos por Luanda. Em 2006, os Amigos da Picada atravessaram a fronteira pela primeira vez, numa
+                  viagem em grupo até à Namíbia, e abriram caminho a uma ideia simples: conhecer Angola de mota.
+                </p>
+                <p className="mt-4">
+                  Hoje há saídas de domingo à volta das cidades, raides a Malanje, a Benguela ou ao Soyo, viagens
+                  além-fronteiras e acções solidárias em hospitais e comunidades. Em Julho de 2026, o primeiro Dia do
+                  Motard Angolano juntou os clubes no Autódromo de Luanda.
+                </p>
+              </>
+            }
+          />
+          <Numeros
+            className="self-end"
+            itens={[
+              { valor: clubes.length, texto: "clubes e grupos na MotoBox" },
+              { valor: provincias.length, texto: "províncias com sede publicada" },
+              { valor: ladyRiders.length, texto: "clubes de mulheres ou presididos por mulheres" },
+              { valor: 2006, texto: "a primeira viagem em grupo além-fronteiras" },
+            ]}
+          />
+        </div>
+      </Seccao>
+
+      {/* ---------- Lista ---------- */}
+      <Seccao id="lista" className="!pt-4">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <h2 className="titulo-2">Todos os clubes</h2>
+          <p className="text-sm text-white/60">
+            {lista.length} {lista.length === 1 ? "clube" : "clubes"}
+            {tipoActivo ? ` · ${tipoActivo.nome}` : ""}
+            {provinciaActiva ? ` · ${provinciaActiva}` : ""}
+          </p>
+        </div>
+
+        <div className="mt-8 space-y-3">
+          <Pilulas
+            rotulo="Tipo de clube"
+            activa={tipoActivo?.slug ?? "todos"}
+            itens={[
+              { chave: "todos", texto: "Todos os tipos", href: ligacao(undefined, provinciaActiva) },
+              ...tiposPresentes.map((t) => ({ chave: t.slug, texto: t.nome, href: ligacao(t.slug, provinciaActiva) })),
+            ]}
+          />
+          {provincias.length > 1 && (
+            <Pilulas
+              rotulo="Província"
+              activa={provinciaActiva ?? "todas"}
+              itens={[
+                { chave: "todas", texto: "Todo o país", href: ligacao(tipoActivo?.slug) },
+                ...provincias.map((p) => ({ chave: p, texto: p, href: ligacao(tipoActivo?.slug, p) })),
+              ]}
+            />
+          )}
+        </div>
+
+        {lista.length ? (
+          <div className="mt-8 grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
+            {lista.map((c) => (
+              <CartaoClube key={c.slug} clube={c} />
+            ))}
           </div>
-        </section>
-
-        {/* ============ FILTROS E LISTA ============ */}
-        <Suspense fallback={<ListaClubes clubes={clubes} tipo={null} provincia={null} ladyRiders={ladyRiders} />}>
-          <ClubesFiltrados clubes={clubes} ladyRiders={ladyRiders} />
-        </Suspense>
-
-        {/* ============ MOTO-TURISMO ============ */}
-        <section className="mt-20 border-t border-white/6 pt-14" aria-labelledby="moto-turismo">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="max-w-2xl">
-              <p className="eyebrow mb-2 text-mb-red">Moto-turismo</p>
-              <h2 id="moto-turismo" className="title-xl text-3xl sm:text-4xl">Para onde ir de mota</h2>
-              <p className="mt-3 text-sm leading-relaxed text-ink-400">
-                Da Serra da Leba às quedas de Kalandula: estrada, piso, melhor época e cuidados de cada destino, com
-                as fontes à vista. E uma lista para planear a viagem.
-              </p>
-            </div>
-            <Link
-              href="/clubes/rotas"
-              className="group inline-flex items-center gap-3 font-ui text-base text-white transition-colors hover:text-ink-200"
-            >
-              Todas as rotas
-              <span aria-hidden className="grid size-9 place-items-center rounded-full bg-ink-800 transition-colors group-hover:bg-mb-red">
-                <Icon name="arrow" className="size-4" />
-              </span>
+        ) : (
+          <div className="painel painel-escuro mt-8 p-10">
+            <p className="text-white/75">Ainda não há clubes com este filtro.</p>
+            <Link href="#juntar" className="mt-4 inline-flex items-center gap-2 text-sm">
+              <span className="sublinhado">Conhece um? Junte-o à MotoBox</span>
             </Link>
           </div>
+        )}
+        <p className="mt-4 text-xs text-white/45">
+          Informação recolhida nas páginas públicas dos clubes. Fotografias de capa ilustrativas.
+        </p>
+      </Seccao>
 
-          <div className="mt-9 grid grid-cols-2 gap-x-5 gap-y-8 lg:grid-cols-4">
-            {rotas.map((r) => (
-              <Link key={r.slug} href={`/clubes/rotas/${r.slug}`} className="group block">
-                <Placeholder nome={r.imagem} className="media aspect-[4/3]" tamanhos="(max-width: 1024px) 50vw, 25vw" largura={800} />
-                <p className="eyebrow mt-3 text-mb-red">{r.regiao}</p>
-                <h3 className="mt-1.5 font-display text-base uppercase leading-tight text-white transition-colors group-hover:text-mb-red sm:text-lg">
-                  {r.nome}
-                </h3>
-                <p className="mt-1 text-xs text-ink-500">{r.piso} · {r.exigencia}</p>
-              </Link>
-            ))}
+      {/* ---------- Lady Riders ---------- */}
+      <Seccao className="!pt-4">
+        <CartaoNumerado
+          numero={<Venus className="size-5" aria-hidden />}
+          sobretitulo="Lady Riders"
+          titulo="Elas também conduzem"
+          foto="clube-ladies-in-2-wheels"
+          href="/clubes?tipo=lady-riders"
+        >
+          Há motociclistas angolanas a viajar juntas pelo país e além-fronteiras: as Ladies in 2 Wheels in Angola já
+          rodaram até à Namíbia, ao Botswana e à África do Sul, com a filantropia na bagagem. E há clubes mistos
+          presididos por mulheres, como o Clube Anjos Bantu.
+        </CartaoNumerado>
+      </Seccao>
+
+      {/* ---------- Antes do primeiro passeio ---------- */}
+      <Seccao className="!pt-4">
+        <Cabecalho
+          titulo="Antes do primeiro passeio em grupo"
+          texto="Entrar num clube é mais fácil do que parece. Estes três passos ajudam."
+        />
+        <div className="mt-10 grid gap-[var(--intervalo)] md:grid-cols-3">
+          <CartaoIcone icone={<Users />} titulo="Siga e apareça">
+            Siga o clube nas redes e vá a um encontro aberto. A maior parte dos clubes recebe bem quem chega com
+            vontade de rodar.
+          </CartaoIcone>
+          <CartaoIcone icone={<Route />} titulo="Conheça as regras do grupo">
+            Líder à frente, fecho atrás, ziguezague nas rectas e fila indiana nas curvas.{" "}
+            <Link href="/artigos/andar-em-grupo-regras" className="sublinhado text-white">Ler as regras</Link>
+          </CartaoIcone>
+          <CartaoIcone icone={<HeartHandshake />} titulo="Vá equipado">
+            Capacete homologado e apertado, luvas, casaco e calçado fechado. E a mota verificada antes de sair.{" "}
+            <Link href="/seguranca" className="sublinhado text-white">Ver segurança</Link>
+          </CartaoIcone>
+        </div>
+      </Seccao>
+
+      {/* ---------- Rotas ---------- */}
+      <Seccao className="!pt-4">
+        <Cabecalho
+          icone={<MapPinned />}
+          titulo="Para onde ir de mota"
+          texto="Da Serra da Leba às quedas de Kalandula: estrada, piso, melhor época e cuidados de cada destino, com as fontes à vista."
+          accao={{ href: "/rotas", texto: "Todas as rotas" }}
+        />
+        <div className="mt-10 grid gap-[var(--intervalo)] md:grid-cols-3">
+          {ROTAS.slice(0, 3).map((r) => (
+            <Link key={r.slug} href={`/rotas/${r.slug}`} className="painel painel-escuro group flex flex-col p-[var(--intervalo)]">
+              <Foto nome={[r.slug, r.imagem]} className="aspect-[4/3]" largura={700} tamanhos="(max-width: 768px) 100vw, 33vw" />
+              <div className="flex items-end justify-between gap-4 p-4 md:p-5">
+                <div>
+                  <p className="text-[0.8125rem] text-white/60">{r.regiao}</p>
+                  <h3 className="mt-1 text-lg font-semibold leading-snug">{r.nome}</h3>
+                  <p className="mt-1 text-[0.8125rem] text-white/60">{r.piso} · {r.exigencia}</p>
+                </div>
+                <Seta className="mb-1 size-3.5" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </Seccao>
+
+      {/* ---------- Juntar um clube ---------- */}
+      <Seccao id="juntar" className="!pt-4">
+        <div className="grid gap-[var(--intervalo)] lg:grid-cols-[1fr_1.5fr]">
+          <div className="flex min-h-80 flex-col rounded-[var(--raio)] bg-mb-red p-6 md:p-8">
+            <Chip className="!bg-white/15"><Users /></Chip>
+            <h2 className="titulo-3 mt-auto max-w-[14ch] pt-16">Tem um clube? Junte-o à MotoBox</h2>
+            <ul className="mt-6 space-y-2 text-[15px] text-white/90">
+              <li>Página própria do clube, com as redes e o contacto</li>
+              <li>Os vossos passeios e encontros na secção Eventos</li>
+              <li>É gratuito, e a equipa confirma os dados antes de publicar</li>
+            </ul>
           </div>
-          <p className="mt-4 text-[11px] text-ink-600">Fotografias ilustrativas.</p>
-        </section>
-
-        {/* ============ JUNTAR UM CLUBE ============ */}
-        <section id="juntar" className="relative mt-20 scroll-mt-24 overflow-hidden rounded-card bg-ink-900 p-6 sm:p-10" aria-labelledby="juntar-titulo">
-          <div className="speed-lines absolute inset-0 opacity-20" aria-hidden />
-          <div className="relative grid gap-10 lg:grid-cols-[1fr_1.3fr]">
-            <div>
-              <p className="eyebrow text-mb-red">Falta o seu clube?</p>
-              <h2 id="juntar-titulo" className="title-xl mt-3 text-3xl sm:text-4xl">Tem um clube? Junte-o à Motobox</h2>
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-400">
-                Clube de passeio, grupo de Lady Riders, donos da mesma marca, amigos do todo-o-terreno: se sai de
-                mota em grupo, queremos o seu clube aqui. A página é gratuita e mostra as vossas actividades e
-                as redes, e os vossos passeios e encontros podem entrar na secção Eventos.
-              </p>
-              <ul className="mt-6 space-y-2.5 text-sm text-ink-300">
-                {[
-                  "Página própria do clube, com as redes e o contacto",
-                  "Os vossos passeios e encontros na secção Eventos",
-                  "Envie o logótipo e fotografias vossas para a capa",
-                ].map((t) => (
-                  <li key={t} className="flex items-start gap-2.5">
-                    <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-mb-red/15 text-mb-red">
-                      <Icon name="check" className="size-3" />
-                    </span>
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="painel painel-escuro p-6 md:p-10">
             <JuntarClube />
           </div>
-        </section>
-      </div>
-    </>
+        </div>
+      </Seccao>
+    </PaginaInterior>
   );
 }

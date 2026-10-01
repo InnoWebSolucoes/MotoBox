@@ -3,7 +3,7 @@ import { supabaseAdmin, supabaseAdminConfigurado } from "@/lib/supabase/server";
 import { paraBase, definicoesParaBase, TABELA } from "@/lib/supabase/mapeamento";
 import {
   eventos, pilotos, equipas, corridas, noticias, videos,
-  patrocinadores, anuncios, topicos, categoriasForum,
+  patrocinadores, anuncios, topicos, categoriasForum, clubes,
 } from "@/lib/data";
 import {
   utilizadoresSeed, encomendasSeed, denunciasSeed, subscritoresSeed,
@@ -25,7 +25,7 @@ export const maxDuration = 60;
 /** Tabelas com coluna booleana `publicado`. */
 const COM_PUBLICADO = new Set<ColeccaoNome>([
   "eventos", "equipas", "pilotos", "corridas", "noticias",
-  "videos", "patrocinadores", "topicos",
+  "videos", "patrocinadores", "topicos", "clubes",
 ]);
 
 /**
@@ -35,6 +35,7 @@ const COM_PUBLICADO = new Set<ColeccaoNome>([
 const OMISSOES: Partial<Record<ColeccaoNome, Record<string, unknown>>> = {
   eventos:   { bilhetes: [], horarios: [] },
   noticias:  { destaque: false, tags: [] },
+  clubes:    { actividades: [], redes: {}, logo: "", destaque: false },
   topicos:   { fixado: false, bloqueado: false, resolvido: false, ultima_resposta: {} },
   anuncios:  { imagens: [], vendedor: {} },
   equipas:   { pilotos: [], motas: [], estatisticas: {}, redes: {} },
@@ -53,6 +54,7 @@ const LOTES: { coleccao: ColeccaoNome; itens: unknown[] }[] = [
   { coleccao: "eventos", itens: eventos },
   { coleccao: "corridas", itens: corridas },
   { coleccao: "noticias", itens: noticias },
+  { coleccao: "clubes", itens: clubes },
   { coleccao: "videos", itens: videos },
   { coleccao: "patrocinadores", itens: patrocinadores },
   { coleccao: "categoriasForum", itens: categoriasForum },

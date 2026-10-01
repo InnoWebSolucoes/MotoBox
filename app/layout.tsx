@@ -1,89 +1,80 @@
 import type { Metadata, Viewport } from "next";
-import { Barlow_Condensed, Inter } from "next/font/google";
+import { Barlow_Condensed, Instrument_Sans } from "next/font/google";
 import "./globals.css";
-import { Nav } from "@/components/Nav";
-import { Footer } from "@/components/Footer";
-import { lerRedes } from "@/lib/redes";
 import { urlPublica } from "@/lib/base";
-import { ForaDoPainel } from "@/components/ForaDoPainel";
 import CookieBanner from "@/components/CookieBanner";
-import { TraduzirPagina } from "@/components/TraduzirPagina";
 import { IdiomaProvider } from "@/lib/i18n/contexto";
 import { AuthProvider } from "@/lib/auth/contexto";
 import { SessaoObrigatoriaProvider } from "@/components/SessaoObrigatoria";
 import { IntroCapacete } from "@/components/IntroCapacete";
+import { Cenario } from "@/components/painel/Cenario";
 
-const display = Barlow_Condensed({
-  variable: "--font-display",
+const letra = Instrument_Sans({
+  variable: "--font-mb",
   subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
   display: "swap",
 });
 
-const body = Inter({
-  variable: "--font-body",
+// Só para o lettering do logótipo e para o painel de gestão.
+const logo = Barlow_Condensed({
+  variable: "--font-logo",
   subsets: ["latin"],
+  weight: ["700", "800", "900"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${urlPublica()}/`),
   title: {
-    default: "Motobox Angola | A casa do motociclismo angolano",
-    template: "%s | Motobox Angola",
+    default: "MotoBox Angola | A casa de quem anda de mota",
+    template: "%s | MotoBox Angola",
   },
   description:
-    "Calendário, resultados, classificações, pilotos, notícias, bilhetes e marketplace do motociclismo em Angola. A referência digital do mundo motard angolano.",
+    "Histórias, clubes, passeios, eventos e segurança para quem anda de mota em Angola. Da scooter de todos os dias à moto de viagem, a comunidade motard angolana num só lugar.",
   keywords: [
-    "motocross Angola",
-    "motard Angola",
-    "campeonato nacional motocross",
-    "enduro Angola",
-    "Motobox",
     "motas Angola",
+    "motard Angola",
+    "clubes de motas Angola",
+    "moto-turismo Angola",
+    "Lady Riders Angola",
+    "segurança rodoviária motas",
+    "MotoBox",
   ],
   openGraph: {
     type: "website",
     locale: "pt_AO",
-    siteName: "Motobox Angola",
-    title: "Motobox Angola | A casa do motociclismo angolano",
+    siteName: "MotoBox Angola",
+    title: "MotoBox Angola | A casa de quem anda de mota",
     description:
-      "Calendário, resultados, pilotos, bilhetes e marketplace do motociclismo em Angola.",
+      "Histórias, clubes, passeios, eventos e segurança para quem anda de mota em Angola.",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0c",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const redes = await lerRedes();
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-AO" className={`${display.variable} ${body.variable}`}>
-      <body className="flex min-h-screen flex-col antialiased">
+    <html lang="pt-AO" className={`${letra.variable} ${logo.variable}`}>
+      <body className="min-h-dvh antialiased">
         <a
           href="#conteudo"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-mb-red focus:px-4 focus:py-2 focus:font-display focus:text-sm focus:uppercase focus:text-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-mb-red focus:px-4 focus:py-2 focus:text-sm focus:text-white"
         >
           Saltar para o conteúdo
         </a>
         <IdiomaProvider>
-        <AuthProvider>
-        <SessaoObrigatoriaProvider>
-        <Nav redes={redes} />
-        <main id="conteudo" className="flex-1">
-          {children}
-        </main>
-        <ForaDoPainel>
-          <Footer />
-        </ForaDoPainel>
-        <CookieBanner />
-        <IntroCapacete />
-        <TraduzirPagina />
-        </SessaoObrigatoriaProvider>
-        </AuthProvider>
+          <AuthProvider>
+            <SessaoObrigatoriaProvider>
+              <Cenario>{children}</Cenario>
+              <CookieBanner />
+              <IntroCapacete />
+            </SessaoObrigatoriaProvider>
+          </AuthProvider>
         </IdiomaProvider>
       </body>
     </html>

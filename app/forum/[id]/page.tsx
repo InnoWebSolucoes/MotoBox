@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MessagesSquare } from "lucide-react";
 import { Icon } from "@/components/ui";
+import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Denunciar } from "@/components/Denunciar";
 import { formatData } from "@/lib/data";
 import { lerDefinicoes, lerTopico, lerTopicos } from "@/lib/supabase/publico";
@@ -29,41 +31,6 @@ export async function generateMetadata({
   return { title: t.titulo, description: t.excerto };
 }
 
-/** Respostas de exemplo, para demonstrar o layout da discussão. */
-const RESPOSTAS = [
-  {
-    autor: "MecanicoDoBairro",
-    avatar: "MB",
-    cor: "#f59e0b",
-    quando: "há 3 horas",
-    mensagens: 987,
-    desde: 2022,
-    melhor: true,
-    texto:
-      "Isso é quase de certeza a bobine a aquecer. Acontece muito nas CRF quando o isolamento está a ceder: a frio faz contacto, a quente dilata e corta. Teste simples: quando começar a falhar, desliga e deixa arrefecer 10 minutos. Se voltar a trabalhar bem, é bobine.",
-  },
-  {
-    autor: "Zeca_Lobito",
-    avatar: "ZL",
-    cor: "#0ea5e9",
-    quando: "há 2 horas",
-    mensagens: 143,
-    desde: 2025,
-    texto:
-      "Fiz o teste que disseste. Confirma-se, arrefeceu e voltou ao normal. Vou encomendar bobine nova. Obrigado a todos, isto poupou-me uma ida à oficina.",
-  },
-  {
-    autor: "KilambaWrench",
-    avatar: "KW",
-    cor: "#e10600",
-    quando: "há 1 hora",
-    mensagens: 421,
-    desde: 2023,
-    texto:
-      "Aproveita e verifica o cachimbo da vela também. Muitas vezes trocam a bobine e o problema continua porque o cachimbo é que estava com a resistência alterada. São dois minutos a medir.",
-  },
-];
-
 /*
  * Uma só cor de destaque (o vermelho, no marcador de fixado, no botão de
  * publicar e no hover); estados em texto discreto; só os avatares têm cor.
@@ -83,10 +50,11 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
     .slice(0, 4);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 sm:py-14">
+    <PaginaInterior icone={<MessagesSquare />}>
+    <div className="coluna pb-16 pt-28 lg:pt-32">
       <Link
         href="/forum"
-        className="inline-flex items-center gap-2 font-ui text-base text-ink-400 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white transition-colors"
       >
         <span aria-hidden>←</span> Fórum
       </Link>
@@ -131,9 +99,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
             </h1>
 
             <p className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-ink-500">
-              <span>{topico.respostas} respostas</span>
-              <Ponto />
-              <span>{topico.visualizacoes.toLocaleString("pt-PT")} visualizações</span>
+                            <span>{topico.visualizacoes.toLocaleString("pt-PT")} visualizações</span>
               <Ponto />
               <span>{formatData(topico.criado)}</span>
             </p>
@@ -162,41 +128,14 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
           {/* Respostas: as de exemplo, as dos membros e as acabadas de publicar */}
           <DiscussaoProvider>
             <section aria-labelledby="respostas" className="mt-14">
-              <h2 id="respostas" className="border-b border-white/6 pb-4 font-display text-xl uppercase text-white">
-                {topico.respostas} respostas
+              <h2 id="respostas" className="border-b border-white/8 pb-4 text-xl font-semibold text-white">
+                {respostas.length === 1 ? "1 resposta" : `${respostas.length} respostas`}
               </h2>
+              {respostas.length === 0 && (
+                <p className="py-8 text-[15px] text-white/60">Ainda sem respostas. Seja o primeiro a ajudar.</p>
+              )}
 
               <ol>
-                {RESPOSTAS.map((r, i) => (
-                  <li key={i} className="border-b border-white/6 py-8">
-                    <div className="flex items-center gap-3 sm:gap-5">
-                      <Avatar cor={r.cor} texto={r.avatar} className="size-10 text-xs sm:size-12 sm:text-sm" />
-                      <div className="min-w-0">
-                        <p className="flex flex-wrap items-baseline gap-x-2.5">
-                          <span className="truncate font-ui text-lg leading-tight text-white">{r.autor}</span>
-                          <span className="text-sm text-ink-500">{r.quando}</span>
-                        </p>
-                        <p className="mt-0.5 flex flex-wrap gap-x-2 text-sm text-ink-500">
-                          <span>{r.mensagens} mensagens</span>
-                          <Ponto />
-                          <span>desde</span>
-                          <span>{r.desde}</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 sm:pl-[4.25rem]">
-                      {r.melhor && (
-                        <p className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white/6 px-3 py-1 text-sm text-ink-200">
-                          <Icon name="check" className="size-3.5" />
-                          Melhor resposta, marcada pelo autor
-                        </p>
-                      )}
-                      <p className="text-base leading-relaxed text-ink-200 sm:text-[17px]">{r.texto}</p>
-                      <Accoes nomes={["Gosto", "Citar"]} topicoId={topico.id} />
-                    </div>
-                  </li>
-                ))}
                 {respostas.map((r) => (
                   <ItemResposta key={r.id} resposta={r} topicoId={topico.id} />
                 ))}
@@ -227,7 +166,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
               {relacionados.map((t) => (
                 <li key={t.id} className="border-b border-white/6 last:border-0">
                   <Link href={`/forum/${t.id}`} className="group block py-4">
-                    <span className="block text-[15px] font-semibold leading-snug text-white transition-colors group-hover:text-mb-red">
+                    <span className="block text-[15px] font-semibold leading-snug text-white transition-colors group-hover:text-mb-red-light">
                       {t.titulo}
                     </span>
                     <span className="mt-1.5 flex flex-wrap gap-x-2 text-sm text-ink-500">
@@ -243,6 +182,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
         )}
       </div>
     </div>
+    </PaginaInterior>
   );
 }
 
@@ -272,7 +212,7 @@ function Fechado({ titulo, texto }: { titulo: string; texto: string }) {
 function Avatar({ cor, texto, className }: { cor: string; texto: string; className: string }) {
   return (
     <span
-      className={`grid shrink-0 place-items-center rounded-full font-display text-white ${className}`}
+      className={`grid shrink-0 place-items-center rounded-[4px] font-semibold text-white ${className}`}
       style={{ background: cor }}
       aria-hidden
     >

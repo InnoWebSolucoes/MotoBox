@@ -16,7 +16,7 @@ import {
    ============================================================ */
 
 const pilula =
-  "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 font-ui text-base transition-colors";
+  "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--raio)] px-6 text-[15px] transition-colors";
 
 /** Domínio sem "www.", para mostrar por baixo do nome de cada sítio. */
 const dominio = (url: string) => new URL(url).hostname.replace(/^www\./, "");
@@ -33,7 +33,7 @@ export function ImportarClient() {
             <Icon name="plus" className="size-4" />
             {x(TEXTO.pedir)}
           </a>
-          <a href="#onde-procurar" className={`${pilula} border-2 border-ink-500 text-white hover:border-white`}>
+          <a href="#onde-procurar" className={`${pilula} bg-white/10 text-white hover:bg-white/20`}>
             {x(TEXTO.ondeProcurar)}
           </a>
           <Link
@@ -46,11 +46,11 @@ export function ImportarClient() {
         </div>
       </PageHero>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="coluna">
         {/* ============ COMO FUNCIONA ============ */}
         <section aria-labelledby="como" className="py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <h2 id="como" className="title-xl text-3xl sm:text-4xl">{x(TEXTO.comoTitulo)}</h2>
+            <h2 id="como" className="titulo-3">{x(TEXTO.comoTitulo)}</h2>
           </div>
           <ol className="mt-10 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
             {PASSOS.map((p, i) => (
@@ -62,7 +62,7 @@ export function ImportarClient() {
             ))}
           </ol>
 
-          <div className="mt-10 flex items-start gap-4 rounded-card bg-mb-red/8 p-5 sm:p-6">
+          <div className="mt-10 flex items-start gap-4 rounded-[var(--raio)] bg-mb-red/15 p-5 sm:p-6">
             <span className="grid size-10 shrink-0 place-items-center rounded-full bg-mb-red/15 text-mb-red">
               <Icon name="flag" className="size-4.5" />
             </span>
@@ -75,7 +75,7 @@ export function ImportarClient() {
 
         {/* ============ O QUE PODE IMPORTAR ============ */}
         <section aria-labelledby="o-que" className="border-t border-white/6 py-16">
-          <h2 id="o-que" className="title-xl text-3xl sm:text-4xl">{x(TEXTO.oQueTitulo)}</h2>
+          <h2 id="o-que" className="titulo-3">{x(TEXTO.oQueTitulo)}</h2>
           <div className="mt-8 grid gap-x-10 md:grid-cols-2">
             {CATEGORIAS.map((c) => (
               <div key={c.nome.pt} className="border-b border-white/6 py-5">
@@ -98,7 +98,7 @@ export function ImportarClient() {
         {/* ============ ANTES DE COMPRAR ============ */}
         <section id="regras" aria-labelledby="regras-titulo" className="scroll-mt-24 border-t border-white/6 py-16">
           <div className="max-w-3xl">
-            <h2 id="regras-titulo" className="title-xl text-3xl sm:text-4xl">{x(TEXTO.regrasTitulo)}</h2>
+            <h2 id="regras-titulo" className="titulo-3">{x(TEXTO.regrasTitulo)}</h2>
             <p className="mt-3 text-sm text-ink-400 leading-relaxed">{x(TEXTO.regrasSub)}</p>
           </div>
           <ol className="mt-8 grid gap-x-10 md:grid-cols-2">
@@ -135,7 +135,7 @@ export function ImportarClient() {
         {/* ============ ONDE PROCURAR ============ */}
         <section id="onde-procurar" aria-labelledby="onde-titulo" className="scroll-mt-24 border-t border-white/6 py-16">
           <div className="max-w-3xl">
-            <h2 id="onde-titulo" className="title-xl text-3xl sm:text-4xl">{x(TEXTO.ondeTitulo)}</h2>
+            <h2 id="onde-titulo" className="titulo-3">{x(TEXTO.ondeTitulo)}</h2>
             <p className="mt-3 text-sm text-ink-400 leading-relaxed">{x(TEXTO.ondeSub)}</p>
           </div>
 
@@ -183,7 +183,7 @@ export function ImportarClient() {
 
         {/* ============ PAGAMENTO ============ */}
         <section aria-labelledby="pagamento" className="border-t border-white/6 py-16">
-          <h2 id="pagamento" className="title-xl text-3xl sm:text-4xl">{x(TEXTO.pagamentoTitulo)}</h2>
+          <h2 id="pagamento" className="titulo-3">{x(TEXTO.pagamentoTitulo)}</h2>
           <div className="mt-8 grid gap-x-10 gap-y-8 md:grid-cols-2">
             <div className="border-t-2 border-mb-red! pt-5">
               <h3 className="font-display text-xl uppercase text-white">{x(TEXTO.emKwanzas)}</h3>
@@ -206,11 +206,11 @@ export function ImportarClient() {
       </div>
 
       {/* ============ PEDIDO ============ */}
-      <section id="pedido" aria-labelledby="pedido-titulo" className="scroll-mt-20 bg-ink-900">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 py-16 lg:grid-cols-[1fr_1.35fr] lg:gap-14">
+      <section id="pedido" aria-labelledby="pedido-titulo" className="scroll-mt-6 coluna">
+        <div className="painel painel-escuro grid gap-10 p-6 py-12 md:p-10 lg:grid-cols-[1fr_1.35fr] lg:gap-14">
           <div>
             <p className="eyebrow text-mb-red">{x(TEXTO.titulo)}</p>
-            <h2 id="pedido-titulo" className="title-xl mt-2 text-4xl sm:text-5xl">{x(TEXTO.formTitulo)}</h2>
+            <h2 id="pedido-titulo" className="titulo-2 mt-2">{x(TEXTO.formTitulo)}</h2>
             <p className="mt-4 text-base text-ink-300 leading-relaxed">{x(TEXTO.formSub)}</p>
             <ul className="mt-8">
               {TEXTO.formDicas.map((d) => (
@@ -228,8 +228,8 @@ export function ImportarClient() {
       </section>
 
       {/* ============ FONTES ============ */}
-      <section aria-labelledby="fontes-importar" className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
-        <h2 id="fontes-importar" className="eyebrow accent-bar text-white">{x(TEXTO.fontesTitulo)}</h2>
+      <section aria-labelledby="fontes-importar" className="coluna py-12">
+        <h2 id="fontes-importar" className="mb-4 text-lg font-semibold text-white">{x(TEXTO.fontesTitulo)}</h2>
         <ol className="grid gap-x-10 text-xs sm:grid-cols-2">
           {FONTES.map((f) => (
             <li key={f.n} id={`fonte-${f.n}`} className="flex scroll-mt-24 gap-3 border-b border-white/6 py-2.5">

@@ -284,7 +284,7 @@ export const ROTAS: Rota[] = [
     provincias: ["Luanda", "Icolo e Bengo"],
     partida: "Luanda",
     piso: "Asfalto",
-    pisoDetalhe: "Sempre pela EN100. O troço Cabo Ledo–Ramiros tem sido palco de acidentes graves.",
+    pisoDetalhe: "Sempre pela EN100. O troço Cabo Ledo a Ramiros tem sido palco de acidentes graves.",
     exigencia: "Média",
     exigenciaPorque: "Estrada de trânsito rápido com acidentes graves recentes; pede atenção redobrada.",
     melhorEpoca: "De Maio a Outubro está seco, com nevoeiro frequente. As chuvas curtas caem em Março e Abril.",
@@ -307,7 +307,7 @@ export const ROTAS: Rota[] = [
       "Miradouro da Lua e Barra do Kwanza pelo caminho",
     ],
     dicas: [
-      "Em Março de 2026 foram referidos acidentes recentes no troço Cabo Ledo–Ramiros com mais de 30 mortos. Rode devagar, em grupo compacto e nunca de noite.",
+      "Em Março de 2026 foram referidos acidentes recentes no troço Cabo Ledo a Ramiros com mais de 30 mortos. Rode devagar, em grupo compacto e nunca de noite.",
       "Para safaris na Quiçama, confirme antes as condições de entrada junto do INBAC.",
       "Na romaria da Muxima a estrada enche-se de peregrinos a pé: abrande muito.",
     ],
@@ -337,7 +337,7 @@ export const ROTAS: Rota[] = [
       "Em 2019, uma volta de mota de três dias entre o Lubango, o Namibe, o Iona e o Ruacana fez 1.292 km, 750 dos quais fora de estrada. O conselho do guia: ir preparado para quatro dias, com logística, combustível e material de campismo.",
     ],
     distancias: [
-      { texto: "Moçâmedes–Tômbwa: cerca de 93 a 95 km, cerca de 1 hora", fonte: 1 },
+      { texto: "Moçâmedes a Tômbwa: cerca de 93 a 95 km, cerca de 1 hora", fonte: 1 },
       { texto: "Arco: desvio à direita 13 km depois da ponte do rio Curoca, vindo do Tômbwa, e depois picada", fonte: 2 },
       { texto: "Parque Nacional do Iona: cerca de 200 km de Moçâmedes", fonte: 6 },
     ],
@@ -396,7 +396,7 @@ export const ROTAS: Rota[] = [
     partida: "Luanda",
     piso: "Asfalto e terra",
     pisoDetalhe:
-      "Luanda–Lobito é asfalto, com vários buracos. Entre Benguela e Moçâmedes, pela Lucira, o estado é incerto: dado como asfaltado em 2020–2021, mas com 85 km de terra batida num relato de 2022. A alternativa é subir ao Lubango e descer pela Serra da Leba.",
+      "Luanda a Lobito é asfalto, com vários buracos. Entre Benguela e Moçâmedes, pela Lucira, o estado é incerto: dado como asfaltado entre 2020 e 2021, mas com 85 km de terra batida num relato de 2022. A alternativa é subir ao Lubango e descer pela Serra da Leba.",
     exigencia: "Exigente",
     exigenciaPorque: "Vários dias de estrada, troços com buracos, combustível incerto no Sul e um troço de estado por confirmar.",
     melhorEpoca:
@@ -409,9 +409,9 @@ export const ROTAS: Rota[] = [
       "Em 2025, um ciclista que fez Luanda, Benguela, Lobito, Namibe e a Serra da Leba descreveu muito bom alcatrão na costa, nevoeiro de manhã, vento à tarde e água engarrafada à venda em todo o lado.",
     ],
     distancias: [
-      { texto: "Luanda–Lobito: cerca de 510 km, 6 a 7 horas", fonte: 1 },
+      { texto: "Luanda a Lobito: cerca de 510 km, 6 a 7 horas", fonte: 1 },
       { texto: "Sumbe: 180 km a norte do Lobito", fonte: 1 },
-      { texto: "Benguela–Moçâmedes pelo Lubango: cerca de 360 km, 5h30 (relato de 2022)", fonte: 1 },
+      { texto: "Benguela a Moçâmedes pelo Lubango: cerca de 360 km, 5h30 (relato de 2022)", fonte: 1 },
     ],
     destaques: [
       "Miradouro da Lua, Barra do Kwanza e Cabo Ledo no primeiro dia",
@@ -421,7 +421,7 @@ export const ROTAS: Rota[] = [
     ],
     dicas: [
       "Em Junho de 2026 a Sonangol admitiu constrangimentos em postos de Benguela, Huíla e Namibe, e em Agosto o ministro falou numa situação de combustível preocupante. Abasteça sempre que puder e leve reserva.",
-      "O troço Cabo Ledo–Ramiros teve acidentes graves recentes. Rode de dia e em grupo compacto.",
+      "O troço Cabo Ledo a Ramiros teve acidentes graves recentes. Rode de dia e em grupo compacto.",
       "Planeie etapas curtas e chegue antes de escurecer: fora das cidades os socorros demoram e os cuidados de saúde são limitados.",
     ],
     imagem: "gala",
