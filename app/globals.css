@@ -262,8 +262,9 @@
       overflow-x: hidden;
       overscroll-behavior: contain;
       scroll-behavior: smooth;
-      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 4.5rem), transparent);
-      mask-image: linear-gradient(to bottom, #000 calc(100% - 4.5rem), transparent);
+      /* Esbate em baixo, onde flutua o botão de acção. */
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 7rem), transparent calc(100% - 0.5rem));
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 7rem), transparent calc(100% - 0.5rem));
       scrollbar-width: thin;
       scrollbar-color: var(--color-mb-red) transparent;
     }
@@ -505,6 +506,15 @@
 .revelar.recorte {
   animation-name: mb-revelar-recorte;
 }
+/* Painel de ecrã inteiro (páginas interiores): abre de baixo para cima e,
+   no fim, deixa de ter recorte, para não prender nada do que está lá dentro. */
+@keyframes mb-revelar-ecra {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+.revelar-ecra {
+  animation: mb-revelar-ecra 0.8s var(--ease-out-expo) backwards;
+}
 .surgir {
   animation: mb-surgir 0.8s var(--ease-out-expo) both;
   animation-delay: calc(var(--i, 0) * 80ms + 150ms);
@@ -535,7 +545,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .revelar, .surgir, .brilho, .marquee-track, .live-dot, .rise {
+  .revelar, .revelar-ecra, .surgir, .brilho, .marquee-track, .live-dot, .rise {
     animation: none !important;
   }
   .brilho {

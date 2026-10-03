@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MOTIVOS_DENUNCIA } from "@/lib/denuncias";
 import { Icon } from "./ui";
 import { comBase } from "@/lib/base";
@@ -71,7 +72,8 @@ export function Denunciar({
         {rotulo}
       </button>
 
-      {aberto && (
+      {/* No <body>: o painel da página isola o empilhamento e a janela ficava por baixo do botão. */}
+      {aberto && createPortal(
         <div className="fixed inset-0 z-[90] flex items-end justify-center p-4 sm:items-center">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setAberto(false)} aria-hidden />
           <div role="dialog" aria-modal="true" aria-labelledby="denunciar-titulo"
@@ -140,7 +142,8 @@ export function Denunciar({
               </form>
             )}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

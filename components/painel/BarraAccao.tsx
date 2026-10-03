@@ -30,6 +30,8 @@ const ROTULO: Record<Estado, string> = {
 export function BarraAccao() {
   const caminho = usePathname();
   const estado = estadoPara(caminho);
+  // Nas páginas interiores o painel ocupa o ecrã inteiro: o botão flutua por cima.
+  const flutua = estado === "voltar";
 
   return (
     <>
@@ -38,12 +40,20 @@ export function BarraAccao() {
         <LigacaoConta />
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 h-20 lg:relative lg:z-auto lg:flex lg:h-[var(--zona-accao)] lg:justify-center lg:pt-[15px]">
+      <div
+        className={`fixed inset-x-0 bottom-0 z-40 h-20 ${
+          flutua
+            ? "lg:pointer-events-none lg:bottom-6 lg:flex lg:h-auto lg:justify-center"
+            : "lg:relative lg:z-auto lg:flex lg:h-[var(--zona-accao)] lg:justify-center lg:pt-[15px]"
+        }`}
+      >
         <Link
           href={DESTINO[estado]}
           aria-label={ROTULO[estado]}
           data-estado={estado}
-          className="group/accao flex h-full w-full items-center bg-mb-red px-5 text-[15px] text-white transition-colors duration-300 hover:bg-mb-red-dark lg:h-[50px] lg:w-[210px] lg:rounded-[var(--raio)]"
+          className={`group/accao pointer-events-auto flex h-full w-full items-center bg-mb-red px-5 text-[15px] text-white transition-colors duration-300 hover:bg-mb-red-dark lg:h-[50px] lg:w-[210px] lg:rounded-[var(--raio)] ${
+            flutua ? "lg:shadow-[0_12px_40px_rgb(0_0_0/0.55)]" : ""
+          }`}
         >
           <span className="relative block h-[1.3em] w-full overflow-hidden">
             <Rotulo activo={estado === "explorar"} de={estado === "fechar" ? "baixo" : "cima"}>
@@ -60,7 +70,13 @@ export function BarraAccao() {
             </Rotulo>
           </span>
         </Link>
-        <div className="absolute right-[var(--gutter)] top-[44px] hidden lg:block">
+        <div
+          className={`hidden lg:block ${
+            flutua
+              ? "pointer-events-auto absolute bottom-1.5 right-6 rounded-[var(--raio)] bg-black/55 px-3 py-2 backdrop-blur-md"
+              : "absolute right-[var(--gutter)] top-[44px]"
+          }`}
+        >
           <LigacaoConta />
         </div>
       </div>

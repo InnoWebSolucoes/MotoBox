@@ -25,14 +25,24 @@ export function Moldura({
   return <div className={`moldura ${fixa ? "moldura-fixa" : ""} ${className}`}>{children}</div>;
 }
 
-/** Quadrado do logótipo, no canto superior esquerdo de todas as páginas. */
-export function Logotipo({ className = "" }: { className?: string }) {
+/**
+ * Quadrado do logótipo, no canto superior esquerdo de todas as páginas.
+ * `flutuante`: por cima de um painel de ecrã inteiro, afastado do canto e
+ * com o fundo desfocado, para se ler sobre qualquer fotografia.
+ */
+export function Logotipo({ flutuante = false }: { flutuante?: boolean }) {
   return (
-    <div className={`absolute left-0 top-0 z-30 size-[var(--tile)] ${className}`}>
+    <div
+      className={`absolute z-30 size-[var(--tile)] ${
+        flutuante ? "left-4 top-4 md:left-5 md:top-5" : "left-0 top-0"
+      }`}
+    >
       <Link
         href="/"
         aria-label="MotoBox Angola, página de entrada"
-        className="painel group flex size-full items-center justify-center transition-colors hover:bg-black/70"
+        className={`painel group flex size-full items-center justify-center transition-colors hover:bg-black/70 ${
+          flutuante ? "backdrop-blur-md" : ""
+        }`}
       >
         <Image
           src={comBase("/marca/mb-marca-480.png")}

@@ -13,6 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Placeholder } from "@/components/Brand";
 import { Monograma } from "@/components/painel/kit";
 import { SeloVerificado } from "@/components/SeloVerificado";
@@ -587,7 +588,8 @@ function Janela({ titulo, aoFechar, children }: { titulo: string; aoFechar: () =
     document.body.style.overflow = "hidden";
     return () => { document.removeEventListener("keydown", esc); document.body.style.overflow = ""; };
   }, [aoFechar]);
-  return (
+  // No <body>: o painel da página isola o empilhamento e a janela ficava por baixo do botão.
+  return createPortal(
     <div className="fixed inset-0 z-100 flex items-end justify-center sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-black/75" onClick={aoFechar} aria-hidden />
       <div role="dialog" aria-modal="true" aria-label={titulo}
@@ -600,7 +602,8 @@ function Janela({ titulo, aoFechar, children }: { titulo: string; aoFechar: () =
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

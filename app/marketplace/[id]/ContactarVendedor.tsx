@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/auth/contexto";
 import { useExigirSessao } from "@/components/SessaoObrigatoria";
 import { Button, ButtonLink, Icon } from "@/components/ui";
@@ -135,7 +136,8 @@ function JanelaContacto({
     }
   }
 
-  return (
+  // No <body>: o painel da página isola o empilhamento e a janela ficava por baixo do botão.
+  return createPortal(
     <div className="fixed inset-0 z-[90] flex items-end justify-center overflow-y-auto p-4 sm:items-center">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={aoFechar} aria-hidden />
       <div
@@ -230,6 +232,7 @@ function JanelaContacto({
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
