@@ -1,28 +1,34 @@
 "use client";
 
+import Link from "next/link";
 import { PaginaRecurso } from "@/components/admin/Recurso";
-import { Campo, Input, Area, Seleccao, Interruptor } from "@/components/admin/kit";
+import { Campo, Input, Area, Seleccao, Interruptor, Estado } from "@/components/admin/kit";
 import { novoId } from "@/lib/admin/store";
 import { formatKz, formatDataCurta } from "@/lib/data";
 import type { AnuncioMarketplace } from "@/lib/types";
 import { PROVINCIAS } from "@/lib/provincias";
+import { CATEGORIAS_ANUNCIO as CATEGORIAS, ESTADOS_ARTIGO, moderacaoDe } from "@/lib/marketplace";
 
-const CATEGORIAS = ["Motas", "Peças", "Equipamento", "Acessórios"];
-const ESTADOS_ARTIGO = ["Nova", "Como nova", "Muito bom", "Bom", "Para peças"];
 const op = (v: readonly string[]) => v.map((x) => ({ valor: x, nome: x }));
+const MODERACAO = [
+  { valor: "pendente", nome: "Por rever" },
+  { valor: "aprovado", nome: "Aprovado" },
+  { valor: "rejeitado", nome: "Recusado" },
+];
 
 export default function AdminMarketplace() {
   return (
     <PaginaRecurso<AnuncioMarketplace>
       coleccao="anuncios"
       titulo="Marketplace"
-      descricao="Anúncios de motas, peças e equipamento; verificação de vendedores."
+      descricao="Anúncios de motas, peças e equipamento. Aprovar, recusar ou retirar um anúncio faz-se em Verificação."
       procuraEm={(a) => `${a.titulo} ${a.marca} ${a.modelo ?? ""} ${a.vendedor.nome} ${a.descricao}`}
       ordenar={(a, b) => b.publicado.localeCompare(a.publicado)}
       filtros={[
         { chave: "categoria", etiqueta: "Categoria", opcoes: op(CATEGORIAS) },
         { chave: "provincia", etiqueta: "Província", opcoes: op(PROVINCIAS) },
         { chave: "estado", etiqueta: "Estado", opcoes: op(ESTADOS_ARTIGO) },
+        { chave: "moderacao", etiqueta: "Verificação", opcoes: MODERACAO },
       ]}
       colunas={[
         {
@@ -46,12 +52,24 @@ export default function AdminMarketplace() {
             </span>
           ),
         },
+        {
+          cabecalho: "Verificação",
+          celula: (a) => (
+            <span className="flex items-center gap-2">
+              <Estado valor={moderacaoDe(a)} rotulo={MODERACAO.find((m) => m.valor === moderacaoDe(a))?.nome} />
+              <Link href={`/admin/verificacao?anuncio=${encodeURIComponent(a.id)}`} onClick={(e) => e.stopPropagation()}
+                className="text-xs text-ink-400 underline hover:text-white">
+                Rever
+              </Link>
+            </span>
+          ),
+        },
         { cabecalho: "Publicado", celula: (a) => <span className="tabular-nums text-ink-400">{formatDataCurta(a.publicado)}</span> },
       ]}
       novoRegisto={() => ({
         id: novoId("mkt"), titulo: "", categoria: "Motas", preco: 0, negociavel: false,
         marca: "", estado: "Bom", provincia: "Luanda", descricao: "", imagens: [],
-        vendedor: { nome: "", verificado: false, desde: new Date().getFullYear(), anuncios: 1, avaliacao: 5 },
+        vendedor: { nome: "", verificado: false, desde: new Date().getFullYear(), anuncios: 1 },
         publicado: new Date().toISOString().slice(0, 10), visualizacoes: 0,
       }) as AnuncioMarketplace}
       formulario={(r, definir) => (
@@ -111,10 +129,6 @@ export default function AdminMarketplace() {
               <Campo etiqueta="Anúncios">
                 <Input type="number" value={r.vendedor.anuncios}
                   onChange={(e) => definir({ vendedor: { ...r.vendedor, anuncios: Number(e.target.value) } } as Partial<AnuncioMarketplace>)} />
-              </Campo>
-              <Campo etiqueta="Avaliação (0-5)">
-                <Input type="number" step={0.1} min={0} max={5} value={r.vendedor.avaliacao}
-                  onChange={(e) => definir({ vendedor: { ...r.vendedor, avaliacao: Number(e.target.value) } } as Partial<AnuncioMarketplace>)} />
               </Campo>
             </div>
             <div className="mt-3">

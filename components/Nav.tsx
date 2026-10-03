@@ -58,6 +58,7 @@ const NAV: NavItem[] = [
     filhos: [
       { href: "/noticias", chave: "menu.todasNoticias", desc: "menu.noticiasDesc" },
       { href: "/noticias?cat=Internacional", chave: "menu.internacional", desc: "menu.internacionalDesc" },
+      { href: "/noticias/arquivo", chave: "menu.arquivoNoticias", desc: "menu.arquivoNoticiasDesc" },
       { href: "/videos", chave: "nav.videos", desc: "menu.videosDesc" },
     ],
   },

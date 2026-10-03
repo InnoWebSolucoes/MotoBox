@@ -1,19 +1,37 @@
 /* Página de um evento, partilhada por /calendario/[slug] (provas) e
    /eventos/[slug] (passeios, encontros, acções solidárias, formações).
    Muda só o que não faz sentido fora da pista: ronda, ficha do circuito,
-   resultados e o caminho de volta. Os bilhetes funcionam nos dois. */
+   resultados e o caminho de volta. Os bilhetes funcionam nos dois.
+
+   Só há compra quando `vendaBilhetes` o diz. Sem venda, o cartão
+   "Participação" diz como se participa (o campo `entrada`) ou, sem ele,
+   manda confirmar com o organizador: nunca se dá o evento por gratuito. */
 
 import Link from "next/link";
 import { Placeholder } from "@/components/Brand";
 import { Countdown } from "@/components/Countdown";
 import { ButtonLink, Icon, PosicaoBadge, Tag } from "@/components/ui";
 import { formatData, formatKz } from "@/lib/data";
-import { eComunidade, instante } from "@/lib/desporto";
+import { eComunidade, entradaDoEvento, instante, vendaBilhetes } from "@/lib/desporto";
 import type { Corrida, Evento } from "@/lib/types";
 
-export function DetalheEvento({ evento, resultados }: { evento: Evento; resultados: Corrida[] }) {
+export function DetalheEvento({
+  evento,
+  resultados,
+  bilheteiraAberta,
+}: {
+  evento: Evento;
+  resultados: Corrida[];
+  bilheteiraAberta: boolean;
+}) {
   const comunidade = eComunidade(evento.disciplina);
-  const futuro = new Date(evento.dataInicio).getTime() > instante();
+  const agora = instante();
+  const futuro = new Date(evento.dataInicio).getTime() > agora;
+  const terminado = evento.estado === "concluido" || new Date(evento.dataFim).getTime() < agora;
+  const venda = vendaBilhetes(evento, bilheteiraAberta, agora);
+  const entrada = entradaDoEvento(evento);
+  // Tem bilhetes mas a bilheteira está fechada nas Definições.
+  const vendaFechada = !bilheteiraAberta && (evento.bilhetes?.length ?? 0) > 0;
   const dias = [...new Set(evento.horarios.map((h) => h.dia))];
   const local = [evento.circuito, evento.localidade, evento.provincia].filter(Boolean).join(", ");
 
@@ -69,6 +87,12 @@ export function DetalheEvento({ evento, resultados }: { evento: Evento; resultad
                 {evento.organizador}
               </span>
             )}
+            {!venda && entrada && !terminado && (
+              <span className="inline-flex items-center gap-2">
+                <Icon name="ticket" className="size-4 text-mb-red" />
+                {entrada}
+              </span>
+            )}
           </div>
 
           {futuro && (
@@ -77,11 +101,17 @@ export function DetalheEvento({ evento, resultados }: { evento: Evento; resultad
                 <p className="eyebrow text-ink-500 mb-3">Começa em</p>
                 <Countdown data={evento.dataInicio} size="lg" />
               </div>
-              {evento.bilhetes && (
+              {venda === "a-venda" && (
                 <ButtonLink href={`/bilhetes/${evento.slug}`} size="lg">
                   <Icon name="ticket" className="size-5" />
                   Comprar bilhetes
                 </ButtonLink>
+              )}
+              {venda === "esgotado" && (
+                <span className="inline-flex h-13 items-center gap-2 rounded-full bg-ink-800 px-8 font-ui text-lg text-ink-300">
+                  <Icon name="ticket" className="size-5" />
+                  Esgotado
+                </span>
               )}
             </div>
           )}
@@ -206,27 +236,53 @@ export function DetalheEvento({ evento, resultados }: { evento: Evento; resultad
               )}
             </div>
 
-            {/* Bilhetes */}
-            {evento.bilhetes && (
+            {/* Bilhetes, quando a Motobox os vende; senão, como participar */}
+            {venda ? (
               <div className="card p-5">
                 <h3 className="eyebrow text-mb-red mb-4">Bilhetes</h3>
                 <div className="space-y-2.5">
-                  {evento.bilhetes.map((b) => (
+                  {(evento.bilhetes ?? []).map((b) => (
                     <div key={b.id} className="flex items-center justify-between gap-3 border-b border-white/6 pb-2.5 last:border-0 last:pb-0">
                       <div className="min-w-0">
                         <p className="text-sm text-white truncate">{b.nome}</p>
-                        <p className="text-xs text-ink-600">{b.disponiveis} disponíveis</p>
+                        {venda === "a-venda" && <p className="text-xs text-ink-600">{b.disponiveis} disponíveis</p>}
                       </div>
                       <span className="font-display text-sm text-white shrink-0">{formatKz(b.preco)}</span>
                     </div>
                   ))}
                 </div>
-                <ButtonLink href={`/bilhetes/${evento.slug}`} className="mt-5 w-full">
-                  <Icon name="ticket" className="size-4" />
-                  Comprar
-                </ButtonLink>
+                {venda === "a-venda" ? (
+                  <ButtonLink href={`/bilhetes/${evento.slug}`} className="mt-5 w-full">
+                    <Icon name="ticket" className="size-4" />
+                    Comprar
+                  </ButtonLink>
+                ) : (
+                  <p className="mt-5 flex h-11 items-center justify-center gap-2 rounded-full bg-ink-800 font-ui text-base text-ink-300">
+                    <Icon name="ticket" className="size-4" />
+                    Esgotado
+                  </p>
+                )}
               </div>
-            )}
+            ) : !terminado ? (
+              <div className="card p-5">
+                <h3 className="eyebrow text-mb-red mb-4">Participação</h3>
+                {entrada ? (
+                  <p className="font-display text-lg uppercase leading-snug text-white">{entrada}</p>
+                ) : (
+                  <p className="text-sm text-ink-300 leading-relaxed">
+                    {vendaFechada
+                      ? "A venda de bilhetes online na Motobox está fechada de momento. Confirme as condições de participação com o organizador."
+                      : "Este evento não tem venda de bilhetes online na Motobox. Confirme as condições de participação com o organizador."}
+                  </p>
+                )}
+                {evento.organizador && (
+                  <div className="mt-4 flex justify-between gap-4 border-t border-white/6 pt-3.5">
+                    <span className="text-xs text-ink-500">Organizador</span>
+                    <span className="text-sm text-white text-right">{evento.organizador}</span>
+                  </div>
+                )}
+              </div>
+            ) : null}
 
             {/* Partilhar */}
             <div className="card p-5">

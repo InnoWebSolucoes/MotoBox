@@ -10,12 +10,14 @@ import { comBase } from "@/lib/base";
  * A denúncia vai para Moderação no painel.
  */
 export function Denunciar({
-  tipo, alvoId, rotulo = "Denunciar",
+  tipo, alvoId, respostaId, rotulo = "Denunciar",
   classeBotao = "inline-flex items-center gap-1.5 text-xs text-ink-500 transition-colors hover:text-white",
   icone = true,
 }: {
   tipo: "marketplace" | "forum";
   alvoId: string;
+  /** Fórum: a resposta denunciada. `alvoId` continua a ser o tópico. */
+  respostaId?: string;
   rotulo?: string;
   /** Para o botão se parecer com as acções à sua volta. */
   classeBotao?: string;
@@ -52,7 +54,7 @@ export function Denunciar({
       const r = await fetch(comBase("/api/denunciar"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tipo, alvoId, motivo, detalhe, site }),
+        body: JSON.stringify({ tipo, alvoId, respostaId, motivo, detalhe, site }),
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) { setErro(String(j.erro ?? "Não foi possível enviar. Tente mais tarde.")); setEstado("idle"); return; }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { EventosClient } from "./EventosClient";
-import { lerEventos } from "@/lib/supabase/publico";
+import { lerDefinicoes, lerEventos } from "@/lib/supabase/publico";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function EventosPage() {
+  const [eventos, definicoes] = await Promise.all([lerEventos(), lerDefinicoes()]);
   // Vai a lista inteira: o filtro "Provas" junta as corridas sem novo pedido.
-  return <EventosClient eventos={await lerEventos()} />;
+  return <EventosClient eventos={eventos} bilheteiraAberta={definicoes.bilheteiraAberta} />;
 }

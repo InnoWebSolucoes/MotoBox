@@ -62,6 +62,12 @@ export interface Evento {
   organizador: string;
   horarios: { dia: string; hora: string; sessao: string }[];
   bilhetes?: TipoBilhete[];
+  /**
+   * Como se participa quando a Motobox não vende bilhetes, em texto livre.
+   * Ex.: "Entrada livre", "5.000 Kz pagos no local", "Inscrição através do clube".
+   * Vazio: o site não diz nada sobre o preço e manda confirmar com o organizador.
+   */
+  entrada?: string;
   distanciaVolta?: string;
   numeroVoltas?: number;
   recordeVolta?: { piloto: string; tempo: string; ano: number };
@@ -209,12 +215,41 @@ export interface AnuncioMarketplace {
   descricao: string;
   imagens: string[];
   vendedor: {
-    nome: string; verificado: boolean; desde: number; anuncios: number; avaliacao: number;
+    /** Identidade confirmada pela equipa Motobox. Só o painel o liga. */
+    nome: string; verificado: boolean; desde: number; anuncios: number;
+    /** Dos dados de demonstração. Não há avaliações reais, por isso não se mostra. */
+    avaliacao?: number;
     /** Conta do Supabase Auth de quem publicou, nos anúncios criados no site. */
     authId?: string;
   };
   publicado: string;
   visualizacoes: number;
+  /** Ausente nos anúncios anteriores à verificação, que contam como aprovados. */
+  moderacao?: ModeracaoAnuncio;
+  /** Porque não foi aprovado; o vendedor vê-o na conta. */
+  motivoModeracao?: string;
+  /** A equipa viu os documentos da mota e registou o número de quadro. */
+  documentosVerificados?: boolean;
+}
+
+export type ModeracaoAnuncio = "pendente" | "aprovado" | "rejeitado";
+
+/**
+ * O que o vendedor declara sobre uma mota antes de ela ser publicada.
+ * Vive numa tabela à parte, sem leitura pública: o número de quadro
+ * nunca aparece no site.
+ */
+export interface VerificacaoAnuncio {
+  anuncioId: string;
+  numeroQuadro: string;
+  matricula: string;
+  documentos: string[];
+  emNomeProprio: boolean;
+  observacoes: string;
+  declaracaoEm: string;
+  revistoPor?: string;
+  revistoEm?: string;
+  notaInterna?: string;
 }
 
 export interface TopicoForum {

@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { utilizadorActual, perfilDe } from "@/lib/conta/sessao";
-import {
-  avatarDaConta, corValida, respostaDaLinha, tabelaEmFalta, COLUNAS_PUBLICAS,
-} from "@/lib/forum/respostas";
-import { COR_PADRAO, RESPOSTA_MAX, RESPOSTA_MIN } from "@/lib/forum/tipos";
+import { utilizadorActual } from "@/lib/conta/sessao";
+import { respostaDaLinha, tabelaEmFalta, COLUNAS_PUBLICAS } from "@/lib/forum/respostas";
+import { autorDaConta } from "@/lib/forum/autor";
+import { ajustarCategoria, ajustarTopico, ultimaResposta } from "@/lib/forum/contagens";
+import { RESPOSTA_MAX, RESPOSTA_MIN } from "@/lib/forum/tipos";
 
 /* ============================================================
    MOTOBOX — Responder a um tópico do fórum
@@ -13,7 +13,8 @@ import { COR_PADRAO, RESPOSTA_MAX, RESPOSTA_MIN } from "@/lib/forum/tipos";
    publicado e não fechado. O nome, a cor e o logótipo vêm da
    conta: nunca do que o navegador diz sobre quem escreve.
    Depois de guardar, o tópico conta mais uma resposta e passa
-   a mostrar quem respondeu por último.
+   a mostrar quem respondeu por último; a categoria conta mais
+   uma mensagem.
    ============================================================ */
 
 export const dynamic = "force-dynamic";
@@ -27,9 +28,6 @@ const MAXIMO_NA_JANELA = 8;
 function erro(mensagem: string, codigo = 400) {
   return NextResponse.json({ erro: mensagem }, { status: codigo });
 }
-
-/** Para comparar o email com `ilike` sem que "_" ou "%" funcionem como curingas. */
-const literal = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 export async function POST(req: NextRequest) {
   const user = await utilizadorActual();
@@ -52,24 +50,13 @@ export async function POST(req: NextRequest) {
   if (!db) return erro("De momento não é possível responder. Tente mais tarde.", 503);
 
   /* ---------- A conta pode escrever? ---------- */
-  // A linha procura-se pela conta e também pelo email: uma suspensão feita no
-  // painel antes de a conta estar ligada continua a valer.
-  const email = (user.email ?? "").trim().toLowerCase();
-  const [perfil, porEmail] = await Promise.all([
-    perfilDe(user),
-    email
-      ? db.from("utilizadores").select("estado").ilike("email", literal(email)).limit(5)
-      : Promise.resolve({ data: [] as { estado: string }[] }),
-  ]);
-  const estados = [perfil?.estado, ...((porEmail.data ?? []) as { estado: string }[]).map((l) => l.estado)];
-  if (estados.some((e) => e === "suspenso" || e === "banido")) {
-    return erro("A sua conta não pode publicar no fórum. Contacte a Motobox.", 403);
-  }
+  const autor = await autorDaConta(db, user);
+  if (autor.bloqueada) return erro("A sua conta não pode publicar no fórum. Contacte a Motobox.", 403);
 
   /* ---------- O fórum e o tópico aceitam respostas? ---------- */
   const [{ data: def }, { data: topico, error: erroTopico }] = await Promise.all([
     db.from("definicoes").select("forum_aberto").eq("id", 1).maybeSingle(),
-    db.from("topicos").select("id, publicado, bloqueado, respostas").eq("id", topicoId).maybeSingle(),
+    db.from("topicos").select("id, publicado, bloqueado, respostas, categoria_slug").eq("id", topicoId).maybeSingle(),
   ]);
   if (def && def.forum_aberto === false) return erro("O fórum está fechado de momento.", 403);
   if (erroTopico) return erro("Não foi possível confirmar o tópico. Tente mais tarde.", 500);
@@ -95,19 +82,15 @@ export async function POST(req: NextRequest) {
   }
 
   /* ---------- Guardar ---------- */
-  const nomeMeta = typeof user.user_metadata?.nome === "string" ? user.user_metadata.nome.trim() : "";
-  const nome = (perfil?.nome?.trim() || nomeMeta || "Membro Motobox").slice(0, 80);
-  const cor = corValida(perfil?.avatar_cor) ?? corValida(user.user_metadata?.avatarCor) ?? COR_PADRAO;
-
   const { data: criada, error: erroGuardar } = await db
     .from("respostas_forum")
     .insert({
       id: `r-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
       topico_id: topicoId,
       autor_id: user.id,
-      autor_nome: nome,
-      autor_cor: cor,
-      autor_avatar: avatarDaConta(user),
+      autor_nome: autor.nome,
+      autor_cor: autor.cor,
+      autor_avatar: autor.avatar,
       corpo: texto,
       publicado: true,
     })
@@ -121,27 +104,12 @@ export async function POST(req: NextRequest) {
   const resposta = respostaDaLinha(criada as Record<string, unknown>);
 
   /* ---------- Contagem e última resposta do tópico ---------- */
-  // Só actualiza se ninguém mexeu na contagem entretanto; senão relê e repete.
-  // A lista do fórum mostra `quando` tal como está, por isso vai por extenso
-  // ("27 de setembro"); `em` guarda o instante exacto.
-  const instante = new Date(resposta.criadoEm || Date.now());
-  const ultima = {
-    autor: nome,
-    quando: instante.toLocaleDateString("pt-PT", { day: "numeric", month: "long", timeZone: "Africa/Luanda" }),
-    em: instante.toISOString(),
-  };
-  let contagem = Number(topico.respostas) || 0;
-  for (let tentativa = 0; tentativa < 3; tentativa++) {
-    const { data: feito, error } = await db
-      .from("topicos")
-      .update({ respostas: contagem + 1, ultima_resposta: ultima })
-      .eq("id", topicoId).eq("respostas", contagem)
-      .select("id");
-    if (error) { console.error("[forum/responder] contagem:", error.message); break; }
-    if (feito?.length) break;
-    const { data: actual } = await db.from("topicos").select("respostas").eq("id", topicoId).maybeSingle();
-    contagem = Number(actual?.respostas) || 0;
-  }
+  await ajustarTopico(db, topicoId, {
+    delta: 1,
+    ultima: ultimaResposta(autor.nome, resposta.criadoEm),
+    lida: Number(topico.respostas) || 0,
+  });
+  await ajustarCategoria(db, topico.categoria_slug as string | null, { mensagens: 1 });
 
   try {
     revalidatePath(`/forum/${topicoId}`);

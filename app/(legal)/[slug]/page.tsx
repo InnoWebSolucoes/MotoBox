@@ -5,12 +5,24 @@ import { lerPaginasLegais } from "@/lib/supabase/publico";
 import { paginasLegaisSeed } from "@/lib/admin/seed";
 import { formatData } from "@/lib/data";
 import { PageHero } from "@/components/ui";
+import { SLUG_TERMOS_MARKETPLACE } from "@/lib/marketplace";
 
 // O Next exige um literal aqui — não aceita constante importada.
 export const revalidate = 60;
 
-export async function generateStaticParams() {
+/**
+ * As páginas da base, mais os Termos do Marketplace enquanto a migração de
+ * 3 de Outubro não os cria lá: o marketplace e o formulário já apontam para eles.
+ */
+async function lerPaginas() {
   const paginas = await lerPaginasLegais();
+  if (paginas.some((p) => p.slug === SLUG_TERMOS_MARKETPLACE)) return paginas;
+  const semente = paginasLegaisSeed.find((p) => p.slug === SLUG_TERMOS_MARKETPLACE);
+  return semente ? [...paginas, semente] : paginas;
+}
+
+export async function generateStaticParams() {
+  const paginas = await lerPaginas();
   return paginas.map((p) => ({ slug: p.slug }));
 }
 
@@ -18,7 +30,7 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> },
 ): Promise<Metadata> {
   const { slug } = await params;
-  const paginas = await lerPaginasLegais();
+  const paginas = await lerPaginas();
   const pagina = paginas.find((p) => p.slug === slug);
   if (!pagina) return {};
   return {
@@ -31,7 +43,7 @@ export default async function PaginaLegalPublica(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const paginas = await lerPaginasLegais();
+  const paginas = await lerPaginas();
   const pagina = paginas.find((p) => p.slug === slug && p.publicado !== false);
   if (!pagina) notFound();
 

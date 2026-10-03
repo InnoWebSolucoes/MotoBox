@@ -104,6 +104,12 @@ export default function AdminEventos() {
           <Campo etiqueta="Descrição">
             <Area rows={5} value={r.descricao} onChange={(e) => definir({ descricao: e.target.value } as Partial<Evento>)} />
           </Campo>
+          {/* Vazio, a página do evento diz que não há venda online e manda falar com o organizador. */}
+          <Campo etiqueta="Participação"
+            ajuda="Frase curta sobre como se participa quando a Motobox não vende bilhetes. Ex.: Entrada livre · 5.000 Kz pagos no local · Inscrição através do clube. Aparece na página e nas listas. Não escreva entrada livre sem o organizador o confirmar.">
+            <Input value={r.entrada ?? ""} maxLength={80}
+              onChange={(e) => definir({ entrada: e.target.value } as Partial<Evento>)} />
+          </Campo>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo etiqueta="Distância por volta">
@@ -137,9 +143,13 @@ export default function AdminEventos() {
             </button>
           </div>
 
-          {/* Tipos de bilhete */}
+          {/* Tipos de bilhete: só os eventos com tipos (e a bilheteira aberta) vendem online */}
           <div className="border border-ink-700/60 p-3">
             <p className="mb-2 text-[11px] font-display uppercase tracking-widest text-ink-300">Tipos de bilhete</p>
+            <p className="mb-3 text-[11px] text-ink-500">
+              Deixe vazio se a Motobox não vende bilhetes para este evento. Com tipos de bilhete, o evento vende online
+              enquanto não estiver concluído e a bilheteira estiver aberta.
+            </p>
             {(r.bilhetes ?? []).map((b, i) => {
               const set = (campos: Partial<typeof b>) =>
                 definir({ bilhetes: (r.bilhetes ?? []).map((x, j) => j === i ? { ...x, ...campos } : x) } as Partial<Evento>);

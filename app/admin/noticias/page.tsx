@@ -14,7 +14,7 @@ export default function AdminNoticias() {
     <PaginaRecurso<Noticia>
       coleccao="noticias"
       titulo="Notícias"
-      descricao="Artigos editoriais, entrevistas e agregação internacional."
+      descricao="Artigos editoriais, entrevistas e notícias internacionais com a fonte indicada."
       procuraEm={(n) => `${n.titulo} ${n.resumo} ${n.autor} ${n.tags.join(" ")}`}
       ordenar={(a, b) => b.data.localeCompare(a.data)}
       filtros={[{ chave: "categoria", etiqueta: "Categoria", opcoes: op(CATEGORIAS) }]}
@@ -58,7 +58,7 @@ export default function AdminNoticias() {
             <Campo etiqueta="Autor">
               <Input value={r.autor} onChange={(e) => definir({ autor: e.target.value } as Partial<Noticia>)} />
             </Campo>
-            <Campo etiqueta="Data">
+            <Campo etiqueta="Data" ajuda="Pode ser uma data passada: o material antigo fica no arquivo com a data original.">
               <Input type="date" value={r.data.slice(0, 10)} onChange={(e) => definir({ data: e.target.value } as Partial<Noticia>)} />
             </Campo>
             <Campo etiqueta="Tempo de leitura (min)">
@@ -85,10 +85,10 @@ export default function AdminNoticias() {
             onChange={(v) => definir({ tags: v } as Partial<Noticia>)} />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Campo etiqueta="Fonte" ajuda="Para notícias internacionais.">
+            <Campo etiqueta="Fonte" ajuda="Nas notícias de outros meios (ex.: MXGP.com). Aparece no site como «via …».">
               <Input value={r.fonte ?? ""} onChange={(e) => definir({ fonte: e.target.value } as Partial<Noticia>)} />
             </Campo>
-            <Campo etiqueta="Ligação da fonte">
+            <Campo etiqueta="Ligação da fonte" ajuda="Endereço do artigo original, começado por https://.">
               <Input value={r.fonteUrl ?? ""} onChange={(e) => definir({ fonteUrl: e.target.value } as Partial<Noticia>)} />
             </Campo>
           </div>

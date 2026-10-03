@@ -7,6 +7,7 @@ import { SeloVerificado } from "@/components/SeloVerificado";
 import { Icon, Tag } from "@/components/ui";
 import { formatData, formatKz } from "@/lib/data";
 import { lerAnuncio, lerAnuncios } from "@/lib/supabase/publico";
+import { AVISO_PAGAMENTO, CONSELHO_SEGURANCA, SLUG_TERMOS_MARKETPLACE } from "@/lib/marketplace";
 import { GaleriaAnuncio } from "./GaleriaAnuncio";
 import { AccoesAnuncio } from "./AccoesAnuncio";
 
@@ -36,9 +37,14 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
   const anuncio = await lerAnuncio(id);
   if (!anuncio) notFound();
 
-  const semelhantes = (await lerAnuncios())
+  const todos = await lerAnuncios();
+  const semelhantes = todos
     .filter((a) => a.id !== anuncio.id && a.categoria === anuncio.categoria)
     .slice(0, 4);
+  // Contados agora, entre os que estão à vista; os de demonstração trazem o número escrito.
+  const doVendedor = anuncio.vendedor.authId
+    ? todos.filter((a) => a.vendedor.authId === anuncio.vendedor.authId).length
+    : anuncio.vendedor.anuncios;
 
   const ficha = [
     ["Categoria", anuncio.categoria],
@@ -147,28 +153,40 @@ export default async function AnuncioPage({ params }: { params: Promise<{ id: st
                 </p>
               </div>
             </div>
+            {anuncio.vendedor.verificado && (
+              <p className="mt-3 text-xs text-ink-400">Identidade confirmada pela equipa Motobox.</p>
+            )}
 
-            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-white/6 pt-4">
-              <div>
-                <dd className="font-display text-lg text-white">{anuncio.vendedor.anuncios}</dd>
-                <dt className="eyebrow text-ink-600">Anúncios</dt>
-              </div>
-              <div>
-                <dd className="flex items-center gap-1.5 font-display text-lg text-white">
-                  {anuncio.vendedor.avaliacao.toFixed(1)}
-                  <Icon name="star" className="size-4 text-gold" />
-                </dd>
-                <dt className="eyebrow text-ink-600">Avaliação</dt>
-              </div>
+            <dl className="mt-5 border-t border-white/6 pt-4">
+              <dd className="font-display text-lg text-white">{doVendedor}</dd>
+              <dt className="eyebrow text-ink-600">{doVendedor === 1 ? "Anúncio no marketplace" : "Anúncios no marketplace"}</dt>
             </dl>
           </div>
+
+          {/* Verificação da mota pela equipa */}
+          {anuncio.documentosVerificados && (
+            <div className="card bg-ok/8 p-5">
+              <p className="flex items-center gap-2 font-display text-sm uppercase text-white">
+                <Icon name="shield" className="size-4 text-ok" />
+                Documentação verificada
+              </p>
+              <p className="mt-2 text-xs text-ink-400 leading-relaxed">
+                A equipa Motobox viu os documentos desta mota e registou o número de quadro antes de a
+                publicar. Confirme na mesma, ao vivo, que o número gravado na mota é o dos documentos.
+              </p>
+            </div>
+          )}
 
           {/* Aviso */}
           <div className="px-1 pt-1">
             <p className="flex gap-2.5 text-xs text-ink-500 leading-relaxed">
               <Icon name="shield" className="size-4 shrink-0 text-ink-600" />
-              A Motobox não intermedeia pagamentos. Combine sempre um encontro em local público,
-              verifique a documentação e desconfie de preços muito abaixo do mercado.
+              <span>
+                {AVISO_PAGAMENTO} {CONSELHO_SEGURANCA}{" "}
+                <Link href={`/${SLUG_TERMOS_MARKETPLACE}`} className="text-ink-300 underline hover:text-white">
+                  Termos do Marketplace
+                </Link>
+              </span>
             </p>
             <div className="mt-3 pl-6.5">
               <Denunciar tipo="marketplace" alvoId={anuncio.id} rotulo="Denunciar este anúncio" />

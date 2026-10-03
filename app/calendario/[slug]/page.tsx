@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { lerCorridas, lerEvento, lerEventos } from "@/lib/supabase/publico";
+import { lerCorridas, lerDefinicoes, lerEvento, lerEventos } from "@/lib/supabase/publico";
 import { eComunidade, eProva } from "@/lib/desporto";
 import { DetalheEvento } from "../DetalheEvento";
 
@@ -33,6 +33,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
   // antigas (emails, bilhetes, partilhas) continuam a funcionar por aqui.
   if (eComunidade(evento.disciplina)) redirect(`/eventos/${evento.slug}`);
 
-  const resultados = (await lerCorridas()).filter((c) => c.eventoSlug === evento.slug);
-  return <DetalheEvento evento={evento} resultados={resultados} />;
+  const [corridas, definicoes] = await Promise.all([lerCorridas(), lerDefinicoes()]);
+  const resultados = corridas.filter((c) => c.eventoSlug === evento.slug);
+  return <DetalheEvento evento={evento} resultados={resultados} bilheteiraAberta={definicoes.bilheteiraAberta} />;
 }

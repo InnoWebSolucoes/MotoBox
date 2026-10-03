@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { lerEvento, lerEventos } from "@/lib/supabase/publico";
+import { lerDefinicoes, lerEvento, lerEventos } from "@/lib/supabase/publico";
 import { eComunidade, eProva } from "@/lib/desporto";
 import { DetalheEvento } from "@/app/calendario/DetalheEvento";
 
@@ -32,5 +32,6 @@ export default async function EventoComunidadePage({ params }: { params: Promise
   // As provas têm a página no calendário de Desporto.
   if (eProva(evento.disciplina)) redirect(`/calendario/${evento.slug}`);
 
-  return <DetalheEvento evento={evento} resultados={[]} />;
+  const { bilheteiraAberta } = await lerDefinicoes();
+  return <DetalheEvento evento={evento} resultados={[]} bilheteiraAberta={bilheteiraAberta} />;
 }

@@ -11,8 +11,13 @@ import {
 } from "@/components/admin/kit";
 import type { Subscritor } from "@/lib/admin/types";
 import { comBase } from "@/lib/base";
+import { INTERESSES, normalizarInteresses } from "@/lib/conta/preferencias";
 
 const ORIGENS = ["rodapé", "faixa", "cartão", "checkout", "manual"];
+
+/** Temas escolhidos: a coluna `interesses` só existe depois da migração de 3 de Outubro. */
+const interessesDe = (s: Subscritor) => normalizarInteresses((s as Subscritor & { interesses?: unknown }).interesses);
+const nomeInteresse = (id: string) => INTERESSES.find((i) => i.id === id)?.nome ?? id;
 
 /** Resposta de GET /api/admin/newsletter. */
 interface InfoEnvio {
@@ -20,7 +25,7 @@ interface InfoEnvio {
   html: string;
   semana: { inicio: string; fim: string; rotulo: string };
   vazio: boolean;
-  seccoes: { noticias: number; eventos: number; corridas: number; pilotosNovos: number };
+  seccoes: { noticias: number; eventos: number; corridas: number; pilotosNovos: number; anuncios?: number };
   destinatarios: number;
   automatico: { ligado: boolean; colunaExiste: boolean };
   ultimoEnvio: { quando: string; detalhe: string; utilizador: string } | null;
@@ -64,6 +69,7 @@ function conteudoSemana(s: InfoEnvio["seccoes"]): string {
     p(s.corridas, "resultado", "resultados"),
     p(s.eventos, "evento", "eventos"),
     p(s.pilotosNovos, "piloto novo", "pilotos novos"),
+    ...(s.anuncios !== undefined ? [p(s.anuncios, "anúncio", "anúncios")] : []),
   ].join(" · ");
 }
 
@@ -149,6 +155,17 @@ export default function AdminNewsletter() {
 
   const activos = estado.subscritores.filter((s) => s.ativo).length;
 
+  // Quantos subscritores activos escolheram cada tema. Sem a coluna
+  // (migração por correr) não há o que contar.
+  const colunaInteresses = estado.subscritores.some((s) => "interesses" in s);
+  const porInteresse = useMemo(() => {
+    const escolhas = estado.subscritores.filter((s) => s.ativo).map(interessesDe);
+    return {
+      temas: INTERESSES.map((i) => ({ ...i, total: escolhas.filter((e) => e.includes(i.id)).length })),
+      tudo: escolhas.filter((e) => e.length === 0).length,
+    };
+  }, [estado.subscritores]);
+
   const adicionar = async () => {
     const email = novoEmail.trim().toLowerCase();
     if (!email || !email.includes("@")) { mostrar("Introduza um email válido.", "erro"); return; }
@@ -166,8 +183,11 @@ export default function AdminNewsletter() {
 
   const exportar = () => {
     const csv = [
-      ["Email", "Nome", "Origem", "Subscrito", "Ativo"],
-      ...filtrados.map((s) => [s.email, s.nome ?? "", s.origem, s.subscrito, s.ativo ? "Sim" : "Não"]),
+      ["Email", "Nome", "Origem", "Subscrito", "Ativo", "Interesses"],
+      ...filtrados.map((s) => [
+        s.email, s.nome ?? "", s.origem, s.subscrito, s.ativo ? "Sim" : "Não",
+        interessesDe(s).map(nomeInteresse).join("; "),
+      ]),
     ].map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([`﻿${csv}`], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
@@ -199,7 +219,7 @@ export default function AdminNewsletter() {
 
       <Painel
         titulo="Envio automático"
-        descricao="Resumo semanal com as notícias, os resultados, os próximos eventos e os pilotos."
+        descricao="Resumo semanal com as notícias de Angola e de fora, os resultados, os próximos eventos, os pilotos e os anúncios novos. Cada subscritor recebe só os temas que escolheu; quem não escolheu recebe tudo."
         className="mb-4"
         accoes={
           <>
@@ -267,6 +287,31 @@ export default function AdminNewsletter() {
           Enquanto não houver um domínio verificado na Resend, os emails só chegam a motoboxweb@gmail.com.
           Os restantes subscritores começam a receber quando o domínio estiver verificado.
         </p>
+      </Painel>
+
+      <Painel
+        titulo="Interesses"
+        descricao="Os temas que os subscritores activos escolheram, no formulário ou na conta. A pré-visualização mostra o resumo completo."
+        className="mb-4"
+      >
+        {colunaInteresses || estado.subscritores.length === 0 ? (
+          <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {porInteresse.temas.map((i) => (
+              <div key={i.id} className="border border-ink-700/60 bg-ink-950 px-3 py-2">
+                <dt className="text-[11px] font-display uppercase tracking-widest text-ink-400">{i.nome}</dt>
+                <dd className="mt-0.5 font-display text-lg tabular-nums text-white">{i.total}</dd>
+              </div>
+            ))}
+            <div className="border border-ink-700/60 bg-ink-950 px-3 py-2">
+              <dt className="text-[11px] font-display uppercase tracking-widest text-ink-400">Sem escolha (tudo)</dt>
+              <dd className="mt-0.5 font-display text-lg tabular-nums text-white">{porInteresse.tudo}</dd>
+            </div>
+          </dl>
+        ) : (
+          <p className="text-xs text-ink-500">
+            Para guardar e contar os interesses, corra primeiro a migração <span className="text-ink-300">supabase/migracao-2026-10-03.sql</span> no Supabase. Até lá, todos recebem o resumo completo.
+          </p>
+        )}
       </Painel>
 
       <Painel titulo="Juntar subscritor" className="mb-4">

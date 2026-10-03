@@ -6,15 +6,22 @@ import { Placeholder } from "@/components/Brand";
 import { Countdown } from "@/components/Countdown";
 import { ButtonLink, Icon, PageHero } from "@/components/ui";
 import { TEMPORADA } from "@/lib/data";
-import { DISCIPLINAS_PROVA } from "@/lib/desporto";
+import { DISCIPLINAS_PROVA, vendaBilhetes } from "@/lib/desporto";
 import type { Disciplina, Evento } from "@/lib/types";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { useConteudo } from "@/lib/i18n/useConteudo";
 import { CartaoEvento, LinhaEvento } from "./ListaEventos";
 
 /** Só provas: os passeios, encontros e acções solidárias vivem em /eventos. */
-export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) {
-  const eventos = useConteudo(originais, ["titulo", "resumo", "descricao", "circuito"]);
+export function CalendarioClient({
+  eventos: originais,
+  bilheteiraAberta,
+}: {
+  eventos: Evento[];
+  /** Interruptor "Bilheteira aberta" das Definições, lido no servidor. */
+  bilheteiraAberta: boolean;
+}) {
+  const eventos = useConteudo(originais, ["titulo", "resumo", "descricao", "circuito", "entrada"]);
   const { t } = useIdioma();
   const [disciplina, setDisciplina] = useState<Disciplina | "Todas">("Todas");
   const [vista, setVista] = useState<"lista" | "grelha">("lista");
@@ -125,7 +132,7 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
                 <h2 className="title-xl mt-3 text-3xl sm:text-4xl">{proximo.titulo}</h2>
                 <p className="mt-4 max-w-lg text-sm text-ink-300 leading-relaxed">{proximo.resumo}</p>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  {proximo.bilhetes && (
+                  {vendaBilhetes(proximo, bilheteiraAberta, agora) === "a-venda" && (
                     <ButtonLink href={`/bilhetes/${proximo.slug}`}>
                       <Icon name="ticket" className="size-4" />
                       Bilhetes
@@ -148,13 +155,13 @@ export function CalendarioClient({ eventos: originais }: { eventos: Evento[] }) 
         {vista === "lista" ? (
           <ol>
             {filtrados.map((e) => (
-              <LinhaEvento key={e.slug} e={e} agora={agora} ate={t("comum.ate")} />
+              <LinhaEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} ate={t("comum.ate")} />
             ))}
           </ol>
         ) : (
           <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {filtrados.map((e) => (
-              <CartaoEvento key={e.slug} e={e} agora={agora} />
+              <CartaoEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} />
             ))}
           </div>
         )}

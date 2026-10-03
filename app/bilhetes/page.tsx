@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Placeholder } from "@/components/Brand";
-import { Countdown } from "@/components/Countdown";
 import { ButtonLink, EmptyState, Icon, PageHero, Tag } from "@/components/ui";
 import { eventosComBilhetes, formatData, formatKz } from "@/lib/data";
-import { lerEventos } from "@/lib/supabase/publico";
+import { hrefEvento, instante, vendaBilhetes } from "@/lib/desporto";
+import { lerDefinicoes, lerEventos } from "@/lib/supabase/publico";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -16,7 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default async function BilhetesPage() {
-  const eventos = eventosComBilhetes(await lerEventos());
+  const [todos, { bilheteiraAberta }] = await Promise.all([lerEventos(), lerDefinicoes()]);
+  const agora = instante();
+  // Só os eventos que a Motobox vende de facto (à venda ou esgotados): ver `vendaBilhetes`.
+  const eventos = eventosComBilhetes(todos, bilheteiraAberta, agora);
 
   return (
     <>
@@ -24,7 +26,7 @@ export default async function BilhetesPage() {
         imagem="bilhetes"
         eyebrow="Bilhética oficial"
         titulo="Bilhetes"
-        descricao="Compre online e receba o bilhete digital com código QR no seu email e telemóvel. Sem filas, sem dinheiro em mão, sem intermediários."
+        descricao="Compre online e guarde o bilhete digital com código QR no telemóvel. Sem filas, sem dinheiro em mão, sem intermediários."
       >
         <div className="grid gap-4 sm:grid-cols-3 max-w-3xl">
           {[
@@ -47,13 +49,19 @@ export default async function BilhetesPage() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14">
         <div>
-          {eventos.length === 0 && (
+          {!bilheteiraAberta ? (
+            <EmptyState
+              titulo="Bilheteira fechada"
+              descricao="A venda de bilhetes online na Motobox está fechada de momento. Consulte o calendário e a página de cada evento para saber como participar."
+            />
+          ) : eventos.length === 0 && (
             <EmptyState
               titulo="Sem bilhetes à venda"
               descricao="De momento não há provas com bilhetes à venda. Consulte o calendário para ver o que vem a seguir."
             />
           )}
           {eventos.map((e) => {
+            const esgotado = vendaBilhetes(e, bilheteiraAberta, agora) === "esgotado";
             const minimo = Math.min(...e.bilhetes!.map((b) => b.preco));
             const total = e.bilhetes!.reduce((s, b) => s + b.disponiveis, 0);
             return (
@@ -103,7 +111,7 @@ export default async function BilhetesPage() {
                             {b.destaque && <Tag tone="red" className="!text-[9px] !px-2 !py-0.5">Popular</Tag>}
                           </div>
                           <p className="mt-1 font-display text-lg text-white">{formatKz(b.preco)}</p>
-                          <p className="mt-0.5 text-[11px] text-ink-600">{b.disponiveis} disponíveis</p>
+                          {!esgotado && <p className="mt-0.5 text-[11px] text-ink-600">{b.disponiveis} disponíveis</p>}
                         </div>
                       ))}
                     </div>
@@ -112,16 +120,25 @@ export default async function BilhetesPage() {
                       <div>
                         <p className="eyebrow text-ink-600">A partir de</p>
                         <p className="font-display text-2xl text-white">{formatKz(minimo)}</p>
-                        <p className="text-[11px] text-ink-600">{total.toLocaleString("pt-PT")} bilhetes disponíveis</p>
+                        {!esgotado && (
+                          <p className="text-[11px] text-ink-600">{total.toLocaleString("pt-PT")} bilhetes disponíveis</p>
+                        )}
                       </div>
                       <div className="flex gap-3">
-                        <ButtonLink href={`/calendario/${e.slug}`} variant="outline" size="md">
+                        <ButtonLink href={hrefEvento(e)} variant="outline" size="md">
                           Detalhes
                         </ButtonLink>
-                        <ButtonLink href={`/bilhetes/${e.slug}`} size="md">
-                          <Icon name="ticket" className="size-4" />
-                          Comprar
-                        </ButtonLink>
+                        {esgotado ? (
+                          <span className="inline-flex h-11 items-center gap-2 rounded-full bg-ink-800 px-6 font-ui text-base text-ink-300">
+                            <Icon name="ticket" className="size-4" />
+                            Esgotado
+                          </span>
+                        ) : (
+                          <ButtonLink href={`/bilhetes/${e.slug}`} size="md">
+                            <Icon name="ticket" className="size-4" />
+                            Comprar
+                          </ButtonLink>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -138,7 +155,7 @@ export default async function BilhetesPage() {
             {[
               { n: "01", t: "Escolha a prova", d: "Selecione o evento e o tipo de bilhete que quer." },
               { n: "02", t: "Pague online", d: "Multicaixa Express, transferência bancária ou cartão Visa." },
-              { n: "03", t: "Receba o QR", d: "O bilhete digital chega ao email e fica na sua conta." },
+              { n: "03", t: "Guarde o QR", d: "O bilhete digital aparece no fim da compra. Guarde-o no telemóvel ou imprima-o." },
               { n: "04", t: "Entre na prova", d: "Mostre o QR à entrada. Validação em segundos." },
             ].map((p) => (
               <div key={p.n} className="border-t border-white/10 pt-5">

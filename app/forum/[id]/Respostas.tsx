@@ -92,8 +92,8 @@ export function ItemResposta({ resposta: r, topicoId }: { resposta: RespostaPubl
           {r.corpo}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
-          {/* A denúncia aponta ao tópico: a moderação vê a discussão inteira. */}
-          <Denunciar tipo="forum" alvoId={topicoId} rotulo="Reportar" icone={false}
+          {/* A denúncia aponta a esta resposta, dentro do tópico: a moderação vê as duas. */}
+          <Denunciar tipo="forum" alvoId={topicoId} respostaId={r.id} rotulo="Reportar" icone={false}
             classeBotao="font-ui text-sm text-ink-500 transition-colors hover:text-white" />
         </div>
       </div>

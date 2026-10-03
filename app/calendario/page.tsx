@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { CalendarioClient } from "./CalendarioClient";
-import { lerEventos } from "@/lib/supabase/publico";
+import { lerDefinicoes, lerEventos } from "@/lib/supabase/publico";
 import { eProva } from "@/lib/desporto";
 
 // O Next exige um literal aqui, não aceita constante importada.
@@ -13,7 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default async function CalendarioPage() {
+  const [todos, definicoes] = await Promise.all([lerEventos(), lerDefinicoes()]);
   // Só provas; os eventos da comunidade estão em /eventos.
-  const eventos = (await lerEventos()).filter((e) => eProva(e.disciplina));
-  return <CalendarioClient eventos={eventos} />;
+  const eventos = todos.filter((e) => eProva(e.disciplina));
+  return <CalendarioClient eventos={eventos} bilheteiraAberta={definicoes.bilheteiraAberta} />;
 }

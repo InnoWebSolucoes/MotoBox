@@ -2,9 +2,11 @@ import "server-only";
 
 /* ============================================================
    MOTOBOX — Newsletter semanal
-   Monta o resumo da semana a partir da base de dados (notícias,
-   eventos, resultados e pilotos) e envia-o a todos os
-   subscritores activos. Corre sozinho às segundas-feiras
+   Monta o resumo da semana a partir da base de dados (notícias
+   de Angola e de fora, eventos, resultados, pilotos e anúncios)
+   e envia-o a todos os subscritores activos. Cada email fica só
+   com as secções dos interesses que o subscritor escolheu; sem
+   interesses, segue tudo. Corre sozinho às segundas-feiras
    (Vercel Cron → /api/cron/newsletter) e pode ser enviado à mão
    no painel.
 
@@ -19,7 +21,11 @@ import { daBase } from "@/lib/supabase/mapeamento";
 import { classificacaoPilotos } from "@/lib/data";
 import { src } from "@/lib/imagens";
 import { enviarEmails, type EmailPreparado } from "@/lib/notificacoes";
-import type { Corrida, Evento, Noticia, Piloto } from "@/lib/types";
+import {
+  INTERESSES, interessa, normalizarInteresses, temasDaNoticia, temasDoEvento, type Interesse,
+} from "@/lib/conta/preferencias";
+import { eComunidade, hrefEvento, vendaBilhetes } from "@/lib/desporto";
+import type { AnuncioMarketplace, Corrida, Evento, Noticia, Piloto } from "@/lib/types";
 import { urlPublica } from "@/lib/base";
 
 /* ---------------- Constantes ---------------- */
@@ -31,6 +37,12 @@ const FUSO_LUANDA_MS = 60 * 60 * 1000;
 const INTERVALO_MINIMO_MS = 6 * 24 * 60 * 60 * 1000;
 
 const POR_PAGINA = 1000;
+
+/**
+ * Quanto cabe em cada secção de um email. O resumo lê mais do que
+ * isto, para cada subscritor poder ficar com as dos seus temas.
+ */
+const MAXIMO = { nacionais: 5, internacionais: 3, eventos: 6, anuncios: 4 };
 
 export const ENTIDADE_ATIVIDADE = "Newsletter";
 export const ACCAO_ATIVIDADE = "enviou";
@@ -204,13 +216,77 @@ export interface ResumoSemanal {
   /** Semana coberta (7 dias até ontem) e o dia do envio, em Luanda. */
   semana: { inicio: string; fim: string; hoje: string; eventosAte: string; rotulo: string };
   assunto: string;
+  /** Todas as notícias da semana, das mais recentes para as mais antigas. Cada email escolhe as suas. */
   noticias: Noticia[];
+  /** Eventos dos próximos 14 dias, por data. */
   eventos: EventoResumo[];
   corridas: CorridaResumo[];
   classificacao: PilotoTabela[];
   pilotosNovos: Piloto[];
-  /** Sem notícias, eventos, resultados nem pilotos novos. */
+  /** Anúncios aprovados publicados na semana (vazio com o marketplace fechado). */
+  anuncios: AnuncioMarketplace[];
+  /**
+   * Sem notícias, eventos, resultados nem pilotos novos. Os anúncios
+   * não contam: uma semana só com anúncios não justifica um envio.
+   */
   vazio: boolean;
+}
+
+/** O que segue num email: as secções do resumo que interessam a um subscritor. */
+export interface EdicaoNewsletter {
+  /** Notícias de Angola: todas as categorias menos "Internacional". */
+  nacionais: Noticia[];
+  /** Notícias de fora: categoria "Internacional". */
+  internacionais: Noticia[];
+  eventos: EventoResumo[];
+  corridas: CorridaResumo[];
+  classificacao: PilotoTabela[];
+  pilotosNovos: Piloto[];
+  anuncios: AnuncioMarketplace[];
+  /** Interesses do subscritor (vazio: nunca escolheu, recebe tudo). */
+  interesses: Interesse[];
+  /** Os interesses não deixavam nada de novo: segue o resumo completo. */
+  completoPorFalta: boolean;
+}
+
+type Seccoes = Omit<EdicaoNewsletter, "interesses" | "completoPorFalta">;
+
+function seccoesPara(r: ResumoSemanal, interesses: readonly Interesse[]): Seccoes {
+  const quer = (temas: readonly Interesse[]) => interessa(interesses, temas);
+  const desporto = quer(["desporto"]);
+  const deFora = (n: Noticia) => n.categoria === "Internacional";
+  return {
+    nacionais: r.noticias
+      .filter((n) => !deFora(n) && quer(temasDaNoticia(n.categoria))).slice(0, MAXIMO.nacionais),
+    internacionais: r.noticias
+      .filter((n) => deFora(n) && quer(temasDaNoticia(n.categoria))).slice(0, MAXIMO.internacionais),
+    eventos: r.eventos.filter((e) => quer(temasDoEvento(e.evento.disciplina))).slice(0, MAXIMO.eventos),
+    corridas: desporto ? r.corridas : [],
+    classificacao: desporto ? r.classificacao : [],
+    pilotosNovos: desporto ? r.pilotosNovos : [],
+    anuncios: quer(["marketplace"]) ? r.anuncios.slice(0, MAXIMO.anuncios) : [],
+  };
+}
+
+/** Há alguma coisa nova? A classificação sozinha não conta, como em `vazio`. */
+const temNovidades = (s: Seccoes) =>
+  s.nacionais.length + s.internacionais.length + s.eventos.length
+  + s.corridas.length + s.pilotosNovos.length + s.anuncios.length > 0;
+
+/**
+ * Recorta o resumo para um subscritor. Sem interesses, segue tudo.
+ * Com eles, fica cada notícia, evento ou secção que toque um dos
+ * temas escolhidos (ver temasDaNoticia e temasDoEvento); resultados,
+ * classificação e pilotos são "desporto", os anúncios "marketplace".
+ * Se os temas não deixarem nada de novo, segue o resumo completo.
+ */
+export function edicaoPara(r: ResumoSemanal, escolhidos: unknown = []): EdicaoNewsletter {
+  const interesses = normalizarInteresses(escolhidos);
+  if (interesses.length > 0) {
+    const proprias = seccoesPara(r, interesses);
+    if (temNovidades(proprias)) return { ...proprias, interesses, completoPorFalta: false };
+  }
+  return { ...seccoesPara(r, []), interesses, completoPorFalta: interesses.length > 0 };
 }
 
 export interface ContagemResumo {
@@ -218,19 +294,25 @@ export interface ContagemResumo {
   eventos: number;
   corridas: number;
   pilotosNovos: number;
+  anuncios: number;
 }
 
-export const contagem = (r: ResumoSemanal): ContagemResumo => ({
-  noticias: r.noticias.length,
-  eventos: r.eventos.length,
-  corridas: r.corridas.length,
-  pilotosNovos: r.pilotosNovos.length,
-});
+/** Secções do resumo completo (o que recebe quem não escolheu interesses). */
+export const contagem = (r: ResumoSemanal): ContagemResumo => {
+  const e = edicaoPara(r);
+  return {
+    noticias: e.nacionais.length + e.internacionais.length,
+    eventos: e.eventos.length,
+    corridas: e.corridas.length,
+    pilotosNovos: e.pilotosNovos.length,
+    anuncios: e.anuncios.length,
+  };
+};
 
 type Linha = Record<string, unknown>;
 
 /** Linha da base → tipo da app, com os campos nulos ausentes (como em publico.ts). */
-function paraApp<T>(coleccao: "noticias" | "eventos" | "corridas" | "pilotos", linha: Linha): T {
+function paraApp<T>(coleccao: "noticias" | "eventos" | "corridas" | "pilotos" | "anuncios", linha: Linha): T {
   const limpa: Linha = {};
   for (const [k, v] of Object.entries(linha)) if (v !== null) limpa[k] = v;
   return daBase<T>(coleccao, limpa);
@@ -259,24 +341,40 @@ export async function construirResumo(
   const fim = somarDias(hoje, -1);
   const eventosAte = somarDias(hoje, 13);
 
-  const [rNoticias, rEventos, rCorridas, rPilotos, rDefinicoes] = await Promise.all([
+  // Lê-se mais do que cabe num email: cada subscritor fica com as dos seus temas.
+  const [rNoticias, rEventos, rCorridas, rPilotos, rDefinicoes, rAnuncios] = await Promise.all([
     db.from("noticias").select("*").eq("publicado", true)
-      .gte("data", inicio).lte("data", fim).order("data", { ascending: false }).limit(6),
+      .gte("data", inicio).lte("data", fim).order("data", { ascending: false }).limit(40),
     db.from("eventos").select("*").eq("publicado", true)
       .gte("data_fim", hoje).lte("data_inicio", eventosAte).neq("estado", "concluido")
-      .order("data_inicio", { ascending: true }).limit(6),
+      .order("data_inicio", { ascending: true }).limit(30),
     db.from("corridas").select("*").eq("publicado", true)
       .gte("data", inicio).lte("data", fim).order("data", { ascending: false }),
     db.from("pilotos").select("*").eq("publicado", true),
     db.from("definicoes").select("*").eq("id", 1).maybeSingle(),
+    db.from("anuncios").select("*").eq("publicado", true)
+      .gte("publicado_em", inicio).lte("publicado_em", fim)
+      .order("publicado_em", { ascending: false }).limit(20),
   ]);
   for (const r of [rNoticias, rEventos, rCorridas, rPilotos]) {
     if (r.error) throw new Error(r.error.message);
   }
+  // Os anúncios são um extra: uma falha a lê-los não trava a newsletter.
+  if (rAnuncios.error) console.error("[newsletter] não foi possível ler os anúncios:", rAnuncios.error.message);
 
-  const bilheteiraAberta = (rDefinicoes.data as Linha | null)?.bilheteira_aberta !== false;
+  const definicoes = rDefinicoes.data as Linha | null;
+  const bilheteiraAberta = definicoes?.bilheteira_aberta !== false;
+  const marketplaceAberto = definicoes?.marketplace_aberto !== false;
 
   const noticias = (rNoticias.data ?? []).map((l) => paraApp<Noticia>("noticias", l));
+
+  // Só os aprovados. Sem estado de moderação, o anúncio é anterior à
+  // verificação e conta como aprovado (a regra de lib/marketplace.ts).
+  const anuncios = marketplaceAberto && !rAnuncios.error
+    ? ((rAnuncios.data ?? []) as Linha[])
+      .filter((l) => (l.moderacao ?? "aprovado") === "aprovado")
+      .map((l) => paraApp<AnuncioMarketplace>("anuncios", l))
+    : [];
 
   const eventos: EventoResumo[] = (rEventos.data ?? []).map((l) => {
     const evento = paraApp<Evento>("eventos", l);
@@ -284,7 +382,8 @@ export async function construirResumo(
     const precos = bilhetes.map((b) => Number(b.preco) || 0).filter((p) => p > 0);
     return {
       evento,
-      comBilhetes: bilheteiraAberta && bilhetes.length > 0 && evento.estado !== "esgotado",
+      // A mesma regra do site: sem lugares ou esgotado, não há botão de compra.
+      comBilhetes: vendaBilhetes(evento, bilheteiraAberta) === "a-venda",
       precoMinimo: precos.length ? Math.min(...precos) : 0,
     };
   });
@@ -325,6 +424,7 @@ export async function construirResumo(
     corridas,
     classificacao,
     pilotosNovos,
+    anuncios,
     vazio: noticias.length + eventos.length + corridas.length + pilotosNovos.length === 0,
   };
 }
@@ -363,31 +463,50 @@ const meta = (texto: string) =>
 const botao = (texto: string, url: string) =>
   `<a href="${escapar(url)}" style="display:inline-block;margin-top:10px;background:${COR.vermelho};color:#ffffff;border-radius:999px;padding:9px 18px;font-family:${FONTE};font-size:13px;font-weight:700;text-decoration:none">${escapar(texto)}</a>`;
 
-function blocoNoticias(r: ResumoSemanal, base: string) {
-  if (r.noticias.length === 0) return "";
-  const [destaque, ...resto] = r.noticias;
-  const foto = src([destaque.slug, destaque.imagem], { w: 1088, q: 70 });
-  // Nas fotografias do Unsplash pede-se JPEG recortado a 2:1; outros
-  // endereços (imagem carregada no painel) seguem tal como estão.
-  const imagem = foto?.startsWith("https://images.unsplash.com/") ? `${foto}&h=544&fm=jpg` : foto;
-  const urlDestaque = `${base}/noticias/${destaque.slug}`;
-  const topo = `${imagem
-    ? `<a href="${escapar(urlDestaque)}"><img src="${escapar(imagem)}" width="544" alt="${escapar(destaque.titulo)}" style="display:block;width:100%;max-width:544px;height:auto;border:0;border-radius:10px"></a>`
-    : ""}
+/**
+ * Secção de notícias. A primeira do email leva fotografia e título
+ * grande (`comDestaque`); as restantes vão em lista com a data.
+ */
+function blocoNoticias(
+  rotulo: string,
+  noticias: Noticia[],
+  ligacao: { texto: string; url: string },
+  comDestaque: boolean,
+  base: string,
+) {
+  if (noticias.length === 0) return "";
+  const [destaque, ...outras] = noticias;
+  let topo = "";
+  if (comDestaque) {
+    const foto = src([destaque.slug, destaque.imagem], { w: 1088, q: 70 });
+    // Nas fotografias do Unsplash pede-se JPEG recortado a 2:1; outros
+    // endereços (imagem carregada no painel) seguem tal como estão.
+    const imagem = foto?.startsWith("https://images.unsplash.com/") ? `${foto}&h=544&fm=jpg` : foto;
+    const urlDestaque = `${base}/noticias/${destaque.slug}`;
+    topo = `${imagem
+      ? `<a href="${escapar(urlDestaque)}"><img src="${escapar(imagem)}" width="544" alt="${escapar(destaque.titulo)}" style="display:block;width:100%;max-width:544px;height:auto;border:0;border-radius:10px"></a>`
+      : ""}
 <div style="padding:${imagem ? "14px" : "0"} 0 16px">
 <div style="font-family:${FONTE};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${COR.tenue}">${escapar(destaque.categoria)} · ${escapar(diaCurto(destaque.data))}</div>
 <div style="margin-top:6px"><a href="${escapar(urlDestaque)}" style="font-family:${FONTE};font-size:20px;line-height:1.25;font-weight:900;color:${COR.texto};text-decoration:none">${escapar(destaque.titulo)}</a></div>
 ${destaque.resumo ? meta(escapar(destaque.resumo)) : ""}
 </div>`;
-  const lista = resto
+  }
+  const lista = (comDestaque ? outras : noticias)
     .map((n) => linhaComData(n.data, `${titulo(n.titulo, `${base}/noticias/${n.slug}`)}${n.resumo ? meta(escapar(n.resumo)) : ""}`))
     .join("\n");
-  return seccao(`${eyebrow("Notícias da semana", { texto: "Todas", url: `${base}/noticias` })}${topo}${lista}`);
+  return seccao(`${eyebrow(rotulo, ligacao)}${topo}${lista}`);
 }
 
-function blocoEventos(r: ResumoSemanal, base: string) {
-  if (r.eventos.length === 0) return "";
-  const lista = r.eventos
+/** Provas no calendário de Desporto; só eventos da comunidade levam à secção Eventos. */
+const agendaDe = (e: EdicaoNewsletter, base: string) =>
+  e.eventos.every(({ evento }) => eComunidade(evento.disciplina))
+    ? { texto: "Eventos", url: `${base}/eventos` }
+    : { texto: "Calendário", url: `${base}/calendario` };
+
+function blocoEventos(ed: EdicaoNewsletter, base: string) {
+  if (ed.eventos.length === 0) return "";
+  const lista = ed.eventos
     .map(({ evento: e, comBilhetes, precoMinimo }) => {
       const onde = [e.circuito, e.localidade || e.provincia].filter(Boolean).join(", ");
       const detalhe = [quandoEvento(e), onde].filter(Boolean).map(escapar).join(" · ");
@@ -395,13 +514,30 @@ function blocoEventos(r: ResumoSemanal, base: string) {
         ? meta(`Bilhetes à venda, desde <strong style="color:${COR.texto}">${escapar(kwanzas(precoMinimo))}</strong>`)
         : "";
       const bilhetes = comBilhetes ? botao("Comprar bilhetes", `${base}/bilhetes/${e.slug}`) : "";
-      return linhaComData(e.dataInicio, `${titulo(e.titulo, `${base}/calendario/${e.slug}`)}${meta(detalhe)}${preco}${bilhetes}`);
+      return linhaComData(e.dataInicio, `${titulo(e.titulo, `${base}${hrefEvento(e)}`)}${meta(detalhe)}${preco}${bilhetes}`);
     })
     .join("\n");
-  return seccao(`${eyebrow("Próximos eventos", { texto: "Calendário", url: `${base}/calendario` })}${lista}`);
+  return seccao(`${eyebrow("Próximos eventos", agendaDe(ed, base))}${lista}`);
 }
 
-function blocoResultados(r: ResumoSemanal, base: string) {
+function blocoAnuncios(ed: EdicaoNewsletter, base: string) {
+  if (ed.anuncios.length === 0) return "";
+  const lista = ed.anuncios
+    .map((a) => {
+      const preco = Number(a.preco) > 0
+        ? `<strong style="color:${COR.texto}">${escapar(kwanzas(Number(a.preco)))}</strong>${a.negociavel ? " (negociável)" : ""}`
+        : "";
+      const detalhe = [preco, ...[a.estado, a.provincia].filter(Boolean).map(escapar)].filter(Boolean).join(" · ");
+      return linhaComData(
+        a.publicado,
+        `${titulo(a.titulo, `${base}/marketplace/${encodeURIComponent(a.id)}`)}${detalhe ? meta(detalhe) : ""}`,
+      );
+    })
+    .join("\n");
+  return seccao(`${eyebrow("Marketplace", { texto: "Ver anúncios", url: `${base}/marketplace` })}${lista}`);
+}
+
+function blocoResultados(r: EdicaoNewsletter, base: string) {
   if (r.corridas.length === 0) return "";
   const lista = r.corridas
     .map(({ corrida: c, vencedor }) => {
@@ -415,7 +551,7 @@ function blocoResultados(r: ResumoSemanal, base: string) {
   return seccao(`${eyebrow("Resultados", { texto: "Classificação", url: `${base}/classificacao` })}${lista}`);
 }
 
-function blocoPilotos(r: ResumoSemanal, base: string) {
+function blocoPilotos(r: EdicaoNewsletter, base: string) {
   if (r.classificacao.length === 0 && r.pilotosNovos.length === 0) return "";
   const tabela = r.classificacao.length
     ? `<div style="font-family:${FONTE};font-size:14px;font-weight:700;color:${COR.texto};padding:0 0 4px">Classificação geral</div>
@@ -444,28 +580,47 @@ ${r.pilotosNovos
 }
 
 /** Frase curta com o que o email traz, para o pré-cabeçalho e a introdução. */
-function sumario(r: ResumoSemanal): string {
+function sumario(e: EdicaoNewsletter): string {
+  const noticias = e.nacionais.length + e.internacionais.length;
   const partesTexto = [
-    r.noticias.length ? plural(r.noticias.length, "notícia", "notícias") : "",
-    r.corridas.length ? plural(r.corridas.length, "resultado", "resultados") : "",
-    r.eventos.length ? plural(r.eventos.length, "evento a caminho", "eventos a caminho") : "",
-    r.pilotosNovos.length ? plural(r.pilotosNovos.length, "piloto novo", "pilotos novos") : "",
+    noticias ? plural(noticias, "notícia", "notícias") : "",
+    e.corridas.length ? plural(e.corridas.length, "resultado", "resultados") : "",
+    e.eventos.length ? plural(e.eventos.length, "evento a caminho", "eventos a caminho") : "",
+    e.pilotosNovos.length ? plural(e.pilotosNovos.length, "piloto novo", "pilotos novos") : "",
+    e.anuncios.length ? plural(e.anuncios.length, "anúncio novo", "anúncios novos") : "",
   ].filter(Boolean);
   return partesTexto.length ? `${juntar(partesTexto)}.` : "A classificação do campeonato.";
+}
+
+/** Rodapé: que temas moldaram este email e como os mudar. Vazio para quem não escolheu. */
+function notaInteresses(e: EdicaoNewsletter): string {
+  if (e.interesses.length === 0) return "";
+  const nomes = juntar(e.interesses.map((id) => INTERESSES.find((i) => i.id === id)?.nome ?? id));
+  const frase = e.completoPorFalta
+    ? `Esta semana não houve novidades nos temas que escolheu (${nomes}), por isso segue o resumo completo.`
+    : `Esta edição segue os temas que escolheu: ${nomes}.`;
+  return `${frase} Para os mudar, subscreva de novo com outras escolhas ou altere-os na sua conta Motobox.`;
 }
 
 export interface DestinatarioNewsletter {
   email: string;
   nome?: string | null;
+  /** Ids de INTERESSES. Vazio ou ausente: o resumo completo. */
+  interesses?: readonly string[] | null;
 }
 
-/** Mensagem pronta para um subscritor (HTML, texto e cabeçalhos de cancelamento). */
+/**
+ * Mensagem pronta para um subscritor (HTML, texto e cabeçalhos de
+ * cancelamento), só com as secções dos seus interesses.
+ */
 export function emailDaNewsletter(r: ResumoSemanal, d: DestinatarioNewsletter): EmailPreparado {
   const base = urlBase();
   const cancelar = linkCancelamento(d.email);
   const nome = d.nome?.trim();
   const saudacao = nome ? `Olá, ${nome}.` : "Olá.";
-  const resumoCurto = sumario(r);
+  const ed = edicaoPara(r, d.interesses ?? []);
+  const resumoCurto = sumario(ed);
+  const nota = notaInteresses(ed);
 
   const html = `<!doctype html>
 <html lang="pt-AO">
@@ -493,15 +648,17 @@ export function emailDaNewsletter(r: ResumoSemanal, d: DestinatarioNewsletter): 
 <h1 style="margin:6px 0 0;font-family:${FONTE};font-size:26px;line-height:1.15;font-weight:900;text-transform:uppercase;color:${COR.texto}">${escapar(r.semana.rotulo)}</h1>
 <p style="margin:14px 0 0;font-size:15px;line-height:1.5;color:#3a3a44">${escapar(saudacao)} O resumo do motociclismo angolano: ${escapar(resumoCurto.charAt(0).toLowerCase() + resumoCurto.slice(1))}</p>
 </td></tr>
-${blocoNoticias(r, base)}
-${blocoResultados(r, base)}
-${blocoEventos(r, base)}
-${blocoPilotos(r, base)}
+${blocoNoticias("Em Angola", ed.nacionais, { texto: "Todas", url: `${base}/noticias` }, true, base)}
+${blocoNoticias("Lá fora", ed.internacionais, { texto: "Todas", url: `${base}/noticias?cat=Internacional` }, ed.nacionais.length === 0, base)}
+${blocoResultados(ed, base)}
+${blocoEventos(ed, base)}
+${blocoPilotos(ed, base)}
+${blocoAnuncios(ed, base)}
 <tr><td align="center" style="padding:32px 28px 30px">
 <a href="${escapar(base)}" style="display:inline-block;background:${COR.topo};color:#ffffff;border-radius:999px;padding:12px 26px;font-family:${FONTE};font-size:14px;font-weight:700;text-decoration:none">Ir para o site Motobox</a>
 </td></tr>
 <tr><td style="padding:20px 28px 24px;border-top:1px solid ${COR.linha};font-family:${FONTE};font-size:12px;line-height:1.6;color:${COR.tenue};border-radius:0 0 14px 14px">
-Recebe este email porque subscreveu a newsletter da Motobox Angola.<br>
+${nota ? `${escapar(nota)}<br><br>` : ""}Recebe este email porque subscreveu a newsletter da Motobox Angola.<br>
 <a href="${escapar(cancelar)}" style="color:${COR.suave};text-decoration:underline">Cancelar subscrição</a> · <a href="${escapar(base)}" style="color:${COR.suave};text-decoration:underline">${escapar(base.replace(/^https?:\/\//, ""))}</a><br>
 Motobox Angola · Luanda, Angola
 </td></tr>
@@ -515,7 +672,7 @@ Motobox Angola · Luanda, Angola
     para: d.email,
     assunto: r.assunto,
     html,
-    texto: textoDaNewsletter(r, { saudacao, cancelar, base, resumoCurto }),
+    texto: textoDaNewsletter(r, ed, { saudacao, cancelar, base, resumoCurto, nota }),
     cabecalhos: {
       // Gmail e Outlook mostram "Cancelar subscrição" junto ao remetente
       // e fazem o POST de um clique (RFC 8058) para o mesmo endereço.
@@ -527,7 +684,8 @@ Motobox Angola · Luanda, Angola
 
 function textoDaNewsletter(
   r: ResumoSemanal,
-  x: { saudacao: string; cancelar: string; base: string; resumoCurto: string },
+  ed: EdicaoNewsletter,
+  x: { saudacao: string; cancelar: string; base: string; resumoCurto: string; nota: string },
 ): string {
   const l: string[] = [
     `MOTOBOX ANGOLA · A semana de ${r.semana.rotulo}`,
@@ -535,56 +693,72 @@ function textoDaNewsletter(
     `${x.saudacao} O resumo do motociclismo angolano: ${x.resumoCurto.charAt(0).toLowerCase()}${x.resumoCurto.slice(1)}`,
   ];
 
-  if (r.noticias.length) {
-    l.push("", "NOTÍCIAS DA SEMANA");
-    for (const n of r.noticias) {
+  const noticias = (rotulo: string, lista: Noticia[], todas: string) => {
+    if (lista.length === 0) return;
+    l.push("", rotulo);
+    for (const n of lista) {
       l.push("", `* ${n.titulo} (${diaCurto(n.data)})`);
       if (n.resumo) l.push(`  ${n.resumo}`);
       l.push(`  ${x.base}/noticias/${n.slug}`);
     }
-    l.push("", `Todas as notícias: ${x.base}/noticias`);
-  }
+    l.push("", `Todas: ${todas}`);
+  };
+  noticias("EM ANGOLA", ed.nacionais, `${x.base}/noticias`);
+  noticias("LÁ FORA", ed.internacionais, `${x.base}/noticias?cat=Internacional`);
 
-  if (r.corridas.length) {
+  if (ed.corridas.length) {
     l.push("", "RESULTADOS");
-    for (const { corrida: c, vencedor } of r.corridas) {
+    for (const { corrida: c, vencedor } of ed.corridas) {
       l.push("", `* ${c.nome}${c.categoria ? ` · ${c.categoria}` : ""} (${diaCurto(c.data)})`);
       l.push(`  Vencedor: ${vencedor}`);
       l.push(`  ${x.base}/resultados/${c.slug}`);
     }
   }
 
-  if (r.eventos.length) {
+  if (ed.eventos.length) {
     l.push("", "PRÓXIMOS EVENTOS");
-    for (const { evento: e, comBilhetes, precoMinimo } of r.eventos) {
+    for (const { evento: e, comBilhetes, precoMinimo } of ed.eventos) {
       const onde = [e.circuito, e.localidade || e.provincia].filter(Boolean).join(", ");
       l.push("", `* ${e.titulo}`, `  ${[quandoEvento(e), onde].filter(Boolean).join(" · ")}`);
-      l.push(`  ${x.base}/calendario/${e.slug}`);
+      l.push(`  ${x.base}${hrefEvento(e)}`);
       if (comBilhetes) {
         l.push(`  Bilhetes${precoMinimo > 0 ? ` desde ${kwanzas(precoMinimo)}` : ""}: ${x.base}/bilhetes/${e.slug}`);
       }
     }
-    l.push("", `Calendário: ${x.base}/calendario`);
+    const agenda = agendaDe(ed, x.base);
+    l.push("", `${agenda.texto}: ${agenda.url}`);
   }
 
-  if (r.classificacao.length || r.pilotosNovos.length) {
+  if (ed.classificacao.length || ed.pilotosNovos.length) {
     l.push("", "PILOTOS");
-    if (r.classificacao.length) {
+    if (ed.classificacao.length) {
       l.push("", "Classificação geral:");
-      for (const p of r.classificacao) l.push(`${p.posicao}. ${p.nome}${p.equipa ? ` (${p.equipa})` : ""}: ${p.pontos} pts`);
+      for (const p of ed.classificacao) l.push(`${p.posicao}. ${p.nome}${p.equipa ? ` (${p.equipa})` : ""}: ${p.pontos} pts`);
       l.push(`${x.base}/classificacao`);
     }
-    if (r.pilotosNovos.length) {
+    if (ed.pilotosNovos.length) {
       l.push("", "Novos no campeonato:");
-      for (const p of r.pilotosNovos) {
+      for (const p of ed.pilotosNovos) {
         l.push(`* ${p.nome}${p.categoria ? ` (${p.categoria})` : ""}: ${x.base}/pilotos/${p.slug}`);
       }
     }
   }
 
+  if (ed.anuncios.length) {
+    l.push("", "MARKETPLACE");
+    for (const a of ed.anuncios) {
+      const preco = Number(a.preco) > 0 ? `${kwanzas(Number(a.preco))}${a.negociavel ? " (negociável)" : ""}` : "";
+      l.push("", `* ${a.titulo}`);
+      const detalhe = [preco, a.estado, a.provincia].filter(Boolean).join(" · ");
+      if (detalhe) l.push(`  ${detalhe}`);
+      l.push(`  ${x.base}/marketplace/${encodeURIComponent(a.id)}`);
+    }
+    l.push("", `Ver anúncios: ${x.base}/marketplace`);
+  }
+
+  l.push("", "--");
+  if (x.nota) l.push(x.nota, "");
   l.push(
-    "",
-    "--",
     "Recebe este email porque subscreveu a newsletter da Motobox Angola.",
     `Cancelar subscrição: ${x.cancelar}`,
     x.base,
@@ -611,26 +785,61 @@ export interface ResultadoEnvio {
 interface Subscritor {
   email: string;
   nome: string | null;
+  interesses: Interesse[];
 }
 
-/** Subscritores activos, página a página, sem emails repetidos. */
+/**
+ * Subscritores activos, página a página, sem emails repetidos. Lê
+ * todas as colunas: antes da migração de 3 de Outubro não há
+ * `interesses`, e esses subscritores recebem o resumo completo.
+ */
 export async function lerSubscritoresActivos(db: SupabaseClient): Promise<Subscritor[]> {
   const vistos = new Set<string>();
   const saida: Subscritor[] = [];
   for (let de = 0; ; de += POR_PAGINA) {
     const { data, error } = await db
-      .from("subscritores").select("id, email, nome").eq("ativo", true)
+      .from("subscritores").select("*").eq("ativo", true)
       .order("id").range(de, de + POR_PAGINA - 1);
     if (error) throw new Error(error.message);
     for (const s of data ?? []) {
       const email = normalizarEmail(s.email);
       if (!EMAIL_VALIDO.test(email) || vistos.has(email)) continue;
       vistos.add(email);
-      saida.push({ email, nome: (s.nome as string | null) ?? null });
+      saida.push({
+        email,
+        nome: (s.nome as string | null) ?? null,
+        interesses: normalizarInteresses(s.interesses),
+      });
     }
     if ((data ?? []).length < POR_PAGINA) break;
   }
   return saida;
+}
+
+type ErroBase = { code?: string; message: string } | null;
+
+/** A escrita falhou só porque a coluna `interesses` ainda não existe (migração por correr). */
+function faltaColunaInteresses(e: ErroBase): boolean {
+  return Boolean(e && (e.code === "PGRST204" || e.code === "42703") && e.message.includes("interesses"));
+}
+
+/**
+ * Escreve na tabela `subscritores` (insert ou update, conforme
+ * `operacao`) e, se a coluna `interesses` ainda não existir, repete
+ * sem ela: uma subscrição nunca se perde por falta da migração.
+ * Devolve o erro, ou null.
+ */
+export async function escreverSubscritor(
+  campos: Record<string, unknown>,
+  operacao: (campos: Record<string, unknown>) => PromiseLike<{ error: ErroBase }>,
+): Promise<ErroBase> {
+  const { error } = await operacao(campos);
+  if (!("interesses" in campos) || !faltaColunaInteresses(error)) return error;
+  const resto = { ...campos };
+  delete resto.interesses;
+  // Só mudavam os interesses: sem a coluna, não há nada a escrever.
+  if (Object.keys(resto).length === 0) return null;
+  return (await operacao(resto)).error;
 }
 
 /**

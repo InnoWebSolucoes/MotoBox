@@ -82,6 +82,8 @@ export interface Denuncia {
   tipo: "forum" | "marketplace" | "comentario" | "perfil";
   alvoId: string;
   alvoTitulo: string;
+  /** Fórum: a resposta denunciada, quando não é o tópico inteiro. */
+  respostaId?: string | null;
   motivo: string;
   detalhe: string;
   denunciante: string;

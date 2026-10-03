@@ -68,7 +68,7 @@ export default function AdminBilheteira() {
         <Interruptor
           activo={estado.definicoes.bilheteiraAberta}
           etiqueta="Venda de bilhetes online"
-          descricao="Quando desligada, o checkout deixa de aceitar novas compras."
+          descricao="Quando desligada, o site deixa de mostrar botões de compra e o checkout não aceita novas compras."
           onChange={(v) => {
             guardarDefinicoes({ bilheteiraAberta: v });
             mostrar(v ? "Bilheteira aberta." : "Bilheteira fechada.");

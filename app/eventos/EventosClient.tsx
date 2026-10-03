@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Placeholder } from "@/components/Brand";
 import { Countdown } from "@/components/Countdown";
 import { ButtonLink, Icon, PageHero } from "@/components/ui";
-import { DISCIPLINAS_COMUNIDADE, eComunidade, hrefEvento } from "@/lib/desporto";
+import { DISCIPLINAS_COMUNIDADE, eComunidade, entradaDoEvento, hrefEvento, vendaBilhetes } from "@/lib/desporto";
 import type { Evento } from "@/lib/types";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { useConteudo } from "@/lib/i18n/useConteudo";
@@ -17,8 +17,15 @@ const TIPOS: Tipo[] = ["Todos", ...DISCIPLINAS_COMUNIDADE];
  * Tudo o que junta a comunidade fora das pistas. Recebe o calendário inteiro:
  * as provas ficam escondidas até se ligar "Provas", para quem quer ver tudo.
  */
-export function EventosClient({ eventos: originais }: { eventos: Evento[] }) {
-  const eventos = useConteudo(originais, ["titulo", "resumo", "descricao", "circuito"]);
+export function EventosClient({
+  eventos: originais,
+  bilheteiraAberta,
+}: {
+  eventos: Evento[];
+  /** Interruptor "Bilheteira aberta" das Definições, lido no servidor. */
+  bilheteiraAberta: boolean;
+}) {
+  const eventos = useConteudo(originais, ["titulo", "resumo", "descricao", "circuito", "entrada"]);
   const { t } = useIdioma();
   const [tipo, setTipo] = useState<Tipo>("Todos");
   const [provincia, setProvincia] = useState("Todas");
@@ -59,6 +66,8 @@ export function EventosClient({ eventos: originais }: { eventos: Evento[] }) {
   }, [visiveis, provinciaActiva, agora]);
 
   const destaque = proximos.find((e) => eComunidade(e.disciplina) && new Date(e.dataInicio).getTime() > agora);
+  const vendaDestaque = destaque ? vendaBilhetes(destaque, bilheteiraAberta, agora) : null;
+  const entradaDestaque = destaque ? entradaDoEvento(destaque) : "";
 
   const grupos = [
     { titulo: "A seguir", lista: proximos },
@@ -156,8 +165,14 @@ export function EventosClient({ eventos: originais }: { eventos: Evento[] }) {
                 <p className="eyebrow text-mb-red">Próximo evento</p>
                 <h2 className="title-xl mt-3 text-3xl sm:text-4xl">{destaque.titulo}</h2>
                 <p className="mt-4 max-w-lg text-sm text-ink-300 leading-relaxed">{destaque.resumo}</p>
+                {!vendaDestaque && entradaDestaque && (
+                  <p className="mt-4 inline-flex items-center gap-2 text-sm text-ink-200">
+                    <Icon name="ticket" className="size-4 text-mb-red" />
+                    {entradaDestaque}
+                  </p>
+                )}
                 <div className="mt-6 flex flex-wrap gap-3">
-                  {destaque.bilhetes && (
+                  {vendaDestaque === "a-venda" && (
                     <ButtonLink href={`/bilhetes/${destaque.slug}`}>
                       <Icon name="ticket" className="size-4" />
                       Bilhetes
@@ -185,13 +200,13 @@ export function EventosClient({ eventos: originais }: { eventos: Evento[] }) {
             {vista === "lista" ? (
               <ol>
                 {g.lista.map((e) => (
-                  <LinhaEvento key={e.slug} e={e} agora={agora} ate={t("comum.ate")} />
+                  <LinhaEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} ate={t("comum.ate")} />
                 ))}
               </ol>
             ) : (
               <div className="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                 {g.lista.map((e) => (
-                  <CartaoEvento key={e.slug} e={e} agora={agora} />
+                  <CartaoEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} />
                 ))}
               </div>
             )}

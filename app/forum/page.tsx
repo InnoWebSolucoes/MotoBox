@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ButtonLink, EmptyState, Icon, PageHero } from "@/components/ui";
+import { ButtonLink, Icon, PageHero } from "@/components/ui";
 import { formatData } from "@/lib/data";
 import { lerCategoriasForum, lerTopicos } from "@/lib/supabase/publico";
+import { contarMembros } from "@/lib/forum/contagens";
 import type { TopicoForum } from "@/lib/types";
+import { Discussoes } from "./Discussoes";
+import { RegrasForum } from "./Partes";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -23,28 +26,44 @@ export const metadata: Metadata = {
  * que o `TraduzirPagina` o encontra em `interface-en.ts`.
  */
 
-const REGRAS = [
-  "Respeito em primeiro lugar. Sem insultos.",
-  "Sem publicidade não autorizada.",
-  "Vendas só no Marketplace.",
-  "Pesquise antes de abrir um tópico novo.",
-  "Sem conteúdo fora do tema motard.",
-];
-
-const MEMBROS_ACTIVOS = [
-  { n: "Bruno_T12", c: "#e10600", m: 1284 },
-  { n: "MecanicoDoBairro", c: "#f59e0b", m: 987 },
-  { n: "MiguelTrail", c: "#22c55e", m: 762 },
-  { n: "Bino_MX", c: "#0ea5e9", m: 645 },
-  { n: "AnalistaMX", c: "#a855f7", m: 519 },
-];
+/** Milissegundos de uma data, ou 0. */
+const tempo = (iso: string | undefined) => (iso ? new Date(iso).getTime() || 0 : 0);
 
 export default async function ForumPage() {
-  const [topicos, categoriasForum] = await Promise.all([lerTopicos(), lerCategoriasForum()]);
-  const fixados = topicos.filter((t) => t.fixado);
-  const recentes = topicos.filter((t) => !t.fixado);
-  const totalMensagens = categoriasForum.reduce((s, c) => s + c.mensagens, 0);
-  const totalTopicos = categoriasForum.reduce((s, c) => s + c.topicos, 0);
+  const [topicos, categoriasForum, membros] = await Promise.all([
+    lerTopicos(), lerCategoriasForum(), contarMembros(),
+  ]);
+
+  // Números contados nos tópicos publicados, não nos contadores guardados nas
+  // categorias (que vieram dos dados de demonstração). Cada tópico conta como
+  // uma mensagem, mais as respostas.
+  const porCategoria = new Map<string, { topicos: number; mensagens: number }>();
+  for (const t of topicos) {
+    const c = porCategoria.get(t.categoriaSlug) ?? { topicos: 0, mensagens: 0 };
+    porCategoria.set(t.categoriaSlug, { topicos: c.topicos + 1, mensagens: c.mensagens + t.respostas + 1 });
+  }
+  const totalTopicos = topicos.length;
+  const totalMensagens = topicos.reduce((s, t) => s + t.respostas + 1, 0);
+
+  // Quem abriu mais tópicos, entre os que estão à vista.
+  const activos = [...topicos.reduce((m, t) => m.set(t.autor, {
+    n: t.autor, c: t.avatarCor, m: (m.get(t.autor)?.m ?? 0) + 1,
+  }), new Map<string, { n: string; c: string; m: number }>()).values()]
+    .filter((a) => a.n)
+    .sort((a, b) => b.m - a.m || a.n.localeCompare(b.n))
+    .slice(0, 5);
+
+  // Os filtros correm no navegador; a linha de cada tópico já vai desenhada daqui.
+  // A actividade é a última resposta guardada (`em`) ou, sem ela, o dia em que abriu.
+  const discussoes = topicos.map((t) => ({
+    id: t.id,
+    categoria: t.categoriaSlug,
+    fixado: Boolean(t.fixado),
+    respostas: t.respostas,
+    visualizacoes: t.visualizacoes,
+    actividade: Math.max(tempo((t.ultimaResposta as { em?: string }).em), tempo(t.criado)),
+    linha: <TopicoLinha topico={t} />,
+  }));
 
   return (
     <>
@@ -55,20 +74,26 @@ export default async function ForumPage() {
         descricao="O sítio onde a comunidade motard angolana fala. Dúvidas de mecânica, organização de passeios, análise das corridas e tudo o resto."
       >
         <div className="flex flex-wrap items-center gap-x-10 gap-y-5">
-          <ButtonLink href="/conta" size="lg">
+          <ButtonLink href="/forum/novo" size="lg">
             <Icon name="plus" className="size-4" />
             Novo tópico
           </ButtonLink>
           <p className="flex flex-wrap gap-x-6 gap-y-1 text-[15px] text-ink-400">
             <span>
-              <strong className="font-ui text-lg text-white">{totalTopicos.toLocaleString("pt-PT")}</strong> tópicos
+              <strong className="font-ui text-lg text-white">{totalTopicos.toLocaleString("pt-PT")}</strong>{" "}
+              {totalTopicos === 1 ? "tópico" : "tópicos"}
             </span>
             <span>
-              <strong className="font-ui text-lg text-white">{totalMensagens.toLocaleString("pt-PT")}</strong> mensagens
+              <strong className="font-ui text-lg text-white">{totalMensagens.toLocaleString("pt-PT")}</strong>{" "}
+              {totalMensagens === 1 ? "mensagem" : "mensagens"}
             </span>
-            <span>
-              <strong className="font-ui text-lg text-white">2.847</strong> membros
-            </span>
+            {/* Contas confirmadas no site; sem base de dados não há número a mostrar. */}
+            {membros !== null && (
+              <span>
+                <strong className="font-ui text-lg text-white">{membros.toLocaleString("pt-PT")}</strong>{" "}
+                {membros === 1 ? "membro" : "membros"}
+              </span>
+            )}
           </p>
         </div>
       </PageHero>
@@ -82,9 +107,12 @@ export default async function ForumPage() {
                 Categorias
               </h2>
               <ul className="mt-6 grid gap-x-12 sm:grid-cols-2">
-                {categoriasForum.map((c) => (
+                {categoriasForum.map((c) => {
+                  const n = porCategoria.get(c.slug) ?? { topicos: 0, mensagens: 0 };
+                  return (
                   <li key={c.slug} className="border-t border-white/6">
-                    <Link href={`/forum#${c.slug}`} className="group flex items-start gap-4 py-5 sm:py-6">
+                    {/* Âncora simples, não Link: muda o hash e a lista de discussões filtra por ele. */}
+                    <a href={`#${c.slug}`} className="group flex items-start gap-4 py-5 sm:py-6">
                       <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ink-800 text-ink-200">
                         <Icon name={c.icone} className="size-[18px]" />
                       </span>
@@ -94,48 +122,21 @@ export default async function ForumPage() {
                         </span>
                         <span className="mt-1.5 block text-[15px] leading-relaxed text-ink-400">{c.descricao}</span>
                         <span className="mt-2 flex flex-wrap gap-x-2 text-sm text-ink-500">
-                          <span>{c.topicos.toLocaleString("pt-PT")} tópicos</span>
+                          <span>{n.topicos.toLocaleString("pt-PT")} {n.topicos === 1 ? "tópico" : "tópicos"}</span>
                           <Ponto />
-                          <span>{c.mensagens.toLocaleString("pt-PT")} mensagens</span>
+                          <span>{n.mensagens.toLocaleString("pt-PT")} {n.mensagens === 1 ? "mensagem" : "mensagens"}</span>
                         </span>
                       </span>
-                    </Link>
+                    </a>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </section>
 
-            {/* Discussões: as fixadas primeiro, marcadas, e depois as recentes */}
+            {/* Discussões: recentes (as fixadas primeiro), populares ou sem resposta */}
             <section aria-labelledby="forum-discussoes">
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <h2 id="forum-discussoes" className="font-display text-2xl uppercase text-white">
-                  Discussões recentes
-                </h2>
-                <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                  {["Recentes", "Populares", "Sem resposta"].map((f, i) => (
-                    <button key={f} aria-pressed={i === 0} className="chip h-8 px-3.5 text-sm">
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <ul className="mt-6 border-t border-white/6">
-                {fixados.map((t) => (
-                  <TopicoLinha key={t.id} topico={t} />
-                ))}
-                {recentes.map((t) => (
-                  <TopicoLinha key={t.id} topico={t} />
-                ))}
-              </ul>
-              {recentes.length === 0 && (
-                <div className="mt-6">
-                  <EmptyState
-                    titulo="Sem discussões recentes"
-                    descricao="As conversas mais recentes da comunidade aparecem aqui."
-                  />
-                </div>
-              )}
+              <Discussoes itens={discussoes} categorias={categoriasForum.map((c) => ({ slug: c.slug, nome: c.nome }))} />
             </section>
           </div>
 
@@ -156,25 +157,14 @@ export default async function ForumPage() {
               </div>
             </section>
 
-            <section>
-              <h2 className="eyebrow text-ink-400">Regras do fórum</h2>
-              <ol className="mt-3">
-                {REGRAS.map((r, i) => (
-                  <li
-                    key={r}
-                    className="flex gap-3 border-b border-white/6 py-3.5 text-[15px] leading-relaxed text-ink-300 last:border-0"
-                  >
-                    <span className="w-4 shrink-0 font-display text-ink-500 tabular-nums">{i + 1}</span>
-                    <span>{r}</span>
-                  </li>
-                ))}
-              </ol>
-            </section>
+            <RegrasForum />
 
+            {activos.length > 0 && (
             <section>
               <h2 className="eyebrow text-ink-400">Membros activos</h2>
+              <p className="mt-1 text-xs text-ink-600">Tópicos abertos</p>
               <ul className="mt-3">
-                {MEMBROS_ACTIVOS.map((m) => (
+                {activos.map((m) => (
                   <li key={m.n} className="flex items-center gap-3 border-b border-white/6 py-3 last:border-0">
                     <span
                       className="grid size-7 shrink-0 place-items-center rounded-full font-display text-[10px] text-white"
@@ -189,6 +179,7 @@ export default async function ForumPage() {
                 ))}
               </ul>
             </section>
+            )}
           </aside>
         </div>
       </div>

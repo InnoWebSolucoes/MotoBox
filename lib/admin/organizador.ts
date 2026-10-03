@@ -96,6 +96,9 @@ const Esquema = z.object({
     organizador: z.string().describe(VAZIO),
     horarios: z.array(z.object({ dia: z.string(), hora: z.string(), sessao: z.string() })),
     bilhetes: z.array(Bilhete),
+    entrada: z.string().describe(
+      'Como se participa sem bilhete vendido na Motobox, tal como o material diz: "Entrada livre", "5.000 Kz pagos no local", "Inscrição através do clube". Nunca "Entrada livre" sem o material o dizer. Vazio se não for indicado',
+    ),
   })).describe("Eventos novos"),
   bilhetesParaEventosExistentes: z.array(z.object({
     eventoSlug: z.string().describe("Slug de um evento da lista de eventos existentes"),
@@ -242,6 +245,10 @@ const CAMPOS_IA: Record<ColeccaoIA, Record<string, DefCampo>> = {
     organizador: { tipo: "texto", etiqueta: "Organizador" },
     horarios: { tipo: "horarios", etiqueta: "Horários" },
     bilhetes: { tipo: "bilhetes", etiqueta: "Bilhetes" },
+    entrada: {
+      tipo: "texto", etiqueta: "Participação", opcional: true,
+      nota: 'como se participa sem bilhete online, ex.: "Entrada livre", "5.000 Kz pagos no local"; nunca gratuito sem o material o dizer',
+    },
     distanciaVolta: { tipo: "texto", etiqueta: "Distância da volta", opcional: true },
     numeroVoltas: { tipo: "numero", etiqueta: "Número de voltas", opcional: true },
     recordeVolta: {
@@ -1109,7 +1116,10 @@ export function propostasDe(x: Extraccao, ctx: Contexto): ResultadoOrganizador {
     const inicio = data(e.dataInicio, avisos, "Data de início");
     const fim = DATA.test(e.dataFim) ? e.dataFim : inicio;
     const lista = bilhetes(e.bilhetes);
-    if (lista.length === 0) avisos.push("Sem bilhetes. Acrescente-os na Bilheteira se o evento for pago.");
+    const entrada = e.entrada.trim();
+    if (lista.length === 0 && !entrada) {
+      avisos.push("Sem bilhetes nem forma de participar. Acrescente bilhetes na Bilheteira se a Motobox os vender, ou indique a participação (ex.: entrada livre, pagamento no local).");
+    }
     propostas.push({
       tipo: "criar", coleccao: "eventos", avisos,
       registo: {
@@ -1121,6 +1131,7 @@ export function propostasDe(x: Extraccao, ctx: Contexto): ResultadoOrganizador {
         estado: lista.length > 0 ? "bilhetes-abertos" : "agendado",
         imagem: "", resumo: e.resumo, descricao: e.descricao,
         organizador: e.organizador || "Motobox Angola", horarios: e.horarios, bilhetes: lista,
+        ...(entrada ? { entrada } : {}),
       },
     });
   }

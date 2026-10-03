@@ -115,7 +115,7 @@ export default function AdminVideos() {
     <PaginaRecurso<Video>
       coleccao="videos"
       titulo="Vídeos"
-      descricao="Cole a ligação do YouTube e o vídeo fica pronto a publicar."
+      descricao="Cole a ligação de um vídeo do YouTube, de qualquer canal, e fica pronto a publicar."
       procuraEm={(v) => `${v.titulo} ${v.descricao} ${v.categoria} ${v.evento ?? ""}`}
       ordenar={(a, b) => b.data.localeCompare(a.data)}
       filtros={[{ chave: "categoria", etiqueta: "Categoria", opcoes: op(CATEGORIAS) }]}
@@ -167,7 +167,7 @@ export default function AdminVideos() {
             <Campo etiqueta="Data">
               <Input type="date" value={r.data.slice(0, 10)} onChange={(e) => definir({ data: e.target.value } as Partial<Video>)} />
             </Campo>
-            <Campo etiqueta="Visualizações" ajuda="Número mostrado no site.">
+            <Campo etiqueta="Visualizações" ajuda="Número mostrado no site. Deixe 0 para não mostrar nenhum.">
               <Input type="number" value={r.visualizacoes} onChange={(e) => definir({ visualizacoes: Number(e.target.value) } as Partial<Video>)} />
             </Campo>
           </div>

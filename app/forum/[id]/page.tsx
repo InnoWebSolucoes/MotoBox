@@ -3,9 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/ui";
 import { Denunciar } from "@/components/Denunciar";
-import { formatData } from "@/lib/data";
+import { formatData, topicos as topicosDemonstracao } from "@/lib/data";
 import { lerDefinicoes, lerTopico, lerTopicos } from "@/lib/supabase/publico";
 import { lerRespostas } from "@/lib/forum/respostas";
+import { Fechado } from "../Partes";
 import { CaixaResposta, DiscussaoProvider, ItemResposta, RespostasNovas } from "./Respostas";
 
 // O Next exige um literal aqui, não aceita constante importada.
@@ -26,10 +27,16 @@ export async function generateMetadata({
   const { id } = await params;
   const t = await lerTopico(id);
   if (!t) return { title: "Tópico não encontrado" };
-  return { title: t.titulo, description: t.excerto };
+  // A mensagem de abertura de um membro pode ser longa: a descrição fica pelo início.
+  const resumo = t.excerto.replace(/\s+/g, " ").trim();
+  return { title: t.titulo, description: resumo.length > 160 ? `${resumo.slice(0, 157).trimEnd()}…` : resumo };
 }
 
-/** Respostas de exemplo, para demonstrar o layout da discussão. */
+/**
+ * Respostas de exemplo, para demonstrar o layout da discussão. Só nos tópicos
+ * de demonstração (os de `lib/data.ts`): um tópico aberto por um membro ou
+ * pela equipa mostra apenas as respostas que recebeu.
+ */
 const RESPOSTAS = [
   {
     autor: "MecanicoDoBairro",
@@ -81,6 +88,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
   const relacionados = todos
     .filter((t) => t.id !== topico.id && t.categoriaSlug === topico.categoriaSlug)
     .slice(0, 4);
+  const exemplos = topicosDemonstracao.some((t) => t.id === topico.id) ? RESPOSTAS : [];
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 sm:py-14">
@@ -154,7 +162,10 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
               </div>
             </div>
             <div className="mt-4 sm:pl-[4.25rem]">
-              <p className="text-lg leading-relaxed text-ink-100">{topico.excerto}</p>
+              {/* Como nas respostas: as mudanças de linha de quem escreveu contam, nada é HTML. */}
+              <p className="whitespace-pre-line text-lg leading-relaxed text-ink-100 [overflow-wrap:anywhere]">
+                {topico.excerto}
+              </p>
               <Accoes nomes={["Gosto", "Citar", "Partilhar"]} topicoId={topico.id} />
             </div>
           </article>
@@ -167,7 +178,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
               </h2>
 
               <ol>
-                {RESPOSTAS.map((r, i) => (
+                {exemplos.map((r, i) => (
                   <li key={i} className="border-b border-white/6 py-8">
                     <div className="flex items-center gap-3 sm:gap-5">
                       <Avatar cor={r.cor} texto={r.avatar} className="size-10 text-xs sm:size-12 sm:text-sm" />
@@ -251,20 +262,6 @@ function Ponto() {
     <span aria-hidden className="text-ink-600">
       ·
     </span>
-  );
-}
-
-function Fechado({ titulo, texto }: { titulo: string; texto: string }) {
-  return (
-    <div className="flex items-start gap-4">
-      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ink-800 text-ink-400">
-        <Icon name="lock" className="size-4.5" />
-      </span>
-      <div>
-        <p className="font-display text-lg uppercase text-white">{titulo}</p>
-        <p className="mt-1 text-[15px] text-ink-400">{texto}</p>
-      </div>
-    </div>
   );
 }
 

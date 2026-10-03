@@ -55,14 +55,17 @@ const RENOMES: Partial<Record<ColeccaoNome, Record<string, string>>> = {
     categoriaSlug: "categoria_slug", autorAvatar: "autor_avatar",
     avatarCor: "avatar_cor", ultimaResposta: "ultima_resposta",
   },
-  anuncios: { publicado: "publicado_em" },
+  anuncios: {
+    publicado: "publicado_em", motivoModeracao: "motivo_moderacao",
+    documentosVerificados: "documentos_verificados",
+  },
   utilizadores: { avatarCor: "avatar_cor", ultimoAcesso: "ultimo_acesso" },
   encomendas: {
     eventoSlug: "evento_slug", eventoTitulo: "evento_titulo",
     tipoBilheteId: "tipo_bilhete_id", tipoBilheteNome: "tipo_bilhete_nome",
     precoUnitario: "preco_unitario", codigoQR: "codigo_qr",
   },
-  denuncias: { alvoId: "alvo_id", alvoTitulo: "alvo_titulo" },
+  denuncias: { alvoId: "alvo_id", alvoTitulo: "alvo_titulo", respostaId: "resposta_id" },
   mensagens: { respondidaEm: "respondida_em" },
 };
 

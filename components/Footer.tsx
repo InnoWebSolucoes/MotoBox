@@ -48,6 +48,7 @@ const COLUNAS: { titulo: string; links: { href: string; chave?: string; nome?: s
     links: [
       { href: "/noticias", chave: "menu.todasNoticias" },
       { href: "/noticias?cat=Internacional", chave: "menu.internacional" },
+      { href: "/noticias/arquivo", chave: "menu.arquivoNoticias" },
       { href: "/videos", chave: "nav.videos" },
     ],
   },
@@ -136,6 +137,7 @@ export async function Footer() {
             <Link href="/privacidade" className="hover:text-ink-300">Política de privacidade</Link>
             <Link href="/cookies" className="hover:text-ink-300">Cookies</Link>
             <Link href="/regulamento" className="hover:text-ink-300">Regulamento</Link>
+            <Link href="/termos-marketplace" className="hover:text-ink-300">Termos do Marketplace</Link>
             <span className="text-ink-700">Luanda, Angola</span>
           </div>
         </div>

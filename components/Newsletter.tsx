@@ -4,14 +4,8 @@ import { useState } from "react";
 import { Icon } from "./ui";
 import { useT } from "@/lib/i18n/contexto";
 import { comBase } from "@/lib/base";
-
-const INTERESSES = [
-  "Campeonato Nacional",
-  "Passeios e encontros",
-  "Notícias internacionais",
-  "Marketplace",
-  "Acções solidárias",
-];
+// A mesma lista das preferências da conta: os ids guardados são os mesmos.
+import { INTERESSES, type Interesse } from "@/lib/conta/preferencias";
 
 /**
  * Campo-armadilha: fora do ecrã e da ordem de tabulação, escondido
@@ -30,12 +24,13 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
   const t = useT();
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
-  const [interesses, setInteresses] = useState<string[]>(["Campeonato Nacional"]);
+  // Nenhum escolhido: o resumo completo.
+  const [interesses, setInteresses] = useState<Interesse[]>([]);
   const [estado, setEstado] = useState<"idle" | "a-enviar" | "ok" | "erro">("idle");
   // "email": endereço recusado; "envio": o servidor ou a rede falharam.
   const [motivo, setMotivo] = useState<"email" | "envio">("email");
 
-  const alternar = (i: string) =>
+  const alternar = (i: Interesse) =>
     setInteresses((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
 
   const falhar = (m: "email" | "envio") => {
@@ -59,8 +54,8 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
         body: JSON.stringify({
           email: email.trim(),
           nome: nome.trim() || undefined,
-          // Ainda não guardados: a tabela de subscritores não tem coluna para eles.
-          interesses,
+          // O rodapé não mostra os temas: não manda nenhuns e não mexe nos que havia.
+          interesses: variante === "rodape" ? undefined : interesses,
           origem: variante,
           website: typeof armadilha === "string" ? armadilha : "",
         }),
@@ -208,20 +203,21 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
             <legend className="eyebrow text-ink-500 mb-2.5">Quero receber sobre</legend>
             <div className="flex flex-wrap gap-2">
               {INTERESSES.map((i) => {
-                const on = interesses.includes(i);
+                const on = interesses.includes(i.id);
                 return (
                   <button
-                    key={i}
+                    key={i.id}
                     type="button"
-                    onClick={() => alternar(i)}
+                    onClick={() => alternar(i.id)}
                     aria-pressed={on}
                     className="chip"
                   >
-                    {i}
+                    {i.nome}
                   </button>
                 );
               })}
             </div>
+            <p className="mt-2.5 text-xs text-ink-600">Sem nenhum escolhido, recebe o resumo completo.</p>
           </fieldset>
 
           {estado === "erro" && (

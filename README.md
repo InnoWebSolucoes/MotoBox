@@ -44,27 +44,28 @@ Todas as funcionalidades do Plano Completo da proposta:
 | Funcionalidade | Onde |
 | --- | --- |
 | Calendário dinâmico com detalhes completos | `/calendario/[slug]` — horários, circuito, recorde de volta |
-| Notícias internacionais (agregação automática) | `/noticias` — categoria Internacional, com atribuição de fonte |
+| Notícias internacionais (MotoGP, MXGP, Dakar…) | `/noticias` — categoria Internacional, escolhidas e editadas pela redacção, com «via» e ligação à fonte original |
 | Notícias e cobertura de Angola | `/noticias` — categorias Angola, Entrevista, Comunidade, Solidária |
+| Arquivo de notícias | `/noticias/arquivo` — tudo o que foi publicado, por ano e mês; recebe material antigo (revistas, notícias passadas) com a data original |
 | Arquivo de resultados e histórico de corridas | `/resultados`, `/resultados/[slug]` |
 | Tabela de classificação nacional | `/classificacao` — pilotos e equipas, filtro por categoria |
 | Perfis de pilotos (fotos, estatísticas, redes) | `/pilotos`, `/pilotos/[slug]` |
 | Perfis de equipas e clubes | `/equipas`, `/equipas/[slug]` |
 | Página de patrocinadores | `/patrocinadores` — 4 níveis + proposta comercial |
-| Secção de vídeos e highlights | `/videos` — leitor em destaque + grelha filtrável |
+| Secção de vídeos e highlights | `/videos` — leitor em destaque + grelha filtrável; faixa com os últimos vídeos em `/noticias` |
 
 ### Completo (Plano Completo)
 
 | Funcionalidade | Onde |
 | --- | --- |
-| Venda de bilhetes online com pagamento integrado | `/bilhetes/[slug]` — checkout de 4 passos |
+| Venda de bilhetes online | `/bilhetes/[slug]` — checkout de 4 passos; **o pagamento ainda é simulado** (ver Próximos passos) |
 | Bilhetes digitais com código QR | gerados no cliente (`components/QRCode.tsx`) |
 | Verificação automática de pagamentos | passo 3 do checkout, com estado de verificação |
 | Sistema de comissões para a Motobox | `TAXA_MOTOBOX` no checkout, discriminada no resumo |
-| Marketplace verificado | `/marketplace`, `/marketplace/[id]` |
+| Marketplace com verificação das motas | `/marketplace`, `/marketplace/[id]` — novo/usado, província; as motas só aparecem depois de a equipa as aprovar em `/admin/verificacao` (número de quadro e documentos); regras em `/termos-marketplace` |
 | Contas de utilizador com preferências | `/conta` — 5 separadores |
 | Notificações personalizadas | `/conta` → Notificações (tipo + canal) |
-| Fórum comunitário | `/forum`, `/forum/[id]` |
+| Fórum comunitário | `/forum`, `/forum/[id]`, `/forum/novo` — os membros abrem tópicos e respondem; a equipa esconde ou apaga respostas no painel |
 
 ## Estrutura
 
@@ -128,8 +129,13 @@ texto, por opção de design.
 1. **Fotografias** — trocar os URLs de demonstração em `lib/imagens.ts` pelo arquivo do Gonçalo.
 2. **Backend** — ligar `lib/data.ts` a um CMS (Sanity, Payload) ou API própria.
 3. **Pagamentos** — integrar Multicaixa Express / EMIS e um gateway de cartão no passo 3 do checkout.
+   Hoje o pagamento é simulado: nada fica gravado em `encomendas` e não sai email. No marketplace,
+   falta decidir com o cliente se a Motobox guarda o dinheiro até à entrega; o texto sobre pagamentos
+   está num só sítio (`lib/marketplace.ts`).
 4. **Autenticação** — contas reais em `/conta` (NextAuth ou equivalente).
-5. **Agregação de notícias** — cron que consome feeds RSS internacionais para a secção Internacional.
+5. **Notícias internacionais** — hoje a redacção escreve-as no painel (ou com o Organizador IA, a
+   partir do material que cola) e confirma antes de publicar; não há recolha automática. Falta
+   decidir com o cliente as fontes, quem revê e quem publica, antes de pensar em feeds ou IA.
 6. **Validação de bilhetes** — aplicação de leitura de QR para o staff à entrada dos recintos.
 
 ---

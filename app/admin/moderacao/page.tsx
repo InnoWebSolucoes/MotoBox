@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAdmin, type EstadoAdmin } from "@/lib/admin/store";
 import { formatDataCurta, formatKz } from "@/lib/data";
 import {
@@ -8,6 +8,8 @@ import {
   Estado, Gaveta, Campo, Area, Confirmar, useAviso,
 } from "@/components/admin/kit";
 import type { Denuncia, EstadoModeracao } from "@/lib/admin/types";
+import { apagarResposta, lerResposta, mudarVisibilidade } from "@/lib/forum/moderacao";
+import type { RespostaAdmin } from "@/lib/forum/tipos";
 import { comBase } from "@/lib/base";
 
 const TIPOS: { valor: Denuncia["tipo"]; nome: string }[] = [
@@ -39,6 +41,16 @@ interface Alvo {
 }
 
 /**
+ * A resposta do fórum a que a denúncia aponta, lida à parte (o painel não
+ * carrega as respostas): `null` quando já não existe, `erro` se a leitura
+ * falhou. Sem esta leitura (ainda a caminho), `undefined`.
+ */
+interface RespostaLida {
+  resposta: RespostaAdmin | null;
+  erro?: string;
+}
+
+/**
  * Para cada tipo de denúncia, o que ela aponta e o que se pode fazer.
  * As acções usam as mesmas escritas do resto do painel, por isso só
  * contam como feitas quando a base de dados confirma.
@@ -48,6 +60,7 @@ function opcoesPara(
   estado: EstadoAdmin,
   atualizar: (c: "topicos" | "utilizadores", id: string, campos: Record<string, unknown>) => Promise<string | null>,
   remover: (c: "anuncios" | "topicos", id: string) => Promise<string | null>,
+  respostaLida: RespostaLida | undefined,
 ): { alvo: Alvo | null; accoes: Accao[]; aviso?: string } {
   if (d.tipo === "marketplace") {
     const a = estado.anuncios.find((x) => x.id === d.alvoId);
@@ -70,25 +83,56 @@ function opcoesPara(
   if (d.tipo === "forum") {
     const t = estado.topicos.find((x) => x.id === d.alvoId);
     if (!t) return { alvo: null, accoes: [], aviso: "Este tópico já não existe no fórum. Não há mais nada a fazer ao conteúdo." };
+    const href = `/forum/${encodeURIComponent(t.id)}`;
+    const accoesTopico: Accao[] = [
+      ...(t.bloqueado ? [] : [{
+        id: "fechar-topico", nome: "Fechar o tópico",
+        descricao: "Continua visível, mas deixa de aceitar respostas.",
+        nota: "Tópico fechado a novas respostas.",
+        executar: () => atualizar("topicos", t.id, { bloqueado: true }),
+      }]),
+      {
+        id: "apagar-topico", nome: "Apagar o tópico", perigo: true,
+        descricao: "Sai do fórum com todas as respostas. Não se pode desfazer.",
+        nota: "Tópico apagado do fórum.",
+        executar: () => remover("topicos", t.id),
+      },
+    ];
+    const doTopico = [`${t.categoria} · por ${t.autor}`, t.excerto];
+    if (!d.respostaId) return { alvo: { titulo: t.titulo, linhas: doTopico, href }, accoes: accoesTopico };
+
+    // A denúncia aponta a uma resposta: primeiro o que se faz a ela, depois ao tópico.
+    const r = respostaLida?.resposta;
+    if (!r) {
+      const porque = !respostaLida ? "A carregar a resposta denunciada…"
+        : respostaLida.erro ? `Não foi possível ler a resposta denunciada: ${respostaLida.erro}`
+        : "A resposta denunciada já não existe no fórum.";
+      return { alvo: { titulo: t.titulo, linhas: [porque, ...doTopico], href }, accoes: accoesTopico };
+    }
     return {
       alvo: {
-        titulo: t.titulo,
-        linhas: [`${t.categoria} · por ${t.autor}`, t.excerto],
-        href: `/forum/${encodeURIComponent(t.id)}`,
+        titulo: `Resposta de ${r.autorNome}`,
+        linhas: [
+          `Em «${t.titulo}» · ${formatDataCurta(r.criadoEm)}`,
+          r.corpo,
+          r.publicado ? "" : "Já está escondida: não aparece no fórum.",
+        ],
+        href,
       },
       accoes: [
-        ...(t.bloqueado ? [] : [{
-          id: "fechar-topico", nome: "Fechar o tópico",
-          descricao: "Continua visível, mas deixa de aceitar respostas.",
-          nota: "Tópico fechado a novas respostas.",
-          executar: () => atualizar("topicos", t.id, { bloqueado: true }),
-        }]),
+        ...(r.publicado ? [{
+          id: "esconder-resposta", nome: "Esconder a resposta",
+          descricao: "Deixa de aparecer no tópico. Pode voltar a mostrá-la em Fórum, ao abrir o tópico.",
+          nota: "Resposta escondida do fórum.",
+          executar: async () => (await mudarVisibilidade(r.id, false)).erro ?? null,
+        }] : []),
         {
-          id: "apagar-topico", nome: "Apagar o tópico", perigo: true,
-          descricao: "Sai do fórum com todas as respostas. Não se pode desfazer.",
-          nota: "Tópico apagado do fórum.",
-          executar: () => remover("topicos", t.id),
+          id: "apagar-resposta", nome: "Apagar a resposta", perigo: true,
+          descricao: "Sai do tópico de vez. Não se pode desfazer.",
+          nota: "Resposta apagada do fórum.",
+          executar: async () => (await apagarResposta(r.id)).erro ?? null,
         },
+        ...accoesTopico,
       ],
     };
   }
@@ -134,6 +178,24 @@ export default function AdminModeracao() {
   const [resolucao, setResolucao] = useState("");
   const [aAplicar, setAAplicar] = useState(false);
   const [confirmar, setConfirmar] = useState(false);
+  /** Cada abertura lê a resposta de novo: pode ter sido escondida entretanto. */
+  const [abertura, setAbertura] = useState(0);
+  const [respostaLida, setRespostaLida] = useState<RespostaLida & { chave: string } | null>(null);
+
+  // Denúncia de uma resposta do fórum: lê-se a resposta para mostrar o texto e as acções.
+  const respostaId = aberta?.tipo === "forum" ? aberta.respostaId ?? "" : "";
+  const chaveResposta = respostaId ? `${respostaId}:${abertura}` : "";
+  useEffect(() => {
+    if (!respostaId) return;
+    let vivo = true;
+    void lerResposta(respostaId).then((r) => {
+      if (!vivo) return;
+      setRespostaLida(r.erro === undefined
+        ? { chave: chaveResposta, resposta: r.dados.resposta }
+        : { chave: chaveResposta, resposta: null, erro: r.codigo === 404 ? undefined : r.erro });
+    });
+    return () => { vivo = false; };
+  }, [respostaId, chaveResposta]);
 
   const filtradas = useMemo(() => {
     const q = procura.trim().toLowerCase();
@@ -158,12 +220,14 @@ export default function AdminModeracao() {
         aberta, estado,
         (c, id, campos) => atualizar(c, id, campos),
         (c, id) => remover(c, id),
+        respostaLida?.chave === chaveResposta ? respostaLida : undefined,
       )
     : null;
   const accao = opcoes?.accoes.find((a) => a.id === escolha) ?? null;
 
   const abrir = (d: Denuncia) => {
     setAberta(d);
+    setAbertura((n) => n + 1);
     setEscolha("nada");
     setResolucao(d.resolucao ?? "");
   };

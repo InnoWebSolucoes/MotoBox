@@ -13,7 +13,10 @@ import "server-only";
    ============================================================ */
 
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { normalizarPreferencias, type Preferencias } from "@/lib/conta/preferencias";
+import {
+  interessa, normalizarPreferencias, temasDoEvento, type Preferencias,
+} from "@/lib/conta/preferencias";
+import { eComunidade, vendaBilhetes } from "@/lib/desporto";
 import type { AnuncioMarketplace, Corrida, Evento, ResultadoCorrida } from "@/lib/types";
 import { urlPublica } from "@/lib/base";
 
@@ -47,6 +50,12 @@ export interface EquipaResumo {
   nome: string;
 }
 
+/** Clube de lazer tal como é lido para cruzar o organizador de um evento. */
+export interface ClubeResumo {
+  slug: string;
+  nome: string;
+}
+
 const RESEND_LOTE = "https://api.resend.com/emails/batch";
 const MAX_LOTE = 100;
 const POR_PAGINA = 1000;
@@ -65,9 +74,21 @@ function urlBase(): string {
   return urlPublica();
 }
 
-/** Verdadeiro quando há pelo menos um tipo de bilhete. */
+/**
+ * Verdadeiro quando há pelo menos um tipo de bilhete. Só serve para ver se
+ * um evento acabou de ganhar bilhetes; se o evento vende mesmo (bilheteira
+ * aberta, não concluído, não esgotado) decide `vendaBilhetes`.
+ */
 export function temBilhetes(bilhetes: unknown): boolean {
   return Array.isArray(bilhetes) && bilhetes.length > 0;
+}
+
+/** Interruptor "Bilheteira aberta" das Definições. Sem leitura conta como aberta, como no site. */
+async function lerBilheteiraAberta(): Promise<boolean> {
+  const db = supabaseAdmin();
+  if (!db) return true;
+  const { data } = await db.from("definicoes").select("bilheteira_aberta").eq("id", 1).maybeSingle();
+  return (data as { bilheteira_aberta?: unknown } | null)?.bilheteira_aberta !== false;
 }
 
 const escapar = (s: unknown) =>
@@ -150,26 +171,66 @@ ${c.paragrafos.map((p) => `<p style="margin:0 0 12px">${escapar(p)}</p>`).join("
 
 /* ---------------- Planeamento (sem envio) ---------------- */
 
+/** Clube que organiza o evento: o organizador é o nome (ou o slug), sem distinguir maiúsculas. */
+function clubeOrganizador(evento: Evento, clubes: ClubeResumo[]): ClubeResumo | undefined {
+  const org = normal(evento.organizador);
+  return org ? clubes.find((c) => normal(c.nome) === org || normal(c.slug) === org) : undefined;
+}
+
+/**
+ * O que liga uma pessoa a um evento, para além dos avisos gerais:
+ * - `segueClube`: segue o clube que o organiza;
+ * - `segueProvincia`: segue a província onde acontece;
+ * - `temaCerto`: um evento da comunidade (passeio, encontro, acção
+ *   solidária, formação) só conta para quem escolheu um dos seus
+ *   temas. Quem não escolheu interesses, e todas as provas, passam.
+ */
+function ligacaoAoEvento(evento: Evento, organizador: ClubeResumo | undefined) {
+  const comunidade = eComunidade(evento.disciplina);
+  const temas = temasDoEvento(evento.disciplina);
+  return (p: Preferencias) => ({
+    segueClube: organizador !== undefined && p.clubes.includes(organizador.slug),
+    segueProvincia: Boolean(evento.provincia) && p.provincias.includes(evento.provincia),
+    temaCerto: !comunidade || interessa(p.interesses, temas),
+  });
+}
+
 /**
  * Evento novo: quem segue o calendário recebe o aviso do evento;
  * se já houver bilhetes, quem segue a bilheteira também. Uma só
  * mensagem por pessoa, mesmo que as duas coisas se apliquem.
+ *
+ * Quem segue o clube organizador recebe-o sempre; quem segue a
+ * província recebe-o mesmo com o aviso do calendário desligado. Os
+ * eventos da comunidade ficam para quem escolheu um dos seus temas
+ * (salvo se seguir o clube). Sem clubes, províncias nem interesses,
+ * fica tudo como antes.
  */
-export function planearNovoEvento(evento: Evento, destinatarios: Destinatario[]): EmailPreparado[] {
+export function planearNovoEvento(
+  evento: Evento,
+  destinatarios: Destinatario[],
+  clubes: ClubeResumo[] = [],
+  bilheteiraAberta = true,
+): EmailPreparado[] {
   if (!evento?.slug || !evento.titulo || evento.estado === "concluido") return [];
   const base = urlBase();
-  const comBilhetes = temBilhetes(evento.bilhetes);
+  // "Bilhetes à venda" só quando o site os vende mesmo: a regra está em `vendaBilhetes`.
+  const comBilhetes = vendaBilhetes(evento, bilheteiraAberta) === "a-venda";
   const quando = data(evento.dataInicio);
   const onde = [evento.circuito, evento.localidade, evento.provincia].filter(Boolean).join(", ");
   const detalhe = [quando && `Data: ${quando}`, onde && `Local: ${onde}`].filter(Boolean).join(". ");
   const precoMin = comBilhetes
     ? Math.min(...(evento.bilhetes ?? []).map((b) => Number(b.preco) || 0))
     : 0;
+  const organizador = clubeOrganizador(evento, clubes);
+  const ligacao = ligacaoAoEvento(evento, organizador);
 
   const saida: EmailPreparado[] = [];
   for (const d of destinatarios) {
-    const calendario = d.preferencias.notificacoes.calendario;
-    const bilhetes = comBilhetes && d.preferencias.notificacoes.bilhetes;
+    const { segueClube, segueProvincia, temaCerto } = ligacao(d.preferencias);
+    const calendario = segueClube
+      || (temaCerto && (d.preferencias.notificacoes.calendario || segueProvincia));
+    const bilhetes = comBilhetes && d.preferencias.notificacoes.bilhetes && (temaCerto || segueClube);
     if (!calendario && !bilhetes) continue;
 
     const ligacoes: Conteudo["ligacoes"] = [];
@@ -191,6 +252,9 @@ export function planearNovoEvento(evento: Evento, destinatarios: Destinatario[])
       paragrafos.push("Os bilhetes para este evento já estão à venda.");
     }
     if (detalhe) paragrafos.push(`${detalhe}.`);
+    // Porque recebe este aviso, quando vem de algo que a pessoa segue.
+    if (segueClube && organizador) paragrafos.push(`Organizado por ${organizador.nome}, um dos clubes que segue.`);
+    else if (segueProvincia) paragrafos.push(`Em ${evento.provincia}, uma das províncias que segue.`);
     if (evento.resumo) paragrafos.push(evento.resumo);
     if (bilhetes) {
       if (precoMin > 0) paragrafos.push(`Bilhetes a partir de ${kwanzas(precoMin)}.`);
@@ -202,17 +266,30 @@ export function planearNovoEvento(evento: Evento, destinatarios: Destinatario[])
   return saida;
 }
 
-/** Bilhetes abertos num evento que já existia. */
-export function planearBilhetesAbertos(evento: Evento, destinatarios: Destinatario[]): EmailPreparado[] {
-  if (!evento?.slug || !evento.titulo || !temBilhetes(evento.bilhetes) || evento.estado === "concluido") {
+/**
+ * Bilhetes abertos num evento que já existia: para quem segue a
+ * bilheteira, com o mesmo filtro de temas dos eventos novos.
+ */
+export function planearBilhetesAbertos(
+  evento: Evento,
+  destinatarios: Destinatario[],
+  clubes: ClubeResumo[] = [],
+  bilheteiraAberta = true,
+): EmailPreparado[] {
+  if (!evento?.slug || !evento.titulo || vendaBilhetes(evento, bilheteiraAberta) !== "a-venda") {
     return [];
   }
   const base = urlBase();
   const quando = data(evento.dataInicio);
   const precoMin = Math.min(...(evento.bilhetes ?? []).map((b) => Number(b.preco) || 0));
+  const ligacao = ligacaoAoEvento(evento, clubeOrganizador(evento, clubes));
 
   return destinatarios
     .filter((d) => d.preferencias.notificacoes.bilhetes)
+    .filter((d) => {
+      const { segueClube, temaCerto } = ligacao(d.preferencias);
+      return temaCerto || segueClube;
+    })
     .map((d) =>
       montar(d, {
         assunto: `Bilhetes à venda: ${evento.titulo}`,
@@ -373,6 +450,22 @@ async function lerEquipas(): Promise<EquipaResumo[]> {
   return (data ?? []) as EquipaResumo[];
 }
 
+/**
+ * Clubes de lazer, só quando alguém segue algum. Sem a tabela
+ * (migração por correr) não há clubes, e o aviso segue sem eles.
+ */
+async function lerClubes(destinatarios: Destinatario[]): Promise<ClubeResumo[]> {
+  if (!destinatarios.some((d) => d.preferencias.clubes.length > 0)) return [];
+  const db = supabaseAdmin();
+  if (!db) return [];
+  const { data, error } = await db.from("clubes").select("slug, nome");
+  if (error) {
+    console.warn("[notificacoes] clubes indisponíveis:", error.message);
+    return [];
+  }
+  return (data ?? []) as ClubeResumo[];
+}
+
 /* ---------------- Envio ---------------- */
 
 const pausa = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -449,14 +542,18 @@ async function avisar(
 
 /* ---------------- Avisos públicos ---------------- */
 
-/** Evento criado: calendário e, se já tiver bilhetes, bilheteira. */
+/** Evento criado: calendário, clube e província seguidos e, se já tiver bilhetes, bilheteira. */
 export function notificarNovoEvento(evento: Evento): Promise<ResumoEnvio> {
-  return avisar(`novo evento ${evento?.slug}`, (d) => planearNovoEvento(evento, d));
+  return avisar(`novo evento ${evento?.slug}`, async (d) =>
+    planearNovoEvento(evento, d, await lerClubes(d), await lerBilheteiraAberta()),
+  );
 }
 
 /** Evento existente que passou a ter bilhetes. */
 export function notificarBilhetesAbertos(evento: Evento): Promise<ResumoEnvio> {
-  return avisar(`bilhetes abertos ${evento?.slug}`, (d) => planearBilhetesAbertos(evento, d));
+  return avisar(`bilhetes abertos ${evento?.slug}`, async (d) =>
+    planearBilhetesAbertos(evento, d, await lerClubes(d), await lerBilheteiraAberta()),
+  );
 }
 
 /** Resultado de corrida criado: quem segue os pilotos ou as equipas. */

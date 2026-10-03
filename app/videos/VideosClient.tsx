@@ -1,44 +1,66 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { Placeholder } from "@/components/Brand";
 import { EmptyState, Icon, PageHero, Tag } from "@/components/ui";
 import { formatData } from "@/lib/data";
 import type { Video } from "@/lib/types";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { useConteudo } from "@/lib/i18n/useConteudo";
+import { CartaoVideo, Vistas } from "./CartaoVideo";
 
 const CATEGORIAS = ["Todos", "Highlights", "Onboard", "Entrevista", "Documentário", "Resumo"];
+
+/*
+ * A página inicial e a faixa de /noticias ligam para /videos#slug: esse
+ * vídeo abre no leitor. No servidor não há endereço, por isso começa vazio.
+ */
+const subscreverHash = (aviso: () => void) => {
+  window.addEventListener("hashchange", aviso);
+  return () => window.removeEventListener("hashchange", aviso);
+};
+const lerHash = () => window.location.hash.slice(1);
+const semHash = () => "";
 
 export function VideosClient({ videos: originais }: { videos: Video[] }) {
   const videos = useConteudo(originais, ["titulo", "descricao"]);
   const { t } = useIdioma();
   const [categoria, setCategoria] = useState("Todos");
-  // Sem vídeos publicados não há leitor: `activo` fica indefinido.
-  const [activo, setActivoBruto] = useState<Video | undefined>(videos[0]);
+  const pedido = useSyncExternalStore(subscreverHash, lerHash, semHash);
+  // Guarda-se o slug e não o vídeo, para o leitor acompanhar a tradução.
+  const [escolhido, setEscolhido] = useState<string | undefined>();
   const [aReproduzir, setAReproduzir] = useState(false);
+
+  // O vídeo escolhido na página; antes disso, o pedido no endereço; senão o
+  // mais recente. Sem vídeos publicados não há leitor: fica indefinido.
+  const activo: Video | undefined =
+    videos.find((v) => v.slug === (escolhido ?? pedido)) ?? videos[0];
 
   // Trocar de vídeo volta à miniatura — não queremos o leitor a saltar sozinho
   // para o vídeo seguinte.
   const setActivo = (v: Video) => {
-    setActivoBruto(v);
+    setEscolhido(v.slug);
     setAReproduzir(false);
   };
-
-  // A página inicial liga para /videos#slug — abrir esse vídeo no leitor.
-  useEffect(() => {
-    const slug = window.location.hash.slice(1);
-    if (!slug) return;
-    const v = videos.find((x) => x.slug === slug);
-    if (v) setActivoBruto(v);
-  }, []);
 
   const filtrados = useMemo(
     () => videos.filter((v) => categoria === "Todos" || v.categoria === categoria),
     [videos, categoria],
   );
 
-  const totalVistas = videos.reduce((s, v) => s + v.visualizacoes, 0);
+  // Só os números que dizem alguma coisa: nada de "0 vídeos" nem "0k
+  // visualizações". As visualizações são as indicadas no painel; um vídeo
+  // sem número conta como zero.
+  const totalVistas = videos.reduce((s, v) => s + Math.max(v.visualizacoes || 0, 0), 0);
+  const nCategorias = new Set(videos.map((v) => v.categoria)).size;
+  const numeros: { v: number | string; l: string }[] = [];
+  if (videos.length > 0) numeros.push({ v: videos.length, l: videos.length === 1 ? "Vídeo" : "Vídeos" });
+  if (totalVistas > 0) {
+    numeros.push({ v: totalVistas < 1000 ? totalVistas : `${Math.round(totalVistas / 1000)}k`, l: "Visualizações" });
+  }
+  if (nCategorias > 1) numeros.push({ v: nCategorias, l: "Categorias" });
+
+  const seguintes = activo ? videos.filter((v) => v.slug !== activo.slug).slice(0, 6) : [];
 
   return (
     <>
@@ -48,25 +70,23 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
         titulo={t("paginas.videosTitulo")}
         descricao={t("paginas.videosSub")}
       >
-        <div className="flex flex-wrap gap-8">
-          {[
-            { v: videos.length, l: "Vídeos" },
-            { v: `${Math.round(totalVistas / 1000)}k`, l: "Visualizações" },
-            { v: new Set(videos.map((v) => v.categoria)).size, l: "Categorias" },
-          ].map((s) => (
-            <div key={s.l}>
-              <p className="font-display text-3xl text-white">{s.v}</p>
-              <p className="eyebrow mt-1 text-ink-500">{s.l}</p>
-            </div>
-          ))}
-        </div>
+        {numeros.length > 0 && (
+          <div className="flex flex-wrap gap-8">
+            {numeros.map((s) => (
+              <div key={s.l}>
+                <p className="font-display text-3xl text-white">{s.v}</p>
+                <p className="eyebrow mt-1 text-ink-500">{s.l}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </PageHero>
 
       {/* Leitor em destaque */}
       {activo && (
         <section className="bg-ink-900">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
-            <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr]">
+            <div className={`grid gap-6 ${seguintes.length > 0 ? "lg:grid-cols-[1.8fr_1fr]" : "max-w-4xl"}`}>
               <div>
                 <div className="media relative aspect-video bg-ink-950">
                   {aReproduzir && activo.videoId ? (
@@ -91,9 +111,11 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
                           <Icon name="play" className="size-8 translate-x-1" />
                         </button>
                       </div>
-                      <span className="absolute bottom-3 right-3 rounded-full bg-ink-950/80 px-2.5 py-1 font-mono text-xs text-white backdrop-blur-sm">
-                        {activo.duracao}
-                      </span>
+                      {activo.duracao && activo.duracao !== "0:00" && (
+                        <span className="absolute bottom-3 right-3 rounded-full bg-ink-950/80 px-2.5 py-1 font-mono text-xs text-white backdrop-blur-sm">
+                          {activo.duracao}
+                        </span>
+                      )}
                     </>
                   )}
                 </div>
@@ -108,24 +130,26 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
                   </h2>
                   <p className="mt-3 text-sm text-ink-400 leading-relaxed">{activo.descricao}</p>
                   <p className="mt-4 flex flex-wrap items-center gap-3 text-xs text-ink-600">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Icon name="eye" className="size-3.5" />
-                      {activo.visualizacoes.toLocaleString("pt-PT")} visualizações
-                    </span>
-                    <span className="size-1 rounded-full bg-ink-700" />
+                    {activo.visualizacoes > 0 && (
+                      <>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Icon name="eye" className="size-3.5" />
+                          <Vistas n={activo.visualizacoes} />
+                        </span>
+                        <span className="size-1 rounded-full bg-ink-700" />
+                      </>
+                    )}
                     <span>{formatData(activo.data)}</span>
                   </p>
                 </div>
               </div>
 
-              {/* Lista lateral */}
-              <div>
-                <p className="eyebrow text-ink-500 mb-3">A seguir</p>
-                <div className="lg:max-h-[520px] lg:overflow-y-auto lg:pr-1">
-                  {videos
-                    .filter((v) => v.slug !== activo.slug)
-                    .slice(0, 6)
-                    .map((v) => (
+              {/* Lista lateral (só quando há mais vídeos além do que está no leitor) */}
+              {seguintes.length > 0 && (
+                <div>
+                  <p className="eyebrow text-ink-500 mb-3">A seguir</p>
+                  <div className="lg:max-h-[520px] lg:overflow-y-auto lg:pr-1">
+                    {seguintes.map((v) => (
                       <button
                         key={v.slug}
                         onClick={() => setActivo(v)}
@@ -137,9 +161,11 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
                             className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
                             tamanhos="128px"
                           />
-                          <span className="absolute bottom-1.5 right-1.5 font-mono text-[10px] text-white [text-shadow:0_1px_4px_rgb(0_0_0/0.8)]">
-                            {v.duracao}
-                          </span>
+                          {v.duracao && v.duracao !== "0:00" && (
+                            <span className="absolute bottom-1.5 right-1.5 font-mono text-[10px] text-white [text-shadow:0_1px_4px_rgb(0_0_0/0.8)]">
+                              {v.duracao}
+                            </span>
+                          )}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="eyebrow text-mb-red">{v.categoria}</p>
@@ -147,13 +173,16 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
                             {v.titulo}
                           </p>
                           <p className="mt-1 text-[11px] text-ink-600">
-                            {(v.visualizacoes / 1000).toFixed(1)}k visualizações
+                            {v.visualizacoes > 0
+                              ? <Vistas n={v.visualizacoes} curto />
+                              : formatData(v.data, { day: "2-digit", month: "short" })}
                           </p>
                         </div>
                       </button>
                     ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </section>
@@ -161,61 +190,46 @@ export function VideosClient({ videos: originais }: { videos: Video[] }) {
 
       {/* Filtros e grelha */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
-        <div className="mb-9 flex gap-2 overflow-x-auto no-scrollbar">
-          {CATEGORIAS.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCategoria(c)}
-              aria-pressed={categoria === c}
-              className="chip"
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-
-        {filtrados.length === 0 ? (
+        {videos.length === 0 ? (
+          // Ainda sem vídeos: não há filtros a mostrar, nem se presume um canal.
           <EmptyState
             titulo="Sem vídeos publicados"
-            descricao="Os próximos highlights, entrevistas e onboards aparecem aqui."
+            descricao="Os vídeos das provas e eventos aparecem aqui à medida que forem publicados."
           />
         ) : (
-          <div className="grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filtrados.map((v) => (
-              <button
-                key={v.slug}
-                id={v.slug}
-                onClick={() => {
-                  setActivo(v);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                className="group flex w-full flex-col self-start text-left"
-              >
-                <div className="media relative aspect-video">
-                  <Placeholder
-                    nome={[v.slug, v.thumbnail]}
-                    className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+          <>
+            <div className="mb-9 flex gap-2 overflow-x-auto no-scrollbar">
+              {CATEGORIAS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCategoria(c)}
+                  aria-pressed={categoria === c}
+                  className="chip"
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+
+            {filtrados.length === 0 ? (
+              <EmptyState titulo="Sem vídeos nesta categoria" descricao="Experimente outra categoria." />
+            ) : (
+              <div className="grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filtrados.map((v) => (
+                  <CartaoVideo
+                    key={v.slug}
+                    v={v}
+                    id={v.slug}
                     tamanhos="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+                    aoEscolher={() => {
+                      setActivo(v);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
                   />
-                  <span className="absolute bottom-3 left-3 grid size-10 place-items-center rounded-full bg-white/15 text-white ring-2 ring-white/80 backdrop-blur-sm transition-colors group-hover:bg-mb-red group-hover:ring-mb-red">
-                    <Icon name="play" className="size-4 translate-x-px" />
-                  </span>
-                  <span className="absolute bottom-3.5 right-3 font-mono text-xs text-white [text-shadow:0_1px_4px_rgb(0_0_0/0.8)]">
-                    {v.duracao}
-                  </span>
-                </div>
-                <p className="eyebrow mt-3 text-mb-red">{v.categoria}</p>
-                <h3 className="mt-1.5 font-display text-lg uppercase leading-tight text-white line-clamp-2 group-hover:text-mb-red transition-colors">
-                  {v.titulo}
-                </h3>
-                <p className="mt-1.5 flex items-center gap-2 text-xs text-ink-500">
-                  <span>{v.visualizacoes.toLocaleString("pt-PT")} visualizações</span>
-                  <span className="size-1 rounded-full bg-ink-600" />
-                  <span>{formatData(v.data, { day: "2-digit", month: "short" })}</span>
-                </p>
-              </button>
-            ))}
-          </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </>

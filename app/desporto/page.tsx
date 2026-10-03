@@ -7,7 +7,7 @@ import {
   MODALIDADES, MODALIDADE_PRINCIPAL, SECCOES_MOTOCROSS,
   eProva, estadoModalidade, eventosDaModalidade, instante,
 } from "@/lib/desporto";
-import { lerEventos } from "@/lib/supabase/publico";
+import { lerDefinicoes, lerEventos } from "@/lib/supabase/publico";
 import { LinhaEventoCompacta } from "@/app/calendario/ListaEventos";
 
 // O Next exige um literal aqui, não aceita constante importada.
@@ -29,7 +29,7 @@ const ROTULO_SECCAO: Record<string, string> = {
 };
 
 export default async function DesportoPage() {
-  const eventos = await lerEventos();
+  const [eventos, { bilheteiraAberta }] = await Promise.all([lerEventos(), lerDefinicoes()]);
   const provas = eventos.filter((e) => eProva(e.disciplina));
   const agora = instante();
 
@@ -167,7 +167,7 @@ export default async function DesportoPage() {
               ) : (
                 <ul className="mt-7">
                   {proximasProvas.map((e) => (
-                    <LinhaEventoCompacta key={e.slug} e={e} />
+                    <LinhaEventoCompacta key={e.slug} e={e} bilheteiraAberta={bilheteiraAberta} />
                   ))}
                 </ul>
               )}

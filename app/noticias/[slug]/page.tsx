@@ -47,6 +47,9 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
     .slice(0, 3)
     .map((x) => x.n);
 
+  // Só se liga à fonte com um endereço a sério (há registos com "#").
+  const ligacaoFonte = /^https?:\/\//i.test(noticia.fonteUrl?.trim() ?? "") ? noticia.fonteUrl?.trim() : undefined;
+
   return (
     <>
       {/* Cabeçalho */}
@@ -104,15 +107,15 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
           ))}
         </div>
 
-        {/* Fonte externa */}
+        {/* Fonte externa: a redacção escolhe e edita a notícia a partir de outro meio */}
         {noticia.fonte && (
           <div className="mt-10 rounded-card bg-ink-900 p-5 sm:p-6">
             <p className="eyebrow text-mb-red mb-2">Fonte</p>
             <p className="text-sm text-ink-400">
-              Conteúdo agregado automaticamente de{" "}
-              {noticia.fonteUrl && noticia.fonteUrl !== "#" ? (
+              Notícia escolhida e editada pela redacção da Motobox Angola a partir de{" "}
+              {ligacaoFonte ? (
                 <a
-                  href={noticia.fonteUrl}
+                  href={ligacaoFonte}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white underline decoration-mb-red underline-offset-4 hover:text-mb-red"
@@ -122,7 +125,7 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
               ) : (
                 <span className="text-white">{noticia.fonte}</span>
               )}
-              . Tradução e edição da Motobox Angola.
+              .
             </p>
           </div>
         )}

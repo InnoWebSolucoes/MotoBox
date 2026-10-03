@@ -6,7 +6,7 @@ import { Placeholder, Retrato } from "@/components/Brand";
 import { Countdown } from "@/components/Countdown";
 import { ButtonLink, Icon, PosicaoBadge, Tag } from "@/components/ui";
 import { formatData } from "@/lib/data";
-import type { Modalidade } from "@/lib/desporto";
+import { vendaBilhetes, type Modalidade } from "@/lib/desporto";
 import type { Corrida, Evento, Piloto } from "@/lib/types";
 
 export function iniciais(nome: string) {
@@ -47,8 +47,8 @@ export function HeroModalidade({
   );
 }
 
-/** Próxima prova em destaque, com contagem decrescente e bilhetes. */
-export function ProximaProva({ e }: { e: Evento }) {
+/** Próxima prova em destaque, com contagem decrescente e bilhetes (quando `vendaBilhetes` o diz). */
+export function ProximaProva({ e, bilheteiraAberta }: { e: Evento; bilheteiraAberta: boolean }) {
   return (
     <div className="relative overflow-hidden rounded-card">
       <Placeholder nome={[e.slug, e.imagem]} className="absolute inset-0" />
@@ -71,7 +71,7 @@ export function ProximaProva({ e }: { e: Evento }) {
             </span>
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            {e.bilhetes && (
+            {vendaBilhetes(e, bilheteiraAberta) === "a-venda" && (
               <ButtonLink href={`/bilhetes/${e.slug}`}>
                 <Icon name="ticket" className="size-4" />
                 Bilhetes

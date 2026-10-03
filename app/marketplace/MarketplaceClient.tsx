@@ -7,10 +7,18 @@ import { SeloVerificado } from "@/components/SeloVerificado";
 import { ButtonLink, Icon, PageHero, Tag } from "@/components/ui";
 import { formatData, formatKz } from "@/lib/data";
 import type { AnuncioMarketplace } from "@/lib/types";
+import {
+  AVISO_PAGAMENTO, CATEGORIAS_ANUNCIO, CONSELHO_SEGURANCA, SLUG_TERMOS_MARKETPLACE, ehNovo,
+} from "@/lib/marketplace";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { useConteudo } from "@/lib/i18n/useConteudo";
 
-const CATEGORIAS = ["Todas", "Motas", "Peças", "Equipamento", "Acessórios"] as const;
+const CATEGORIAS = ["Todas", ...CATEGORIAS_ANUNCIO] as const;
+const CONDICOES = [
+  { id: "todas", label: "Novo ou usado" },
+  { id: "novo", label: "Novo" },
+  { id: "usado", label: "Usado" },
+] as const;
 const ORDENS = [
   { id: "recentes", label: "Mais recentes" },
   { id: "preco-asc", label: "Preço: menor primeiro" },
@@ -23,6 +31,7 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
   const { t } = useIdioma();
   const [categoria, setCategoria] = useState<string>("Todas");
   const [provincia, setProvincia] = useState("Todas");
+  const [condicao, setCondicao] = useState<string>("todas");
   const [ordem, setOrdem] = useState<string>("recentes");
   const [busca, setBusca] = useState("");
   const [precoMax, setPrecoMax] = useState<number>(10_000_000);
@@ -36,6 +45,7 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
     const out = anuncios
       .filter((a) => categoria === "Todas" || a.categoria === categoria)
       .filter((a) => provincia === "Todas" || a.provincia === provincia)
+      .filter((a) => condicao === "todas" || (condicao === "novo") === ehNovo(a.estado))
       .filter((a) => a.preco <= precoMax)
       .filter(
         (a) =>
@@ -54,13 +64,13 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
       default:
         return out.sort((a, b) => +new Date(b.publicado) - +new Date(a.publicado));
     }
-  }, [anuncios, categoria, provincia, ordem, busca, precoMax]);
+  }, [anuncios, categoria, provincia, condicao, ordem, busca, precoMax]);
 
   return (
     <>
       <PageHero
         imagem="marketplace"
-        eyebrow={t("paginas.comunidadeVerificada")}
+        eyebrow={t("paginas.compraEVenda")}
         titulo={t("paginas.marketplaceTitulo")}
         descricao={t("paginas.marketplaceSub")}
       >
@@ -71,7 +81,7 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
           </ButtonLink>
           <p className="flex items-center gap-2 text-xs text-ink-500">
             <SeloVerificado tamanho={16} decorativo />
-            Todos os vendedores são verificados pela Motobox
+            Motas revistas pela equipa Motobox antes de aparecerem
           </p>
         </div>
       </PageHero>
@@ -102,6 +112,19 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
               {provincias.map((p) => (
                 <option key={p} value={p}>
                   {p === "Todas" ? "Província" : p}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={condicao}
+              onChange={(e) => setCondicao(e.target.value)}
+              aria-label="Novo ou usado"
+              className="h-8 rounded-full bg-ink-800 px-3.5 font-ui text-sm text-ink-200 outline-none transition-colors hover:bg-ink-700 focus:ring-2 focus:ring-mb-red"
+            >
+              {CONDICOES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
                 </option>
               ))}
             </select>
@@ -201,6 +224,12 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
                     <SeloVerificado tamanho={18} className="drop-shadow-[0_1px_2px_rgb(0_0_0/0.55)]" />
                   )}
                 </div>
+                {a.documentosVerificados && (
+                  <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-ok/90 px-2.5 py-1 text-[10px] leading-none text-white backdrop-blur-sm">
+                    <Icon name="shield" className="size-3" />
+                    Documentação verificada
+                  </span>
+                )}
                 <span className="absolute bottom-3 right-3 rounded-full bg-ink-950/80 px-2.5 py-1 text-[10px] leading-none text-ink-200 backdrop-blur-sm">
                   {a.estado}
                 </span>
@@ -246,19 +275,19 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
           <div className="mt-9 grid gap-x-10 gap-y-9 sm:grid-cols-3">
             {[
               {
-                icone: "verified",
-                t: "Vendedor verificado",
-                d: "Confirmamos a identidade e o contacto de cada vendedor antes de publicar o primeiro anúncio.",
-              },
-              {
-                icone: "star",
-                t: "Histórico e avaliações",
-                d: "Cada vendedor tem um histórico público de anúncios e avaliações de quem já lhe comprou.",
-              },
-              {
                 icone: "shield",
-                t: "Sem pagamentos na plataforma",
-                d: "A Motobox não intermedeia pagamentos. Combine sempre um encontro em local público.",
+                t: "Motas revistas antes de publicar",
+                d: "Quem vende uma mota indica o número de quadro e os documentos que tem. A equipa Motobox revê o anúncio e pode pedir para ver os documentos antes de o publicar.",
+              },
+              {
+                icone: "verified",
+                t: "Selos com significado",
+                d: "«Documentação verificada» quer dizer que a equipa viu os documentos da mota. O selo de vendedor verificado só aparece quando confirmámos a identidade de quem vende.",
+              },
+              {
+                icone: "lock",
+                t: "Pagamento entre as partes",
+                d: `${AVISO_PAGAMENTO} ${CONSELHO_SEGURANCA}`,
               },
             ].map((c) => (
               <div key={c.t}>
@@ -270,6 +299,13 @@ export function MarketplaceClient({ anuncios: originais }: { anuncios: AnuncioMa
               </div>
             ))}
           </div>
+          <p className="mt-9 text-sm text-ink-500">
+            As regras completas estão nos{" "}
+            <Link href={`/${SLUG_TERMOS_MARKETPLACE}`} className="text-white underline hover:text-mb-red">
+              Termos do Marketplace
+            </Link>
+            . Viu um anúncio suspeito? Use «Denunciar este anúncio» na página dele.
+          </p>
         </section>
       </div>
     </>

@@ -8,7 +8,7 @@ import {
   MODALIDADES, MODALIDADE_PRINCIPAL, eProva, estadoModalidade, eventosDaModalidade, instante, lerModalidade,
   type Modalidade,
 } from "@/lib/desporto";
-import { lerCorridas, lerEquipas, lerEventos, lerPilotos } from "@/lib/supabase/publico";
+import { lerCorridas, lerDefinicoes, lerEquipas, lerEventos, lerPilotos } from "@/lib/supabase/publico";
 import type { Corrida, Equipa, Evento, Piloto } from "@/lib/types";
 import { LinhaEvento } from "@/app/calendario/ListaEventos";
 import { SubNavDesporto } from "../SubNavDesporto";
@@ -40,24 +40,29 @@ export default async function ModalidadePage({ params }: { params: Promise<{ mod
   const m = lerModalidade(modalidade);
   if (!m) notFound();
 
-  const [eventos, corridas, pilotos, equipas] = await Promise.all([
-    lerEventos(), lerCorridas(), lerPilotos(), lerEquipas(),
+  const [eventos, corridas, pilotos, equipas, { bilheteiraAberta }] = await Promise.all([
+    lerEventos(), lerCorridas(), lerPilotos(), lerEquipas(), lerDefinicoes(),
   ]);
+  const dados = { m, eventos, corridas, pilotos, equipas, bilheteiraAberta };
 
   if (m.slug === MODALIDADE_PRINCIPAL) {
-    return <PaginaMotocross m={m} eventos={eventos} corridas={corridas} pilotos={pilotos} equipas={equipas} />;
+    return <PaginaMotocross {...dados} />;
   }
   if (estadoModalidade(m, eventos) === "activo") {
-    return <PaginaModalidade m={m} eventos={eventos} corridas={corridas} pilotos={pilotos} equipas={equipas} />;
+    return <PaginaModalidade {...dados} />;
   }
   return <PaginaEmBreve m={m} />;
 }
 
-type Dados = { m: Modalidade; eventos: Evento[]; corridas: Corrida[]; pilotos: Piloto[]; equipas: Equipa[] };
+type Dados = {
+  m: Modalidade; eventos: Evento[]; corridas: Corrida[]; pilotos: Piloto[]; equipas: Equipa[];
+  /** Interruptor "Bilheteira aberta" das Definições. */
+  bilheteiraAberta: boolean;
+};
 
 /* ---------------- Motocross: a casa de tudo o que já existia ---------------- */
 
-function PaginaMotocross({ m, eventos, corridas, pilotos, equipas }: Dados) {
+function PaginaMotocross({ m, eventos, corridas, pilotos, equipas, bilheteiraAberta }: Dados) {
   const agora = instante();
   const provas = eventosDaModalidade(m, eventos);
   const proxima = provas.find((e) => new Date(e.dataInicio).getTime() > agora);
@@ -84,7 +89,7 @@ function PaginaMotocross({ m, eventos, corridas, pilotos, equipas }: Dados) {
 
       {proxima && (
         <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-4 pb-4">
-          <ProximaProva e={proxima} />
+          <ProximaProva e={proxima} bilheteiraAberta={bilheteiraAberta} />
         </section>
       )}
 
@@ -164,7 +169,7 @@ function PaginaMotocross({ m, eventos, corridas, pilotos, equipas }: Dados) {
           ) : (
             <ol className="mt-4">
               {provas.map((e) => (
-                <LinhaEvento key={e.slug} e={e} agora={agora} />
+                <LinhaEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} />
               ))}
             </ol>
           )}
@@ -215,7 +220,7 @@ function PaginaMotocross({ m, eventos, corridas, pilotos, equipas }: Dados) {
 
 /* ---------------- Enduro, Rally-Raid (e o que acender com provas) ---------------- */
 
-function PaginaModalidade({ m, eventos, corridas, pilotos, equipas }: Dados) {
+function PaginaModalidade({ m, eventos, corridas, pilotos, equipas, bilheteiraAberta }: Dados) {
   const agora = instante();
   const provas = eventosDaModalidade(m, eventos).filter((e) => eProva(e.disciplina));
   const slugs = new Set(provas.map((e) => e.slug));
@@ -239,7 +244,7 @@ function PaginaModalidade({ m, eventos, corridas, pilotos, equipas }: Dados) {
 
       {proxima && (
         <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-4 pb-4">
-          <ProximaProva e={proxima} />
+          <ProximaProva e={proxima} bilheteiraAberta={bilheteiraAberta} />
         </section>
       )}
 
@@ -249,7 +254,7 @@ function PaginaModalidade({ m, eventos, corridas, pilotos, equipas }: Dados) {
             <SectionHead eyebrow={`Temporada ${TEMPORADA}`} titulo="Provas" acao={{ href: "/calendario", texto: "Calendário" }} />
             <ol className="mt-4">
               {provas.map((e) => (
-                <LinhaEvento key={e.slug} e={e} agora={agora} />
+                <LinhaEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} />
               ))}
             </ol>
           </div>

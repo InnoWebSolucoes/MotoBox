@@ -8,6 +8,7 @@ import { useExigirSessao } from "@/components/SessaoObrigatoria";
 import { Button, ButtonLink, Icon, Tag } from "@/components/ui";
 import { useAuth } from "@/lib/auth/contexto";
 import { formatData, formatKz } from "@/lib/data";
+import { eComunidade } from "@/lib/desporto";
 import type { Evento, TipoBilhete } from "@/lib/types";
 
 /* Comissão que a Motobox retém sobre cada bilhete vendido. */
@@ -251,7 +252,12 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
 
   async function pagar() {
     setAVerificar(true);
-    // Simulação do ciclo de verificação automática do pagamento.
+    // ATENÇÃO: o pagamento é simulado. Não há ligação a nenhum meio de pagamento,
+    // os códigos são gerados aqui no navegador, nada fica gravado (nem em
+    // `encomendas`, nem na conta do comprador) e não sai nenhum email. Por isso o
+    // ecrã final só mostra os bilhetes e pede para os guardar. Quem ligar o
+    // pagamento real trata das três coisas no servidor (pagamento, gravação da
+    // encomenda, envio do bilhete) e só depois volta a prometer email e conta.
     await new Promise((r) => setTimeout(r, 2200));
     const emitidos = linhas.flatMap((l) =>
       Array.from({ length: l.qtd }, (_, i) => ({
@@ -409,7 +415,7 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                 {(
                   [
                     { k: "nome", label: "Nome completo", tipo: "text", ph: "Como aparece no seu BI", req: true },
-                    { k: "email", label: "Email", tipo: "email", ph: "para receber o bilhete", req: true },
+                    { k: "email", label: "Email", tipo: "email", ph: "nome@exemplo.com", req: true },
                     { k: "telefone", label: "Telemóvel", tipo: "tel", ph: "+244 9xx xxx xxx", req: true },
                     { k: "bi", label: "Nº do BI (opcional)", tipo: "text", ph: "para validação à entrada", req: false },
                   ] as const
@@ -442,9 +448,6 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                     <span>
                       <span>Sessão iniciada como</span>{" "}
                       <span className="text-ink-200">{emailConta}</span>
-                      {comprador.email.trim() && comprador.email.trim().toLowerCase() !== emailConta.toLowerCase() && (
-                        <span className="block">O bilhete segue para o email indicado acima.</span>
-                      )}
                     </span>
                   </p>
                 )}
@@ -560,9 +563,10 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                 </span>
                 <h2 className="mt-4 title-xl text-2xl">Pagamento confirmado</h2>
                 <p className="mt-2 text-sm text-ink-400">
-                  Emitimos {codigos.length} {codigos.length === 1 ? "bilhete" : "bilhetes"} e enviámos
-                  uma cópia para <span className="text-white">{comprador.email}</span>.
+                  Emitimos {codigos.length} {codigos.length === 1 ? "bilhete" : "bilhetes"}.
                 </p>
+                {/* Nada é enviado nem gravado (ver `pagar`): esta página é a única cópia. */}
+                <p className="mt-1 text-sm text-ink-400">Guarde ou imprima esta página agora: é a sua única cópia.</p>
               </div>
 
               <div className="mt-6 space-y-4">
@@ -612,12 +616,15 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                   <Icon name="download" className="size-4" />
                   Guardar / imprimir
                 </Button>
-                <ButtonLink href="/conta" variant="dark">
-                  Ver na minha conta
-                </ButtonLink>
-                <ButtonLink href="/calendario" variant="ghost">
-                  Voltar ao calendário
-                </ButtonLink>
+                {eComunidade(evento.disciplina) ? (
+                  <ButtonLink href="/eventos" variant="ghost">
+                    Voltar aos eventos
+                  </ButtonLink>
+                ) : (
+                  <ButtonLink href="/calendario" variant="ghost">
+                    Voltar ao calendário
+                  </ButtonLink>
+                )}
               </div>
 
               <p className="mt-6 flex gap-2.5 text-xs text-ink-500 leading-relaxed">

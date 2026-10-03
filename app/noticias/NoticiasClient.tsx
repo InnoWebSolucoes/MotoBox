@@ -4,20 +4,24 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
-import { Icon, PageHero, Tag } from "@/components/ui";
+import { Icon, PageHero, SectionHead, Tag } from "@/components/ui";
+import { CartaoVideo } from "@/app/videos/CartaoVideo";
 import { formatData } from "@/lib/data";
-import type { Noticia } from "@/lib/types";
+import type { Noticia, Video } from "@/lib/types";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { useConteudo } from "@/lib/i18n/useConteudo";
 
-const CATEGORIAS = ["Todas", "Angola", "Internacional", "Entrevista", "Comunidade", "Solidária"];
+/** Também usadas pelo arquivo (/noticias/arquivo). */
+export const CATEGORIAS = ["Todas", "Angola", "Internacional", "Entrevista", "Comunidade", "Solidária"];
+
+const CAMPOS_VIDEO: (keyof Video)[] = ["titulo"];
 
 /**
  * Lê "?cat=" (as ligações "Internacional" do menu e do rodapé) e aplica-o.
  * Fica à parte e dentro de <Suspense> para a página continuar a ser gerada
  * em estático: só este pedaço espera pelo endereço no navegador.
  */
-function CategoriaDoEndereco({ aoLer }: { aoLer: (c: string) => void }) {
+export function CategoriaDoEndereco({ aoLer }: { aoLer: (c: string) => void }) {
   const params = useSearchParams();
   const pedida = params.get("cat");
   useEffect(() => {
@@ -26,10 +30,15 @@ function CategoriaDoEndereco({ aoLer }: { aoLer: (c: string) => void }) {
   return null;
 }
 
-export function NoticiasClient({ noticias: originais }: { noticias: Noticia[] }) {
+export function NoticiasClient({ noticias: originais, videos: videosOriginais }: {
+  noticias: Noticia[];
+  /** Os vídeos mais recentes, para a faixa de vídeos. */
+  videos: Video[];
+}) {
   const { t } = useIdioma();
   // Traduz o conteúdo uma vez; todos os cartões abaixo já o recebem traduzido.
   const noticias = useConteudo(originais, ["titulo", "resumo"]);
+  const videos = useConteudo(videosOriginais, CAMPOS_VIDEO);
   const [categoria, setCategoria] = useState("Todas");
   const [busca, setBusca] = useState("");
 
@@ -169,18 +178,45 @@ export function NoticiasClient({ noticias: originais }: { noticias: Noticia[] })
           </>
         )}
 
-        {/* Faixa de agregação internacional */}
+        {/* Vídeos: os mais recentes, com ligação para a secção completa.
+            Sem vídeos publicados, a faixa não aparece. */}
+        {categoria === "Todas" && videos.length > 0 && (
+          <section className="mt-20">
+            <SectionHead
+              eyebrow="Vídeos"
+              titulo="Provas e eventos em vídeo"
+              acao={{ href: "/videos", texto: "Todos os vídeos" }}
+            />
+            {/* No telemóvel desliza na horizontal; a partir do tablet é grelha. */}
+            <div className="mt-8 -mx-4 overflow-x-auto no-scrollbar sm:mx-0 sm:overflow-visible">
+              <div className="flex gap-4 px-4 pb-2 sm:grid sm:grid-cols-2 sm:gap-x-5 sm:gap-y-9 sm:px-0 sm:pb-0 lg:grid-cols-4">
+                {videos.map((v) => (
+                  <div key={v.slug} className="w-[260px] shrink-0 sm:w-auto">
+                    <CartaoVideo
+                      v={v}
+                      href={`/videos#${v.slug}`}
+                      tamanhos="(max-width: 640px) 260px, (max-width: 1024px) 50vw, 300px"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Faixa internacional: notícias de fora escolhidas e editadas pela
+            redacção, sempre com a fonte. Não há recolha automática. */}
         {categoria === "Todas" && internacionais.length > 0 && (
           <section className="mt-20">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="eyebrow text-mb-red">Agregação automática</p>
+                <p className="eyebrow text-mb-red">Internacional</p>
                 <h2 className="title-xl mt-2 text-3xl sm:text-4xl">
                   Do mundo das motas
                 </h2>
                 <p className="mt-3 max-w-lg text-sm text-ink-400 leading-relaxed">
-                  Recolhemos automaticamente notícias das principais fontes internacionais de
-                  motociclismo, actualizadas várias vezes ao dia.
+                  MotoGP, MXGP, Dakar e outras provas lá de fora, escolhidas e editadas pela
+                  redacção da Motobox. Cada notícia indica a fonte original.
                 </p>
               </div>
               <button
@@ -209,7 +245,8 @@ export function NoticiasClient({ noticias: originais }: { noticias: Noticia[] })
                         {n.titulo}
                       </span>
                       <span className="mt-0.5 block text-xs text-ink-500">
-                        {n.fonte} · {formatData(n.data, { day: "2-digit", month: "short" })}
+                        {n.fonte && <>via {n.fonte} · </>}
+                        {formatData(n.data, { day: "2-digit", month: "short" })}
                       </span>
                     </span>
                     <Icon
@@ -221,6 +258,30 @@ export function NoticiasClient({ noticias: originais }: { noticias: Noticia[] })
               ))}
             </ul>
           </section>
+        )}
+
+        {/* Arquivo: tudo o que foi publicado, incluindo material antigo com a data original */}
+        {noticias.length > 0 && (
+          <Link
+            href="/noticias/arquivo"
+            className="group mt-20 flex items-center gap-4 rounded-card bg-ink-900 p-5 sm:p-6"
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ink-800 text-ink-300 transition-colors group-hover:bg-mb-red group-hover:text-white">
+              <Icon name="calendar" className="size-4" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-display text-lg uppercase text-white group-hover:text-mb-red transition-colors">
+                Arquivo de notícias
+              </span>
+              <span className="mt-0.5 block text-sm text-ink-500">
+                Tudo o que já publicámos, por ano e mês.
+              </span>
+            </span>
+            <Icon
+              name="arrow"
+              className="size-5 shrink-0 text-ink-600 transition-all group-hover:translate-x-1 group-hover:text-white"
+            />
+          </Link>
         )}
       </div>
     </>

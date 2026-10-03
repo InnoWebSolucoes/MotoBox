@@ -21,15 +21,20 @@ import { Button, ButtonLink, Icon, Tag } from "@/components/ui";
 import { formatData, formatKz } from "@/lib/data";
 import { useAuth } from "@/lib/auth/contexto";
 import {
-  MARCAS, CANAIS_ACTIVOS, PREFERENCIAS_PADRAO,
+  INTERESSES, MARCAS, CANAIS_ACTIVOS, PREFERENCIAS_PADRAO,
   type Preferencias, type TipoNotificacao, type Canal,
 } from "@/lib/conta/preferencias";
-import type { AnuncioMarketplace, Equipa, Evento, Noticia, Piloto } from "@/lib/types";
+import { iniciaisClube, localClube, nomeTipo } from "@/app/clubes/comum";
+import type { AnuncioMarketplace, Clube, Equipa, Evento, Noticia, Piloto } from "@/lib/types";
 import type { Encomenda } from "@/lib/admin/types";
 import { RecortarAvatar, useTextosRecorte, type EstadoRecorte } from "./RecortarAvatar";
 import { comBase } from "@/lib/base";
 import { hrefEvento } from "@/lib/desporto";
 import { PROVINCIAS } from "@/lib/provincias";
+import {
+  CATEGORIAS_ANUNCIO, DOCUMENTOS_MOTA, ESTADOS_ARTIGO, SLUG_TERMOS_MARKETPLACE,
+  moderacaoDe, precisaRevisao,
+} from "@/lib/marketplace";
 
 type Aba = "resumo" | "bilhetes" | "preferencias" | "notificacoes" | "anuncios";
 
@@ -118,11 +123,12 @@ const campo =
   "h-11 w-full bg-ink-950 px-3.5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
 
 export function ContaClient({
-  eventos, pilotos, equipas, noticias,
+  eventos, pilotos, equipas, clubes, noticias,
 }: {
   eventos: Evento[];
   pilotos: Piloto[];
   equipas: Equipa[];
+  clubes: Clube[];
   noticias: Noticia[];
 }) {
   const router = useRouter();
@@ -179,8 +185,11 @@ export function ContaClient({
   };
   useEffect(() => () => { if (temporizador.current) clearTimeout(temporizador.current); }, []);
 
-  const alternar = (chave: "pilotos" | "equipas" | "marcas", valor: string) => {
-    const lista = prefs[chave];
+  const alternar = (
+    chave: "interesses" | "clubes" | "provincias" | "pilotos" | "equipas" | "marcas",
+    valor: string,
+  ) => {
+    const lista: readonly string[] = prefs[chave];
     mudarPrefs({ ...prefs, [chave]: lista.includes(valor) ? lista.filter((x) => x !== valor) : [...lista, valor] });
   };
 
@@ -465,11 +474,67 @@ export function ContaClient({
           <div className="space-y-6 max-w-4xl">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-ink-400 leading-relaxed">
-                Escolha o que quer seguir. Usamos estas preferências para personalizar a página inicial,
-                a newsletter e as notificações que recebe.
+                Escolha o que lhe interessa. Usamos estas escolhas nos avisos que recebe por email, nos temas
+                da newsletter semanal, se a subscrever, e nas notícias «Para si» do seu resumo.
               </p>
               <EstadoGuardar estado={gravacao} />
             </div>
+
+            <section className="card p-6">
+              <h2 className="eyebrow text-mb-red mb-1">Interesses</h2>
+              <p className="text-xs text-ink-600 mb-5">
+                Os temas da sua newsletter semanal e dos avisos de passeios, encontros e acções solidárias.
+                Sem nenhum escolhido, recebe tudo.
+              </p>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {INTERESSES.map((i) => (
+                  <Escolha key={i.id} on={prefs.interesses.includes(i.id)} onClick={() => alternar("interesses", i.id)}>
+                    <span className="min-w-0 flex-1 py-1 pl-2">
+                      <span className="block text-sm text-white">{i.nome}</span>
+                      <span className="block text-[11px] text-ink-600">{i.descricao}</span>
+                    </span>
+                  </Escolha>
+                ))}
+              </div>
+            </section>
+
+            <section className="card p-6">
+              <h2 className="eyebrow text-mb-red mb-1">Clubes</h2>
+              <p className="text-xs text-ink-600 mb-5">Avisamos por email sempre que um destes clubes organizar um evento.</p>
+              {clubes.length === 0 ? (
+                <p className="text-sm text-ink-500">Ainda não há clubes publicados.</p>
+              ) : (
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {clubes.map((c) => (
+                    <Escolha key={c.slug} on={prefs.clubes.includes(c.slug)} onClick={() => alternar("clubes", c.slug)}>
+                      <span className="grid size-9 shrink-0 place-items-center rounded-full font-display text-[10px] text-white" style={{ background: c.cor }}>
+                        {iniciaisClube(c.nome)}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm text-white">{c.nome}</span>
+                        <span className="block truncate text-[11px] text-ink-600">{nomeTipo(c.tipo)} · {localClube(c)}</span>
+                      </span>
+                    </Escolha>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="card p-6">
+              <h2 className="eyebrow text-mb-red mb-1">Províncias</h2>
+              <p className="text-xs text-ink-600 mb-5">Avisamos dos eventos novos nestas províncias, dentro dos seus interesses.</p>
+              <div className="flex flex-wrap gap-2">
+                {PROVINCIAS.map((p) => {
+                  const on = prefs.provincias.includes(p);
+                  return (
+                    <button key={p} onClick={() => alternar("provincias", p)} aria-pressed={on}
+                      className="chip">
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
 
             <section className="card p-6">
               <h2 className="eyebrow text-mb-red mb-1">Pilotos</h2>
@@ -491,8 +556,8 @@ export function ContaClient({
             </section>
 
             <section className="card p-6">
-              <h2 className="eyebrow text-mb-red mb-1">Equipas e clubes</h2>
-              <p className="text-xs text-ink-600 mb-5">Novidades, resultados e eventos das estruturas que segue.</p>
+              <h2 className="eyebrow text-mb-red mb-1">Equipas</h2>
+              <p className="text-xs text-ink-600 mb-5">Avisamos quando os pilotos destas equipas terminam uma prova.</p>
               <div className="grid gap-2.5 sm:grid-cols-2">
                 {equipas.map((e) => (
                   <Escolha key={e.slug} on={prefs.equipas.includes(e.slug)} onClick={() => alternar("equipas", e.slug)}>
@@ -510,7 +575,9 @@ export function ContaClient({
 
             <section className="card p-6">
               <h2 className="eyebrow text-mb-red mb-1">Marcas de interesse</h2>
-              <p className="text-xs text-ink-600 mb-5">Avisamos quando surgirem anúncios ou notícias destas marcas.</p>
+              <p className="text-xs text-ink-600 mb-5">
+                Avisamos quando surgir um anúncio destas marcas no marketplace, se tiver esse aviso ligado em Notificações.
+              </p>
               <div className="flex flex-wrap gap-2">
                 {MARCAS.map((m) => {
                   const on = prefs.marcas.includes(m);
@@ -537,10 +604,9 @@ export function ContaClient({
                 {(
                   [
                     ["resultados", "Resultados de corridas", "Quando os pilotos e equipas que segue terminam uma prova."],
-                    ["calendario", "Calendário", "Novas provas no calendário."],
-                    ["bilhetes", "Bilhetes", "Quando abre a venda de bilhetes para uma prova."],
+                    ["calendario", "Calendário", "Todas as provas e eventos novos."],
+                    ["bilhetes", "Bilhetes", "Quando abre a venda de bilhetes para um evento."],
                     ["marketplace", "Marketplace", "Novos anúncios das marcas que segue."],
-                    ["forum", "Fórum", "Respostas aos seus tópicos e menções."],
                     ["newsletter", "Newsletter semanal", "Resumo da semana, às segundas-feiras."],
                   ] as [TipoNotificacao, string, string][]
                 ).map(([k, titulo, desc]) => (
@@ -604,17 +670,16 @@ export function ContaClient({
               </Button>
             </div>
 
-            {perfil?.verificado && (
-              <div className="card bg-ok/8 p-5">
-                <p className="flex items-center gap-2.5 text-sm text-ink-200">
-                  <SeloVerificado tamanho={20} decorativo />
-                  <span>
-                    <strong className="text-white">Conta verificada.</strong> Os seus anúncios aparecem
-                    com o selo de vendedor verificado.
-                  </span>
-                </p>
-              </div>
-            )}
+            <div className="card p-5">
+              <p className="flex gap-2.5 text-sm text-ink-300 leading-relaxed">
+                <SeloVerificado tamanho={20} decorativo className="mt-0.5 shrink-0" />
+                <span>
+                  <strong className="text-white">Motas passam por verificação.</strong> Antes de uma mota
+                  aparecer no marketplace, a equipa Motobox confere o número de quadro e os documentos, e
+                  pode contactá-lo para os ver. Peças e equipamento são publicados logo.
+                </span>
+              </p>
+            </div>
 
             {dados.anuncios.length === 0 ? (
               <div className="card p-8 text-center">
@@ -622,26 +687,53 @@ export function ContaClient({
               </div>
             ) : (
               <div className="grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
-                {dados.anuncios.map((a) => (
-                  <div key={a.id}>
-                    <Link href={`/marketplace/${a.id}`} className="media relative block aspect-[4/3]">
+                {dados.anuncios.map((a) => {
+                  const moderacao = moderacaoDe(a);
+                  const capa = (
+                    <>
                       <Placeholder nome={a.imagens[0] ?? a.categoria} className="absolute inset-0" />
-                      <div className="absolute left-3 top-3"><Tag tone="ok">Activo</Tag></div>
-                    </Link>
-                    <div className="pt-3.5">
-                      <h3 className="font-display text-sm uppercase leading-snug text-white line-clamp-2">{a.titulo}</h3>
-                      <p className="mt-2 font-display text-lg text-white">{formatKz(a.preco)}</p>
-                      <p className="mt-1 flex items-center gap-1.5 text-[11px] text-ink-600">
-                        <Icon name="eye" className="size-3" />
-                        {a.visualizacoes.toLocaleString("pt-PT")} visualizações
-                      </p>
-                      <div className="mt-4 flex gap-2">
-                        <Button variant="dark" size="sm" className="flex-1" onClick={() => setFormAnuncio(a)}>Editar</Button>
-                        <TerminarAnuncio id={a.id} aoTerminar={carregar} />
+                      <div className="absolute left-3 top-3">
+                        {moderacao === "aprovado" && <Tag tone="ok">Activo</Tag>}
+                        {moderacao === "pendente" && <Tag tone="gold">Em verificação</Tag>}
+                        {moderacao === "rejeitado" && <Tag tone="red">Não aprovado</Tag>}
+                      </div>
+                    </>
+                  );
+                  return (
+                    <div key={a.id}>
+                      {/* Só o que está aprovado tem página pública */}
+                      {moderacao === "aprovado" ? (
+                        <Link href={`/marketplace/${a.id}`} className="media relative block aspect-[4/3]">{capa}</Link>
+                      ) : (
+                        <div className="media relative aspect-[4/3]">{capa}</div>
+                      )}
+                      <div className="pt-3.5">
+                        <h3 className="font-display text-sm uppercase leading-snug text-white line-clamp-2">{a.titulo}</h3>
+                        <p className="mt-2 font-display text-lg text-white">{formatKz(a.preco)}</p>
+                        {moderacao === "aprovado" && (
+                          <p className="mt-1 flex items-center gap-1.5 text-[11px] text-ink-600">
+                            <Icon name="eye" className="size-3" />
+                            {a.visualizacoes.toLocaleString("pt-PT")} visualizações
+                          </p>
+                        )}
+                        {moderacao === "pendente" && (
+                          <p className="mt-1 text-xs text-ink-500">A equipa está a rever o anúncio. Avisamos quando ficar visível.</p>
+                        )}
+                        {moderacao === "rejeitado" && a.motivoModeracao && (
+                          <p className="mt-2 border-l-2 border-mb-red pl-2.5 text-xs text-ink-300 leading-relaxed">
+                            {a.motivoModeracao}
+                          </p>
+                        )}
+                        <div className="mt-4 flex gap-2">
+                          <Button variant="dark" size="sm" className="flex-1" onClick={() => setFormAnuncio(a)}>
+                            {moderacao === "rejeitado" ? "Corrigir" : "Editar"}
+                          </Button>
+                          <TerminarAnuncio id={a.id} aoTerminar={carregar} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -956,34 +1048,65 @@ function FormAnuncio({ anuncio, provinciaPadrao, aoFechar, aoGuardar }: {
     ano: anuncio?.ano ? String(anuncio.ano) : "", quilometragem: anuncio?.quilometragem ? String(anuncio.quilometragem) : "",
     estado: anuncio?.estado ?? "Bom", provincia: anuncio?.provincia ?? provinciaPadrao, descricao: anuncio?.descricao ?? "",
   });
+  // O que o vendedor de uma mota declara; só vai para o servidor se a categoria for Motas.
+  const [v, setV] = useState({
+    numeroQuadro: "", matricula: "", documentos: [] as string[],
+    emNomeProprio: true, observacoes: "", declaracao: false,
+  });
+  const [aceitaTermos, setAceitaTermos] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [aGuardar, setAGuardar] = useState(false);
   const def = (campos: Partial<typeof f>) => setF((x) => ({ ...x, ...campos }));
+  const defV = (campos: Partial<typeof v>) => setV((x) => ({ ...x, ...campos }));
+  const mota = precisaRevisao(f.categoria);
+  const moderacao = anuncio ? moderacaoDe(anuncio) : null;
+
+  // Ao editar uma mota, traz a declaração que já fez.
+  useEffect(() => {
+    if (!anuncio || !precisaRevisao(anuncio.categoria)) return;
+    let vivo = true;
+    fetch(comBase(`/api/conta/anuncios?id=${encodeURIComponent(anuncio.id)}`))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (vivo && j?.verificacao) setV((x) => ({ ...x, ...j.verificacao, declaracao: true })); })
+      .catch(() => { /* fica em branco; o vendedor preenche de novo */ });
+    return () => { vivo = false; };
+  }, [anuncio]);
 
   const guardar = async () => {
     setAGuardar(true);
+    const corpo = { ...f, aceitaTermos, ...(mota ? { verificacao: v } : {}) };
     const e = anuncio
-      ? await enviar(`/api/conta/anuncios?id=${encodeURIComponent(anuncio.id)}`, "PATCH", f)
-      : await enviar("/api/conta/anuncios", "POST", f);
+      ? await enviar(`/api/conta/anuncios?id=${encodeURIComponent(anuncio.id)}`, "PATCH", corpo)
+      : await enviar("/api/conta/anuncios", "POST", corpo);
     setAGuardar(false);
     if (e) { setErro(e); return; }
     await aoGuardar();
   };
 
+  const textoBotao = aGuardar ? "A guardar…"
+    : !anuncio ? (mota ? "Enviar para verificação" : "Publicar")
+    : moderacao === "rejeitado" ? "Enviar de novo" : "Guardar";
+
   return (
     <Janela titulo={anuncio ? "Editar anúncio" : "Publicar anúncio"} aoFechar={aoFechar}>
+      {anuncio?.motivoModeracao && moderacao === "rejeitado" && (
+        <p className="mb-5 border-l-2 border-mb-red pl-3 text-sm text-ink-300 leading-relaxed">
+          <strong className="block text-white">Porque não foi aprovado</strong>
+          {anuncio.motivoModeracao}
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <Rotulo texto="Título"><input className={campo} value={f.titulo} onChange={(e) => def({ titulo: e.target.value })} placeholder="Ex.: KTM 250 SX-F 2022, pronta a correr" maxLength={90} /></Rotulo>
         </div>
         <Rotulo texto="Categoria">
           <select className={campo} value={f.categoria} onChange={(e) => def({ categoria: e.target.value as typeof f.categoria })}>
-            {["Motas", "Peças", "Equipamento", "Acessórios"].map((c) => <option key={c}>{c}</option>)}
+            {CATEGORIAS_ANUNCIO.map((c) => <option key={c}>{c}</option>)}
           </select>
         </Rotulo>
-        <Rotulo texto="Estado">
+        <Rotulo texto="Estado (novo ou usado)">
           <select className={campo} value={f.estado} onChange={(e) => def({ estado: e.target.value as typeof f.estado })}>
-            {["Nova", "Como nova", "Muito bom", "Bom", "Para peças"].map((c) => <option key={c}>{c}</option>)}
+            {ESTADOS_ARTIGO.map((c) => <option key={c}>{c}</option>)}
           </select>
         </Rotulo>
         <Rotulo texto="Preço (Kz)"><input className={campo} inputMode="numeric" value={f.preco} onChange={(e) => def({ preco: e.target.value.replace(/[^\d]/g, "") })} /></Rotulo>
@@ -1008,11 +1131,79 @@ function FormAnuncio({ anuncio, provinciaPadrao, aoFechar, aoGuardar }: {
           Preço negociável
         </label>
       </div>
+
+      {/* Verificação: só para motas, antes de aparecerem no marketplace */}
+      {mota && (
+        <fieldset className="mt-6 border-t border-white/6 pt-5">
+          <legend className="font-display text-sm uppercase tracking-tight text-white">Verificação da mota</legend>
+          <p className="mt-1.5 text-xs text-ink-500 leading-relaxed">
+            Antes de aparecer no marketplace, a equipa Motobox revê a mota e pode contactá-lo para ver os
+            documentos. O número de quadro e a matrícula não são publicados.
+          </p>
+          {moderacao === "aprovado" && (
+            <p className="mt-2 text-xs text-ink-500 leading-relaxed">
+              Se mudar a marca, o modelo, o ano, o número de quadro ou a matrícula, a mota volta a ser verificada.
+            </p>
+          )}
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Rotulo texto="Número de quadro (chassi)">
+              <input className={`${campo} font-mono uppercase`} value={v.numeroQuadro} maxLength={30}
+                onChange={(e) => defV({ numeroQuadro: e.target.value })}
+                placeholder="Gravado no quadro e no livrete" autoComplete="off" spellCheck={false} />
+            </Rotulo>
+            <Rotulo texto="Matrícula (se tiver)">
+              <input className={`${campo} font-mono uppercase`} value={v.matricula} maxLength={15}
+                onChange={(e) => defV({ matricula: e.target.value })} autoComplete="off" spellCheck={false} />
+            </Rotulo>
+          </div>
+          <p className="eyebrow mb-2 mt-4 text-ink-500">Documentos que tem</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {DOCUMENTOS_MOTA.map((d) => (
+              <label key={d.id} className="flex items-center gap-2 text-sm text-ink-300">
+                <input type="checkbox" className="size-4 accent-[#e10600]"
+                  checked={v.documentos.includes(d.id)}
+                  onChange={(e) => defV({
+                    documentos: e.target.checked ? [...v.documentos, d.id] : v.documentos.filter((x) => x !== d.id),
+                  })} />
+                {d.nome}
+              </label>
+            ))}
+          </div>
+          <label className="mt-3 flex items-center gap-2 text-sm text-ink-300">
+            <input type="checkbox" checked={v.emNomeProprio} onChange={(e) => defV({ emNomeProprio: e.target.checked })} className="size-4 accent-[#e10600]" />
+            Os documentos estão em meu nome
+          </label>
+          <div className="mt-4">
+            <Rotulo texto="Notas para a equipa (opcional)">
+              <textarea className={`${campo} h-20 py-2`} value={v.observacoes} maxLength={500}
+                onChange={(e) => defV({ observacoes: e.target.value })}
+                placeholder="Ex.: os documentos estão em nome do meu pai, que autoriza a venda." />
+            </Rotulo>
+          </div>
+          <label className="mt-4 flex items-start gap-2 text-sm text-ink-300 leading-relaxed">
+            <input type="checkbox" checked={v.declaracao} onChange={(e) => defV({ declaracao: e.target.checked })} className="mt-0.5 size-4 shrink-0 accent-[#e10600]" />
+            Declaro que a mota não é roubada, que a posso vender legalmente e que estes dados são verdadeiros.
+          </label>
+        </fieldset>
+      )}
+
       <p className="mt-4 text-xs text-ink-600">Por agora os anúncios são publicados sem fotografias.</p>
+      {!anuncio && (
+        <label className="mt-4 flex items-start gap-2 text-sm text-ink-300 leading-relaxed">
+          <input type="checkbox" checked={aceitaTermos} onChange={(e) => setAceitaTermos(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[#e10600]" />
+          <span>
+            Li e aceito os{" "}
+            <Link href={`/${SLUG_TERMOS_MARKETPLACE}`} target="_blank" className="text-white underline hover:text-mb-red">
+              Termos do Marketplace
+            </Link>
+            .
+          </span>
+        </label>
+      )}
       {erro && <p role="alert" className="mt-3 text-sm text-mb-red">{erro}</p>}
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="ghost" onClick={aoFechar}>Cancelar</Button>
-        <Button onClick={guardar} disabled={aGuardar}>{aGuardar ? "A guardar…" : anuncio ? "Guardar" : "Publicar"}</Button>
+        <Button onClick={guardar} disabled={aGuardar}>{textoBotao}</Button>
       </div>
     </Janela>
   );

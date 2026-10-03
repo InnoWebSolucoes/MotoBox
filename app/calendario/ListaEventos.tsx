@@ -1,31 +1,32 @@
 /* Peças da lista de eventos, partilhadas pelo calendário de provas, pela
    secção Eventos e pelas páginas de cada modalidade. Sem hooks nem
-   "use client": servem tanto a componentes de servidor como de cliente. */
+   "use client": servem tanto a componentes de servidor como de cliente.
+   Quem as usa passa `bilheteiraAberta` (Definições): o que se diz sobre
+   bilhetes sai sempre de `vendaBilhetes`, nunca só do estado do evento. */
 
 import Link from "next/link";
 import { Placeholder } from "@/components/Brand";
 import { Icon, Tag } from "@/components/ui";
 import { formatData } from "@/lib/data";
-import { eComunidade, hrefEvento } from "@/lib/desporto";
+import { eComunidade, entradaDoEvento, hrefEvento, vendaBilhetes, type VendaBilhetes } from "@/lib/desporto";
 import type { Evento } from "@/lib/types";
 
-export function EstadoEvento({ e }: { e: Evento }) {
-  switch (e.estado) {
-    case "bilhetes-abertos":
-      return <Tag tone="red">Bilhetes à venda</Tag>;
-    case "esgotado":
-      return <Tag tone="neutral">Esgotado</Tag>;
-    case "a-decorrer":
-      return (
-        <Tag tone="live">
-          <span className="live-dot size-1.5 rounded-full bg-white" />A decorrer
-        </Tag>
-      );
-    case "concluido":
-      return <Tag tone="outline">Concluído</Tag>;
-    default:
-      return <Tag tone="outline">Agendado</Tag>;
+/**
+ * Estado público do evento. "Bilhetes à venda" só quando a Motobox vende
+ * mesmo; um evento marcado "bilhetes abertos" sem venda conta como agendado.
+ */
+export function EstadoEvento({ e, venda }: { e: Evento; venda: VendaBilhetes | null }) {
+  if (e.estado === "a-decorrer") {
+    return (
+      <Tag tone="live">
+        <span className="live-dot size-1.5 rounded-full bg-white" />A decorrer
+      </Tag>
+    );
   }
+  if (e.estado === "concluido") return <Tag tone="outline">Concluído</Tag>;
+  if (venda === "a-venda") return <Tag tone="red">Bilhetes à venda</Tag>;
+  if (venda === "esgotado" || e.estado === "esgotado") return <Tag tone="neutral">Esgotado</Tag>;
+  return <Tag tone="outline">Agendado</Tag>;
 }
 
 const mesCurto = (iso: string) =>
@@ -35,15 +36,19 @@ const mesCurto = (iso: string) =>
 export function LinhaEvento({
   e,
   agora,
+  bilheteiraAberta,
   ate = "a",
 }: {
   e: Evento;
   agora: number;
+  bilheteiraAberta: boolean;
   /** "a" entre as duas datas; o cliente passa a tradução. */
   ate?: string;
 }) {
   const passado = new Date(e.dataFim).getTime() < agora;
   const comunidade = eComunidade(e.disciplina);
+  const venda = vendaBilhetes(e, bilheteiraAberta, agora);
+  const entrada = entradaDoEvento(e);
   return (
     <li className="border-b border-white/6 last:border-0">
       <Link
@@ -66,7 +71,8 @@ export function LinhaEvento({
           <div className="flex flex-wrap items-center gap-2">
             {e.ronda && !comunidade ? <Tag tone="neutral">Ronda {e.ronda}</Tag> : null}
             <Tag tone="outline">{e.disciplina}</Tag>
-            <EstadoEvento e={e} />
+            <EstadoEvento e={e} venda={venda} />
+            {entrada && !passado && <Tag tone="neutral">{entrada}</Tag>}
           </div>
           <h3 className="mt-2.5 font-display text-xl sm:text-2xl uppercase leading-tight text-white group-hover:text-mb-red transition-colors">
             {e.titulo}
@@ -93,11 +99,12 @@ export function LinhaEvento({
 
         {/* Acção */}
         <div className="col-start-2 sm:col-start-auto flex flex-wrap sm:flex-col items-center sm:items-end gap-x-3 gap-y-1 sm:text-right">
-          {e.bilhetes && e.bilhetes.length > 0 && e.estado !== "concluido" && !passado ? (
+          {/* Preço e "Bilhetes" só com venda aberta; esgotado fica na etiqueta de estado */}
+          {venda === "a-venda" ? (
             <>
               <span className="eyebrow text-ink-600">Desde</span>
               <span className="font-display text-lg text-white">
-                {Math.min(...e.bilhetes.map((b) => b.preco)).toLocaleString("pt-PT")} Kz
+                {Math.min(...(e.bilhetes ?? []).map((b) => b.preco)).toLocaleString("pt-PT")} Kz
               </span>
               <span className="sm:mt-1 inline-flex items-center gap-1.5 font-ui text-sm text-mb-red">
                 Bilhetes
@@ -122,8 +129,10 @@ export function LinhaEvento({
 }
 
 /** Cartão da vista em grelha: fotografia arredondada e texto por baixo. */
-export function CartaoEvento({ e, agora }: { e: Evento; agora: number }) {
+export function CartaoEvento({ e, agora, bilheteiraAberta }: { e: Evento; agora: number; bilheteiraAberta: boolean }) {
   const passado = new Date(e.dataFim).getTime() < agora;
+  const venda = vendaBilhetes(e, bilheteiraAberta, agora);
+  const entrada = entradaDoEvento(e);
   return (
     <Link
       href={hrefEvento(e)}
@@ -135,7 +144,7 @@ export function CartaoEvento({ e, agora }: { e: Evento; agora: number }) {
           className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
           tamanhos="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
         />
-        <div className="absolute left-3 top-3 flex gap-2"><EstadoEvento e={e} /></div>
+        <div className="absolute left-3 top-3 flex gap-2"><EstadoEvento e={e} venda={venda} /></div>
         <div className="absolute bottom-3 left-3">
           <p className="font-display text-2xl text-white leading-none">
             {new Date(e.dataInicio).getDate()} {mesCurto(e.dataInicio).toUpperCase()}
@@ -143,7 +152,10 @@ export function CartaoEvento({ e, agora }: { e: Evento; agora: number }) {
         </div>
       </div>
       <div className="pt-4">
-        <Tag tone="outline">{e.disciplina}</Tag>
+        <div className="flex flex-wrap gap-2">
+          <Tag tone="outline">{e.disciplina}</Tag>
+          {entrada && !passado && <Tag tone="neutral">{entrada}</Tag>}
+        </div>
         <h3 className="mt-2.5 font-display text-lg uppercase leading-tight text-white line-clamp-2 group-hover:text-mb-red transition-colors">
           {e.titulo}
         </h3>
@@ -157,7 +169,9 @@ export function CartaoEvento({ e, agora }: { e: Evento; agora: number }) {
 }
 
 /** Linha compacta (início, páginas das modalidades): dia, título e local. */
-export function LinhaEventoCompacta({ e }: { e: Evento }) {
+export function LinhaEventoCompacta({ e, bilheteiraAberta }: { e: Evento; bilheteiraAberta: boolean }) {
+  const venda = vendaBilhetes(e, bilheteiraAberta);
+  const entrada = entradaDoEvento(e);
   return (
     <li className="border-b border-white/6 last:border-0">
       <Link href={hrefEvento(e)} className="group flex items-center gap-5 py-4">
@@ -168,9 +182,15 @@ export function LinhaEventoCompacta({ e }: { e: Evento }) {
           <span className="eyebrow mt-1.5 block text-mb-red">{mesCurto(e.dataInicio)}</span>
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Tag tone="outline" className="!text-[9px]">{e.disciplina}</Tag>
-            {e.estado === "bilhetes-abertos" && <Tag tone="red" className="!text-[9px]">Bilhetes</Tag>}
+            {venda === "a-venda" ? (
+              <Tag tone="red" className="!text-[9px]">Bilhetes</Tag>
+            ) : venda === "esgotado" ? (
+              <Tag tone="neutral" className="!text-[9px]">Esgotado</Tag>
+            ) : entrada ? (
+              <Tag tone="neutral" className="!text-[9px]">{entrada}</Tag>
+            ) : null}
           </div>
           <h3 className="mt-2 font-display text-lg uppercase leading-tight text-white line-clamp-2 transition-colors group-hover:text-mb-red">
             {e.titulo}

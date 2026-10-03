@@ -11,14 +11,16 @@ import type {
   TopicoForum,
   Video,
 } from "./types";
+import { vendaBilhetes } from "./desporto";
 
 export const TEMPORADA = 2026;
 
 export const SOCIAIS = {
   instagram: "https://www.instagram.com/motobox_angola",
   facebook: "https://www.facebook.com/motoboxangola",
-  youtube: "https://www.youtube.com/@motoboxangola",
   // Ficam em branco até serem definidas no painel (Definições → Redes sociais).
+  // A Motobox ainda não tem canal de YouTube: sem ligação, o ícone não aparece.
+  youtube: "",
   linkedin: "",
   googleBusiness: "",
   whatsapp: "https://wa.me/244923000000",
@@ -1265,7 +1267,7 @@ export const noticias: Noticia[] = [
     ],
     categoria: "Internacional",
     tags: ["MXGP", "Mundial", "Calendário", "África do Sul"],
-    autor: "Agregação automática",
+    autor: "Redacção Motobox",
     data: "2026-11-02",
     imagem: "mxgp",
     leitura: 2,
@@ -1283,7 +1285,7 @@ export const noticias: Noticia[] = [
     ],
     categoria: "Internacional",
     tags: ["KTM", "Material", "MX1", "2027"],
-    autor: "Agregação automática",
+    autor: "Redacção Motobox",
     data: "2026-10-28",
     imagem: "ktm",
     leitura: 2,
@@ -1301,7 +1303,7 @@ export const noticias: Noticia[] = [
     ],
     categoria: "Internacional",
     tags: ["Dakar", "Rally", "Carlos Samba"],
-    autor: "Agregação automática",
+    autor: "Redacção Motobox",
     data: "2026-10-15",
     imagem: "dakar",
     leitura: 2,
@@ -2022,6 +2024,7 @@ export function proximoEvento(eventos: Evento[]): Evento | undefined {
     .sort((a, b) => +new Date(a.dataInicio) - +new Date(b.dataInicio))[0];
 }
 
-export function eventosComBilhetes(eventos: Evento[]): Evento[] {
-  return eventos.filter((e) => e.bilhetes && e.bilhetes.length > 0 && e.estado !== "concluido");
+/** Eventos com venda online na Motobox, à venda ou esgotados. A regra está em `vendaBilhetes`. */
+export function eventosComBilhetes(eventos: Evento[], bilheteiraAberta: boolean, agora?: number): Evento[] {
+  return eventos.filter((e) => vendaBilhetes(e, bilheteiraAberta, agora) !== null);
 }

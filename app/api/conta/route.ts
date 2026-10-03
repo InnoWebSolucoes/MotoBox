@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import { listaDaBase } from "@/lib/supabase/mapeamento";
 import { utilizadorActual, perfilDe } from "@/lib/conta/sessao";
 import { normalizarPreferencias } from "@/lib/conta/preferencias";
+import { escreverSubscritor } from "@/lib/newsletter";
 import type { AnuncioMarketplace } from "@/lib/types";
 import type { Encomenda } from "@/lib/admin/types";
 import { ehProvincia } from "@/lib/provincias";
@@ -151,16 +152,28 @@ export async function PATCH(req: NextRequest) {
     if (newsletter !== perfil.newsletter) {
       await db.from("utilizadores").update({ newsletter }).eq("id", perfil.id);
     }
-    // A lista da newsletter no painel é a tabela `subscritores`.
+    // A lista da newsletter no painel é a tabela `subscritores`. Os
+    // interesses da conta vão também para lá: é deles que a newsletter
+    // semanal tira as secções de cada email. Lê-se a linha inteira
+    // porque, antes da migração de 3 de Outubro, não há `interesses`.
     const email = perfil.email.toLowerCase();
-    const { data: sub } = await db.from("subscritores").select("id, ativo").eq("email", email).maybeSingle();
-    if (sub && sub.ativo !== newsletter) {
-      await db.from("subscritores").update({ ativo: newsletter }).eq("id", sub.id);
-    } else if (!sub && newsletter) {
-      await db.from("subscritores").insert({
+    const { data: sub } = await db.from("subscritores").select("*").eq("email", email).maybeSingle();
+    if (sub) {
+      const campos: Record<string, unknown> = {};
+      if (sub.ativo !== newsletter) campos.ativo = newsletter;
+      const guardados = Array.isArray(sub.interesses) ? (sub.interesses as string[]).join(",") : null;
+      if ("interesses" in sub && guardados !== preferencias.interesses.join(",")) {
+        campos.interesses = preferencias.interesses;
+      }
+      if (Object.keys(campos).length > 0) {
+        await db.from("subscritores").update(campos).eq("id", sub.id);
+      }
+    } else if (newsletter) {
+      await escreverSubscritor({
         id: `s-${Date.now().toString(36)}`, email, nome: perfil.nome,
         origem: "conta", subscrito: new Date().toISOString().slice(0, 10), ativo: true,
-      });
+        interesses: preferencias.interesses,
+      }, (c) => db.from("subscritores").insert(c));
     }
   }
 

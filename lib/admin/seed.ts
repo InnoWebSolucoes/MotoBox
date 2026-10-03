@@ -65,7 +65,7 @@ export const paginasLegaisSeed: PaginaLegal[] = [
       { titulo: "2. Contas de utilizador", corpo: ["O registo exige informação verdadeira, completa e atualizada.", "O utilizador é responsável pela confidencialidade das suas credenciais e por toda a atividade realizada na sua conta.", "A Motobox reserva-se o direito de suspender contas que violem estes termos."] },
       { titulo: "3. Bilhetes e pagamentos", corpo: ["A compra de bilhetes é processada através dos meios de pagamento disponibilizados, incluindo Multicaixa Express e transferência bancária.", "Sobre cada transação incide uma taxa de serviço da Motobox, apresentada de forma discriminada antes da confirmação.", "Os bilhetes digitais são pessoais e intransmissíveis, validados por código QR à entrada do recinto."] },
       { titulo: "4. Reembolsos", corpo: ["Em caso de cancelamento da prova pela organização, o valor do bilhete é integralmente reembolsado.", "Pedidos de reembolso por desistência do comprador são avaliados até 7 dias antes do evento."] },
-      { titulo: "5. Marketplace", corpo: ["Os anúncios são da responsabilidade dos respetivos vendedores.", "A Motobox verifica vendedores mas não é parte nas transações realizadas entre utilizadores.", "É proibido anunciar veículos sem documentação legal."] },
+      { titulo: "5. Marketplace", corpo: ["Os anúncios são da responsabilidade dos respetivos vendedores.", "A Motobox revê as motas antes de as publicar mas não é parte nas transações realizadas entre utilizadores.", "As regras completas estão nos Termos do Marketplace."] },
       { titulo: "6. Conteúdo do utilizador", corpo: ["O utilizador mantém a titularidade do conteúdo que publica, concedendo à Motobox licença para o exibir na plataforma.", "É proibido publicar conteúdo ilegal, ofensivo, difamatório ou que viole direitos de terceiros."] },
       { titulo: "7. Limitação de responsabilidade", corpo: ["A prática de motociclismo comporta riscos assumidos pelos participantes.", "A Motobox não se responsabiliza por danos decorrentes da participação em eventos organizados por terceiros."] },
       { titulo: "8. Lei aplicável", corpo: ["Os presentes termos regem-se pela lei angolana.", "Para dirimir litígios é competente o foro da Comarca de Luanda."] },
@@ -109,6 +109,22 @@ export const paginasLegaisSeed: PaginaLegal[] = [
       { titulo: "5. Sanções", corpo: ["Aviso, suspensão temporária e banimento permanente, consoante a gravidade e a reincidência."] },
     ],
   },
+  {
+    // Também criada pela migração de 3 de Outubro de 2026, com o mesmo texto.
+    slug: "termos-marketplace", titulo: "Termos do Marketplace",
+    descricao: "Regras para comprar e vender no marketplace da Motobox Angola.",
+    atualizado: "2026-10-03", publicado: true,
+    seccoes: [
+      { titulo: "1. Âmbito", corpo: ["Estas regras aplicam-se a quem publica ou responde a anúncios no marketplace da Motobox Angola, para além dos Termos e Condições gerais."] },
+      { titulo: "2. O papel da Motobox", corpo: ["A Motobox disponibiliza o espaço onde os anúncios são publicados e revê as motas antes de as publicar. A compra e venda é feita entre comprador e vendedor.", "Por agora, a Motobox não recebe nem guarda pagamentos de anúncios: o pagamento é combinado directamente entre as partes."] },
+      { titulo: "3. O que pode anunciar", corpo: ["Motas, peças, equipamento e acessórios que lhe pertençam e que possa vender legalmente.", "Indique o preço em kwanzas, o estado real do artigo (novo ou usado) e a província onde se encontra."] },
+      { titulo: "4. Verificação das motas", corpo: ["Antes de uma mota aparecer no marketplace, o vendedor indica o número de quadro, a matrícula (se a tiver) e os documentos que possui. A equipa Motobox revê o anúncio e pode pedir para ver esses documentos.", "O número de quadro e os dados dos documentos não são publicados.", "A Motobox pode recusar um anúncio sem documentação suficiente ou com sinais de fraude, indicando o motivo ao vendedor.", "O selo «Documentação verificada» significa que a equipa viu os documentos indicados. Não substitui a confirmação, pelo comprador, junto das entidades competentes."] },
+      { titulo: "5. O que não é permitido", corpo: ["Anunciar veículos roubados, sem documentação legal ou com o número de quadro alterado.", "Anúncios falsos, enganadores ou repetidos, e artigos cuja venda seja ilegal.", "Os anúncios que violem estas regras são retirados e a conta pode ser suspensa."] },
+      { titulo: "6. Responsabilidade", corpo: ["O vendedor é responsável pela veracidade do anúncio e pela legalidade da venda.", "A Motobox não é parte no contrato de compra e venda e não garante o estado dos artigos anunciados."] },
+      { titulo: "7. Denúncias", corpo: ["Use «Denunciar este anúncio» em qualquer anúncio que lhe pareça suspeito. A equipa revê cada denúncia."] },
+      { titulo: "8. Conselhos para comprar em segurança", corpo: ["Encontre-se num local público e veja a mota antes de pagar.", "Confirme que o número de quadro gravado na mota é o mesmo dos documentos e que os documentos estão em nome de quem vende.", "Desconfie de preços muito abaixo do mercado e de pedidos de pagamento adiantado."] },
+    ],
+  },
 ];
 
 export const definicoesSeed: Definicoes = {
@@ -122,7 +138,8 @@ export const definicoesSeed: Definicoes = {
   moeda: "Kz",
   instagram: "https://www.instagram.com/motobox_angola",
   facebook: "https://www.facebook.com/motoboxangola",
-  youtube: "https://www.youtube.com/@motoboxangola",
+  // Sem canal de YouTube por agora; preenche-se nas Definições quando existir.
+  youtube: "",
   linkedin: "",
   googleBusiness: "",
   manutencao: false,

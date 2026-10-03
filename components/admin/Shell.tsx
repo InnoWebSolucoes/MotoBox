@@ -19,7 +19,7 @@ interface ItemNav {
   nome: string;
   icone: string;
   /** Nome do contador no estado, para o crachá */
-  contador?: "mensagens" | "denuncias" | "encomendas" | "moderacao";
+  contador?: "mensagens" | "denuncias" | "encomendas" | "moderacao" | "verificacao";
 }
 
 interface GrupoNav {
@@ -66,6 +66,7 @@ export const NAVEGACAO: GrupoNav[] = [
     itens: [
       { href: "/admin/clubes", nome: "Clubes", icone: "route" },
       { href: "/admin/marketplace", nome: "Marketplace", icone: "tag" },
+      { href: "/admin/verificacao", nome: "Verificação", icone: "verificado", contador: "verificacao" },
       { href: "/admin/forum", nome: "Fórum", icone: "chat" },
       { href: "/admin/moderacao", nome: "Moderação", icone: "alert", contador: "denuncias" },
     ],
@@ -95,6 +96,7 @@ const CAMINHOS: Record<string, string> = {
   flag: "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7",
   user: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z",
   shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z",
+  verificado: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10ZM9 12l2 2 4-4",
   news: "M4 4h13a2 2 0 0 1 2 2v13a2 2 0 0 0 2-2V8M4 4v14a2 2 0 0 0 2 2h13M8 8h7M8 12h7M8 16h4",
   play: "m10 8 6 4-6 4V8ZM3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
   doc: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h6",
@@ -172,6 +174,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     denuncias: estado.denuncias.filter((d) => d.estado === "pendente").length,
     encomendas: estado.encomendas.filter((e) => e.estado === "pendente").length,
     moderacao: estado.denuncias.filter((d) => d.estado === "pendente").length,
+    verificacao: estado.anuncios.filter((a) => a.moderacao === "pendente").length,
   };
 
   const activo = (href: string) =>

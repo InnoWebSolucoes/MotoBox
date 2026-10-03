@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAdmin, novoId } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
 import {
@@ -9,9 +9,11 @@ import {
   Gaveta, Campo, Input, Area,
 } from "@/components/admin/kit";
 import type { TopicoForum } from "@/lib/types";
+import type { EstadoTopico } from "@/lib/forum/tipos";
+import { RespostasTopico } from "./RespostasTopico";
 
 export default function AdminForum() {
-  const { estado, criar, atualizar, remover, guardarDefinicoes } = useAdmin();
+  const { estado, criar, atualizar, remover, guardarDefinicoes, registar } = useAdmin();
   const { mostrar, elemento } = useAviso();
 
   const [procura, setProcura] = useState("");
@@ -19,6 +21,21 @@ export default function AdminForum() {
   const [aApagar, setAApagar] = useState<TopicoForum | null>(null);
   const [rascunho, setRascunho] = useState<TopicoForum | null>(null);
   const [novo, setNovo] = useState(false);
+  /**
+   * Contagem e última resposta lidas agora da base de dados, por cima do que
+   * o painel carregou ao abrir: moderar uma resposta muda-as no servidor.
+   */
+  const [frescos, setFrescos] = useState<Record<string, EstadoTopico>>({});
+
+  const aoMudarTopico = useCallback((id: string, e: EstadoTopico) => {
+    setFrescos((f) => ({ ...f, [id]: e }));
+    setRascunho((r) => (r && r.id === id ? { ...r, ...e } : r));
+  }, []);
+
+  const topicos = useMemo(
+    () => estado.topicos.map((t) => (frescos[t.id] ? { ...t, ...frescos[t.id] } : t)),
+    [estado.topicos, frescos],
+  );
 
   const categorias = useMemo(
     () => estado.categoriasForum.map((c) => ({ valor: c.slug, nome: c.nome })),
@@ -27,23 +44,23 @@ export default function AdminForum() {
 
   const filtrados = useMemo(() => {
     const q = procura.trim().toLowerCase();
-    return estado.topicos
+    return topicos
       .filter((t) => {
         if (filtroCategoria && t.categoriaSlug !== filtroCategoria) return false;
         if (q && !`${t.titulo} ${t.autor} ${t.excerto}`.toLowerCase().includes(q)) return false;
         return true;
       })
       .sort((a, b) => (Number(b.fixado ?? false) - Number(a.fixado ?? false)) || b.criado.localeCompare(a.criado));
-  }, [estado.topicos, procura, filtroCategoria]);
+  }, [topicos, procura, filtroCategoria]);
 
   const { fatia, controlos } = usePaginacao(filtrados, 15);
 
   const contagem = useMemo(() => ({
-    total: estado.topicos.length,
-    fixados: estado.topicos.filter((t) => t.fixado).length,
-    bloqueados: estado.topicos.filter((t) => t.bloqueado).length,
-    respostas: estado.topicos.reduce((s, t) => s + t.respostas, 0),
-  }), [estado.topicos]);
+    total: topicos.length,
+    fixados: topicos.filter((t) => t.fixado).length,
+    bloqueados: topicos.filter((t) => t.bloqueado).length,
+    respostas: topicos.reduce((s, t) => s + t.respostas, 0),
+  }), [topicos]);
 
   const guardar = async () => {
     if (!rascunho) return;
@@ -54,6 +71,12 @@ export default function AdminForum() {
       ? await criar("topicos", completo as unknown as Record<string, unknown>)
       : await atualizar("topicos", rascunho.id, completo);
     if (falha) { mostrar(falha, "erro"); return; }
+    // Já gravado com os números do formulário: são esses que a tabela mostra.
+    setFrescos((f) => {
+      const resto = { ...f };
+      delete resto[rascunho.id];
+      return resto;
+    });
     mostrar(novo ? "Tópico criado." : "Tópico atualizado.");
     setRascunho(null); setNovo(false);
   };
@@ -73,7 +96,7 @@ export default function AdminForum() {
     <>
       <CabecalhoPagina
         titulo="Fórum"
-        descricao="Tópicos da comunidade: fixar, bloquear, marcar resolvido ou remover."
+        descricao="Tópicos da comunidade: fixar, bloquear, marcar resolvido ou remover. Abra um tópico para moderar as respostas."
         accoes={
           <button type="button" onClick={abrirNovo}
             className="h-10 bg-mb-red px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark">
@@ -191,8 +214,8 @@ export default function AdminForum() {
                   onChange={(e) => setRascunho({ ...rascunho, visualizacoes: Number(e.target.value) })} />
               </Campo>
             </div>
-            <Campo etiqueta="Excerto">
-              <Area rows={3} value={rascunho.excerto}
+            <Campo etiqueta="Mensagem de abertura" ajuda="O texto que abre a discussão. A lista do fórum mostra as primeiras linhas.">
+              <Area rows={5} value={rascunho.excerto}
                 onChange={(e) => setRascunho({ ...rascunho, excerto: e.target.value })} />
             </Campo>
             <div className="space-y-2">
@@ -203,6 +226,16 @@ export default function AdminForum() {
               <Interruptor activo={!!rascunho.resolvido} etiqueta="Marcado como resolvido"
                 onChange={(v) => setRascunho({ ...rascunho, resolvido: v })} />
             </div>
+            {!novo && (
+              <RespostasTopico
+                key={rascunho.id}
+                topicoId={rascunho.id}
+                tituloTopico={rascunho.titulo}
+                aoMudarTopico={aoMudarTopico}
+                mostrar={mostrar}
+                registar={registar}
+              />
+            )}
           </div>
         )}
       </Gaveta>

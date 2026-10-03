@@ -34,6 +34,40 @@ export function hrefEvento(e: { slug: string; disciplina: string }): string {
   return eComunidade(e.disciplina) ? `/eventos/${e.slug}` : `/calendario/${e.slug}`;
 }
 
+/* ---------- Bilhetes ---------- */
+
+/** Venda online na Motobox: à venda, ou com bilhetes mas já sem lugares. */
+export type VendaBilhetes = "a-venda" | "esgotado";
+
+/**
+ * A regra única para "este evento vende bilhetes online na Motobox".
+ * Vende quando tem tipos de bilhete, não está concluído e a bilheteira
+ * está aberta nas Definições (`bilheteira_aberta`). A plataforma não tem
+ * estado "cancelado": um evento cancelado apaga-se ou fica concluído.
+ * Com `agora`, um evento que já terminou também deixa de vender.
+ *
+ * Devolve `null` quando não vende (o evento mostra como participar) e
+ * "esgotado" quando o estado o diz ou já não há lugares: mostra-se
+ * "Esgotado", nunca o botão de compra.
+ */
+export function vendaBilhetes(
+  e: Pick<Evento, "bilhetes" | "estado" | "dataFim">,
+  bilheteiraAberta: boolean,
+  agora?: number,
+): VendaBilhetes | null {
+  if (!bilheteiraAberta) return null;
+  if (!Array.isArray(e.bilhetes) || e.bilhetes.length === 0) return null;
+  if (e.estado === "concluido") return null;
+  if (agora !== undefined && new Date(e.dataFim).getTime() < agora) return null;
+  const semLugares = e.bilhetes.every((b) => !(Number(b.disponiveis) > 0));
+  return e.estado === "esgotado" || semLugares ? "esgotado" : "a-venda";
+}
+
+/** Texto de participação do evento, sem espaços a mais; vazio quando não foi indicado. */
+export function entradaDoEvento(e: Pick<Evento, "entrada">): string {
+  return typeof e.entrada === "string" ? e.entrada.trim() : "";
+}
+
 export type EstadoModalidade = "activo" | "em-breve";
 
 export interface Modalidade {

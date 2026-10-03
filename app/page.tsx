@@ -13,6 +13,7 @@ import {
 } from "@/lib/data";
 import {
   lerCorridas,
+  lerDefinicoes,
   lerEquipas,
   lerEventos,
   lerNoticias,
@@ -20,8 +21,9 @@ import {
   lerPilotos,
   lerVideos,
 } from "@/lib/supabase/publico";
-import { eComunidade, eProva, instante } from "@/lib/desporto";
+import { eComunidade, eProva, instante, vendaBilhetes } from "@/lib/desporto";
 import { CartaoEvento, LinhaEventoCompacta } from "@/app/calendario/ListaEventos";
+import { Vistas } from "@/app/videos/CartaoVideo";
 
 /** Atalhos para as secções novas, logo abaixo do destaque. */
 const EXPLORAR = [
@@ -40,10 +42,12 @@ function iniciais(nome: string) {
 }
 
 export default async function Home() {
-  const [eventos, noticias, pilotos, equipas, corridas, videos, patrocinadores] = await Promise.all([
+  const [eventos, noticias, pilotos, equipas, corridas, videos, patrocinadores, definicoes] = await Promise.all([
     lerEventos(), lerNoticias(), lerPilotos(), lerEquipas(),
-    lerCorridas(), lerVideos(), lerPatrocinadores(),
+    lerCorridas(), lerVideos(), lerPatrocinadores(), lerDefinicoes(),
   ]);
+  // Bilheteira aberta nas Definições: decide, com `vendaBilhetes`, onde aparece "Comprar bilhetes".
+  const { bilheteiraAberta } = definicoes;
 
   // Cada secção tolera a sua lista vazia: o painel pode apagar tudo.
   // O destaque e "A seguir" são provas; os eventos da comunidade têm bloco próprio.
@@ -111,7 +115,7 @@ export default async function Home() {
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
-                  {proximo.bilhetes && (
+                  {vendaBilhetes(proximo, bilheteiraAberta, instante()) === "a-venda" && (
                     <ButtonLink href={`/bilhetes/${proximo.slug}`} size="md">
                       <Icon name="ticket" className="size-4" />
                       Comprar bilhetes
@@ -334,7 +338,7 @@ export default async function Home() {
               ) : (
                 <ul className="mt-7">
                   {proximasProvas.map((e) => (
-                    <LinhaEventoCompacta key={e.slug} e={e} />
+                    <LinhaEventoCompacta key={e.slug} e={e} bilheteiraAberta={bilheteiraAberta} />
                   ))}
                 </ul>
               )}
@@ -396,9 +400,11 @@ export default async function Home() {
                   <h3 className="mt-1.5 font-display text-lg uppercase leading-tight text-white line-clamp-2 transition-colors group-hover:text-mb-red">
                     {v.titulo}
                   </h3>
-                  <p className="mt-1.5 text-xs text-ink-500">
-                    {v.visualizacoes.toLocaleString("pt-PT")} visualizações
-                  </p>
+                  {v.visualizacoes > 0 && (
+                    <p className="mt-1.5 text-xs text-ink-500">
+                      <Vistas n={v.visualizacoes} />
+                    </p>
+                  )}
                 </Link>
               ))}
             </div>
@@ -417,7 +423,7 @@ export default async function Home() {
           <div className="mt-9 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {proximosEventos.map((e) => (
               // Já vêm filtrados aos que ainda não acabaram: nenhum fica esbatido.
-              <CartaoEvento key={e.slug} e={e} agora={0} />
+              <CartaoEvento key={e.slug} e={e} agora={0} bilheteiraAberta={bilheteiraAberta} />
             ))}
           </div>
         </section>
@@ -438,7 +444,7 @@ export default async function Home() {
                 href: "/marketplace",
                 icone: "tag",
                 titulo: "Marketplace",
-                texto: "Motas e peças de vendedores verificados da comunidade.",
+                texto: "Motas, peças e equipamento, novos e usados, da comunidade.",
               },
               {
                 href: "/forum",

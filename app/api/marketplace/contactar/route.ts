@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import { utilizadorActual, perfilDe, type PerfilConta } from "@/lib/conta/sessao";
 import { ID_ANUNCIO } from "@/lib/conta/favoritos";
 import { enviarEmailUnico, modeloSimples, urlSite } from "@/lib/email";
+import { AVISO_PAGAMENTO } from "@/lib/marketplace";
 
 /* ============================================================
    MOTOBOX — Contactar o vendedor de um anúncio
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
         botao: { texto: "Ver o anúncio", url: ligacao },
         rodape:
           "Recebeu este email porque tem um anúncio no marketplace da Motobox. O seu endereço não foi mostrado a quem escreveu. " +
-          "A Motobox não intermedeia pagamentos: combine sempre um encontro em local público.",
+          `${AVISO_PAGAMENTO} Combine sempre um encontro em local público.`,
       });
       falhaEmail = await enviarEmailUnico({
         para,
