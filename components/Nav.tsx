@@ -9,7 +9,7 @@ import { useIdioma } from "@/lib/i18n/contexto";
 import { useAuth } from "@/lib/auth/contexto";
 import { SelectorIdioma } from "./SelectorIdioma";
 import type { LigacaoRede } from "@/lib/redes";
-import { MODALIDADES, MODALIDADE_PRINCIPAL, ROTAS_DESPORTO, SECCOES_MOTOCROSS } from "@/lib/desporto";
+import { MODALIDADES, MODALIDADE_PRINCIPAL, ROTAS_DESPORTO, SECCOES_DESPORTO } from "@/lib/desporto";
 
 /** `chave` passa por t(); `nome` é um nome próprio que fica igual nas duas línguas. */
 type Filho = { href: string; chave?: string; nome?: string; desc?: string };
@@ -25,13 +25,13 @@ type NavItem = {
   mega?: boolean;
 };
 
-/** Modalidades já com provas, fora a principal (que tem bloco próprio no painel). */
-const OUTRAS_MODALIDADES = MODALIDADES.filter(
-  (m) => m.estado === "activo" && m.slug !== MODALIDADE_PRINCIPAL,
-);
-const DESC_MODALIDADE: Record<string, string> = { enduro: "menu.enduroDesc", rally: "menu.rallyDesc" };
-/** Modalidades anunciadas; o nome em lib/desporto.ts está em português, aqui passa pelo dicionário. */
-const EM_BREVE = MODALIDADES.filter((m) => m.estado === "em-breve");
+/** Modalidades com provas no calendário, fora a principal (que entra à cabeça da lista). */
+const MODALIDADES_COMPETICAO = MODALIDADES.filter((m) => m.grupo === "competicao");
+const DESC_MODALIDADE: Record<string, string> = {
+  motocross: "menu.motocrossDesc", enduro: "menu.enduroDesc", rally: "menu.rallyDesc",
+};
+/** As outras modalidades, cada uma com o seu guia; o nome passa pelo dicionário. */
+const OUTRAS_MODALIDADES = MODALIDADES.filter((m) => m.grupo === "outras");
 const CHAVE_MODALIDADE: Record<string, string> = {
   velocidade: "desporto.velocidade",
   "moto-4": "desporto.moto4",
@@ -69,8 +69,9 @@ const NAV: NavItem[] = [
     mega: true,
     filhos: [
       { href: "/desporto", chave: "menu.todosDesportos" },
+      ...SECCOES_DESPORTO.slice(1),
       { href: `/desporto/${MODALIDADE_PRINCIPAL}`, nome: "Motocross" },
-      ...SECCOES_MOTOCROSS.slice(1),
+      ...MODALIDADES_COMPETICAO.map((m) => ({ href: `/desporto/${m.slug}`, nome: m.nome })),
       ...OUTRAS_MODALIDADES.map((m) => ({ href: `/desporto/${m.slug}`, nome: m.nome })),
     ],
   },
@@ -374,23 +375,24 @@ export function Nav({ redes = [] }: { redes?: LigacaoRede[] }) {
 }
 
 /**
- * Painel de Desporto: o Motocross à esquerda com as suas secções (é onde vive
- * todo o campeonato), as outras modalidades à direita e a ligação para todas.
+ * Painel de Desporto: o Campeonato Nacional à esquerda (calendário, resultados,
+ * classificação, pilotos e equipas, as antigas entradas do menu), as
+ * modalidades à direita e a ligação para a página Desporto.
  */
 function PainelDesporto() {
   const { t } = useIdioma();
   return (
     <div className="grid w-[34rem] grid-cols-[1.1fr_1fr] gap-1 rounded-2xl bg-ink-900 p-2 shadow-2xl shadow-black/60 ring-1 ring-white/5">
       <div className="rounded-xl bg-ink-950/60 px-4 pt-4 pb-2">
-        <Link href={`/desporto/${MODALIDADE_PRINCIPAL}`} className="group block">
-          <span className="eyebrow block text-mb-red">{t("menu.motocrossDesc")}</span>
+        <Link href="/desporto" className="group block">
+          <span className="eyebrow block text-mb-red">{t("nav.desporto")}</span>
           <span className="mt-1 flex items-center justify-between font-display text-2xl uppercase leading-none text-white transition-colors group-hover:text-mb-red">
-            Motocross
+            Campeonato Nacional
             <Icon name="arrow" className="size-4 text-mb-red" />
           </span>
         </Link>
         <ul className="mt-3">
-          {SECCOES_MOTOCROSS.slice(1).map((s) => (
+          {SECCOES_DESPORTO.slice(1).map((s) => (
             <li key={s.href} className="border-t border-white/6">
               <Link href={s.href} className="block py-2 font-ui text-[15px] text-ink-300 transition-colors hover:text-white">
                 {t(s.chave)}
@@ -400,7 +402,7 @@ function PainelDesporto() {
         </ul>
       </div>
       <div className="flex flex-col">
-        {OUTRAS_MODALIDADES.map((m) => (
+        {[MODALIDADES.find((m) => m.slug === MODALIDADE_PRINCIPAL)!, ...MODALIDADES_COMPETICAO].map((m) => (
           <Link
             key={m.slug}
             href={`/desporto/${m.slug}`}
@@ -415,13 +417,18 @@ function PainelDesporto() {
             )}
           </Link>
         ))}
-        {/* O que vem a seguir: a Motobox é sobre tudo o que tem motor, não só corridas. */}
+        {/* A Motobox é sobre tudo o que tem motor: cada uma destas tem o seu guia. */}
         <div className="mx-4 mt-2 border-t border-white/6 pt-3">
-          <p className="eyebrow text-ink-500">{t("menu.emBreve")}</p>
-          <ul className="mt-2 space-y-1">
-            {EM_BREVE.map((m) => (
-              <li key={m.slug} className="text-[13px] text-ink-400">
-                {CHAVE_MODALIDADE[m.slug] ? t(CHAVE_MODALIDADE[m.slug]) : m.nome}
+          <p className="eyebrow text-ink-500">Outras modalidades</p>
+          <ul className="mt-1">
+            {OUTRAS_MODALIDADES.map((m) => (
+              <li key={m.slug}>
+                <Link
+                  href={`/desporto/${m.slug}`}
+                  className="block py-1 font-ui text-[15px] text-ink-300 transition-colors hover:text-white"
+                >
+                  {CHAVE_MODALIDADE[m.slug] ? t(CHAVE_MODALIDADE[m.slug]) : m.nome}
+                </Link>
               </li>
             ))}
           </ul>

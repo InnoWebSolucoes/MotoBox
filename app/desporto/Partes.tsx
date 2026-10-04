@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { Placeholder, Retrato } from "@/components/Brand";
+import { C } from "@/components/T";
 import { Countdown } from "@/components/Countdown";
 import { ButtonLink, Icon, PosicaoBadge, Tag } from "@/components/ui";
 import { formatData } from "@/lib/data";
@@ -13,15 +14,22 @@ export function iniciais(nome: string) {
   return nome.split(" ").map((p) => p[0]).slice(0, 2).join("");
 }
 
-/** Cabeçalho de uma modalidade: fotografia a toda a largura, título e números. */
+/**
+ * Cabeçalho de uma modalidade: fotografia a toda a largura, título e números.
+ * Os números são os da Motobox (provas, pilotos) ou, nas modalidades ainda sem
+ * provas no calendário, três números reais do guia (com fonte na página).
+ */
 export function HeroModalidade({
   m,
   eyebrow,
   numeros,
+  conteudo = false,
 }: {
   m: Modalidade;
   eyebrow: string;
-  numeros: { valor: number; label: string }[];
+  numeros: { valor: number | string; label: string }[];
+  /** Números do guia (texto a traduzir), não contagens da base. */
+  conteudo?: boolean;
 }) {
   return (
     <header className="relative overflow-hidden">
@@ -31,8 +39,23 @@ export function HeroModalidade({
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-14 sm:py-20">
         <p className="eyebrow text-mb-red">{eyebrow}</p>
         <h1 className="title-xl mt-3 text-5xl sm:text-6xl lg:text-7xl">{m.nome}</h1>
-        <p className="mt-4 max-w-xl text-sm sm:text-base text-ink-300 leading-relaxed">{m.descricao}</p>
-        {numeros.length > 0 && (
+        <p className="mt-4 max-w-xl text-sm sm:text-base text-ink-300 leading-relaxed">
+          <C>{m.descricao}</C>
+        </p>
+        {numeros.length > 0 && conteudo && (
+          // Números do guia: no telemóvel, valor e legenda lado a lado, para não empilhar alto.
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-10">
+            {numeros.map((s) => (
+              <div key={s.label} className="flex items-baseline gap-3 sm:block sm:max-w-[11rem]">
+                <p className="w-24 shrink-0 font-display text-2xl text-white sm:w-auto sm:text-3xl">{s.valor}</p>
+                <p className="eyebrow text-ink-400 leading-snug sm:mt-1">
+                  <C>{s.label}</C>
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+        {numeros.length > 0 && !conteudo && (
           <div className="mt-8 flex flex-wrap gap-6 sm:gap-10">
             {numeros.map((s) => (
               <div key={s.label}>
@@ -42,8 +65,131 @@ export function HeroModalidade({
             ))}
           </div>
         )}
+        <p className="mt-8 text-[11px] text-ink-600">Fotografia ilustrativa.</p>
       </div>
     </header>
+  );
+}
+
+/**
+ * Caixa "Na Motobox" do guia: o que o calendário da Motobox tem da modalidade.
+ * Sem provas, fica a nota (e o convite a organizadores) dentro de uma página
+ * com conteúdo, nunca a página inteira.
+ */
+export function NotaMotobox({ provas, ancora = "provas" }: { provas: number; ancora?: string }) {
+  if (provas > 0) {
+    return (
+      <div className="rounded-card bg-ink-900/60 p-5">
+        <p className="eyebrow text-mb-red">Na Motobox</p>
+        <p className="mt-2 font-display text-2xl leading-none text-white">
+          {provas} <span className="eyebrow text-ink-500">{provas === 1 ? "prova" : "provas"}</span>
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-ink-400">
+          O calendário, os resultados e os pilotos desta modalidade estão no topo da página.
+        </p>
+        <a href={`#${ancora}`} className="mt-3 inline-flex items-center gap-2 font-ui text-sm text-white transition-colors hover:text-mb-red">
+          Ver provas e resultados
+          <Icon name="arrow" className="size-3.5" />
+        </a>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-card bg-ink-900/60 p-5">
+      <p className="eyebrow text-mb-red">Na Motobox</p>
+      <p className="mt-2 text-sm font-medium leading-snug text-white">Sem provas no calendário da Motobox por agora</p>
+      <p className="mt-2 text-xs leading-relaxed text-ink-400">
+        Quando um clube, uma associação ou a federação publicar provas desta modalidade na Motobox, o calendário, os
+        resultados e os pilotos aparecem nesta página.
+      </p>
+      <ButtonLink href="/contacto" variant="dark" size="sm" className="mt-4">
+        <Icon name="mail" className="size-4" />
+        Organiza provas? Fale connosco
+      </ButtonLink>
+    </div>
+  );
+}
+
+/**
+ * Arquivo de resultados (tabela completa por corrida), agrupado por temporada.
+ * O mesmo desenho de /resultados, para as modalidades com arquivo próprio.
+ */
+export function ArquivoCorridas({ corridas }: { corridas: Corrida[] }) {
+  const porTemporada = corridas.reduce<Record<number, Corrida[]>>((acc, c) => {
+    (acc[c.temporada] ??= []).push(c);
+    return acc;
+  }, {});
+  const temporadas = Object.keys(porTemporada).map(Number).sort((a, b) => b - a);
+
+  return (
+    <>
+      {temporadas.map((t) => (
+        <section key={t} className="mb-14 last:mb-0">
+          <div className="mb-6 flex items-center gap-4">
+            <h2 className="title-xl text-3xl">Temporada {t}</h2>
+            <span className="h-px flex-1 bg-white/6" aria-hidden />
+          </div>
+          {[...porTemporada[t]]
+            .sort((a, b) => a.ronda - b.ronda || a.categoria.localeCompare(b.categoria))
+            .map((c) => (
+              <article
+                key={c.slug}
+                className="grid gap-6 border-b border-white/6 py-8 first:pt-0 last:border-0 last:pb-0 lg:grid-cols-[18rem_1fr] lg:gap-10"
+              >
+                <div className="relative isolate flex min-h-[14rem] flex-col justify-end overflow-hidden rounded-card p-5 lg:self-start">
+                  <Placeholder nome={[c.slug, c.imagem]} className="absolute inset-0 -z-20" tamanhos="(max-width: 1024px) 100vw, 288px" />
+                  <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink-950 via-ink-950/75 to-ink-950/10" aria-hidden />
+                  <div className="flex flex-wrap gap-2">
+                    <Tag tone="red">Ronda {c.ronda}</Tag>
+                    <Tag tone="outline">{c.categoria}</Tag>
+                  </div>
+                  <h3 className="mt-3 font-display text-xl uppercase leading-tight text-white">
+                    <Link href={`/resultados/${c.slug}`} className="transition-colors hover:text-mb-red">
+                      {c.nome}
+                    </Link>
+                  </h3>
+                  <p className="mt-2 text-xs text-ink-300">
+                    {c.circuito}, {c.provincia}
+                  </p>
+                  <p className="mt-1 text-xs text-ink-400">{formatData(c.data)}</p>
+                  <div className="mt-4 border-t border-white/15 pt-4">
+                    <p className="eyebrow text-ink-400">Vencedor</p>
+                    <p className="mt-1 font-display text-lg uppercase text-mb-red">{c.vencedor}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="hidden sm:grid grid-cols-[3rem_1fr_8rem_6rem_3.5rem] items-center gap-3 border-b border-white/10 pb-3">
+                    {["Pos", "Piloto", "Equipa", "Tempo", "Pts"].map((h) => (
+                      <span key={h} className="eyebrow text-ink-500">
+                        {h}
+                      </span>
+                    ))}
+                  </div>
+                  {c.resultados.map((r) => (
+                    <Link
+                      key={r.pilotoSlug + r.posicao}
+                      href={`/pilotos/${r.pilotoSlug}`}
+                      className={`group grid grid-cols-[3rem_1fr_3.5rem] sm:grid-cols-[3rem_1fr_8rem_6rem_3.5rem] items-center gap-3 border-b border-white/6 py-3 last:border-0 ${
+                        r.estado ? "opacity-55" : ""
+                      }`}
+                    >
+                      <PosicaoBadge posicao={r.posicao} size="sm" />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm text-white transition-colors group-hover:text-mb-red">{r.piloto}</p>
+                        <p className="truncate text-xs text-ink-600 sm:hidden">{r.equipa}</p>
+                      </div>
+                      <p className="hidden sm:block truncate text-xs text-ink-500">{r.equipa}</p>
+                      <p className="hidden sm:block font-mono text-xs text-ink-300 tabular-nums">{r.estado ?? r.tempo}</p>
+                      <p className="text-right font-display text-sm text-white tabular-nums">{r.pontos}</p>
+                    </Link>
+                  ))}
+                </div>
+              </article>
+            ))}
+        </section>
+      ))}
+    </>
   );
 }
 

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
+import { C } from "@/components/T";
 import { ButtonLink, Icon, Tag } from "@/components/ui";
+import { perfilClube } from "@/lib/clubes-perfis";
 import { formatData } from "@/lib/data";
 import { eComunidade, hrefEvento } from "@/lib/desporto";
 import { ROTAS } from "@/lib/rotas";
@@ -24,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const c = await lerClube(slug);
   if (!c) return { title: "Clube não encontrado" };
-  return { title: c.nome, description: c.descricao.slice(0, 155) };
+  return { title: c.nome, description: (perfilClube(slug)?.resumo ?? c.descricao).slice(0, 155) };
 }
 
 /** Sem acentos nem maiúsculas, para procurar o nome do clube nos eventos. */
@@ -41,12 +43,71 @@ function eventosDoClube(eventos: Evento[], nomeClube: string): Evento[] {
     .slice(0, 3);
 }
 
+/** Tamanho e entrelinha de leitura, como nas notícias: ~70 caracteres por linha. */
+const PARAGRAFO = "font-serif text-[1.1875rem] leading-[1.8] text-ink-200 sm:text-[1.25rem]";
+const CAPITULAR =
+  "first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-serif first-letter:text-[5.25rem] first-letter:font-bold first-letter:leading-[0.78] first-letter:text-white sm:first-letter:text-[6rem]";
+
+/** A história do clube em parágrafos de leitura; "> texto — autor" sai como citação. */
+function Historia({ paragrafos }: { paragrafos: string[] }) {
+  return (
+    <div className="space-y-7">
+      {paragrafos.map((p, i) => {
+        if (p.startsWith("> ")) {
+          // A atribuição vem depois do último travessão: "… — Nome, função".
+          const [texto, autor] = p.slice(2).split(/\s+—\s+(?=[^—]+$)/);
+          return (
+            <figure key={p.slice(0, 40)} className="my-10 border-y border-white/10 py-8 text-center">
+              <blockquote className="font-serif text-2xl italic leading-snug text-white sm:text-[1.75rem]">
+                <span aria-hidden className="text-mb-red">“</span>
+                <C>{texto.trim()}</C>
+                <span aria-hidden className="text-mb-red">”</span>
+              </blockquote>
+              {autor && (
+                <figcaption className="mt-4 font-ui text-sm uppercase tracking-widest text-ink-400">
+                  <C>{autor.trim()}</C>
+                </figcaption>
+              )}
+            </figure>
+          );
+        }
+        return (
+          <p key={p.slice(0, 40)} className={`${PARAGRAFO} ${i === 0 ? CAPITULAR : ""}`}>
+            <C>{p}</C>
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Ligação discreta para a fonte de um facto (cronologia, números, viagens).
+ * Mostra só quem publicou ("Jornal de Angola", "Instagram"); o título completo
+ * fica no `title` e na lista de fontes no fim da página.
+ */
+function LigacaoFonte({ fonte }: { fonte?: { nome: string; url: string } }) {
+  if (!fonte) return null;
+  return (
+    <a
+      href={fonte.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={fonte.nome}
+      className="text-[11px] text-ink-500 underline decoration-white/15 underline-offset-2 transition-colors hover:text-ink-300"
+    >
+      {fonte.nome.split(":")[0]}
+    </a>
+  );
+}
+
 export default async function ClubePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const clube = await lerClube(slug);
   if (!clube) notFound();
 
   const [clubes, eventos] = await Promise.all([lerClubes(), lerEventos()]);
+  const perfil = perfilClube(clube.slug);
 
   const proximos = eventosDoClube(eventos, clube.nome);
 
@@ -55,10 +116,20 @@ export default async function ClubePage({ params }: { params: Promise<{ slug: st
   const relacionados = [
     ...outros.filter((c) => c.tipo === clube.tipo),
     ...outros.filter((c) => c.tipo !== clube.tipo && c.provincia === clube.provincia),
-  ].slice(0, 3);
+  ]
+    .slice(0, 3)
+    .map((c) => ({ ...c, resumo: perfilClube(c.slug)?.resumo }));
 
   const rotasPerto = ROTAS.filter((r) => r.provincias.includes(clube.provincia)).slice(0, 3);
   const redes = redesDoClube(clube);
+
+  // Sem perfil alargado, a história é a descrição curta da base de dados.
+  const historia = perfil?.historia.length ? perfil.historia : [clube.descricao];
+  const fonte = (i: number) => perfil?.fontes[i];
+  const aderir = perfil?.comoAderir;
+  const viagens = perfil?.viagens;
+  // O perfil repete o texto da base de dados quando esta ainda não foi actualizada: sai uma vez só.
+  const encontros = [...new Set([...(clube.encontros?.trim() ? [clube.encontros.trim()] : []), ...(perfil?.encontros ?? [])])];
 
   const ficha: [string, string][] = [
     ["Tipo", nomeTipo(clube.tipo)],
@@ -97,6 +168,12 @@ export default async function ClubePage({ params }: { params: Promise<{ slug: st
             </div>
           </div>
 
+          {perfil?.resumo && (
+            <p className="mt-6 max-w-2xl font-ui text-lg leading-snug text-ink-200 sm:text-xl">
+              <C>{perfil.resumo}</C>
+            </p>
+          )}
+
           {redes.length > 0 && (
             <div className="mt-8 flex flex-wrap gap-2.5">
               {redes.map((r, i) => (
@@ -120,36 +197,150 @@ export default async function ClubePage({ params }: { params: Promise<{ slug: st
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr] lg:items-start">
-          <div className="space-y-12">
-            <section>
-              <h2 className="eyebrow accent-bar text-white">Sobre o clube</h2>
-              <p className="max-w-2xl text-base leading-relaxed text-ink-300">{clube.descricao}</p>
-            </section>
+        {/* ============ A HISTÓRIA ============
+            Coluna de leitura ao centro, como nas notícias. */}
+        <section aria-labelledby="historia" className="mx-auto max-w-2xl">
+          <h2 id="historia" className="eyebrow accent-bar text-white">
+            A história
+          </h2>
+          <Historia paragrafos={historia} />
+
+          {perfil?.lema && (
+            <figure className="mt-12 border-y border-white/10 py-8 text-center">
+              <blockquote className="font-serif text-2xl italic leading-snug text-white sm:text-[1.75rem]">
+                <span aria-hidden className="text-mb-red">«</span>
+                <C>{perfil.lema}</C>
+                <span aria-hidden className="text-mb-red">»</span>
+              </blockquote>
+              <figcaption className="mt-3 font-ui text-sm uppercase tracking-widest text-ink-400">Lema do clube</figcaption>
+            </figure>
+          )}
+        </section>
+
+        {/* ============ NÚMEROS ============ */}
+        {perfil?.numeros && perfil.numeros.length > 0 && (
+          <section aria-label="Em números" className="mx-auto mt-14 max-w-3xl">
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-8 border-y border-white/6 py-8 sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]">
+              {perfil.numeros.map((n) => (
+                // O valor aparece por cima, mas no documento o rótulo (dt) vem primeiro.
+                <div key={n.rotulo} className="flex flex-col">
+                  <dt className="order-2 mt-2 text-xs leading-snug text-ink-400">
+                    <C>{n.rotulo}</C>
+                  </dt>
+                  <dd className="order-1 font-display text-3xl leading-none text-white tabular-nums sm:text-4xl">{n.valor}</dd>
+                  <dd className="order-3 mt-1.5">
+                    <LigacaoFonte fonte={fonte(n.fonte)} />
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
+        <div className="mt-16 grid gap-12 lg:grid-cols-[1.6fr_1fr] lg:items-start">
+          <div className="space-y-14">
+            {/* ============ CRONOLOGIA ============ */}
+            {perfil && perfil.destaques.length > 0 && (
+              <section aria-labelledby="percurso">
+                <h2 id="percurso" className="eyebrow accent-bar text-white">
+                  Percurso do clube
+                </h2>
+                <ol className="max-w-2xl border-l border-white/10">
+                  {perfil.destaques.map((d) => (
+                    <li key={`${d.ano ?? ""}-${d.titulo}`} className="relative pb-9 pl-7 last:pb-0">
+                      <span aria-hidden className="absolute -left-[5px] top-1.5 size-[9px] rounded-full bg-mb-red ring-4 ring-ink-950" />
+                      {d.ano && (
+                        <p className="eyebrow text-mb-red">
+                          <C>{d.ano}</C>
+                        </p>
+                      )}
+                      <h3 className="mt-1 font-display text-lg uppercase leading-tight text-white sm:text-xl">
+                        <C>{d.titulo}</C>
+                      </h3>
+                      <p className="mt-2 text-sm leading-relaxed text-ink-300 sm:text-base">
+                        <C>{d.texto}</C>
+                      </p>
+                      <p className="mt-2">
+                        <LigacaoFonte fonte={fonte(d.fonte)} />
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
+            {/* ============ VIAGENS ============ */}
+            {viagens && viagens.lista.length > 0 && (
+              <section aria-labelledby="viagens">
+                <h2 id="viagens" className="eyebrow accent-bar text-white">
+                  <C>{viagens.titulo}</C>
+                </h2>
+                <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+                  <table className="w-full min-w-[30rem] max-w-2xl text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-white/10 text-[11px] uppercase tracking-widest text-ink-500">
+                        <th scope="col" className="py-2.5 pr-4 font-normal">Ano</th>
+                        <th scope="col" className="py-2.5 pr-4 font-normal">Raide</th>
+                        <th scope="col" className="py-2.5 pr-4 font-normal">Países</th>
+                        <th scope="col" className="py-2.5 text-right font-normal">km</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {viagens.lista.map((v) => (
+                        <tr key={`${v.ano}-${v.nome}`} className="border-b border-white/6 align-top last:border-0">
+                          <td className="py-3 pr-4 font-display text-base text-mb-red tabular-nums">{v.ano}</td>
+                          <td className="py-3 pr-4 text-white">{v.nome}</td>
+                          <td className="py-3 pr-4 text-ink-400">
+                            <C>{v.percurso}</C>
+                          </td>
+                          <td className="py-3 text-right text-ink-300 tabular-nums">{v.km ?? ""}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="mt-3 max-w-2xl text-[11px] leading-relaxed text-ink-600">
+                  <C>{viagens.nota}</C>{" "}
+                  <LigacaoFonte fonte={fonte(viagens.fonte)} />
+                </p>
+              </section>
+            )}
 
             {clube.actividades.length > 0 && (
-              <section>
-                <h2 className="eyebrow accent-bar text-white">O que fazem</h2>
-                <ul className="max-w-2xl">
+              <section aria-labelledby="actividades">
+                <h2 id="actividades" className="eyebrow accent-bar text-white">
+                  O que fazem
+                </h2>
+                <ul className="grid max-w-2xl gap-x-8 sm:grid-cols-2">
                   {clube.actividades.map((a) => (
-                    <li key={a} className="flex items-center gap-3 border-b border-white/6 py-3.5 last:border-0">
-                      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-mb-red/12 text-mb-red">
-                        <Icon name="check" className="size-3.5" />
+                    <li key={a} className="flex items-start gap-3 border-b border-white/6 py-3.5">
+                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-mb-red/12 text-mb-red">
+                        <Icon name="check" className="size-3" />
                       </span>
-                      <span className="text-sm text-white sm:text-base">{a}</span>
+                      <span className="text-sm text-white">
+                        <C>{a}</C>
+                      </span>
                     </li>
                   ))}
                 </ul>
               </section>
             )}
 
-            <section>
-              <h2 className="eyebrow accent-bar text-white">Onde e quando se encontram</h2>
-              {clube.encontros?.trim() ? (
-                <p className="flex max-w-2xl items-start gap-3 text-base leading-relaxed text-ink-300">
-                  <Icon name="clock" className="mt-1 size-4 shrink-0 text-mb-red" />
-                  {clube.encontros}
-                </p>
+            <section aria-labelledby="encontros">
+              <h2 id="encontros" className="eyebrow accent-bar text-white">
+                Onde e quando se encontram
+              </h2>
+              {encontros.length > 0 ? (
+                <ul className="max-w-2xl space-y-4">
+                  {encontros.map((e) => (
+                    <li key={e} className="flex items-start gap-3 text-base leading-relaxed text-ink-300">
+                      <Icon name="clock" className="mt-1 size-4 shrink-0 text-mb-red" />
+                      <span>
+                        <C>{e}</C>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               ) : (
                 <p className="max-w-2xl text-sm leading-relaxed text-ink-400">
                   O clube não publicou um ponto de encontro fixo. As próximas saídas costumam ser anunciadas nas
@@ -158,8 +349,39 @@ export default async function ClubePage({ params }: { params: Promise<{ slug: st
               )}
             </section>
 
-            <section>
-              <h2 className="eyebrow accent-bar text-white">Próximos eventos</h2>
+            <section aria-labelledby="aderir">
+              <h2 id="aderir" className="eyebrow accent-bar text-white">
+                Como entrar no clube
+              </h2>
+              {aderir?.passos.length ? (
+                <>
+                  <ol className="max-w-2xl">
+                    {aderir.passos.map((p, i) => (
+                      <li key={p} className="flex items-start gap-4 border-b border-white/6 py-4 last:border-0">
+                        {aderir.passos.length > 1 && (
+                          <span className="w-6 shrink-0 font-display text-xl leading-none text-mb-red tabular-nums">{i + 1}</span>
+                        )}
+                        <span className="text-sm leading-relaxed text-ink-300 sm:text-base">
+                          <C>{p}</C>
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="mt-2">
+                    <LigacaoFonte fonte={fonte(aderir.fonte)} />
+                  </p>
+                </>
+              ) : (
+                <p className="max-w-2xl text-sm leading-relaxed text-ink-400">
+                  O clube não publicou regras de adesão. Pergunte directamente nas redes do clube.
+                </p>
+              )}
+            </section>
+
+            <section aria-labelledby="eventos">
+              <h2 id="eventos" className="eyebrow accent-bar text-white">
+                Próximos eventos
+              </h2>
               {proximos.length > 0 ? (
                 <ul>
                   {proximos.map((e) => (
@@ -175,7 +397,7 @@ export default async function ClubePage({ params }: { params: Promise<{ slug: st
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block font-display text-lg uppercase leading-tight text-white transition-colors group-hover:text-mb-red">
-                            {e.titulo}
+                            <C>{e.titulo}</C>
                           </span>
                           <span className="mt-0.5 block text-xs text-ink-500">
                             {e.disciplina} · {e.localidade || e.circuito}, {e.provincia}
@@ -198,8 +420,10 @@ export default async function ClubePage({ params }: { params: Promise<{ slug: st
             </section>
 
             {rotasPerto.length > 0 && (
-              <section>
-                <h2 className="eyebrow accent-bar text-white">Rotas na mesma região</h2>
+              <section aria-labelledby="rotas">
+                <h2 id="rotas" className="eyebrow accent-bar text-white">
+                  Rotas na mesma região
+                </h2>
                 <div className="grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-3">
                   {rotasPerto.map((r, i) => (
                     // A terceira só a partir do tablet: no telemóvel ficava sozinha numa linha.
@@ -215,10 +439,35 @@ export default async function ClubePage({ params }: { params: Promise<{ slug: st
                 <p className="mt-3 text-[11px] text-ink-600">Fotografias ilustrativas.</p>
               </section>
             )}
+
+            {perfil && perfil.fontes.length > 0 && (
+              <section aria-labelledby="fontes">
+                <h2 id="fontes" className="eyebrow accent-bar text-white">
+                  Fontes
+                </h2>
+                <ul className="max-w-2xl space-y-1.5">
+                  {perfil.fontes.map((f) => (
+                    <li key={f.url} className="text-xs">
+                      <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-ink-400 underline decoration-white/15 underline-offset-2 hover:text-white">
+                        {f.nome}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-[11px] leading-relaxed text-ink-600">
+                  Informação verificada em Outubro de 2026, a partir de reportagens e das páginas públicas do clube.
+                  Só publicamos o que vem numa fonte.{" "}
+                  <Link href="/contacto" className="underline decoration-white/15 underline-offset-2 hover:text-ink-300">
+                    Viu um erro? Escreva-nos
+                  </Link>
+                  .
+                </p>
+              </section>
+            )}
           </div>
 
           {/* ============ LATERAL ============ */}
-          <aside className="space-y-5">
+          <aside className="space-y-5 lg:sticky lg:top-24">
             <div className="card p-5">
               <h2 className="eyebrow mb-4 text-mb-red">Ficha</h2>
               <dl>
@@ -229,6 +478,26 @@ export default async function ClubePage({ params }: { params: Promise<{ slug: st
                   </div>
                 ))}
               </dl>
+              {(perfil?.estilo || perfil?.motas) && (
+                <div className="mt-4 space-y-3 border-t border-white/6 pt-4">
+                  {perfil.estilo && (
+                    <div>
+                      <p className="text-xs text-ink-500">Estilo</p>
+                      <p className="mt-1 text-sm leading-relaxed text-ink-200">
+                        <C>{perfil.estilo}</C>
+                      </p>
+                    </div>
+                  )}
+                  {perfil.motas && (
+                    <div>
+                      <p className="text-xs text-ink-500">Motas</p>
+                      <p className="mt-1 text-sm leading-relaxed text-ink-200">
+                        <C>{perfil.motas}</C>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="card p-5">

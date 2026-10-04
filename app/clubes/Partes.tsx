@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Placeholder } from "@/components/Brand";
+import { C } from "@/components/T";
 import { Icon } from "@/components/ui";
 import { otimizavel, src as fotoSrc } from "@/lib/imagens";
 import type { Clube } from "@/lib/types";
@@ -134,7 +135,17 @@ export function CartaoClube({ clube, grande = false }: { clube: Clube; grande?: 
           {clube.fundacao ? <span className="text-ink-600">· desde {clube.fundacao}</span> : null}
         </p>
 
-        {grande && <p className="mt-3 text-sm leading-relaxed text-ink-400 line-clamp-3">{clube.descricao}</p>}
+        {grande ? (
+          <p className="mt-3 text-sm leading-relaxed text-ink-400 line-clamp-3">
+            <C>{clube.descricao}</C>
+          </p>
+        ) : (
+          clube.resumo && (
+            <p className="mt-2 text-sm leading-snug text-ink-300 line-clamp-2">
+              <C>{clube.resumo}</C>
+            </p>
+          )
+        )}
 
         {clube.actividades.length > 0 && (
           <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Actividades">

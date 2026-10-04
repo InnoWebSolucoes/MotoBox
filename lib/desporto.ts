@@ -8,7 +8,7 @@
    mesma regra.
    ============================================================ */
 
-import type { Disciplina, Evento } from "@/lib/types";
+import type { Corrida, Disciplina, Evento } from "@/lib/types";
 
 /** Disciplinas que são provas: vão para o calendário de Desporto. */
 export const DISCIPLINAS_PROVA = ["Motocross", "Enduro", "Velocidade", "Rally"] as const satisfies readonly Disciplina[];
@@ -68,21 +68,28 @@ export function entradaDoEvento(e: Pick<Evento, "entrada">): string {
   return typeof e.entrada === "string" ? e.entrada.trim() : "";
 }
 
-export type EstadoModalidade = "activo" | "em-breve";
+/**
+ * Onde a modalidade aparece na entrada de Desporto e no menu:
+ * - "principal": o Motocross, casa do Campeonato Nacional;
+ * - "competicao": modalidades com provas no calendário da Motobox;
+ * - "outras": modalidades com página própria (o que é, classes, a cena em
+ *   Angola, como começar) mas ainda sem provas no calendário da Motobox.
+ * Todas são destinos com conteúdo: nenhuma é "em breve".
+ */
+export type GrupoModalidade = "principal" | "competicao" | "outras";
 
 export interface Modalidade {
   slug: string;
   nome: string;
-  /** Disciplinas do calendário que pertencem a esta modalidade (vazio: ainda sem provas no site). */
+  /** Disciplinas do calendário que pertencem a esta modalidade (vazio: o calendário ainda não tem esta disciplina). */
   disciplinas: Disciplina[];
-  /**
-   * Estado previsto, usado onde não se conhecem as provas (o menu).
-   * Nas páginas manda `estadoModalidade()`, que olha para o calendário.
-   */
-  estado: EstadoModalidade;
-  /** Frase curta, sem campeonatos nem datas: só o que a modalidade é. */
+  grupo: GrupoModalidade;
+  /** Uma linha que dá vontade de entrar: o cartão da entrada, o cabeçalho e a descrição da página. */
   descricao: string;
-  /** Chave de fotografia em lib/imagens.ts; vazio fica o gradiente. */
+  /**
+   * Fotografia: chave de lib/imagens.ts ou endereço completo do Unsplash
+   * (o `Placeholder` usa um endereço https tal como está). Ilustrativa.
+   */
   imagem: string;
   /** Categorias de `Piloto.categoria` que correm nesta modalidade. */
   categorias: string[];
@@ -91,12 +98,15 @@ export interface Modalidade {
 /** A modalidade que reúne o calendário, resultados, classificação, pilotos e equipas. */
 export const MODALIDADE_PRINCIPAL = "motocross";
 
+/** Fotografia do Unsplash já dimensionada (para as modalidades sem chave em lib/imagens.ts). */
+const unsplash = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1600&q=70`;
+
 export const MODALIDADES: Modalidade[] = [
   {
     slug: "motocross",
     nome: "Motocross",
     disciplinas: ["Motocross"],
-    estado: "activo",
+    grupo: "principal",
     descricao: "Corridas em circuito de terra, com saltos e curvas fechadas. É aqui que vive o Campeonato Nacional.",
     imagem: "competicao",
     categorias: ["MX1", "MX2"],
@@ -105,8 +115,8 @@ export const MODALIDADES: Modalidade[] = [
     slug: "enduro",
     nome: "Enduro",
     disciplinas: ["Enduro"],
-    estado: "activo",
-    descricao: "Provas de resistência fora do circuito fechado: trilhos, areia, pedra e troços cronometrados.",
+    grupo: "competicao",
+    descricao: "Resistência fora do circuito: trilhos, areia e pedra, com troços cronometrados e horas marcadas.",
     imagem: "benguela",
     categorias: ["Rally / Enduro"],
   },
@@ -114,8 +124,8 @@ export const MODALIDADES: Modalidade[] = [
     slug: "rally",
     nome: "Rally-Raid",
     disciplinas: ["Rally"],
-    estado: "activo",
-    descricao: "Etapas longas de navegação em terreno aberto, do deserto ao mato.",
+    grupo: "competicao",
+    descricao: "Etapas longas de navegação em terreno aberto, do deserto do Namibe ao Dakar.",
     imagem: "namibe",
     categorias: ["Rally / Enduro"],
   },
@@ -123,36 +133,36 @@ export const MODALIDADES: Modalidade[] = [
     slug: "velocidade",
     nome: "Velocidade",
     disciplinas: ["Velocidade"],
-    estado: "em-breve",
-    descricao: "Corridas de motas em pista de asfalto.",
-    imagem: "",
+    grupo: "outras",
+    descricao: "Motas em pista de asfalto, joelho no chão: do Autódromo de Luanda ao MotoGP.",
+    imagem: unsplash("photo-1713205136828-c3a69cfb6d7c"),
     categorias: [],
   },
   {
     slug: "moto-4",
     nome: "Moto 4 e quads",
     disciplinas: [],
-    estado: "em-breve",
-    descricao: "Todo-o-terreno sobre quatro rodas: moto 4, quads e buggies.",
-    imagem: "",
+    grupo: "outras",
+    descricao: "Todo-o-terreno sobre quatro rodas: quads e SSV, com campeões no rali-raid angolano.",
+    imagem: unsplash("photo-1553966012-4dce025d8e03"),
     categorias: [],
   },
   {
     slug: "motos-de-agua",
     nome: "Motos de água",
     disciplinas: [],
-    estado: "em-breve",
-    descricao: "Jet ski e motos de água, no mar e nos rios.",
-    imagem: "",
+    grupo: "outras",
+    descricao: "Jet ski e motos de água: corridas em bóias, freestyle e passeio, do Mussulo ao mundo.",
+    imagem: unsplash("photo-1473682150760-51d4f94b09d4"),
     categorias: [],
   },
   {
     slug: "automobilismo",
     nome: "Karting e automobilismo",
     disciplinas: [],
-    estado: "em-breve",
-    descricao: "Karts, carros de competição e ralis de automóveis.",
-    imagem: "",
+    grupo: "outras",
+    descricao: "Do kart em Benguela às 24 Horas de Le Mans: a escada do automobilismo, com pilotos angolanos.",
+    imagem: unsplash("photo-1505570554449-69ce7d4fa36b"),
     categorias: [],
   },
 ];
@@ -166,18 +176,50 @@ export function eventosDaModalidade(m: Modalidade, eventos: Evento[]): Evento[] 
   return eventos.filter((e) => (m.disciplinas as string[]).includes(e.disciplina));
 }
 
+/** Corridas (resultados) das provas da modalidade, pela ordem em que vêm. */
+export function corridasDaModalidade(m: Modalidade, eventos: Evento[], corridas: Corrida[]): Corrida[] {
+  const slugs = new Set(eventosDaModalidade(m, eventos).map((e) => e.slug));
+  return corridas.filter((c) => slugs.has(c.eventoSlug));
+}
+
 /**
- * Estado real, a partir do calendário: a principal está sempre activa; as
- * outras acendem quando há provas da sua disciplina e apagam quando não há.
+ * A modalidade tem provas no calendário da Motobox? A principal conta
+ * sempre como tendo (é a casa do campeonato, mesmo entre temporadas).
  */
-export function estadoModalidade(m: Modalidade, eventos: Evento[]): EstadoModalidade {
-  if (m.slug === MODALIDADE_PRINCIPAL) return "activo";
-  return eventosDaModalidade(m, eventos).length > 0 ? "activo" : "em-breve";
+export function temProvas(m: Modalidade, eventos: Evento[]): boolean {
+  if (m.slug === MODALIDADE_PRINCIPAL) return true;
+  return eventosDaModalidade(m, eventos).length > 0;
+}
+
+/**
+ * Secções de uma modalidade que não é a principal: a visão geral e, quando
+ * há resultados publicados, o arquivo próprio em /desporto/<slug>/resultados.
+ */
+export function seccoesDaModalidade(slug: string, comResultados: boolean): { href: string; chave: string }[] {
+  if (!comResultados) return [];
+  return [
+    { href: `/desporto/${slug}`, chave: "desporto.visaoGeral" },
+    { href: `/desporto/${slug}/resultados`, chave: "nav.resultados" },
+  ];
 }
 
 /** Sub-navegação do Motocross: as páginas de sempre, agora arrumadas dentro de Desporto. */
 export const SECCOES_MOTOCROSS: { href: string; chave: string }[] = [
   { href: "/desporto/motocross", chave: "desporto.visaoGeral" },
+  { href: "/calendario", chave: "nav.calendario" },
+  { href: "/resultados", chave: "nav.resultados" },
+  { href: "/classificacao", chave: "nav.classificacao" },
+  { href: "/pilotos", chave: "nav.pilotos" },
+  { href: "/equipas", chave: "nav.equipas" },
+];
+
+/**
+ * As secções do Campeonato Nacional ao nível de Desporto. Calendário, resultados,
+ * classificação, pilotos e equipas juntam todas as modalidades, por isso vivem
+ * directamente em Desporto, e não dentro de uma modalidade.
+ */
+export const SECCOES_DESPORTO: { href: string; chave: string }[] = [
+  { href: "/desporto", chave: "desporto.visaoGeral" },
   { href: "/calendario", chave: "nav.calendario" },
   { href: "/resultados", chave: "nav.resultados" },
   { href: "/classificacao", chave: "nav.classificacao" },

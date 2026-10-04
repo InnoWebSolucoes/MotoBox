@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Barlow_Condensed, Inter } from "next/font/google";
+import { Barlow_Condensed, Inter, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -24,6 +24,16 @@ const body = Inter({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
+});
+
+/* Serifa de leitura dos artigos (notícias). Sem preload: só as páginas
+   que a usam descarregam o ficheiro. */
+const leitura = Source_Serif_4({
+  variable: "--font-leitura",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -61,7 +71,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const redes = await lerRedes();
   return (
-    <html lang="pt-AO" className={`${display.variable} ${body.variable}`}>
+    <html lang="pt-AO" className={`${display.variable} ${body.variable} ${leitura.variable}`}>
       <body className="flex min-h-screen flex-col antialiased">
         <a
           href="#conteudo"

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Placeholder } from "@/components/Brand";
 import { ButtonLink, Icon } from "@/components/ui";
+import { perfilClube } from "@/lib/clubes-perfis";
 import { lerClubes } from "@/lib/supabase/publico";
 import { ROTAS } from "@/lib/rotas";
 import { ClubesFiltrados, ListaClubes } from "./ClubesClient";
@@ -18,7 +19,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ClubesPage() {
-  const clubes = await lerClubes();
+  // A linha de apresentação dos cartões vem do perfil alargado, que vive no código.
+  const clubes = (await lerClubes()).map((c) => ({ ...c, resumo: perfilClube(c.slug)?.resumo }));
   const provincias = new Set(clubes.map((c) => c.provincia)).size;
   const rotas = ROTAS.slice(0, 4);
 

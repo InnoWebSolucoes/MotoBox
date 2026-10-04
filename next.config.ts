@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "img.youtube.com", pathname: "/vi/**" },
       // Ficheiros públicos do Supabase Storage (logótipos das contas).
       { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
+      // Fotografias livres do Wikimedia Commons (rotas de moto-turismo).
+      { protocol: "https", hostname: "upload.wikimedia.org", pathname: "/wikipedia/commons/**" },
     ],
   },
 };

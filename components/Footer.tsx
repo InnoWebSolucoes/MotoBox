@@ -25,12 +25,15 @@ const COLUNAS: { titulo: string; links: { href: string; chave?: string; nome?: s
     titulo: "nav.desporto",
     links: [
       { href: "/desporto", chave: "menu.todosDesportos" },
-      { href: "/desporto/motocross", nome: "Motocross" },
       { href: "/calendario", chave: "nav.calendario" },
       { href: "/resultados", chave: "nav.resultados" },
       { href: "/classificacao", chave: "nav.classificacao" },
       { href: "/pilotos", chave: "nav.pilotos" },
       { href: "/equipas", chave: "nav.equipas" },
+      { href: "/desporto/motocross", nome: "Motocross" },
+      { href: "/desporto/enduro", nome: "Enduro" },
+      { href: "/desporto/rally", nome: "Rally-Raid" },
+      { href: "/desporto#modalidades", nome: "Todas as modalidades" },
     ],
   },
   {

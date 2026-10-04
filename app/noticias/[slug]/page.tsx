@@ -2,10 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Placeholder } from "@/components/Brand";
-import { Newsletter } from "@/components/Newsletter";
-import { Icon, Tag } from "@/components/ui";
+import { C } from "@/components/T";
+import { Icon } from "@/components/ui";
 import { formatData } from "@/lib/data";
+import { urlPublica } from "@/lib/base";
 import { lerNoticia, lerNoticias } from "@/lib/supabase/publico";
+import { CorpoArtigo } from "./CorpoArtigo";
+
+/* ============================================================
+   MOTOBOX — Página de um artigo
+   Lida como num jornal: uma coluna central de ~70 caracteres,
+   título, entrada e assinatura centrados, fotografia mais larga
+   do que o texto, serifa de leitura e capitular no primeiro
+   parágrafo. O corpo e as suas marcas estão em CorpoArtigo.
+   ============================================================ */
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -32,6 +42,12 @@ export async function generateMetadata({
   };
 }
 
+/** Minutos de leitura contados no texto, a ~200 palavras por minuto. */
+function minutosDeLeitura(corpo: string[]): number {
+  const palavras = corpo.join(" ").split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(palavras / 200));
+}
+
 export default async function NoticiaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const noticia = await lerNoticia(slug);
@@ -50,108 +66,116 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
   // Só se liga à fonte com um endereço a sério (há registos com "#").
   const ligacaoFonte = /^https?:\/\//i.test(noticia.fonteUrl?.trim() ?? "") ? noticia.fonteUrl?.trim() : undefined;
 
+  const endereco = `${urlPublica()}/noticias/${noticia.slug}`;
+  const partilhar = [
+    { rede: "whatsapp", nome: "WhatsApp", href: `https://wa.me/?text=${encodeURIComponent(`${noticia.titulo} ${endereco}`)}` },
+    { rede: "facebook", nome: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(endereco)}` },
+    { rede: "mail", nome: "Email", href: `mailto:?subject=${encodeURIComponent(noticia.titulo)}&body=${encodeURIComponent(endereco)}` },
+  ];
+
   return (
     <>
-      {/* Cabeçalho */}
-      <header className="relative overflow-hidden">
-        <Placeholder nome={[noticia.slug, noticia.imagem]} className="absolute inset-0" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/95 via-ink-950/65 to-ink-950/30" />
-        <div className="relative mx-auto max-w-3xl px-4 sm:px-6 py-14 sm:py-20">
+      <article>
+        {/* Cabeçalho: tudo centrado, como na primeira página de um jornal */}
+        <header className="mx-auto max-w-3xl px-5 pt-10 text-center sm:px-6 sm:pt-14">
           <Link
             href="/noticias"
-            className="inline-flex items-center gap-2 font-ui text-base text-ink-300 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 font-ui text-sm text-ink-400 transition-colors hover:text-white"
           >
             <span aria-hidden>←</span> Notícias
           </Link>
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Tag tone="red">{noticia.categoria}</Tag>
-            {noticia.fonte && <Tag tone="outline">via {noticia.fonte}</Tag>}
-          </div>
+          <p className="mt-8 font-ui text-sm uppercase tracking-[0.2em] text-mb-red">
+            {noticia.categoria}
+            {noticia.fonte && <span className="text-ink-500"> · via {noticia.fonte}</span>}
+          </p>
 
-          <h1 className="title-xl mt-4 text-3xl sm:text-4xl lg:text-5xl">{noticia.titulo}</h1>
+          <h1 className="mt-4 font-serif text-[2.125rem] font-bold leading-[1.15] tracking-tight text-white text-balance sm:text-5xl lg:text-[3.5rem]">
+            <C>{noticia.titulo}</C>
+          </h1>
 
-          <p className="mt-5 text-base sm:text-lg text-ink-300 leading-relaxed">{noticia.resumo}</p>
+          <p className="mx-auto mt-6 max-w-2xl font-serif text-xl leading-relaxed text-ink-300 text-pretty sm:text-[1.375rem]">
+            <C>{noticia.resumo}</C>
+          </p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/10 pt-5 text-xs text-ink-400">
-            <span className="inline-flex items-center gap-2">
-              <Icon name="user" className="size-3.5" />
-              {noticia.autor}
+          <p className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-ui text-sm text-ink-400">
+            <span>
+              Por <span className="text-white">{noticia.autor}</span>
             </span>
-            <span className="inline-flex items-center gap-2">
-              <Icon name="calendar" className="size-3.5" />
-              {formatData(noticia.data)}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Icon name="clock" className="size-3.5" />
-              {noticia.leitura} min de leitura
-            </span>
+            <span aria-hidden className="text-ink-600">·</span>
+            <time dateTime={noticia.data}>{formatData(noticia.data)}</time>
+            <span aria-hidden className="text-ink-600">·</span>
+            <span>{minutosDeLeitura(noticia.corpo)} min de leitura</span>
+          </p>
+        </header>
+
+        {/* Fotografia: mais larga do que a coluna de texto */}
+        <figure className="mx-auto mt-10 max-w-5xl sm:px-6">
+          <div className="media relative aspect-[16/9] sm:aspect-[2/1]">
+            <Placeholder
+              nome={[noticia.slug, noticia.imagem]}
+              className="absolute inset-0"
+              tamanhos="(max-width: 1024px) 100vw, 1024px"
+            />
           </div>
-        </div>
-      </header>
+        </figure>
 
-      {/* Corpo */}
-      <article className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
-        <div className="space-y-5">
-          {noticia.corpo.map((p, i) => (
-            <p
-              key={i}
-              className={`leading-relaxed ${
-                i === 0
-                  ? "text-lg text-ink-200 first-letter:float-left first-letter:mr-3 first-letter:font-display first-letter:text-6xl first-letter:leading-[0.85] first-letter:text-mb-red"
-                  : "text-base text-ink-300"
-              }`}
-            >
-              {p}
-            </p>
-          ))}
-        </div>
+        {/* Corpo: uma coluna central, para ler sem procurar o início da linha */}
+        <div className="mx-auto max-w-[42rem] px-5 py-12 sm:px-6 sm:py-16">
+          <CorpoArtigo corpo={noticia.corpo} />
 
-        {/* Fonte externa: a redacção escolhe e edita a notícia a partir de outro meio */}
-        {noticia.fonte && (
-          <div className="mt-10 rounded-card bg-ink-900 p-5 sm:p-6">
-            <p className="eyebrow text-mb-red mb-2">Fonte</p>
-            <p className="text-sm text-ink-400">
-              Notícia escolhida e editada pela redacção da Motobox Angola a partir de{" "}
-              {ligacaoFonte ? (
-                <a
-                  href={ligacaoFonte}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white underline decoration-mb-red underline-offset-4 hover:text-mb-red"
-                >
-                  {noticia.fonte}
-                </a>
-              ) : (
-                <span className="text-white">{noticia.fonte}</span>
-              )}
-              .
-            </p>
-          </div>
-        )}
+          {/* Fonte externa: a redacção escolhe e edita a notícia a partir de outro meio */}
+          {noticia.fonte && (
+            <aside className="mt-14 border-t border-white/10 pt-6">
+              <p className="eyebrow mb-2 text-mb-red">Fonte</p>
+              <p className="text-sm leading-relaxed text-ink-400">
+                Notícia escolhida e editada pela redacção da Motobox Angola a partir de{" "}
+                {ligacaoFonte ? (
+                  <a
+                    href={ligacaoFonte}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white underline decoration-mb-red underline-offset-4 hover:text-mb-red"
+                  >
+                    {noticia.fonte}
+                  </a>
+                ) : (
+                  <span className="text-white">{noticia.fonte}</span>
+                )}
+                .
+              </p>
+            </aside>
+          )}
 
-        {/* Tags */}
-        <div className="mt-10 flex flex-wrap gap-2 border-t border-white/6 pt-6">
-          {noticia.tags.map((t) => (
-            <span key={t} className="rounded-full bg-ink-800 px-3.5 py-1.5 font-ui text-sm text-ink-300">
-              #{t}
-            </span>
-          ))}
-        </div>
-
-        {/* Partilhar */}
-        <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-white/6 pt-6">
-          <span className="eyebrow text-ink-500">Partilhar</span>
-          <div className="flex gap-2">
-            {(["whatsapp", "facebook", "instagram", "share"] as const).map((r) => (
-              <span
-                key={r}
-                className="grid size-10 cursor-pointer place-items-center rounded-full bg-ink-800 text-ink-300 transition-colors hover:bg-mb-red hover:text-white"
-              >
-                <Icon name={r} className="size-4.5" />
-              </span>
-            ))}
-          </div>
+          {/* Etiquetas e partilha */}
+          <footer className="mt-10 border-t border-white/10 pt-6">
+            {noticia.tags.length > 0 && (
+              <ul className="flex flex-wrap gap-2">
+                {noticia.tags.map((t) => (
+                  <li key={t} className="rounded-full bg-ink-800 px-3.5 py-1.5 font-ui text-sm text-ink-300">
+                    #{t}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+              <span className="eyebrow text-ink-500">Partilhar</span>
+              <div className="flex gap-2">
+                {partilhar.map((p) => (
+                  <a
+                    key={p.rede}
+                    href={p.href}
+                    target={p.rede === "mail" ? undefined : "_blank"}
+                    rel="noopener noreferrer"
+                    aria-label={`Partilhar por ${p.nome}`}
+                    className="grid size-10 place-items-center rounded-full bg-ink-800 text-ink-300 transition-colors hover:bg-mb-red hover:text-white"
+                  >
+                    <Icon name={p.rede} className="size-4.5" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </footer>
         </div>
       </article>
 
@@ -171,8 +195,8 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
                     />
                   </div>
                   <p className="eyebrow mt-4 text-mb-red">{n.categoria}</p>
-                  <h3 className="mt-2 font-display text-lg uppercase leading-tight text-white line-clamp-3 group-hover:text-mb-red transition-colors">
-                    {n.titulo}
+                  <h3 className="mt-2 font-serif text-xl font-bold leading-snug text-white line-clamp-3 group-hover:text-mb-red transition-colors">
+                    <C>{n.titulo}</C>
                   </h3>
                   <p className="mt-2 text-xs text-ink-500">
                     {formatData(n.data, { day: "2-digit", month: "short" })}
@@ -184,7 +208,6 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
         </section>
       )}
 
-      <Newsletter />
     </>
   );
 }
