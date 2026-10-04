@@ -154,13 +154,6 @@ export const CATEGORIAS: { nome: Bi; texto: Bi; ligacao?: { href: string; texto:
     ),
   },
   {
-    nome: b("Motas de água", "Jet skis"),
-    texto: b(
-      "Não são veículos de estrada: o registo e a licença seguem regras marítimas próprias. Confirme antes de comprar.",
-      "They aren't road vehicles: registration and licensing follow separate maritime rules. Check before you buy.",
-    ),
-  },
-  {
     nome: b("Carros", "Cars"),
     texto: b(
       "Também é possível, com as mesmas regras de idade e de documentos dos outros veículos usados.",
@@ -356,21 +349,6 @@ export const ONDE_PROCURAR: { grupo: Bi; classificados?: boolean; sitios: Sitio[
         texto: b(
           "Portal alemão de carros e motas, novos e usados.",
           "German portal for new and used cars and motorcycles.",
-        ),
-      },
-    ],
-  },
-  {
-    grupo: b("Motas de água", "Jet skis"),
-    sitios: [
-      {
-        // boat24.com: classificados de barcos da Europa, categoria "Moto de água".
-        nome: "Boat24",
-        url: "https://www.boat24.com/pt/",
-        pais: b("Europa", "Europe"),
-        texto: b(
-          "Classificados de barcos de toda a Europa, com uma categoria de motas de água.",
-          "Boat classifieds from across Europe, with a jet ski category.",
         ),
       },
     ],

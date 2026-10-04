@@ -16,18 +16,18 @@
   --color-mb-red-light: #ff2b1f;
 
   /* Neutros do painel */
-  --color-near-black: #1a1a1a;
+  --color-near-black: #2c2c33;
   --color-dark-grey: #4d4d4d;
   --color-grey: #b3b3b3;
   --color-light-grey: #f6f6f6;
 
-  /* Neutros, escala escura (painel de gestão e formulários) */
-  --color-ink-950: #0a0a0c;
-  --color-ink-900: #121216;
-  --color-ink-850: #17171c;
-  --color-ink-800: #1e1e24;
-  --color-ink-700: #2a2a32;
-  --color-ink-600: #3d3d47;
+  /* Neutros, escala escura (painel de gestão e formulários), em carvão e não em preto */
+  --color-ink-950: #1c1c22;
+  --color-ink-900: #24242b;
+  --color-ink-850: #2a2a31;
+  --color-ink-800: #313139;
+  --color-ink-700: #3c3c46;
+  --color-ink-600: #4b4b56;
   --color-ink-500: #5c5c68;
   --color-ink-400: #8b8b96;
   --color-ink-300: #b9b9c2;
@@ -40,6 +40,9 @@
   --color-bronze: #cd7f32;
   --color-live: #ff2b1f;
   --color-ok: #16a34a;
+
+  /* O "preto" dos véus e dos fundos é um carvão: o site fica escuro, mas mais leve. */
+  --color-black: #1d1d23;
 
   /* Letra do site e letra do logótipo (condensada, só no painel de gestão). */
   --font-sans: var(--font-mb), "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -54,7 +57,7 @@
 
 :root {
   color-scheme: dark;
-  --bg: #000;
+  --bg: #2a2a30;
   --fg: #fff;
 
   /* Medidas da moldura (iguais em todas as páginas) */
@@ -226,13 +229,13 @@
     position: relative;
     overflow: hidden;
     border-radius: var(--raio);
-    background: rgb(0 0 0 / 0.5);
+    background: rgb(58 58 66 / 0.42);
     isolation: isolate;
   }
 
   /* Painel liso, mais escuro em baixo (as fichas pequenas do painel). */
   .painel-escuro {
-    background: linear-gradient(to top, rgb(26 26 26 / 0.95), rgb(26 26 26 / 0.55));
+    background: linear-gradient(to top, rgb(50 50 58 / 0.92), rgb(50 50 58 / 0.5));
   }
 
   /* Corte no canto superior esquerdo, onde assenta o quadrado do logótipo. */

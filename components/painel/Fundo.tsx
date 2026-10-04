@@ -7,8 +7,8 @@ import { caminhoDaPagina, comBase } from "@/lib/base";
 /* ============================================================
    MOTOBOX — Fundo em vídeo
    Fica por trás de todas as páginas públicas. Na entrada vê-se
-   nítido, sob um véu escuro; no painel e nas páginas interiores
-   desfoca-se e escurece, para os painéis se lerem por cima.
+   nítido, sob um véu leve; no painel e nas páginas interiores
+   desfoca-se, para os painéis se lerem por cima.
 
    Vídeo de demonstração (Mixkit, licença livre). Trocar por
    imagens da MotoBox em public/videos/fundo.mp4 e fundo.jpg.
@@ -53,7 +53,7 @@ export function Fundo() {
         <source src={comBase("/videos/fundo.mp4")} type="video/mp4" />
       </video>
       <div
-        className={`absolute inset-0 transition-colors duration-700 ${nitido ? "bg-black/50" : "bg-black/60"}`}
+        className={`absolute inset-0 transition-colors duration-700 ${nitido ? "bg-black/30" : "bg-black/25"}`}
       />
     </div>
   );

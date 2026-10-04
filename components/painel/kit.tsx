@@ -115,10 +115,10 @@ export function FotoFundo({
 }) {
   const url = fotoSrc(nome, { w: largura });
   const veus: Record<string, string> = {
-    baixo: "bg-gradient-to-t from-black/85 via-black/30 to-black/5",
-    esquerda: "bg-gradient-to-r from-black/85 via-black/45 to-black/0",
-    cima: "bg-gradient-to-b from-black/80 via-black/20 to-black/0",
-    total: "bg-black/55",
+    baixo: "bg-gradient-to-t from-black/75 via-black/20 to-black/0",
+    esquerda: "bg-gradient-to-r from-black/75 via-black/30 to-black/0",
+    cima: "bg-gradient-to-b from-black/70 via-black/15 to-black/0",
+    total: "bg-black/40",
     nenhum: "",
   };
   return (

@@ -39,8 +39,9 @@ export function Abertura({
       }`}
     >
       <FotoFundo nome={foto} veu="esquerda" prioridade tamanhos="100vw" posicao={posicaoFoto} />
-      <div className="absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-gradient-to-t from-black/70 to-transparent" aria-hidden />
-      <div className="coluna pb-14 pt-28 lg:pb-[12%]">
+      <div className="absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-gradient-to-t from-black/55 to-transparent" aria-hidden />
+      {/* Sombra leve no texto: com o véu mais claro, lê-se também sobre fotografias claras. */}
+      <div className="coluna pb-14 pt-28 [text-shadow:0_1px_14px_rgb(0_0_0/0.45)] lg:pb-[12%]">
         {sobretitulo && <p className="sobretitulo surgir text-white/85" style={ordem(0)}>{sobretitulo}</p>}
         <h1
           className={`surgir mt-4 text-balance ${tamanho === "2" ? "titulo-2 max-w-[24ch]" : "titulo-1 max-w-[15ch]"}`}

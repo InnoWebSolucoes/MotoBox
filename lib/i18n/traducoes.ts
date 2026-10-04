@@ -283,7 +283,6 @@ export const traducoes = {
     // Nomes das modalidades ainda sem provas (lib/desporto.ts), para o painel do menu.
     velocidade:        { pt: "Velocidade",                en: "Road racing" },
     moto4:             { pt: "Moto 4 e quads",            en: "Quads and ATVs" },
-    motosDeAgua:       { pt: "Motos de água",             en: "Jet skis" },
     automobilismo:     { pt: "Karting e automobilismo",   en: "Karting and motorsport" },
   },
 

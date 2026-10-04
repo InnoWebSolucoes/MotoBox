@@ -150,15 +150,6 @@ export const MODALIDADES: Modalidade[] = [
     categorias: [],
   },
   {
-    slug: "motos-de-agua",
-    nome: "Motos de água",
-    disciplinas: [],
-    grupo: "outras",
-    descricao: "Jet ski e motos de água: corridas em bóias, freestyle e passeio, do Mussulo ao mundo.",
-    imagem: unsplash("photo-1473682150760-51d4f94b09d4"),
-    categorias: [],
-  },
-  {
     slug: "automobilismo",
     nome: "Karting e automobilismo",
     disciplinas: [],

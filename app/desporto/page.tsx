@@ -21,7 +21,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Desporto",
   description:
-    "A competição a motor em Angola, modalidade a modalidade: motocross e Campeonato Nacional, enduro, rally-raid, velocidade, moto 4 e quads, motos de água, karting e automobilismo. Calendário, resultados, pilotos, equipas e a cena em Angola.",
+    "A competição a motor em Angola, modalidade a modalidade: motocross e Campeonato Nacional, enduro, rally-raid, velocidade, moto 4 e quads, karting e automobilismo. Calendário, resultados, pilotos, equipas e a cena em Angola.",
 };
 
 /** Rótulos das secções do Motocross, em texto (a página é de servidor). */

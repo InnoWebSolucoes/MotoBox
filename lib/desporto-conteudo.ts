@@ -12,7 +12,7 @@
    F) ao lado da afirmação; a página numera as fontes pela ordem em
    que aparecem e lista-as no fim (`fontes`). Quando as fontes
    discordam, diz-se, ou fica de fora. Quando em Angola há pouco
-   (enduro, motos de água), diz-se que a modalidade está por
+   (enduro, moto 4), diz-se que a modalidade está por
    organizar e conta-se o que se passa na região e no mundo.
    Conselhos gerais de segurança e descrições do desporto não levam
    fonte; números, nomes e datas levam sempre.
@@ -137,25 +137,6 @@ const F = {
   wikiPatronelli: { nome: "Wikipedia: Marcos Patronelli", url: "https://en.wikipedia.org/wiki/Marcos_Patronelli" },
   wikiCasale: { nome: "Wikipedia: Ignacio Casale", url: "https://en.wikipedia.org/wiki/Ignacio_Casale" },
   wikiSsv: { nome: "Wikipedia: Side-by-side (vehicle)", url: "https://en.wikipedia.org/wiki/Side-by-side_(vehicle)" },
-
-  /* Motos de água */
-  e1Luanda: { nome: "E1 Series: Luanda recebe a sua primeira corrida do Mundial E1 (2026)", url: "https://www.e1series.com/news/220_Two-weeks-to-go-until-Luanda-Angola-welcomes-its-first-E1-World-Championship-race" },
-  allafricaE1: { nome: "ANGOP/AllAfrica: Team Brady vence o E1 Luanda GP (Setembro de 2026)", url: "https://allafrica.com/stories/202609150426.html" },
-  abolaE1: { nome: "A Bola: Mundial de barcos eléctricos corre-se em Luanda (Setembro de 2026)", url: "https://www.abola.pt/noticias/mundial-de-barcos-eletricos-corre-se-domingo-em-luanda-com-will-smith-a-competir-por-angola-2026091112232341915" },
-  forbesE1: { nome: "Forbes África Lusófona: Aoki Racing na pole do E1 Luanda GP (2026)", url: "https://forbesafricalusofona.com/aoki-racing-conquista-pole-position-para-o-e1-luanda-gp-2026/" },
-  premiumTimesLagos: { nome: "Premium Times: Team Brazil vence o E1 Lagos GP (Outubro de 2025)", url: "https://www.premiumtimesng.com/news/more-news/825982-team-brazil-wins-e1-lagos-gp-as-sanwo-olu-hails-africas-first-electric-powerboat-race.html" },
-  lexDecreto69: { nome: "Lex.AO: Decreto Presidencial n.º 69/14, de 21 de Março", url: "https://lex.ao/docs/presidente-da-republica/2014/decreto-presidencial-n-o-69-14-de-21-de-marco/" },
-  luandaPraias: { nome: "Governo Provincial de Luanda: zonas balneares (Outubro de 2022)", url: "https://luanda.gov.ao/web/noticias/utilidade-p%C3%BAblicainforma%C3%A7%C3%B5es-%C3%BAteis-sobre-as-zonas-balneares-na-prov%C3%ADncia-de-luanda" },
-  ptClubeNaval: { nome: "Wikipédia: Clube Naval de Luanda", url: "https://pt.wikipedia.org/wiki/Clube_Naval_de_Luanda" },
-  lojaNautica: { nome: "Loja Náutica Angola: motas de água", url: "https://www.lojanauticaangola.com/categorias/motas-de-agua" },
-  wikiAquabike: { nome: "Wikipedia: Aquabike World Championship", url: "https://en.wikipedia.org/wiki/Aquabike_World_Championship" },
-  aquabike2026: { nome: "Aquabike: calendário do Mundial de 2026", url: "https://www.aquabike.net/news/2026/aquabike-promotion-announces-2026-world-championship-calendar" },
-  aquabikeNet: { nome: "Aquabike World Championship (site oficial)", url: "https://www.aquabike.net/" },
-  ijsba: { nome: "IJSBA (International Jet Sports Boating Association)", url: "https://www.ijsba.com/" },
-  ijsbaCampeoes: { nome: "IJSBA: campeões do mundo", url: "https://ijsba.com/world-champions/" },
-  wikiJetSki: { nome: "Wikipedia: Jet Ski", url: "https://en.wikipedia.org/wiki/Jet_Ski" },
-  wikiKillSwitch: { nome: "Wikipedia: Kill switch", url: "https://en.wikipedia.org/wiki/Kill_switch" },
-  powerboatSa: { nome: "Wikipedia: Powerboat South Africa", url: "https://en.wikipedia.org/wiki/Powerboat_South_Africa" },
 
   /* Karting e automobilismo */
   rscLuanda: { nome: "Racing Sports Cars: arquivo de Luanda", url: "https://www.racingsportscars.com/track/archive/Luanda.html" },
@@ -901,7 +882,7 @@ const moto4: ConteudoModalidade<ChaveFonte> = {
       {
         titulo: "Passeio e turismo",
         paragrafos: [
-          t("No Mussulo, o aluguer de moto 4 e de jet ski faz parte da oferta turística. Na Namíbia, Swakopmund é conhecida pelos passeios de quad nas dunas perto de Langstrand.", "angolaTourismMussulo", "okwambi", "wikiSwakopmund"),
+          t("No Mussulo, o aluguer de moto 4 faz parte da oferta turística. Na Namíbia, Swakopmund é conhecida pelos passeios de quad nas dunas perto de Langstrand.", "angolaTourismMussulo", "okwambi", "wikiSwakopmund"),
         ],
       },
     ],
@@ -944,132 +925,6 @@ const moto4: ConteudoModalidade<ChaveFonte> = {
       "Capacete e protecções sempre, mesmo num passeio curto.",
       "Nas dunas, suba de frente e nunca atravesse uma crista de lado.",
       "Crianças só em quads da sua medida e sempre com um adulto por perto.",
-    ],
-  },
-};
-
-/* ============================================================
-   Motos de água
-   ============================================================ */
-
-const motosDeAgua: ConteudoModalidade<ChaveFonte> = {
-  numeros: [
-    { valor: "1 milha", label: "Distância máxima da costa para motas de água (Decreto 69/14)" },
-    { valor: "2026", label: "Luanda recebe o E1, Mundial de barcos eléctricos" },
-    { valor: "1992", label: "Nasce o Mundial de Aquabike" },
-  ],
-  abertura:
-    "Motos de água (jet ski) são embarcações pequenas, movidas a jacto de água, em que se vai de pé ou sentado como numa mota. Em competição corre-se num percurso marcado por bóias, com partida em grupo; há também slalom, resistência e freestyle, de saltos e acrobacias.",
-  factos: [
-    { rotulo: "Em Angola", valor: "Lazer e turismo; sem campeonato de jet ski documentado" },
-    { rotulo: "Regras de navegação", valor: "Decreto Presidencial n.º 69/14: até 1 milha da costa, do nascer do sol até uma hora antes do pôr-do-sol" },
-    { rotulo: "Onde", valor: "Mussulo e Ilha de Luanda" },
-    { rotulo: "Mundial", valor: "UIM-ABP Aquabike, desde 1992" },
-    { rotulo: "Em 2026", valor: "Luanda recebeu o E1, Mundial de barcos eléctricos" },
-  ],
-  formato: [
-    {
-      titulo: "Ski e Runabout",
-      paragrafos: [
-        t("Há dois tipos de mota de água: a Ski, em que se vai de pé, e a Runabout, em que se vai sentado e que é a maior. No Mundial de Aquabike, as classes principais são a Runabout GP1, a Ski GP1, a Ski Ladies GP1 e o Freestyle.", "wikiAquabike", "aquabikeNet"),
-      ],
-    },
-    {
-      titulo: "Como é uma prova",
-      paragrafos: [
-        t("As corridas fazem-se em mangas num circuito fechado de bóias. O Mundial tem também slalom, resistência, offshore, o jet raid (só para Runabout) e o freestyle (só para Ski), em que conta a qualidade das manobras.", "wikiAquabike"),
-      ],
-    },
-  ],
-  classes: [
-    {
-      titulo: "Mundial de Aquabike (UIM-ABP)",
-      colunas: ["Classe", "Mota"],
-      linhas: [
-        ["Runabout GP1", "Sentado, as motas maiores"],
-        ["Ski GP1", "De pé"],
-        ["Ski Ladies GP1", "De pé, feminina"],
-        ["Freestyle", "De pé (Ski), manobras e saltos"],
-      ],
-      nota: t("Em cada tipo há vários escalões técnicos (GP1, GP2, GP3 e Stock).", "wikiAquabike"),
-    },
-  ],
-  maquinas: [
-    t("Em Angola há motas de água à venda em lojas náuticas: a Loja Náutica Angola anunciava uma Sea-Doo XP130 nova por 8 317 000 Kz e uma usada, de 2003, por 6 600 000 Kz.", "lojaNautica"),
-    t("Para experimentar, a Okwambi Rentals anuncia 30 minutos de jet ski no Mussulo por 35 000 Kz.", "okwambi"),
-  ],
-  equipamento: [
-    t("Colete salva-vidas, sempre vestido."),
-    t("Corta-corrente (kill cord) preso ao pulso ou ao colete: se cair, o motor pára e a mota não foge.", "wikiKillSwitch"),
-    t("Fato de neoprene ou lycra, luvas, calçado de água e óculos; em competição, capacete e protector de costas."),
-  ],
-  angola: {
-    intro: [
-      t("Em Angola, as motas de água são sobretudo lazer. O Mussulo e a Ilha de Luanda são os sítios clássicos, e o aluguer de moto 4 e jet ski faz parte da oferta turística do Mussulo.", "angolaTourismMussulo", "okwambi"),
-      t("Não encontrámos um campeonato, uma taça ou uma federação de jet ski em Angola, nem a filiação do país na UIM, a federação internacional da motonáutica. Como competição, a modalidade está por organizar."),
-      t("O desporto náutico a motor teve, mesmo assim, um marco em 2026: a 12 e 13 de Setembro, Luanda recebeu a quinta ronda do E1, o Mundial de barcos eléctricos da UIM, a primeira visita do campeonato à África Austral. Ganhou a Team Brady (Emma Kimiläinen e Sam Coleman), e a equipa de Will Smith correu com as cores do «Visit Angola».", "e1Luanda", "allafricaE1", "abolaE1"),
-    ],
-    marcos: [
-      { ano: "1883", texto: "É fundado o Clube Naval de Luanda, na Ilha do Cabo desde os anos 50. A sua actividade é a vela, não a motonáutica.", fontes: ["ptClubeNaval"] },
-      { ano: "2014", texto: "O Decreto Presidencial n.º 69/14 aprova o regulamento da náutica de recreio e desportiva, com regras para as motas de água.", fontes: ["lexDecreto69"] },
-      { ano: "2022", texto: "O Governo Provincial de Luanda publica a lista das 54 praias da província: 27 autorizadas a banhos, 27 proibidas, 12 com nadadores-salvadores.", fontes: ["luandaPraias"] },
-      { ano: "2026", texto: "Luanda recebe o E1 Luanda GP, quinta ronda do Mundial de barcos eléctricos, com pole da Aoki Racing e vitória da Team Brady.", fontes: ["e1Luanda", "forbesE1", "allafricaE1"] },
-    ],
-    blocos: [
-      {
-        titulo: "As regras na água",
-        paragrafos: [
-          t("O Decreto Presidencial n.º 69/14, de 21 de Março de 2014, põe as motas de água na categoria 5: só podem navegar até uma milha da costa e entre o nascer do sol e uma hora antes do pôr-do-sol. Cabe aos governos provinciais separar, nas praias, as zonas de banhistas das de desportos náuticos.", "lexDecreto69"),
-          t("Em Luanda, das 54 praias da província, 27 são proibidas a banhos e só 12 têm nadadores-salvadores. Antes de sair, confirme junto da Capitania do Porto e respeite as zonas de banho.", "luandaPraias"),
-        ],
-      },
-      {
-        titulo: "Na região",
-        paragrafos: [
-          t("Na África do Sul, a motonáutica tem uma entidade reconhecida pela UIM, a Powerboat South Africa, e campeões do mundo de jet ski: Dustin Motzouris ganhou títulos da IJSBA em 1995, 1996, 2002 e 2005, e Jared Moore em 2013.", "powerboatSa", "ijsbaCampeoes"),
-        ],
-      },
-    ],
-  },
-  internacional: [
-    {
-      nome: "Mundial de Aquabike (UIM-ABP)",
-      texto: t("Criado em 1992 e organizado pela H2O Racing para a UIM. O calendário de 2026 passa por Xangai, Olbia (Itália), Doha e uma ronda no Médio Oriente; não há prova em África.", "wikiAquabike", "aquabike2026"),
-      seguir: "No site aquabike.net, com resultados e vídeo das mangas.",
-    },
-    {
-      nome: "IJSBA World Finals",
-      texto: t("A IJSBA é o organismo mundial das corridas de jet ski, e as suas finais mundiais correm-se em Lake Havasu, no Arizona, tradicionalmente no início de Outubro.", "ijsba", "wikiJetSki"),
-    },
-    {
-      nome: "E1, o Mundial de barcos eléctricos",
-      texto: t("Não é jet ski, mas é motonáutica: barcos eléctricos com dois pilotos por equipa. África recebeu a primeira prova em Lagos (Nigéria), em Outubro de 2025, e Luanda a segunda, em Setembro de 2026.", "abolaE1", "premiumTimesLagos", "e1Luanda"),
-    },
-  ],
-  lusofonia: [
-    t("Portugal tem pódios no Mundial de Aquabike: Lino Araújo foi 3.º em Runabout GP1 em 2020, 2021 e 2024, Tiago Sousa 2.º em Ski GP1 em 2013 e 2014, e Beatriz Curtinhal 3.ª em Ski Ladies em 2015 e 2016.", "wikiAquabike"),
-  ],
-  comecar: {
-    passos: [
-      {
-        titulo: "Experimentar com quem sabe",
-        texto: t("O aluguer no Mussulo é a forma mais simples de começar. Peça uma explicação antes de sair, use o colete e fique na zona indicada.", "okwambi"),
-      },
-      {
-        titulo: "Tratar dos documentos",
-        texto: t("O Decreto 69/14 regula a náutica de recreio. Para ter mota de água própria, confirme na Capitania do Porto o registo da embarcação e o que se exige a quem a conduz.", "lexDecreto69"),
-      },
-      {
-        titulo: "Procurar competição",
-        texto: t("Como em Angola não há campeonato, a competição mais próxima é na África do Sul, sob a Powerboat South Africa.", "powerboatSa"),
-      },
-    ],
-    seguranca: [
-      "Colete sempre vestido e corta-corrente preso ao corpo.",
-      "Longe dos banhistas: respeite as zonas de banho e a distância à costa.",
-      "Nunca à noite: a lei só permite navegar até uma hora antes do pôr-do-sol.",
-      "Não siga outra mota de água de perto: a esteira esconde quem caiu.",
-      "Álcool e água não combinam.",
     ],
   },
 };
@@ -1263,8 +1118,7 @@ export const CONTEUDO_MODALIDADE: Record<string, ConteudoPagina> = {
   enduro: montar(enduro),
   rally: montar(rally),
   velocidade: montar(velocidade),
-  "moto-4": montar(moto4),
-  "motos-de-agua": montar(motosDeAgua),
+  "moto-4": montar(moto4),
   automobilismo: montar(automobilismo),
 };
 

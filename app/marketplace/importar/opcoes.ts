@@ -9,7 +9,6 @@ export const CATEGORIAS_IMPORTACAO = [
   { id: "equipamento", pt: "Equipamento (capacete, roupa, botas)", en: "Riding gear (helmet, clothing, boots)" },
   { id: "mota", pt: "Mota", en: "Motorcycle" },
   { id: "moto4", pt: "Moto 4 (quad) ou buggy", en: "Quad or buggy" },
-  { id: "mota-agua", pt: "Mota de água", en: "Jet ski" },
   { id: "carro", pt: "Carro", en: "Car" },
   { id: "outro", pt: "Outro", en: "Other" },
 ] as const;
