@@ -2,15 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  CalendarDays, Mail, MessagesSquare, Newspaper, Route, ShieldCheck, Star, Store, Trophy, Users, BookOpen,
+  CalendarDays, Mail, MessagesSquare, Newspaper, Route, ShieldCheck, Store, Timer, Trophy, Users, BookOpen,
 } from "lucide-react";
 import { lerClubes, lerEventos, lerNoticias, lerPilotos } from "@/lib/supabase/publico";
 import { classificacaoPilotos } from "@/lib/data";
 import { doCampeonato, eComunidade, eProva } from "@/lib/desporto";
 import { lerRedes } from "@/lib/redes";
-import { artigoEmDestaque, clubeDoMes, diaMes, eventosFuturos, localClube } from "@/lib/motobox";
+import { artigoEmDestaque, diaMes, eventosFuturos } from "@/lib/motobox";
+import { UBUNTU } from "@/lib/ubuntu";
 import { Chip, FotoFundo, Logotipo, Moldura, Seta, ordem } from "@/components/painel/kit";
 import { Tempo } from "@/components/painel/Tempo";
+import { ContagemUbuntu } from "@/components/painel/ContagemUbuntu";
 import { Icon } from "@/components/ui";
 
 // O Next exige um literal aqui, não aceita constante importada.
@@ -26,8 +28,8 @@ export const metadata: Metadata = {
    MOTOBOX — Painel
    Uma grelha de 16 colunas que enche o ecrã: o artigo em
    destaque no painel grande, os clubes, o desporto e os eventos
-   por baixo; à direita as redes, o tempo, o clube do mês e as
-   secções de serviço. No computador o painel nunca rola: a grelha
+   por baixo; à direita as redes, o tempo, a contagem para o
+   Ubuntu e as secções de serviço. No computador o painel nunca rola: a grelha
    aperta-se à altura do ecrã e, num ecrã baixo (variantes "baixo" e
    "mbaixo" em globals.css), os textos secundários encolhem ou saem.
    No telemóvel, os painéis empilham-se.
@@ -40,7 +42,6 @@ export default async function Painel() {
 
   const destaque = artigoEmDestaque(artigos);
   const outros = artigos.filter((a) => a.slug !== destaque?.slug).slice(0, 3);
-  const clube = clubeDoMes(clubes);
   // Eventos da comunidade no painel de Eventos; as provas vão para o Desporto.
   const proximo = eventosFuturos(eventos.filter((e) => eComunidade(e.disciplina)))[0];
   const proximaProva = eventosFuturos(eventos.filter((e) => eProva(e.disciplina)))[0];
@@ -180,29 +181,28 @@ export default async function Painel() {
           <Tempo />
         </div>
 
-        {/* ---------- Clube do mês ---------- */}
-        {clube && (
-          <Link
-            href={`/clubes/${clube.slug}`}
-            className="painel revelar group order-6 col-span-full flex h-[26rem] flex-col p-5 lg:order-none lg:col-[12/17] lg:row-[2/3] lg:h-auto mbaixo:p-4"
-            style={ordem(7)}
-          >
-            <FotoFundo nome={[clube.imagem, clube.slug]} veu="cima" tamanhos="(max-width: 1024px) 100vw, 30vw" />
-            <div className="absolute inset-x-0 bottom-0 -z-10 h-1/3 bg-gradient-to-t from-black/70 to-transparent" aria-hidden />
-            <div className="flex items-start justify-between gap-4">
-              <p className="text-[15px]">Clube do mês</p>
-              <Star className="size-5 fill-white" strokeWidth={1.5} aria-hidden />
-            </div>
-            <p className="mt-6 text-lg leading-tight baixo:mt-3">{clube.nome}</p>
-            <p className="mt-1 text-[0.8125rem] text-white/65">
-              {clube.tipo === "Outro" ? "Convívio e solidariedade" : clube.tipo} · {localClube(clube)}
-            </p>
-            <span className="mt-auto inline-flex items-center gap-2 text-sm">
-              <span className="sublinhado">Conhecer o clube</span>
+        {/* ---------- Ubuntu 2027: contagem decrescente ---------- */}
+        <Link
+          href={`/eventos/${UBUNTU.slug}`}
+          className="painel revelar group order-6 col-span-full flex min-h-[22rem] flex-col p-5 [text-shadow:0_1px_10px_rgb(0_0_0/0.55)] lg:order-none lg:col-[12/17] lg:row-[2/3] lg:min-h-0 mbaixo:p-4"
+          style={ordem(7)}
+        >
+          <FotoFundo nome={[UBUNTU.slug, "passeios"]} veu="cima" tamanhos="(max-width: 1024px) 100vw, 30vw" />
+          <div className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-black/75 to-transparent" aria-hidden />
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-[15px]">{UBUNTU.nome}</p>
+            <Timer className="size-5" strokeWidth={1.6} aria-hidden />
+          </div>
+          <p className="mt-6 text-lg leading-tight baixo:mt-3">Africa Ubuntu Breakfast Run</p>
+          <p className="mt-1 text-[0.8125rem] text-white/80">31 de Janeiro · {UBUNTU.percurso}</p>
+          <div className="mt-auto pt-4">
+            <ContagemUbuntu data={UBUNTU.partida} />
+            <span className="mt-3 inline-flex items-center gap-2 text-sm mbaixo:hidden">
+              <span className="sublinhado">Ver o evento</span>
               <Seta className="size-3" />
             </span>
-          </Link>
-        )}
+          </div>
+        </Link>
 
         {/* ---------- Secções de serviço: três em cima, duas em baixo ---------- */}
         <div className="order-5 col-span-full grid grid-cols-6 gap-[var(--intervalo)] lg:order-none lg:col-[12/17] lg:row-[3/4] lg:grid-rows-2">
