@@ -302,7 +302,8 @@ export function ArquivoCorridas({ corridas }: { corridas: Corrida[] }) {
           </div>
           <div className="grid grid-cols-[minmax(0,1fr)] gap-[var(--intervalo)]">
             {[...porTemporada[t]]
-              .sort((a, b) => a.ronda - b.ronda || a.categoria.localeCompare(b.categoria))
+              // Por data: as corridas de fora do campeonato (ronda 0) ficam no seu lugar no ano.
+              .sort((a, b) => a.data.localeCompare(b.data) || a.ronda - b.ronda || a.categoria.localeCompare(b.categoria))
               .map((c) => (
                 <article
                   key={c.slug}
@@ -312,8 +313,8 @@ export function ArquivoCorridas({ corridas }: { corridas: Corrida[] }) {
                     <FotoFundo nome={[c.slug, c.imagem]} veu="baixo" largura={800} tamanhos="(max-width: 1024px) 100vw, 304px" />
                     <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-black/45 to-black/0" aria-hidden />
                     <div className="flex flex-wrap gap-2">
-                      <Etiqueta tom="vermelho">Ronda {c.ronda}</Etiqueta>
-                      <Etiqueta>{c.categoria}</Etiqueta>
+                      {c.ronda > 0 && <Etiqueta tom="vermelho">Ronda {c.ronda}</Etiqueta>}
+                      <Etiqueta tom={c.ronda > 0 ? "escuro" : "vermelho"}>{c.categoria}</Etiqueta>
                     </div>
                     <h3 className="mt-4 text-xl font-semibold leading-snug">
                       <Link href={`/resultados/${c.slug}`} className="transition-colors hover:text-mb-red-light">

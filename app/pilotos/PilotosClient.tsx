@@ -8,10 +8,9 @@ import { TEMPORADA } from "@/lib/data";
 import type { Piloto } from "@/lib/types";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { useConteudo } from "@/lib/i18n/useConteudo";
+import { categoriasComPilotos } from "@/lib/desporto";
 import { Aviso } from "@/app/calendario/pecas";
 import { CartaoPiloto } from "./CartaoPiloto";
-
-const CATEGORIAS = ["Todas", "MX1", "MX2", "Rally / Enduro"];
 
 export function PilotosClient({
   pilotos: originais,
@@ -26,6 +25,9 @@ export function PilotosClient({
   const [categoria, setCategoria] = useState("Todas");
   const [provincia, setProvincia] = useState("Todas");
   const [busca, setBusca] = useState("");
+
+  // Só as categorias com pilotos, pela ordem de sempre (MX1, MX2, Rally / Enduro, Velocidade, Moto 4, Karting).
+  const categorias = useMemo(() => categoriasComPilotos(pilotos), [pilotos]);
 
   const provincias = useMemo(
     () =>
@@ -56,7 +58,7 @@ export function PilotosClient({
         {/* Filtros: categoria, província e pesquisa */}
         <div className="flex flex-wrap items-center gap-3">
           <div role="group" aria-label="Categoria" className="no-scrollbar -mx-1 flex max-w-full gap-2 overflow-x-auto px-1">
-            {CATEGORIAS.map((c) => (
+            {categorias.map((c) => (
               <button key={c} type="button" onClick={() => setCategoria(c)} aria-pressed={categoria === c} className="pilula">
                 {c}
               </button>

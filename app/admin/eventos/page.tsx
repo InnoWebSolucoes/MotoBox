@@ -6,10 +6,11 @@ import { slugify } from "@/lib/admin/store";
 import { formatDataCurta } from "@/lib/data";
 import type { Evento } from "@/lib/types";
 import { PROVINCIAS } from "@/lib/provincias";
-import { TIPOS_EVENTO } from "@/lib/types";
+import { DISCIPLINAS_COMUNIDADE, DISCIPLINAS_PROVA, eComunidade } from "@/lib/desporto";
 
-// Provas (calendário de Desporto) e, depois, eventos da comunidade (secção Eventos).
-const DISCIPLINAS = [...TIPOS_EVENTO];
+// Provas (calendário de Desporto: cada modalidade tem a sua, "Prova" é uma
+// competição sem modalidade) e, depois, eventos da comunidade (secção Eventos).
+const DISCIPLINAS = [...DISCIPLINAS_PROVA, ...DISCIPLINAS_COMUNIDADE];
 const ESTADOS = ["agendado", "bilhetes-abertos", "esgotado", "a-decorrer", "concluido"];
 const op = (v: readonly string[]) => v.map((x) => ({ valor: x, nome: x.replace(/-/g, " ") }));
 
@@ -57,11 +58,11 @@ export default function AdminEventos() {
               onChange={(e) => definir({ titulo: e.target.value, slug: novo && r.slug === slugify(r.titulo) ? slugify(e.target.value) : r.slug } as Partial<Evento>)} />
           </Campo>
           {/* Os eventos da comunidade vivem em /eventos; as provas no calendário. */}
-          <CampoEndereco prefixo="/eventos" novo={novo} valor={r.slug}
+          <CampoEndereco prefixo={eComunidade(r.disciplina) ? "/eventos" : "/calendario"} novo={novo} valor={r.slug}
             onChange={(slug) => definir({ slug } as Partial<Evento>)} />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Campo etiqueta="Disciplina">
+            <Campo etiqueta="Disciplina" ajuda="Motocross, Enduro, Velocidade, Rally, Moto 4 e Karting entram na página da modalidade, em Desporto.">
               <Seleccao valor={r.disciplina} opcoes={op(DISCIPLINAS)}
                 onChange={(v) => definir({ disciplina: v } as unknown as Partial<Evento>)} />
             </Campo>
@@ -90,7 +91,7 @@ export default function AdminEventos() {
             <Campo etiqueta="Organizador">
               <Input value={r.organizador} onChange={(e) => definir({ organizador: e.target.value } as Partial<Evento>)} />
             </Campo>
-            <Campo etiqueta="Ronda">
+            <Campo etiqueta="Ronda" ajuda="Só nas provas do Campeonato Nacional; vazia nas outras.">
               <Input type="number" value={r.ronda ?? ""} onChange={(e) => definir({ ronda: e.target.value ? Number(e.target.value) : undefined } as Partial<Evento>)} />
             </Campo>
             <Campo etiqueta="Temporada">

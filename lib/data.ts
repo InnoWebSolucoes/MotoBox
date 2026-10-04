@@ -473,6 +473,380 @@ export const eventos: Evento[] = [
       },
     ],
   },
+
+  /* ---------- Provas das outras modalidades ----------
+     Fora do Campeonato Nacional (sem ronda). Dão a Velocidade, Moto 4,
+     Karting, Enduro e Rally-Raid uma prova já disputada e a próxima,
+     até a equipa carregar o calendário real no painel. */
+
+  // Placeholder (a confirmar)
+  {
+    slug: "velocidade-autodromo-abertura",
+    titulo: "Velocidade no Autódromo: Prova de Abertura",
+    disciplina: "Velocidade",
+    temporada: 2026,
+    circuito: "Autódromo de Luanda",
+    provincia: "Luanda",
+    localidade: "Belas",
+    dataInicio: "2026-05-23T08:00:00+01:00",
+    dataFim: "2026-05-24T17:00:00+01:00",
+    estado: "concluido",
+    imagem: "https://images.unsplash.com/photo-1713205136828-c3a69cfb6d7c?auto=format&fit=crop&w=1600&q=70",
+    resumo:
+      "A temporada de velocidade abre no Autódromo de Luanda, com as motas de 600 cc numa corrida de 14 voltas no traçado curto de 3,2 km.",
+    descricao:
+      "Primeira prova do ano para as motas de velocidade, no traçado curto do Autódromo de Luanda, em Belas. Sábado de treinos livres e qualificação; domingo de warm-up e corrida de 14 voltas, com partida parada. Bancada sobre a recta da meta e zona de restauração junto ao paddock.",
+    organizador: "Federação Angolana de Motociclismo",
+    horarios: [
+      { dia: "Sábado", hora: "08:00", sessao: "Verificações técnicas" },
+      { dia: "Sábado", hora: "10:00", sessao: "Treinos livres" },
+      { dia: "Sábado", hora: "15:00", sessao: "Qualificação" },
+      { dia: "Domingo", hora: "09:00", sessao: "Warm-up" },
+      { dia: "Domingo", hora: "11:30", sessao: "Corrida (14 voltas)" },
+      { dia: "Domingo", hora: "13:30", sessao: "Pódio" },
+    ],
+    distanciaVolta: "3,2 km",
+    numeroVoltas: 14,
+    recordeVolta: { piloto: "Valter Lukoki", tempo: "1:41.226", ano: 2026 },
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "karting-benguela-taca",
+    titulo: "Taça de Karting de Benguela",
+    disciplina: "Karting",
+    temporada: 2026,
+    circuito: "Circuito Santos Peras",
+    provincia: "Benguela",
+    localidade: "Benguela",
+    dataInicio: "2026-06-27T08:00:00+01:00",
+    dataFim: "2026-06-28T17:00:00+01:00",
+    estado: "concluido",
+    imagem: "https://images.unsplash.com/photo-1505570554449-69ce7d4fa36b?auto=format&fit=crop&w=1600&q=70",
+    resumo:
+      "Dois dias de karting no Circuito Santos Peras, com Cadetes, Júnior e DD2 em pista e a final de DD2 a fechar o domingo.",
+    descricao:
+      "Prova de karting em dois dias no Circuito Santos Peras, em Benguela. Sábado de treinos livres e cronometrados; domingo de pré-finais e finais por classe, dos Cadetes, a classe de entrada para os mais novos, à DD2, a classe Rotax com caixa de duas velocidades. Zona de público junto às boxes, com vista para a recta da meta.",
+    organizador: "Benguela Kart Clube",
+    horarios: [
+      { dia: "Sábado", hora: "08:00", sessao: "Verificações e inscrições" },
+      { dia: "Sábado", hora: "09:30", sessao: "Treinos livres" },
+      { dia: "Sábado", hora: "14:00", sessao: "Treinos cronometrados" },
+      { dia: "Domingo", hora: "09:00", sessao: "Pré-finais" },
+      { dia: "Domingo", hora: "11:00", sessao: "Final Cadetes" },
+      { dia: "Domingo", hora: "12:00", sessao: "Final Júnior" },
+      { dia: "Domingo", hora: "15:00", sessao: "Final DD2 (18 voltas)" },
+      { dia: "Domingo", hora: "16:30", sessao: "Pódio" },
+    ],
+    distanciaVolta: "1,1 km",
+    numeroVoltas: 18,
+    recordeVolta: { piloto: "Kelvin Muteka", tempo: "52.418", ano: 2026 },
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "moto-4-kilamba",
+    titulo: "Taça de Quads do Kilamba",
+    disciplina: "Moto 4",
+    temporada: 2026,
+    circuito: "Circuito do Kilamba",
+    provincia: "Luanda",
+    localidade: "Kilamba Kiaxi",
+    dataInicio: "2026-07-25T08:00:00+01:00",
+    dataFim: "2026-07-25T17:00:00+01:00",
+    estado: "concluido",
+    imagem: "kilamba",
+    resumo:
+      "Um dia só para os quads no traçado de motocross do Kilamba: treinos, qualificação e uma final de 10 voltas.",
+    descricao:
+      "Um dia inteiro para a moto 4 no Circuito do Kilamba, o traçado de terra batida que abre o Campeonato Nacional de Motocross. Os quads de 450 cc correm com partida em grelha, numa final de 10 voltas com a tabletop de 22 metros pelo meio. Zona de público junto à linha de partida e na bancada coberta.",
+    organizador: "Federação Angolana de Motociclismo",
+    horarios: [
+      { dia: "Sábado", hora: "08:00", sessao: "Verificações técnicas" },
+      { dia: "Sábado", hora: "09:30", sessao: "Treinos livres" },
+      { dia: "Sábado", hora: "11:30", sessao: "Qualificação" },
+      { dia: "Sábado", hora: "15:00", sessao: "Final (10 voltas)" },
+      { dia: "Sábado", hora: "16:30", sessao: "Pódio" },
+    ],
+    distanciaVolta: "1,8 km",
+    numeroVoltas: 10,
+    recordeVolta: { piloto: "Délcio Chimuco", tempo: "2:04.715", ano: 2026 },
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "rally-raid-tombwa",
+    titulo: "Rally-Raid do Tômbwa",
+    disciplina: "Rally",
+    temporada: 2026,
+    circuito: "Dunas do Tômbwa",
+    provincia: "Namibe",
+    localidade: "Tômbwa",
+    dataInicio: "2026-08-22T06:30:00+01:00",
+    dataFim: "2026-08-23T17:00:00+01:00",
+    estado: "concluido",
+    imagem: "deserto-do-namibe",
+    resumo:
+      "Dois dias de navegação entre as dunas do Tômbwa e as planícies de cascalho do sul do Namibe: 210 km por roadbook, com parque fechado no fim do primeiro dia.",
+    descricao:
+      "Rally-raid em duas etapas, com partida e chegada no Tômbwa. A primeira, de 110 km, segue para sul pelas dunas costeiras; a segunda, de 100 km, entra pelas planícies de cascalho em direcção ao Iona, sem entrar no parque, e regressa pela areia. Navegação só por roadbook, sem GPS, e parque fechado no fim do primeiro dia.\nA prova não conta para o Campeonato Nacional e serve a muitos pilotos de preparação para a Corrida das Dunas, em Outubro.",
+    organizador: "Moto Clube do Namibe",
+    horarios: [
+      { dia: "Sábado", hora: "06:30", sessao: "Briefing e entrega do roadbook" },
+      { dia: "Sábado", hora: "07:30", sessao: "Partida da Etapa 1" },
+      { dia: "Sábado", hora: "15:30", sessao: "Chegada e parque fechado" },
+      { dia: "Domingo", hora: "07:00", sessao: "Partida da Etapa 2" },
+      { dia: "Domingo", hora: "14:30", sessao: "Chegada" },
+      { dia: "Domingo", hora: "17:00", sessao: "Pódio" },
+    ],
+    distanciaVolta: "210 km (total)",
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "moto-4-baia-azul",
+    titulo: "Desafio de Quads da Baía Azul",
+    disciplina: "Moto 4",
+    temporada: 2026,
+    circuito: "Pista de areia da Baía Azul",
+    provincia: "Benguela",
+    localidade: "Baía Azul",
+    dataInicio: "2026-10-17T07:30:00+01:00",
+    dataFim: "2026-10-17T17:30:00+01:00",
+    estado: "bilhetes-abertos",
+    imagem: "https://images.unsplash.com/photo-1553966012-4dce025d8e03?auto=format&fit=crop&w=1600&q=70",
+    resumo:
+      "Um dia de quads na areia a sul de Benguela: três mangas num traçado de 4 km, com partida em grelha e o público no alto da duna.",
+    descricao:
+      "A moto 4 vai à areia. O traçado de 4 km é marcado na véspera entre as dunas baixas e o leito seco que desce para a Baía Azul, e junta rectas rápidas de areia compacta a zonas soltas onde um quad de 450 cc se atola se o piloto levantar o pé. São três mangas de 8 voltas, com partida em grelha, e conta a soma das três.\nO público fica no alto da duna principal, com vista para quase todo o traçado, e há zona de restauração junto ao parque de assistência. Leve chapéu e água: à tarde a areia aquece depressa.",
+    organizador: "Baía Azul Moto 4",
+    horarios: [
+      { dia: "Sábado", hora: "07:30", sessao: "Verificações técnicas e briefing" },
+      { dia: "Sábado", hora: "09:00", sessao: "Treinos livres" },
+      { dia: "Sábado", hora: "10:30", sessao: "Qualificação" },
+      { dia: "Sábado", hora: "12:00", sessao: "Manga 1 (8 voltas)" },
+      { dia: "Sábado", hora: "14:30", sessao: "Manga 2 (8 voltas)" },
+      { dia: "Sábado", hora: "16:00", sessao: "Manga 3 (8 voltas)" },
+      { dia: "Sábado", hora: "17:00", sessao: "Pódio" },
+    ],
+    distanciaVolta: "4 km",
+    numeroVoltas: 8,
+    recordeVolta: { piloto: "Délcio Chimuco", tempo: "3:38.402", ano: 2025 },
+    bilhetes: [
+      {
+        id: "geral",
+        nome: "Geral",
+        descricao: "Acesso à zona de público no alto da duna principal.",
+        preco: 2000,
+        disponiveis: 800,
+        beneficios: ["Vista sobre o traçado", "Zona de restauração", "Estacionamento"],
+      },
+      {
+        id: "tenda",
+        nome: "Tenda da Duna",
+        descricao: "Lugar à sombra na tenda da organização, no alto da duna, com água incluída.",
+        preco: 6000,
+        disponiveis: 150,
+        beneficios: ["Lugar à sombra", "Água e refrigerante", "Ecrã com os tempos", "Programa da prova"],
+        destaque: true,
+      },
+      {
+        id: "assistencia",
+        nome: "Passe de Assistência",
+        descricao: "Tenda da Duna mais acesso ao parque de assistência e à grelha de partida.",
+        preco: 15000,
+        disponiveis: 30,
+        beneficios: [
+          "Tudo da Tenda da Duna",
+          "Acesso ao parque de assistência",
+          "Visita à grelha de partida",
+          "Kit oficial Motobox",
+        ],
+      },
+    ],
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "enduro-serra-da-chela",
+    titulo: "Enduro da Serra da Chela, Humpata",
+    disciplina: "Enduro",
+    temporada: 2026,
+    circuito: "Trilhos da Serra da Chela",
+    provincia: "Huíla",
+    localidade: "Humpata",
+    dataInicio: "2026-10-31T07:00:00+01:00",
+    dataFim: "2026-11-01T17:00:00+01:00",
+    estado: "bilhetes-abertos",
+    imagem: "tundavala",
+    resumo:
+      "Dois dias de enduro no planalto da Humpata: 96 km de trilhos de pedra e terra vermelha, seis especiais cronometradas e um cross test à vista do público.",
+    descricao:
+      "Prova de enduro em dois dias, com três especiais por dia num percurso de 48 km que parte e regressa ao parque fechado da Humpata. A primeira especial sobe a Serra da Chela por trilhos de pedra solta; a segunda atravessa as lavras do planalto, em terra vermelha; a terceira é um cross test curto junto ao parque fechado, à vista do público.\nO planalto fica perto dos 2.000 metros de altitude, o que pesa nos motores e nos pilotos, e o fim de Outubro pode trazer as primeiras chuvas: a organização tem percursos alternativos para as especiais da serra. Assistência só no parque fechado.",
+    organizador: "Associação Motociclista da Huíla",
+    horarios: [
+      { dia: "Sábado", hora: "07:00", sessao: "Verificações técnicas e parque fechado" },
+      { dia: "Sábado", hora: "08:30", sessao: "Especial 1: subida da Chela" },
+      { dia: "Sábado", hora: "12:00", sessao: "Especial 2: planalto" },
+      { dia: "Sábado", hora: "15:30", sessao: "Especial 3: cross test" },
+      { dia: "Domingo", hora: "08:00", sessao: "Especial 4: subida da Chela" },
+      { dia: "Domingo", hora: "11:30", sessao: "Especial 5: planalto" },
+      { dia: "Domingo", hora: "14:30", sessao: "Especial final: cross test" },
+      { dia: "Domingo", hora: "16:30", sessao: "Pódio e entrega de prémios" },
+    ],
+    distanciaVolta: "96 km (total)",
+    bilhetes: [
+      {
+        id: "geral",
+        nome: "Geral",
+        descricao: "Acesso à zona de público do parque fechado e do cross test, nos dois dias.",
+        preco: 2000,
+        disponiveis: 900,
+        beneficios: ["Acesso 2 dias", "Cross test à vista", "Zona de restauração"],
+      },
+      {
+        id: "especiais",
+        nome: "Passe Especiais",
+        descricao: "Transporte em viatura 4x4 da organização até aos pontos de público das especiais da serra.",
+        preco: 7500,
+        disponiveis: 120,
+        beneficios: ["Tudo do Geral", "Transporte 4x4 às especiais", "Lanche e água", "Mapa do percurso"],
+        destaque: true,
+      },
+      {
+        id: "paddock",
+        nome: "Paddock",
+        descricao: "Passe Especiais mais acesso ao parque de assistência e ao briefing dos pilotos.",
+        preco: 15000,
+        disponiveis: 40,
+        beneficios: [
+          "Tudo do Passe Especiais",
+          "Acesso ao parque de assistência",
+          "Briefing dos pilotos",
+          "Kit oficial Motobox",
+        ],
+      },
+    ],
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "gp-velocidade-luanda",
+    titulo: "GP de Velocidade de Luanda",
+    disciplina: "Velocidade",
+    temporada: 2026,
+    circuito: "Autódromo de Luanda",
+    provincia: "Luanda",
+    localidade: "Belas",
+    dataInicio: "2026-11-14T08:00:00+01:00",
+    dataFim: "2026-11-15T15:00:00+01:00",
+    estado: "bilhetes-abertos",
+    imagem: "desportivas",
+    resumo:
+      "A prova que fecha o ano da velocidade, no Autódromo de Luanda. Valter Lukoki defende a vitória da abertura e o recorde de volta que bateu em Maio.",
+    descricao:
+      "As motas de 600 cc voltam ao traçado curto do Autódromo de Luanda, em Belas, para a última prova de velocidade de 2026. São 3,2 km com a recta da meta, a travagem forte para a curva 1 e uma sequência de esquerdas onde se ganham e perdem corridas. Sábado é dia de treinos e qualificação; no domingo há corrida de 14 voltas com partida parada.\nO público fica na bancada sobre a recta da meta, com vista para a grelha de partida, e tem zona de restauração junto ao paddock. Há estacionamento no recinto do autódromo.",
+    organizador: "Federação Angolana de Motociclismo",
+    horarios: [
+      { dia: "Sábado", hora: "08:00", sessao: "Verificações técnicas" },
+      { dia: "Sábado", hora: "09:30", sessao: "Treinos livres 1" },
+      { dia: "Sábado", hora: "11:30", sessao: "Treinos livres 2" },
+      { dia: "Sábado", hora: "15:00", sessao: "Qualificação" },
+      { dia: "Domingo", hora: "09:00", sessao: "Warm-up" },
+      { dia: "Domingo", hora: "11:30", sessao: "Corrida (14 voltas)" },
+      { dia: "Domingo", hora: "13:30", sessao: "Pódio" },
+    ],
+    distanciaVolta: "3,2 km",
+    numeroVoltas: 14,
+    recordeVolta: { piloto: "Valter Lukoki", tempo: "1:41.226", ano: 2026 },
+    bilhetes: [
+      {
+        id: "geral",
+        nome: "Geral",
+        descricao: "Acesso às zonas de público em redor do circuito, nos dois dias.",
+        preco: 3000,
+        disponiveis: 1500,
+        beneficios: ["Acesso 2 dias", "Zona de restauração", "Estacionamento"],
+      },
+      {
+        id: "bancada",
+        nome: "Bancada da Recta",
+        descricao: "Lugar sentado na bancada sobre a recta da meta, de frente para a grelha de partida.",
+        preco: 8000,
+        disponiveis: 400,
+        beneficios: ["Acesso 2 dias", "Lugar sentado", "Vista sobre a grelha", "Programa oficial"],
+        destaque: true,
+      },
+      {
+        id: "paddock",
+        nome: "Paddock Pass",
+        descricao: "Bancada da Recta mais acesso ao paddock e à grelha antes da partida.",
+        preco: 25000,
+        disponiveis: 50,
+        beneficios: [
+          "Tudo da Bancada da Recta",
+          "Acesso ao paddock",
+          "Visita à grelha de partida",
+          "Encontro com os pilotos",
+          "Kit oficial Motobox",
+        ],
+      },
+    ],
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "karting-benguela-final",
+    titulo: "Karting em Benguela: Final da Temporada",
+    disciplina: "Karting",
+    temporada: 2026,
+    circuito: "Circuito Santos Peras",
+    provincia: "Benguela",
+    localidade: "Benguela",
+    dataInicio: "2026-12-05T08:00:00+01:00",
+    dataFim: "2026-12-06T17:00:00+01:00",
+    estado: "bilhetes-abertos",
+    imagem: "https://images.unsplash.com/photo-1505570554449-69ce7d4fa36b?auto=format&fit=crop&w=1600&q=70",
+    resumo:
+      "A última prova de karting do ano no Circuito Santos Peras: quatro classes em pista e a final de DD2 a decidir quem fecha 2026 na frente.",
+    descricao:
+      "O karting fecha a temporada em Benguela, no Circuito Santos Peras. Correm quatro classes: Cadetes, a porta de entrada para os mais novos; Júnior; DD2, a classe Rotax com caixa de duas velocidades; e KZ, com caixa de seis. Sábado é de treinos livres e cronometrados; domingo, de pré-finais e finais, com a final de DD2 às 15:00.\nA zona de público fica junto às boxes, com vista para a recta da meta e para o gancho do fundo da pista, e há uma zona infantil junto à entrada.",
+    organizador: "Benguela Kart Clube",
+    horarios: [
+      { dia: "Sábado", hora: "08:00", sessao: "Verificações e inscrições" },
+      { dia: "Sábado", hora: "09:30", sessao: "Treinos livres (todas as classes)" },
+      { dia: "Sábado", hora: "14:00", sessao: "Treinos cronometrados" },
+      { dia: "Domingo", hora: "08:30", sessao: "Warm-up" },
+      { dia: "Domingo", hora: "10:00", sessao: "Pré-finais" },
+      { dia: "Domingo", hora: "12:00", sessao: "Finais Cadetes e Júnior" },
+      { dia: "Domingo", hora: "14:00", sessao: "Final KZ" },
+      { dia: "Domingo", hora: "15:00", sessao: "Final DD2 (18 voltas)" },
+      { dia: "Domingo", hora: "16:30", sessao: "Pódio e prémios da temporada" },
+    ],
+    distanciaVolta: "1,1 km",
+    numeroVoltas: 18,
+    recordeVolta: { piloto: "Kelvin Muteka", tempo: "52.418", ano: 2026 },
+    bilhetes: [
+      {
+        id: "geral",
+        nome: "Geral",
+        descricao: "Acesso à zona de público junto às boxes, nos dois dias.",
+        preco: 1500,
+        disponiveis: 600,
+        beneficios: ["Acesso 2 dias", "Zona infantil", "Zona de restauração"],
+      },
+      {
+        id: "bancada",
+        nome: "Bancada",
+        descricao: "Lugar sentado e à sombra na bancada sobre a recta da meta.",
+        preco: 4000,
+        disponiveis: 200,
+        beneficios: ["Acesso 2 dias", "Lugar sentado à sombra", "Vista sobre a recta e a grelha", "Programa da prova"],
+        destaque: true,
+      },
+      {
+        id: "familia",
+        nome: "Bilhete Família",
+        descricao: "2 adultos e 2 crianças até aos 12 anos, na zona geral.",
+        preco: 5000,
+        disponiveis: 150,
+        beneficios: ["Acesso 2 dias para 4 pessoas", "Zona infantil", "Oferta de 2 bonés"],
+      },
+    ],
+  },
 ];
 
 /* ============================================================
@@ -483,6 +857,10 @@ export const eventos: Evento[] = [
    não está publicada, a cidade fica vazia; sem nenhuma província
    documentada, também a província. As fotografias de capa são
    ilustrativas: não se copiam imagens das redes dos clubes.
+   Excepção: a pedido do dono do site, as fichas estão todas
+   preenchidas. Os valores sem fonte estão marcados com
+   «Placeholder (a confirmar com o clube)». O `contacto` nunca se
+   inventa: o site faz dele uma ligação mailto.
    ============================================================ */
 
 export const clubes: Clube[] = [
@@ -524,7 +902,8 @@ export const clubes: Clube[] = [
     nome: "Ladies in 2 Wheels in Angola",
     tipo: "Lady Riders",
     provincia: "Luanda",
-    cidade: "",
+    cidade: "Luanda", // Placeholder (a confirmar com o clube)
+    fundacao: 2019, // Placeholder (a confirmar com o clube)
     descricao:
       "Motards femininas angolanas que viajam de mota, fazem turismo e acções filantrópicas, «and lots of fun». No perfil guardam viagens a Malanje e a países vizinhos, da Namíbia ao Botswana, à África do Sul e à RD Congo, e um raide ibérico. Levam a conversa sobre mulheres na estrada também à rádio. Lema: «Life is a ride kinda girls. Whatever we can do, you can too».",
     actividades: [
@@ -533,6 +912,9 @@ export const clubes: Clube[] = [
       "Viagens à Namíbia, Botswana, África do Sul e RD Congo",
       "Acções filantrópicas",
     ],
+    // Placeholder (a confirmar com o clube)
+    encontros:
+      "Saída no último domingo de cada mês, com concentração às 8h na Marginal de Luanda. As viagens maiores são anunciadas no Instagram do grupo.",
     logo: "",
     imagem: "clube-ladies-in-2-wheels",
     cor: "#db2777",
@@ -547,11 +929,15 @@ export const clubes: Clube[] = [
     slug: "elite-motard-angola",
     nome: "Elite Motard",
     tipo: "Moto-turismo",
-    provincia: "",
-    cidade: "",
+    // Placeholder (a confirmar com o clube): sede, fundação, encontros e a última frase da descrição.
+    provincia: "Luanda",
+    cidade: "Luanda",
+    fundacao: 2017,
     descricao:
-      "Clube motard angolano que se apresenta como «mais que um clube, uma família». Sai em raide com outros clubes pelo país: esteve no Raid Benguela de 2022 e, nesse mesmo ano, no aniversário do 300 km a Norte, no Soyo. A sede não vem indicada nas páginas públicas do clube.",
+      "Clube motard angolano que se apresenta como «mais que um clube, uma família». Sai em raide com outros clubes pelo país: esteve no Raid Benguela de 2022 e, nesse mesmo ano, no aniversário do 300 km a Norte, no Soyo. As saídas partem de Luanda, onde o clube tem sede.",
     actividades: ["Raides pelo país", "Encontros com outros clubes", "Convívio entre membros"],
+    encontros:
+      "Concentração aos sábados às 7h30 em Talatona, antes de cada saída. Os raides são combinados no Instagram do clube.",
     logo: "",
     imagem: "clube-elite-motard",
     cor: "#111827",
@@ -569,6 +955,7 @@ export const clubes: Clube[] = [
     tipo: "Moto-turismo",
     provincia: "Zaire",
     cidade: "Soyo",
+    fundacao: 2018, // Placeholder (a confirmar com o clube): deduzida do 6.º aniversário, em Outubro de 2024.
     descricao:
       "Motards residentes no Soyo, em Luanda e em Moçambique, unidos pela «paixão sobre duas rodas, adrenalina, aventura e filantropia». O aniversário do clube, no Soyo, já recebeu outros clubes em raide, como o Elite Motard em 2022.",
     actividades: ["Raides", "Aventura", "Filantropia", "Aniversário do clube no Soyo"],
@@ -588,6 +975,8 @@ export const clubes: Clube[] = [
     tipo: "Moto-turismo",
     provincia: "Luanda",
     cidade: "Belas",
+    // Placeholder (a confirmar com o clube): o ano é o que diz a conta do Instagram com o mesmo nome.
+    fundacao: 2014,
     descricao:
       "Grupo de motards de Luanda que tem como objectivo, nas suas palavras, «dar o melhor de si para o engrandecimento do turismo em Angola». Foi pela sua página que se divulgou a programação do Dia Nacional do Motard Angolano, em Luanda, em Julho de 2026.",
     actividades: [
@@ -595,6 +984,9 @@ export const clubes: Clube[] = [
       "Divulgação de encontros motard",
       "Dia do Motard Angolano",
     ],
+    // Placeholder (a confirmar com o clube)
+    encontros:
+      "Domingos às 8h, com concentração em Belas antes de cada passeio. As saídas são anunciadas na página do Facebook.",
     logo: "",
     imagem: "clube-motards-de-angola",
     cor: "#0f766e",
@@ -613,7 +1005,7 @@ export const clubes: Clube[] = [
     nome: "Clube Anjos Bantu",
     tipo: "Moto-turismo",
     provincia: "Luanda",
-    cidade: "",
+    cidade: "Luanda", // Placeholder (a confirmar com o clube)
     fundacao: 2018,
     descricao:
       "Clube motard presidido por uma motociclista, que celebrou oito anos de existência em Julho de 2026. Os destaques do perfil guardam raides a Malanje e ao Soyo, e o clube assinala datas como o Dia da Mulher Africana e o Dia da Criança Africana.",
@@ -638,7 +1030,8 @@ export const clubes: Clube[] = [
     nome: "Tuaregs Motard Angola",
     tipo: "Moto-turismo",
     provincia: "Luanda",
-    cidade: "",
+    cidade: "Luanda", // Placeholder (a confirmar com o clube)
+    fundacao: 2020, // Placeholder (a confirmar com o clube)
     descricao:
       "Associação de jovens e adultos de várias idades cujo objectivo principal é o «turismo sobre rodas»: explorar pontos naturais e de relevância histórica em Angola e além-fronteiras. Esteve no Dia do Motard Angolano, no Autódromo de Luanda, em Julho de 2026, e junta-se a campanhas como o Outubro Rosa. Lema: «União sem limites».",
     actividades: [
@@ -647,6 +1040,9 @@ export const clubes: Clube[] = [
       "Viagens além-fronteiras",
       "Campanhas solidárias",
     ],
+    // Placeholder (a confirmar com o clube)
+    encontros:
+      "Passeio ao domingo de manhã, com saída de Luanda às 8h para a costa sul, até praias como a de Sangano. As datas saem nas redes do clube.",
     logo: "",
     imagem: "clube-tuaregs",
     cor: "#a16207",
@@ -686,9 +1082,13 @@ export const clubes: Clube[] = [
     tipo: "Moto-turismo",
     provincia: "Benguela",
     cidade: "Lobito",
+    fundacao: 2019, // Placeholder (a confirmar com o clube): deduzida do 3.º aniversário, em 2022.
     descricao:
       "Clube de motociclistas do Lobito, com o lema «liberdade sobre rodas». Faz saídas em grupo ao longo do ano e vai recebendo novos membros na família.",
     actividades: ["Saídas em grupo", "Convívio entre membros"],
+    // Placeholder (a confirmar com o clube)
+    encontros:
+      "Saídas ao fim-de-semana, com concentração na Restinga do Lobito. Antes de cada raide, o núcleo de Benguela junta-se para preparar a viagem.",
     logo: "",
     imagem: "clube-african-nomadas",
     cor: "#b45309",
@@ -707,6 +1107,7 @@ export const clubes: Clube[] = [
     tipo: "Outro",
     provincia: "Luanda",
     cidade: "Luanda",
+    fundacao: 2015, // Placeholder (a confirmar com o clube): deduzida dos 10 anos, em Novembro de 2025.
     descricao:
       "Clube motard de Luanda com vocação solidária: «Mais do que amigos, somos uma família que ajuda outras famílias». Em Agosto de 2020 juntou-se a um grupo filantrópico de oficiais do Ministério do Interior numa campanha de prevenção da Covid-19 no Futungo, em Talatona, com distribuição de máscaras. Lema: «Ser solidário cuia bué».",
     actividades: ["Acções solidárias", "Campanhas de sensibilização", "Passeios solidários"],
@@ -723,12 +1124,15 @@ export const clubes: Clube[] = [
     slug: "nomadas-angola",
     nome: "Nómadas Angola",
     tipo: "Moto-turismo",
-    provincia: "",
-    cidade: "",
+    // Placeholder (a confirmar com o clube): sede, encontros e a última frase da descrição.
+    provincia: "Luanda",
+    cidade: "Luanda",
     fundacao: 2014,
     descricao:
-      "Grupo motard angolano fundado a 5 de Janeiro de 2014, segundo o perfil do próprio clube. As páginas públicas não indicam a sede; se é deste clube, fale connosco para completar a ficha.",
+      "Grupo motard angolano fundado a 5 de Janeiro de 2014, segundo o perfil do próprio clube. Tem a base em Luanda e sai em passeios de grupo pelo país, com o convívio entre membros sempre à frente.",
     actividades: ["Passeios em grupo", "Convívio entre membros"],
+    encontros:
+      "Primeiro sábado de cada mês, às 9h, na Ilha de Luanda, com passeio a seguir. As saídas maiores são anunciadas no Instagram do clube.",
     logo: "",
     imagem: "clube-nomadas-angola",
     cor: "#0e7490",
@@ -739,11 +1143,15 @@ export const clubes: Clube[] = [
     slug: "vespa-club-angola",
     nome: "Vespa Club Angola",
     tipo: "Scooters e urbano",
-    provincia: "",
-    cidade: "",
+    // Placeholder (a confirmar com o clube): sede, fundação, encontros e a última frase da descrição.
+    provincia: "Luanda",
+    cidade: "Luanda",
+    fundacao: 2016,
     descricao:
-      "Grupo dedicado às Vespa, as scooters clássicas italianas, em Angola. A prova de que andar de mota em grupo não é só para motas grandes: também se viaja, se convive e se cuida de uma clássica em duas rodas pequenas. Se é deste clube, fale connosco para completar a ficha.",
+      "Grupo dedicado às Vespa, as scooters clássicas italianas, em Angola. A prova de que andar de mota em grupo não é só para motas grandes: também se viaja, se convive e se cuida de uma clássica em duas rodas pequenas. Os encontros são em Luanda, ao domingo de manhã.",
     actividades: ["Encontros de scooters clássicas", "Passeios urbanos", "Restauro e manutenção"],
+    encontros:
+      "Domingos às 9h, na Baixa de Luanda, com volta à Marginal e à Ilha ao ritmo das clássicas.",
     logo: "",
     imagem: "clube-vespa",
     cor: "#ca8a04",
@@ -1530,6 +1938,241 @@ export const pilotos: Piloto[] = [
     redes: { instagram: "#" },
     campeonatos: 0,
   },
+  // Placeholder (a confirmar)
+  {
+    slug: "valter-lukoki",
+    nome: "Valter Lukoki",
+    apelido: "O Professor",
+    numero: 21,
+    equipa: "Belas Superbike Clube",
+    equipaSlug: "belas-superbike-clube",
+    provincia: "Luanda",
+    nacionalidade: "Angola",
+    idade: 32,
+    mota: "Yamaha YZF-R6",
+    categoria: "Velocidade",
+    foto: "lukoki",
+    bio: "Começou nas corridas de rua de Luanda, antes de haver campeonato, e foi dos primeiros a levar uma 600 ao Autódromo quando a pista voltou a receber provas, em 2021. Ganhou a abertura de 2026 com a volta mais rápida e o recorde do traçado curto, 1:41.226. Durante a semana dá aulas de condução defensiva a motociclistas.",
+    estreia: 2015,
+    estatisticas: {
+      pontos: 72,
+      vitorias: 6,
+      podios: 14,
+      poles: 5,
+      corridas: 31,
+      melhorResultado: "1.º",
+    },
+    redes: { instagram: "#" },
+    campeonatos: 1,
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "mauro-sapalo",
+    nome: "Mauro Sapalo",
+    numero: 33,
+    equipa: "Belas Superbike Clube",
+    equipaSlug: "belas-superbike-clube",
+    provincia: "Luanda",
+    nacionalidade: "Angola",
+    idade: 27,
+    mota: "Honda CBR600RR",
+    categoria: "Velocidade",
+    foto: "sapalo",
+    bio: "Veio do motocross para o asfalto em 2020 e trouxe com ele as travagens tardias. É o mais rápido do pelotão na entrada da curva 1 e teve o recorde do traçado curto do Autódromo até Maio de 2026, quando Valter Lukoki o baixou. Trabalha como técnico de telecomunicações em Talatona.",
+    estreia: 2020,
+    estatisticas: {
+      pontos: 63,
+      vitorias: 3,
+      podios: 10,
+      poles: 4,
+      corridas: 24,
+      melhorResultado: "1.º",
+    },
+    redes: { instagram: "#" },
+    campeonatos: 0,
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "ernesto-kalunga",
+    nome: "Ernesto Kalunga",
+    numero: 88,
+    equipa: "Belas Superbike Clube",
+    equipaSlug: "belas-superbike-clube",
+    provincia: "Benguela",
+    nacionalidade: "Angola",
+    idade: 24,
+    mota: "Kawasaki Ninja ZX-6R",
+    categoria: "Velocidade",
+    foto: "kalunga",
+    bio: "Nasceu no Lobito e faz mais de 500 km até Luanda em cada prova, com a mota numa carrinha emprestada. Estreou-se numa 600 em 2026, depois de duas temporadas em motas de 300 cc, e foi terceiro na prova de abertura. É o mais novo do pelotão da frente.",
+    estreia: 2023,
+    estatisticas: {
+      pontos: 51,
+      vitorias: 0,
+      podios: 4,
+      poles: 1,
+      corridas: 12,
+      melhorResultado: "2.º",
+    },
+    redes: { instagram: "#" },
+    campeonatos: 0,
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "delcio-chimuco",
+    nome: "Délcio Chimuco",
+    numero: 4,
+    equipa: "Baía Azul Moto 4",
+    equipaSlug: "baia-azul-moto-4",
+    provincia: "Benguela",
+    nacionalidade: "Angola",
+    idade: 29,
+    mota: "Yamaha YFZ450R",
+    categoria: "Moto 4",
+    foto: "chimuco",
+    bio: "Anda de moto 4 desde os 16 anos, primeiro nas praias de Benguela e depois nas pistas de motocross, onde os quads correm no mesmo dia que as motas. Ganhou a Taça de Quads do Kilamba em Julho, com a volta mais rápida, e chega à Baía Azul a correr em casa. Na época alta é mecânico de quads de aluguer.",
+    estreia: 2016,
+    estatisticas: {
+      pontos: 74,
+      vitorias: 5,
+      podios: 12,
+      poles: 3,
+      corridas: 27,
+      melhorResultado: "1.º",
+    },
+    redes: { instagram: "#" },
+    campeonatos: 1,
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "yuri-kassoma",
+    nome: "Yuri Kassoma",
+    numero: 40,
+    equipa: "Baía Azul Moto 4",
+    equipaSlug: "baia-azul-moto-4",
+    provincia: "Luanda",
+    nacionalidade: "Angola",
+    idade: 23,
+    mota: "Suzuki LTR450",
+    categoria: "Moto 4",
+    foto: "kassoma",
+    bio: "Começou nos quads de aluguer do Mussulo, aos 14 anos, e comprou o primeiro quad de corrida com o dinheiro de três verões a trabalhar na ilha. Segundo no Kilamba, a pouco mais de três segundos de Délcio Chimuco, é o piloto de moto 4 que mais cresceu em 2026.",
+    estreia: 2021,
+    estatisticas: {
+      pontos: 66,
+      vitorias: 2,
+      podios: 8,
+      poles: 2,
+      corridas: 18,
+      melhorResultado: "1.º",
+    },
+    redes: { instagram: "#" },
+    campeonatos: 0,
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "anselmo-kapapelo",
+    nome: "Anselmo Kapapelo",
+    numero: 14,
+    equipa: "Baía Azul Moto 4",
+    equipaSlug: "baia-azul-moto-4",
+    provincia: "Benguela",
+    nacionalidade: "Angola",
+    idade: 34,
+    mota: "Honda TRX450R",
+    categoria: "Moto 4",
+    foto: "kapapelo",
+    bio: "O veterano da moto 4. Correu a classe de quads do rali-raid antes de se fixar nas pistas, e é ele quem prepara os quads do clube, na oficina que tem na Catumbela. Terceiro no Kilamba, é o mais regular do pelotão e o chefe de equipa da Baía Azul Moto 4.",
+    estreia: 2012,
+    estatisticas: {
+      pontos: 52,
+      vitorias: 1,
+      podios: 9,
+      poles: 0,
+      corridas: 35,
+      melhorResultado: "1.º",
+    },
+    redes: {},
+    campeonatos: 0,
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "kelvin-muteka",
+    nome: "Kelvin Muteka",
+    numero: 9,
+    equipa: "Benguela Kart Clube",
+    equipaSlug: "benguela-kart-clube",
+    provincia: "Benguela",
+    nacionalidade: "Angola",
+    idade: 19,
+    mota: "Kart Rotax DD2",
+    categoria: "Karting",
+    foto: "muteka",
+    bio: "Corre de kart desde os 9 anos e passou à DD2, a classe Rotax com caixa de duas velocidades, em 2025. Ganhou a Taça de Karting de Benguela em Junho, com a volta mais rápida e o recorde do Circuito Santos Peras. Quer chegar aos monolugares, a começar pela Fórmula 4.",
+    estreia: 2016,
+    estatisticas: {
+      pontos: 70,
+      vitorias: 4,
+      podios: 9,
+      poles: 4,
+      corridas: 20,
+      melhorResultado: "1.º",
+    },
+    redes: { instagram: "#" },
+    campeonatos: 1,
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "edmilson-tchiwale",
+    nome: "Edmilson Tchiwale",
+    numero: 27,
+    equipa: "Benguela Kart Clube",
+    equipaSlug: "benguela-kart-clube",
+    provincia: "Luanda",
+    nacionalidade: "Angola",
+    idade: 22,
+    mota: "Kart Rotax DD2",
+    categoria: "Karting",
+    foto: "tchiwale",
+    bio: "Estudante de engenharia mecânica em Luanda, faz a viagem até Benguela em cada prova com o kart na caixa de uma carrinha. Foi segundo na Taça de Karting de Benguela, a seis décimos do vencedor, e é quem melhor arranca na grelha da DD2.",
+    estreia: 2019,
+    estatisticas: {
+      pontos: 61,
+      vitorias: 2,
+      podios: 7,
+      poles: 2,
+      corridas: 16,
+      melhorResultado: "1.º",
+    },
+    redes: { instagram: "#" },
+    campeonatos: 0,
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "ines-sakaita",
+    nome: "Inês Sakaita",
+    numero: 11,
+    equipa: "Benguela Kart Clube",
+    equipaSlug: "benguela-kart-clube",
+    provincia: "Huíla",
+    nacionalidade: "Angola",
+    idade: 17,
+    mota: "Kart Rotax DD2",
+    categoria: "Karting",
+    foto: "sakaita",
+    bio: "Única mulher na grelha da DD2. Começou nos Cadetes, aos 11 anos, e subiu de classe em classe desde então. Foi terceira na Taça de Karting de Benguela, a mais nova do pódio, e é a piloto que mais lugares ganha na primeira volta.",
+    estreia: 2020,
+    estatisticas: {
+      pontos: 48,
+      vitorias: 1,
+      podios: 5,
+      poles: 1,
+      corridas: 14,
+      melhorResultado: "1.º",
+    },
+    redes: { instagram: "#" },
+    campeonatos: 0,
+  },
 ];
 export const equipas: Equipa[] = [
   {
@@ -1676,6 +2319,63 @@ export const equipas: Equipa[] = [
     estatisticas: { pontos: 0, vitorias: 0, podios: 0, titulos: 0 },
     redes: { instagram: "#", facebook: "#" },
   },
+  // Placeholder (a confirmar)
+  {
+    slug: "belas-superbike-clube",
+    nome: "Belas Superbike Clube",
+    tipo: "Clube",
+    base: "Belas, Luanda",
+    provincia: "Luanda",
+    fundacao: 2018,
+    logo: "BSC",
+    cor: "#6366f1",
+    chefe: "Amílcar Sapalo",
+    membros: 38,
+    pilotos: ["valter-lukoki", "mauro-sapalo", "ernesto-kalunga"],
+    descricao:
+      "O clube da velocidade em Luanda. Junta pilotos e entusiastas das motas desportivas à volta do Autódromo de Luanda, em Belas: organiza dias de pista para os sócios, cursos de pilotagem em circuito e a assistência dos três pilotos que leva às provas de velocidade.",
+    motas: ["Yamaha YZF-R6", "Honda CBR600RR", "Kawasaki Ninja ZX-6R"],
+    estatisticas: { pontos: 186, vitorias: 9, podios: 28, titulos: 1 },
+    redes: { instagram: "#" },
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "baia-azul-moto-4",
+    nome: "Baía Azul Moto 4",
+    tipo: "Clube",
+    base: "Benguela",
+    provincia: "Benguela",
+    fundacao: 2017,
+    logo: "BA4",
+    cor: "#84cc16",
+    chefe: "Anselmo Kapapelo",
+    membros: 29,
+    pilotos: ["delcio-chimuco", "yuri-kassoma", "anselmo-kapapelo"],
+    descricao:
+      "Clube de moto 4 de Benguela, nascido entre amigos que andavam de quad nas praias a sul da cidade. Leva três pilotos às provas de moto 4, organiza o Desafio de Quads da Baía Azul e faz saídas de quad abertas a quem quer experimentar, sempre com capacete e colete.",
+    motas: ["Yamaha YFZ450R", "Suzuki LTR450", "Honda TRX450R"],
+    estatisticas: { pontos: 192, vitorias: 8, podios: 29, titulos: 1 },
+    redes: { instagram: "#", facebook: "#" },
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "benguela-kart-clube",
+    nome: "Benguela Kart Clube",
+    tipo: "Clube",
+    base: "Benguela",
+    provincia: "Benguela",
+    fundacao: 2019,
+    logo: "BKC",
+    cor: "#f97316",
+    chefe: "Rosa Muteka",
+    membros: 41,
+    pilotos: ["kelvin-muteka", "edmilson-tchiwale", "ines-sakaita"],
+    descricao:
+      "Clube de karting de Benguela, criado por pais de jovens pilotos para partilhar karts, pneus e viagens. Corre no Circuito Santos Peras, organiza a Taça de Karting de Benguela e a final da temporada, e ajuda as famílias que chegam ao desporto a escolher a classe certa para a idade.",
+    motas: ["Kart Rotax DD2", "Kart Rotax Júnior", "Kart Cadete"],
+    estatisticas: { pontos: 179, vitorias: 7, podios: 21, titulos: 1 },
+    redes: { instagram: "#" },
+  },
 ];
 export const corridas: Corrida[] = [
   {
@@ -1777,6 +2477,82 @@ export const corridas: Corrida[] = [
       { posicao: 2, pilotoSlug: "joana-ferraz", piloto: "Joana Ferraz", equipa: "Lobito Motorsport", voltas: 12, tempo: "+9.402", pontos: 22 },
       { posicao: 3, pilotoSlug: "silvio-domingos", piloto: "Sílvio Domingos", equipa: "Caála Racing Club", voltas: 12, tempo: "+15.118", pontos: 20 },
       { posicao: 4, pilotoSlug: "helder-quissanga", piloto: "Hélder Quissanga", equipa: "Cabinda Bikers", voltas: 12, tempo: "+20.774", pontos: 18 },
+    ],
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "velocidade-autodromo-2026",
+    eventoSlug: "velocidade-autodromo-abertura",
+    nome: "Velocidade no Autódromo",
+    ronda: 0, // fora do Campeonato Nacional
+    temporada: 2026,
+    circuito: "Autódromo de Luanda",
+    provincia: "Luanda",
+    data: "2026-05-24",
+    categoria: "Velocidade",
+    vencedor: "Valter Lukoki",
+    imagem: "https://images.unsplash.com/photo-1713205136828-c3a69cfb6d7c?auto=format&fit=crop&w=1600&q=70",
+    resultados: [
+      { posicao: 1, pilotoSlug: "valter-lukoki", piloto: "Valter Lukoki", equipa: "Belas Superbike Clube", voltas: 14, tempo: "24:01.307", pontos: 25, melhorVolta: true },
+      { posicao: 2, pilotoSlug: "mauro-sapalo", piloto: "Mauro Sapalo", equipa: "Belas Superbike Clube", voltas: 14, tempo: "+1.882", pontos: 22 },
+      { posicao: 3, pilotoSlug: "ernesto-kalunga", piloto: "Ernesto Kalunga", equipa: "Belas Superbike Clube", voltas: 14, tempo: "+9.415", pontos: 20 },
+    ],
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "karting-benguela-2026",
+    eventoSlug: "karting-benguela-taca",
+    nome: "Taça de Karting de Benguela",
+    ronda: 0, // fora do Campeonato Nacional
+    temporada: 2026,
+    circuito: "Circuito Santos Peras",
+    provincia: "Benguela",
+    data: "2026-06-28",
+    categoria: "Karting",
+    vencedor: "Kelvin Muteka",
+    imagem: "https://images.unsplash.com/photo-1505570554449-69ce7d4fa36b?auto=format&fit=crop&w=1600&q=70",
+    resultados: [
+      { posicao: 1, pilotoSlug: "kelvin-muteka", piloto: "Kelvin Muteka", equipa: "Benguela Kart Clube", voltas: 18, tempo: "16:02.441", pontos: 25, melhorVolta: true },
+      { posicao: 2, pilotoSlug: "edmilson-tchiwale", piloto: "Edmilson Tchiwale", equipa: "Benguela Kart Clube", voltas: 18, tempo: "+0.612", pontos: 22 },
+      { posicao: 3, pilotoSlug: "ines-sakaita", piloto: "Inês Sakaita", equipa: "Benguela Kart Clube", voltas: 18, tempo: "+4.087", pontos: 20 },
+    ],
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "moto-4-kilamba-2026",
+    eventoSlug: "moto-4-kilamba",
+    nome: "Taça de Quads do Kilamba",
+    ronda: 0, // fora do Campeonato Nacional
+    temporada: 2026,
+    circuito: "Circuito do Kilamba",
+    provincia: "Luanda",
+    data: "2026-07-25",
+    categoria: "Moto 4",
+    vencedor: "Délcio Chimuco",
+    imagem: "kilamba",
+    resultados: [
+      { posicao: 1, pilotoSlug: "delcio-chimuco", piloto: "Délcio Chimuco", equipa: "Baía Azul Moto 4", voltas: 10, tempo: "21:37.604", pontos: 25, melhorVolta: true },
+      { posicao: 2, pilotoSlug: "yuri-kassoma", piloto: "Yuri Kassoma", equipa: "Baía Azul Moto 4", voltas: 10, tempo: "+3.118", pontos: 22 },
+      { posicao: 3, pilotoSlug: "anselmo-kapapelo", piloto: "Anselmo Kapapelo", equipa: "Baía Azul Moto 4", voltas: 10, tempo: "+11.950", pontos: 20 },
+    ],
+  },
+  // Placeholder (a confirmar)
+  {
+    slug: "rally-raid-tombwa-2026",
+    eventoSlug: "rally-raid-tombwa",
+    nome: "Rally-Raid do Tômbwa",
+    ronda: 0, // fora do Campeonato Nacional
+    temporada: 2026,
+    circuito: "Dunas do Tômbwa",
+    provincia: "Namibe",
+    data: "2026-08-23",
+    categoria: "Rally",
+    vencedor: "Carlos Samba",
+    imagem: "deserto-do-namibe",
+    resultados: [
+      { posicao: 1, pilotoSlug: "carlos-samba", piloto: "Carlos Samba", equipa: "Namibe Dunas Team", voltas: 2, tempo: "6:12:48", pontos: 25 },
+      { posicao: 2, pilotoSlug: "paulo-tembo", piloto: "Paulo Tembo", equipa: "Namibe Dunas Team", voltas: 2, tempo: "+4:21", pontos: 22 },
+      { posicao: 3, pilotoSlug: "rui-katchimba", piloto: "Rui Katchimba", equipa: "Cabinda Bikers", voltas: 2, tempo: "+18:56", pontos: 20 },
     ],
   },
 ];

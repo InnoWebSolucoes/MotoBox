@@ -64,7 +64,8 @@ export default async function ResultadosPage() {
 
           <div className="mt-10 space-y-14">
             {porTemporada[t]
-              .sort((a, b) => a.ronda - b.ronda || a.categoria.localeCompare(b.categoria))
+              // Por data: as corridas de fora do campeonato (ronda 0) ficam no seu lugar no ano.
+              .sort((a, b) => a.data.localeCompare(b.data) || a.ronda - b.ronda || a.categoria.localeCompare(b.categoria))
               .map((c) => (
                 <article key={c.slug} className="grid gap-[var(--intervalo)] lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-8">
                   {/* Cabeçalho da corrida: fotografia do circuito, texto sobre o véu */}
@@ -72,8 +73,8 @@ export default async function ResultadosPage() {
                     <FotoFundo nome={[c.slug, c.imagem]} veu="baixo" tamanhos="(max-width: 1024px) 100vw, 288px" largura={700} />
                     <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/45 to-transparent" />
                     <div className="flex flex-wrap gap-1.5">
-                      <Etiqueta tom="vermelho">Ronda {c.ronda}</Etiqueta>
-                      <Etiqueta tom="vidro">{c.categoria}</Etiqueta>
+                      {c.ronda > 0 && <Etiqueta tom="vermelho">Ronda {c.ronda}</Etiqueta>}
+                      <Etiqueta tom={c.ronda > 0 ? "vidro" : "vermelho"}>{c.categoria}</Etiqueta>
                     </div>
                     <h3 className="mt-3 text-2xl font-semibold leading-tight">{c.nome}</h3>
                     <p className="mt-1.5 text-sm text-white/75">

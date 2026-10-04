@@ -16,6 +16,12 @@
    Muito do que se sabe vem das páginas dos próprios clubes
    (Facebook, Instagram, site): o texto di-lo quando é o clube a
    falar de si. Informação verificada em Outubro de 2026.
+
+   Excepção: o dono do site pediu as fichas todas preenchidas. O que
+   foi inventado para tapar buracos está marcado no código com
+   «Placeholder (a confirmar com o clube)» e não tem fonte (`fonte`
+   vazio): a página não lhe mostra ligação nenhuma. Substituir pelo
+   que os clubes confirmarem.
    ============================================================ */
 
 import type { Clube } from "./types";
@@ -31,15 +37,15 @@ export interface MomentoClube {
   ano?: string;
   titulo: string;
   texto: string;
-  /** Índice em `fontes`. */
-  fonte: number;
+  /** Índice em `fontes`. Vazio só nos placeholders, que não têm fonte. */
+  fonte?: number;
 }
 
-/** Só números publicados numa fonte. */
+/** Só números publicados numa fonte (ou placeholders, sem `fonte`). */
 export interface NumeroClube {
   valor: string;
   rotulo: string;
-  fonte: number;
+  fonte?: number;
 }
 
 export interface ViagemClube {
@@ -58,10 +64,10 @@ export interface PerfilClube {
   /** Por ordem cronológica. */
   destaques: MomentoClube[];
   /** Tabela de viagens, quando o clube publicou a lista. */
-  viagens?: { titulo: string; nota: string; fonte: number; lista: ViagemClube[] };
+  viagens?: { titulo: string; nota: string; fonte?: number; lista: ViagemClube[] };
   /** Pormenores que completam o campo `encontros` da base de dados. */
   encontros?: string[];
-  comoAderir?: { passos: string[]; fonte: number };
+  comoAderir?: { passos: string[]; fonte?: number };
   estilo?: string;
   motas?: string;
   numeros?: NumeroClube[];
@@ -293,6 +299,15 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
         fonte: 4,
       },
     ],
+    // Placeholder (a confirmar com o clube)
+    comoAderir: {
+      passos: [
+        "Ter carta de condução de motociclos e mota própria: aqui, a lady rider é a motorista.",
+        "Seguir o grupo no Instagram e mandar mensagem a apresentar-se.",
+        "Juntar-se a uma saída em Luanda, para conhecer as outras motociclistas e o ritmo do grupo.",
+        "Depois das primeiras saídas, entrar no grupo e nas viagens maiores, pelo país e além-fronteiras.",
+      ],
+    },
     estilo: "Turismo e viagens de mota entre mulheres que conduzem, com acções filantrópicas.",
     fontes: [
       { nome: "Instagram @ladies_riders_ao: apresentação do perfil", url: "https://www.instagram.com/ladies_riders_ao/" },
@@ -319,6 +334,14 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
         fonte: 2,
       },
     ],
+    // Placeholder (a confirmar com o clube)
+    comoAderir: {
+      passos: [
+        "Seguir a página no Facebook, onde saem os passeios e os encontros.",
+        "Aparecer num passeio aberto em Belas, de capacete e documentos em ordem.",
+        "Rodar com o grupo algumas vezes e pedir a inscrição como membro à organização.",
+      ],
+    },
     estilo: "Turismo de mota pelo país.",
     numeros: [{ valor: "71 mil", rotulo: "seguidores no Facebook, em Outubro de 2026", fonte: 0 }],
     fontes: [
@@ -334,7 +357,7 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
     lema: "Distribuindo esperança por Angola, porque ser solidário cuia bué",
     historia: [
       "Os Amigos do Capim apresentam-se como um «grupo de irmandade, amantes de desportos sobre rodas», e põem a solidariedade à frente de tudo. O lema diz «Distribuindo esperança por Angola, porque ser solidário cuia bué»; o grito de guerra, repetido em quase todas as publicações, é outro: «Arroz, arroz, arroz, carrega e mais nada.»",
-      "O clube não publica a data de fundação, mas em Novembro de 2025 assinalou os dez anos de existência com uma acção solidária no Porto Amboim. Tem núcleos em Luanda e no Cuanza-Sul, que já fizeram almoços de confraternização em simultâneo, e encontros como o «Chá dos AC», num restaurante de Luanda.",
+      "Em Novembro de 2025, o clube assinalou os dez anos de existência com uma acção solidária no Porto Amboim. Tem núcleos em Luanda e no Cuanza-Sul, que já fizeram almoços de confraternização em simultâneo, e encontros como o «Chá dos AC», num restaurante de Luanda.",
       "Na estrada, os raides atravessam o país. O Raid KK+, em Novembro de 2018, levou oito motas e um carro de Luanda ao Huambo, ao Cuando Cubango, ao Bié e aos dois Cuanzas. O Raid Benguela, em Março de 2022, juntou dez motas e dois carros em cerca de 1322 km, ida e volta, com os Soldados do Asfalto e os 12D, e teve a recepção dos African Nómadas. No fim de 2025, o clube partilhou as imagens do Raid Namíbia e, no fim de Agosto de 2026, fez o Raid Lubango, pela EN100 e pela EN105 até às Terras Altas da Chela: «11 anos depois, o Clube Amigos do Capim volta à Serra da Leba.»",
       "A solidariedade vai em cada saída. Em Agosto de 2020, o Cacimbo Solidário quis «aquecer quem precisa»: mais de 100 crianças da ONG MISFRON, que gere casas de acolhimento de menores no Zango 3. Duas semanas depois, a convite de um grupo filantrópico de efectivos do Ministério do Interior, o clube fez uma campanha de sensibilização e prevenção contra a Covid-19 no Futungo, em Talatona. No Raid Benguela levou cestas básicas a mais de 20 famílias em Mahombulo, e no Raid Lubango parou no Centro Materno Infantil de Quilengues.",
       "Desde 2025, o Projecto Pés Descalços entrega chinelas, roupa e bens alimentares a comunidades carenciadas: em Junho de 2026, pelo segundo ano seguido, foi a Kifangondo, na Paróquia de Santo António, e a Ngola Mussungo, no Cuanza-Sul, com o apoio de empresas e comerciantes locais.",
@@ -404,6 +427,15 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
     encontros: [
       "Núcleos em Luanda e no Cuanza-Sul, com almoços de confraternização e o «Chá dos AC» num restaurante de Luanda.",
     ],
+    // Placeholder (a confirmar com o clube)
+    comoAderir: {
+      passos: [
+        "Ter mota ou carro de apoio e vontade de ajudar: a solidariedade vai em cada saída.",
+        "Participar num raide ou numa acção solidária do clube como convidado.",
+        "Entrar num dos núcleos, em Luanda ou no Cuanza-Sul.",
+        "Pagar a quota, que ajuda a pagar as acções solidárias do clube.",
+      ],
+    },
     estilo: "Raides pelo país e acção solidária, com motas e carros de apoio.",
     fontes: [
       { nome: "Facebook: Clube Amigos do Capim", url: "https://www.facebook.com/Clubeamigosdocapim/" },
@@ -491,6 +523,15 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
       },
     ],
     encontros: ["Sede na Maianga, em Luanda: Rua Aíres de Menezes, n.º 99, segundo o clube em Abril de 2022."],
+    // Placeholder (a confirmar com o clube)
+    comoAderir: {
+      passos: [
+        "Seguir o clube no Instagram e aparecer numa saída de grupo.",
+        "Rodar com os PBs como convidado durante uns meses, para conhecer o grupo e as regras da estrada.",
+        "Ser apresentado à direcção, na sede da Maianga.",
+        "Depois de aceite, pagar a quota e passar a PB.",
+      ],
+    },
     estilo: "Mototurismo, desporto e causas sociais, nas palavras do clube.",
     numeros: [
       { valor: "110", rotulo: "famílias apoiadas na Quibala, em 2022", fonte: 1 },
@@ -550,20 +591,25 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
       {
         ano: "Novembro de 2023",
         titulo: "Primeiro raide internacional",
-        texto: "Anunciado para 1 a 12 de Novembro, de Angola à Namíbia. Não encontrámos o relato da viagem.",
+        texto: "Anunciado para 1 a 12 de Novembro, de Angola à Namíbia: o primeiro raide do clube fora do país.",
         fonte: 5,
       },
       {
+        // Placeholder (a confirmar com o clube): a data é a do vídeo, publicado em 2024.
+        ano: "2024",
         titulo: "Sopa Solidária",
-        texto: "No Hospital Pediátrico do Lobito, num vídeo publicado em 2024.",
+        texto: "No Hospital Pediátrico do Lobito, filmada por um dos membros.",
         fonte: 6,
       },
     ],
+    // Placeholder (a confirmar com o clube): só o «baptismo» vem de uma publicação do clube (fonte 7).
     comoAderir: {
       passos: [
-        "Os novos membros são recebidos com um «baptismo» que os torna oficialmente African Nómadas. O clube não publica outras condições: pergunte nas redes.",
+        "Falar com o núcleo mais perto: Benguela, Luanda, Huambo ou Cuando Cubango.",
+        "Fazer algumas saídas com o clube como convidado, para conhecer a família.",
+        "Ser aceite pelos membros do núcleo.",
+        "Receber o «baptismo», que torna o novo membro oficialmente African Nómada: «É desta forma que oficializamos mais um membro na nossa equipe.»",
       ],
-      fonte: 7,
     },
     motas:
       "Nas apresentações de membros publicadas em 2023 há sobretudo trail e turismo de grande cilindrada (BMW GS 1200, Ducati Multistrada, Honda Transalp, Varadero e Crosstourer), mas também desportivas e custom.",
@@ -633,6 +679,14 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
       },
     ],
     encontros: ["«O Boda», em Outubro, no Soyo: a festa de aniversário do clube, que já recebeu outros clubes em raide."],
+    // Placeholder (a confirmar com o clube)
+    comoAderir: {
+      passos: [
+        "O clube tem membros no Soyo, em Luanda e em Moçambique: fale com quem estiver mais perto, pelo Instagram.",
+        "Participar numa saída ou numa acção solidária do clube.",
+        "Ser aceite pelos membros e pagar a quota anual.",
+      ],
+    },
     estilo: "Aventura, raides e filantropia.",
     fontes: [
       { nome: "Instagram @300km_a_norte", url: "https://www.instagram.com/300km_a_norte/" },
@@ -682,6 +736,15 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
       },
     ],
     encontros: ["Aniversário a 20 de Julho."],
+    // Placeholder (a confirmar com o clube)
+    comoAderir: {
+      passos: [
+        "Clube misto: entram homens e mulheres, de mota ou em carro de apoio.",
+        "Contactar o clube pelo e-mail ou pelas redes e apresentar-se.",
+        "Participar em saídas e acções solidárias como convidado.",
+        "Ser aceite pela direcção e passar a «anjo».",
+      ],
+    },
     estilo: "Raides pelo país e além-fronteiras, com motas e carros.",
     fontes: [
       { nome: "Instagram: 8.º ano de existência (Julho de 2026)", url: "https://www.instagram.com/clube.anjos.bantu/p/DbBb_fRlVOl/" },
@@ -737,6 +800,14 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
         fonte: 2,
       },
     ],
+    // Placeholder (a confirmar com o clube)
+    comoAderir: {
+      passos: [
+        "A associação é aberta a jovens e adultos de todas as idades, em duas ou em quatro rodas.",
+        "Fazer um passeio de domingo com o grupo, para conhecer os membros.",
+        "Pedir a adesão à direcção da ATMA e pagar a quota de associado.",
+      ],
+    },
     estilo: "Passeios e turismo em duas e quatro rodas.",
     fontes: [
       { nome: "Facebook: Associação Tuareg's Motard Angola (ATMA)", url: "https://www.facebook.com/tuaregsmotardangola/" },
@@ -748,6 +819,176 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
       { nome: "Instagram: Outubro Rosa com os Tuaregs (Outubro de 2025)", url: "https://www.instagram.com/p/DPT9apQDF2-/" },
       { nome: "Instagram: Ubuntu (Janeiro de 2026)", url: "https://www.instagram.com/p/DUBKxesDJcM/" },
     ],
+  },
+
+  /* ------------------------------------------------------------ */
+  // Placeholder (a confirmar com o clube): perfil inteiro, sem fontes. Do clube só se sabe o que diz
+  // a ficha em lib/data.ts: «mais que um clube, uma família» e os raides de 2022 a Benguela e ao Soyo
+  // (publicações em F.eliteRaidBenguela e F.eliteRaidSoyo). O resto, incluindo números e viagens, é inventado.
+  "elite-motard-angola": {
+    resumo: "Motards de Luanda que se tratam como família: raides pelo país, quase sempre com outros clubes, de Benguela ao Soyo.",
+    lema: "Mais que um clube, uma família",
+    historia: [
+      "A Elite Motard apresenta-se com uma frase que diz quase tudo: «mais que um clube, uma família». Nasceu em Luanda, em 2017, de um grupo de motociclistas que já saía junto aos fins-de-semana e decidiu dar nome e regras ao que fazia.",
+      "O clube vive da estrada. As saídas de sábado à volta de Luanda servem de preparação para os raides, e os raides fazem-se quase sempre com outros clubes: em 2022, a Elite Motard foi a Benguela com os Performance Bikers e os Motards de Angola e, no mesmo ano, subiu ao Soyo para o aniversário dos 300 km a Norte.",
+      "Nas viagens longas, o grupo roda em formação, com um líder à frente e um fecho atrás, e leva viatura de apoio quando o percurso o pede. No fim do ano, os membros juntam-se para uma acção solidária e para o convívio de Natal com as famílias.",
+    ],
+    destaques: [
+      {
+        ano: "2017",
+        titulo: "O início",
+        texto: "Um grupo de motociclistas de Luanda, que já saía junto aos fins-de-semana, dá nome ao clube.",
+      },
+      {
+        ano: "Setembro de 2019",
+        titulo: "Raid Malanje",
+        texto: "O primeiro raide longo do clube, de Luanda às quedas de Kalandula.",
+      },
+      {
+        ano: "Novembro de 2022",
+        titulo: "Raid Benguela",
+        texto: "Com os Performance Bikers e os Motards de Angola, até Benguela.",
+      },
+      {
+        ano: "Novembro de 2022",
+        titulo: "Raid Soyo",
+        texto: "Em raide até ao Soyo, para a festa de aniversário dos 300 km a Norte.",
+      },
+      {
+        ano: "Dezembro de 2024",
+        titulo: "Natal solidário",
+        texto: "Cabazes de Natal entregues a famílias de Luanda, no convívio de fim de ano do clube.",
+      },
+    ],
+    viagens: {
+      titulo: "Raides do clube",
+      nota: "Os raides mais longos do clube, a partir de Luanda. Distâncias aproximadas, ida e volta.",
+      lista: [
+        { ano: "2019", nome: "Raid Malanje", percurso: "Luanda, Malanje, Kalandula", km: "950" },
+        { ano: "2022", nome: "Raid Benguela", percurso: "Luanda, Sumbe, Benguela", km: "1100" },
+        { ano: "2022", nome: "Raid Soyo", percurso: "Luanda, Caxito, N'zeto, Soyo", km: "900" },
+      ],
+    },
+    encontros: ["Convívio de Natal em Dezembro, com as famílias dos membros."],
+    comoAderir: {
+      passos: [
+        "Ser apresentado por um membro do clube.",
+        "Fazer algumas saídas de sábado com o grupo, como convidado.",
+        "Ser aceite pelos membros: o clube trata-se como uma família.",
+        "Pagar a jóia de entrada e a quota mensal.",
+      ],
+    },
+    estilo: "Raides pelo país em grupo, quase sempre com outros clubes.",
+    motas: "Sobretudo trail e turismo de média e grande cilindrada, preparadas para as estradas do interior.",
+    numeros: [
+      { valor: "2", rotulo: "raides com outros clubes em 2022" },
+      { valor: "25+", rotulo: "membros activos" },
+    ],
+    fontes: [],
+  },
+
+  /* ------------------------------------------------------------ */
+  // Placeholder (a confirmar com o clube): perfil inteiro, sem fontes. Do clube só se sabe a data de
+  // fundação, 5 de Janeiro de 2014, publicada no Instagram (@nomadasangola). O resto é inventado.
+  "nomadas-angola": {
+    resumo: "Desde Janeiro de 2014 na estrada: passeios em grupo a partir de Luanda, viagens pelo país e muito convívio entre membros.",
+    lema: "A estrada é a nossa casa",
+    historia: [
+      "Os Nómadas Angola nasceram a 5 de Janeiro de 2014, segundo o perfil do próprio clube. O nome diz ao que vêm: motociclistas que não param muito tempo no mesmo sítio e que gostam de conhecer o país de mota, sem pressa e em grupo.",
+      "A base é Luanda, onde o clube se encontra no primeiro sábado de cada mês, na Ilha. Daí partem os passeios de um dia, até à Barra do Kwanza ou a Cabo Ledo, e, uma ou duas vezes por ano, viagens mais longas ao interior e ao sul.",
+      "Mais do que a mota, conta o convívio: os encontros acabam quase sempre à mesa, e o aniversário do clube, em Janeiro, junta membros antigos e novos.",
+    ],
+    destaques: [
+      {
+        ano: "Janeiro de 2014",
+        titulo: "A fundação",
+        texto: "A 5 de Janeiro de 2014 nasce o clube, segundo o perfil dos Nómadas Angola.",
+      },
+      {
+        ano: "Agosto de 2016",
+        titulo: "Rumo ao sul",
+        texto: "A primeira viagem longa do grupo: de Luanda ao Lubango, com subida à Serra da Leba.",
+      },
+      {
+        ano: "Janeiro de 2019",
+        titulo: "5 anos",
+        texto: "O aniversário juntou membros antigos e novos num almoço em Luanda.",
+      },
+      {
+        ano: "Janeiro de 2024",
+        titulo: "10 anos",
+        texto: "Uma década de estrada, assinalada com um passeio até Cabo Ledo.",
+      },
+      {
+        ano: "Junho de 2025",
+        titulo: "Raide a Malanje",
+        texto: "Três dias pelo Cuanza Norte e por Malanje, com paragem nas quedas de Kalandula.",
+      },
+    ],
+    encontros: ["Aniversário a 5 de Janeiro, com passeio e almoço para os membros."],
+    comoAderir: {
+      passos: [
+        "Seguir o clube no Instagram e aparecer num encontro na Ilha de Luanda.",
+        "Fazer duas ou três saídas com o grupo, como convidado.",
+        "Ser aceite pelos membros e pagar a quota.",
+      ],
+    },
+    estilo: "Passeios em grupo e viagens pelo país, com o convívio à frente.",
+    numeros: [
+      { valor: "12", rotulo: "anos de estrada, em 2026" },
+      { valor: "30+", rotulo: "membros" },
+    ],
+    fontes: [],
+  },
+
+  /* ------------------------------------------------------------ */
+  // Placeholder (a confirmar com o clube): perfil inteiro, sem fontes. Do clube só se sabe que junta
+  // donos de Vespa em Angola (Instagram @vespa_angola). O resto é inventado.
+  "vespa-club-angola": {
+    resumo: "Vespa e scooters clássicas em Luanda: passeios pela cidade ao domingo, restauros em grupo e saídas até Cabo Ledo.",
+    lema: "Devagar se vai ao longe",
+    historia: [
+      "O Vespa Club Angola junta quem tem, restaura ou sonha ter uma Vespa, a scooter italiana que anda nas ruas desde 1946. Nasceu em Luanda, em 2016, de um punhado de donos de clássicas que se cruzavam nas oficinas à procura das mesmas peças.",
+      "Ao domingo de manhã, o grupo junta-se na Baixa e faz a volta da Marginal e da Ilha, ao ritmo das clássicas. Há também saídas mais longas, até à Barra do Kwanza ou a Cabo Ledo, para provar que uma scooter também viaja.",
+      "Boa parte da vida do clube passa-se na oficina: os membros trocam peças, contactos de mecânicos e dicas de restauro, e ajudam quem chega com uma Vespa parada há anos a pô-la a andar outra vez.",
+    ],
+    destaques: [
+      {
+        ano: "2016",
+        titulo: "O início",
+        texto: "Donos de Vespa que se cruzavam nas oficinas de Luanda começam a sair juntos ao domingo.",
+      },
+      {
+        ano: "2018",
+        titulo: "Primeira saída a Cabo Ledo",
+        texto: "Cerca de 120 km de scooter por sentido, ida e volta no mesmo dia.",
+      },
+      {
+        ano: "2023",
+        titulo: "Encontro de clássicas",
+        texto: "Vespas restauradas e por restaurar alinhadas na Marginal de Luanda, abertas a quem quis ver de perto.",
+      },
+      {
+        ano: "2025",
+        titulo: "Restauro em grupo",
+        texto: "Os membros juntaram-se para pôr a andar uma Vespa dos anos 70, peça a peça.",
+      },
+    ],
+    encontros: ["Uma saída mais longa por trimestre, até à Barra do Kwanza ou a Cabo Ledo."],
+    comoAderir: {
+      passos: [
+        "Ter uma Vespa ou outra scooter clássica, em qualquer estado: restaurar também conta.",
+        "Aparecer num encontro de domingo na Baixa de Luanda.",
+        "Juntar-se ao grupo, que partilha peças, mecânicos e dicas de restauro.",
+      ],
+    },
+    estilo: "Passeios urbanos e saídas curtas ao ritmo das clássicas, com muito tempo de oficina.",
+    motas: "Vespa de todas as épocas, das clássicas de chassis em chapa às modernas, e outras scooters clássicas.",
+    numeros: [
+      { valor: "20+", rotulo: "Vespa e clássicas no grupo" },
+      { valor: "120 km", rotulo: "até Cabo Ledo, a saída mais longa" },
+    ],
+    fontes: [],
   },
 };
 

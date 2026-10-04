@@ -130,7 +130,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                   ["Equipa", piloto.equipa],
                   ["Província", piloto.provincia],
                   ["Idade", `${piloto.idade} anos`],
-                  ["Mota", piloto.mota],
+                  [piloto.categoria === "Karting" ? "Kart" : "Mota", piloto.mota],
                 ] as const
               ).map(([k, v]) => (
                 <div key={k} className="flex flex-col-reverse rounded-[var(--raio)] bg-white/5 p-4">

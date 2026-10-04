@@ -52,7 +52,9 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
       <Abertura
         compacta
         foto={[corrida.slug, corrida.imagem]}
-        sobretitulo={`Ronda ${corrida.ronda} · ${corrida.categoria} · ${corrida.temporada}`}
+        sobretitulo={[corrida.ronda > 0 ? `Ronda ${corrida.ronda}` : null, corrida.categoria, String(corrida.temporada)]
+          .filter(Boolean)
+          .join(" · ")}
         titulo={corrida.nome}
         texto={`${corrida.circuito}, ${corrida.provincia} · ${intervaloDatas(corrida.data)}`}
       >

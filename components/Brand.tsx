@@ -178,8 +178,11 @@ export function Retrato({
     ? ""
     : "relative ";
   return (
+    // Contentor de tamanho próprio: as iniciais (em cqw) medem-se pelo retrato,
+    // e não pelo ecrã, quando quem o usa não declara um. O conteúdo é todo
+    // absoluto, por isso a contenção não muda o tamanho da caixa.
     <div
-      className={`${posicao}overflow-hidden ${className}`}
+      className={`${posicao}overflow-hidden [container-type:size] ${className}`}
       style={{ background: `linear-gradient(160deg, ${base} 0%, #0a0a0c 82%)` }}
     >
       {foto && (
@@ -197,7 +200,7 @@ export function Retrato({
         <>
           <div className="speed-lines absolute inset-0 opacity-40" />
           <div className="absolute inset-0 grid place-items-center">
-            <span className="font-display text-white/12 leading-none select-none" style={{ fontSize: "clamp(3rem, 34cqw, 12rem)" }}>
+            <span className="font-display text-white/12 leading-none select-none" style={{ fontSize: "clamp(1rem, 34cqw, 12rem)" }}>
               {iniciais}
             </span>
           </div>

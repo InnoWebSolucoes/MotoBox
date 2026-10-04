@@ -74,7 +74,7 @@ export default function AdminCorridas() {
               <Campo etiqueta="Categoria">
                 <Input value={r.categoria} onChange={(e) => definir({ categoria: e.target.value } as Partial<Corrida>)} />
               </Campo>
-              <Campo etiqueta="Ronda">
+              <Campo etiqueta="Ronda" ajuda="Ronda do Campeonato Nacional; 0 numa corrida fora do campeonato.">
                 <Input type="number" value={r.ronda} onChange={(e) => definir({ ronda: Number(e.target.value) } as Partial<Corrida>)} />
               </Campo>
               <Campo etiqueta="Temporada">

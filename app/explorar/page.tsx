@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { lerClubes, lerEventos, lerNoticias, lerPilotos } from "@/lib/supabase/publico";
 import { classificacaoPilotos } from "@/lib/data";
-import { eComunidade, eProva } from "@/lib/desporto";
+import { doCampeonato, eComunidade, eProva } from "@/lib/desporto";
 import { lerRedes } from "@/lib/redes";
 import { artigoEmDestaque, clubeDoMes, diaMes, eventosFuturos, localClube } from "@/lib/motobox";
 import { Chip, FotoFundo, Logotipo, Moldura, Seta, ordem } from "@/components/painel/kit";
@@ -43,7 +43,7 @@ export default async function Painel() {
   // Eventos da comunidade no painel de Eventos; as provas vão para o Desporto.
   const proximo = eventosFuturos(eventos.filter((e) => eComunidade(e.disciplina)))[0];
   const proximaProva = eventosFuturos(eventos.filter((e) => eProva(e.disciplina)))[0];
-  const lider = classificacaoPilotos(pilotos)[0];
+  const lider = classificacaoPilotos(pilotos.filter(doCampeonato))[0];
   const instagram = redes.find((r) => r.rede === "instagram");
   const provincias = new Set(clubes.map((c) => c.provincia).filter(Boolean)).size;
 

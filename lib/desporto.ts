@@ -11,7 +11,9 @@
 import type { Corrida, Disciplina, Evento } from "@/lib/types";
 
 /** Disciplinas que são provas: vão para o calendário de Desporto ("Prova" é uma competição sem modalidade). */
-export const DISCIPLINAS_PROVA = ["Motocross", "Enduro", "Velocidade", "Rally", "Prova"] as const satisfies readonly Disciplina[];
+export const DISCIPLINAS_PROVA = [
+  "Motocross", "Enduro", "Velocidade", "Rally", "Moto 4", "Karting", "Prova",
+] as const satisfies readonly Disciplina[];
 
 /** Disciplinas que são eventos da comunidade: vão para a secção Eventos (os tipos de TIPOS_EVENTO, sem "Prova"). */
 export const DISCIPLINAS_COMUNIDADE = [
@@ -73,10 +75,12 @@ export function entradaDoEvento(e: Pick<Evento, "entrada">): string {
 /**
  * Onde a modalidade aparece na entrada de Desporto e no menu:
  * - "principal": o Motocross, casa do Campeonato Nacional;
- * - "competicao": modalidades com provas no calendário da Motobox;
+ * - "competicao": modalidades com provas no calendário da Motobox (hoje,
+ *   todas as outras: enduro, rally-raid, velocidade, moto 4 e karting);
  * - "outras": modalidades com página própria (o que é, classes, a cena em
  *   Angola, como começar) mas ainda sem provas no calendário da Motobox.
- * Todas são destinos com conteúdo: nenhuma é "em breve".
+ * Todas são destinos com conteúdo: nenhuma é "em breve". A entrada de
+ * Desporto esconde o grupo "outras" quando fica vazio.
  */
 export type GrupoModalidade = "principal" | "competicao" | "outras";
 
@@ -135,30 +139,54 @@ export const MODALIDADES: Modalidade[] = [
     slug: "velocidade",
     nome: "Velocidade",
     disciplinas: ["Velocidade"],
-    grupo: "outras",
+    grupo: "competicao",
     descricao: "Motas em pista de asfalto, joelho no chão: do Autódromo de Luanda ao MotoGP.",
     imagem: unsplash("photo-1713205136828-c3a69cfb6d7c"),
-    categorias: [],
+    categorias: ["Velocidade"],
   },
   {
     slug: "moto-4",
     nome: "Moto 4 e quads",
-    disciplinas: [],
-    grupo: "outras",
+    disciplinas: ["Moto 4"],
+    grupo: "competicao",
     descricao: "Todo-o-terreno sobre quatro rodas: quads e SSV, com campeões no rali-raid angolano.",
     imagem: unsplash("photo-1553966012-4dce025d8e03"),
-    categorias: [],
+    categorias: ["Moto 4"],
   },
   {
     slug: "automobilismo",
     nome: "Karting e automobilismo",
-    disciplinas: [],
-    grupo: "outras",
+    disciplinas: ["Karting"],
+    grupo: "competicao",
     descricao: "Do kart em Benguela às 24 Horas de Le Mans: a escada do automobilismo, com pilotos angolanos.",
     imagem: unsplash("photo-1505570554449-69ce7d4fa36b"),
-    categorias: [],
+    categorias: ["Karting"],
   },
 ];
+
+/**
+ * Categorias de piloto (`Piloto.categoria`), pela ordem das pílulas em
+ * Pilotos e Classificação. Uma categoria nova vinda da base aparece no fim.
+ */
+export const CATEGORIAS_PILOTO = ["MX1", "MX2", "Rally / Enduro", "Velocidade", "Moto 4", "Karting"] as const;
+
+/** Categorias que pontuam para o Campeonato Nacional; as outras correm em taças à parte. */
+export const CATEGORIAS_CAMPEONATO: readonly string[] = ["MX1", "MX2", "Rally / Enduro"];
+
+export const doCampeonato = (p: { categoria: string }) => CATEGORIAS_CAMPEONATO.includes(p.categoria);
+
+/** "Todas" e as categorias que têm pilotos: as conhecidas pela ordem de CATEGORIAS_PILOTO, as outras a seguir. */
+export function categoriasComPilotos(pilotos: { categoria: string }[]): string[] {
+  const presentes = new Set(pilotos.map((p) => p.categoria).filter(Boolean));
+  const conhecidas: readonly string[] = CATEGORIAS_PILOTO;
+  const outras = [...presentes].filter((c) => !conhecidas.includes(c)).sort((a, b) => a.localeCompare(b));
+  return ["Todas", ...conhecidas.filter((c) => presentes.has(c)), ...outras];
+}
+
+/** Corridas que contam para o Campeonato Nacional (as de fora têm ronda 0). */
+export function corridasDoCampeonato(corridas: Corrida[]): Corrida[] {
+  return corridas.filter((c) => c.ronda > 0);
+}
 
 export function lerModalidade(slug: string): Modalidade | undefined {
   return MODALIDADES.find((m) => m.slug === slug);

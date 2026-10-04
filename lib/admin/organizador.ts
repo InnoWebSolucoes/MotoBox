@@ -20,7 +20,8 @@ import type {
   TipoBilhete, Provincia, ResultadoCorrida,
 } from "@/lib/types";
 import { PROVINCIAS as PROVINCIAS_ANGOLA } from "@/lib/provincias";
-import { CATEGORIAS_ARTIGO, TIPOS_EVENTO } from "@/lib/types";
+import { CATEGORIAS_ARTIGO } from "@/lib/types";
+import { DISCIPLINAS_COMUNIDADE, DISCIPLINAS_PROVA } from "@/lib/desporto";
 
 export const MODELO = "claude-opus-5";
 
@@ -37,8 +38,9 @@ const TEMPO_MAXIMO_MS = 280_000;
 
 // Lista partilhada com o resto do site (lib/provincias.ts): as 21 províncias.
 const PROVINCIAS = PROVINCIAS_ANGOLA;
-// Tipos de evento da comunidade; "Prova" junta qualquer competição.
-const DISCIPLINAS = TIPOS_EVENTO;
+// Provas de cada modalidade de Desporto ("Prova" é uma competição sem
+// modalidade) e os tipos de evento da comunidade.
+const DISCIPLINAS = [...DISCIPLINAS_PROVA, ...DISCIPLINAS_COMUNIDADE] as const;
 const ESTADOS_EVENTO = ["agendado", "bilhetes-abertos", "esgotado", "a-decorrer", "concluido"] as const;
 const CATEGORIAS_NOTICIA = CATEGORIAS_ARTIGO;
 const CATEGORIAS_VIDEO = ["Highlights", "Entrevista", "Documentário", "Onboard", "Resumo"] as const;
@@ -110,7 +112,7 @@ const Esquema = z.object({
     nacionalidade: z.string().describe(VAZIO),
     idade: z.number().describe(ZERO),
     mota: z.string(),
-    categoria: z.string().describe("Ex.: MX1, MX2, Enduro, Quad"),
+    categoria: z.string().describe("Uma de: MX1, MX2, Rally / Enduro, Velocidade, Moto 4, Karting"),
     bio: z.string(),
     estreia: z.number().describe(`Ano de estreia em competição; ${ZERO}`),
     instagram: z.string().describe(`Endereço; ${VAZIO.toLowerCase()}`),
@@ -257,7 +259,7 @@ const CAMPOS_IA: Record<ColeccaoIA, Record<string, DefCampo>> = {
     nacionalidade: { tipo: "texto", etiqueta: "Nacionalidade" },
     idade: { tipo: "numero", etiqueta: "Idade" },
     mota: { tipo: "texto", etiqueta: "Mota" },
-    categoria: { tipo: "texto", etiqueta: "Categoria", nota: "MX1, MX2, Enduro, Quad..." },
+    categoria: { tipo: "texto", etiqueta: "Categoria", nota: "MX1, MX2, Rally / Enduro, Velocidade, Moto 4 ou Karting" },
     bio: { tipo: "longo", etiqueta: "Biografia" },
     estreia: { tipo: "numero", etiqueta: "Estreia", nota: "ano de estreia" },
     estatisticas: {

@@ -56,7 +56,7 @@ export function CalendarioClient({
         foto="trail"
         sobretitulo={`Temporada ${TEMPORADA}`}
         titulo={t("paginas.calendarioTitulo")}
-        texto="As provas do motociclismo angolano: motocross, enduro, rally-raid e velocidade. Clique numa prova para ver horários, circuito e bilhetes."
+        texto="As provas de Desporto em Angola: motocross, enduro, rally-raid, velocidade, moto 4 e karting. Clique numa prova para ver horários, circuito e bilhetes."
       >
         <LigacaoSeta href="/eventos" className="text-[15px]">
           Passeios, encontros e acções solidárias estão em Eventos

@@ -5,8 +5,8 @@ import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Seccao } from "@/components/painel/blocos";
 import { TEMPORADA, classificacaoPilotos } from "@/lib/data";
 import {
-  MODALIDADES, MODALIDADE_PRINCIPAL, corridasDaModalidade, eProva, eventosDaModalidade, instante, lerModalidade,
-  seccoesDaModalidade, type Modalidade,
+  MODALIDADES, MODALIDADE_PRINCIPAL, corridasDaModalidade, corridasDoCampeonato, eProva, eventosDaModalidade, instante,
+  lerModalidade, seccoesDaModalidade, type Modalidade,
 } from "@/lib/desporto";
 import { lerConteudo, type ConteudoPagina } from "@/lib/desporto-conteudo";
 import { lerCorridas, lerDefinicoes, lerEquipas, lerEventos, lerPilotos } from "@/lib/supabase/publico";
@@ -69,8 +69,10 @@ type Dados = {
 
 /* ---------------- Motocross: o Campeonato Nacional e o guia ---------------- */
 
-function PaginaMotocross({ m, c, eventos, corridas, pilotos, equipas, bilheteiraAberta }: Dados) {
+function PaginaMotocross({ m, c, eventos, corridas: todas, pilotos, equipas, bilheteiraAberta }: Dados) {
   const provas = eventosDaModalidade(m, eventos);
+  // Só as corridas do Campeonato Nacional: as de fora (velocidade, karting...) ficam nas suas modalidades.
+  const corridas = corridasDoCampeonato(todas);
   const indice = [
     { id: "campeonato", nome: "Campeonato" },
     { id: "calendario", nome: "Calendário" },
@@ -120,6 +122,8 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
   const cores = new Map(equipas.map((e) => [e.slug, e.cor]));
   const comProvas = provas.length > 0;
   const indice = comProvas ? [{ id: "provas", nome: "Provas" }, ...SECCOES_GUIA] : SECCOES_GUIA;
+  const porDisputar = provas.filter((e) => new Date(e.dataInicio).getTime() > agora).length;
+  const provincias = new Set(provas.map((e) => e.provincia)).size;
 
   return (
     <>
@@ -130,10 +134,10 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
             m={m}
             eyebrow={`Desporto · Temporada ${TEMPORADA}`}
             numeros={[
-              { valor: provas.length, label: "Provas" },
-              { valor: provas.filter((e) => new Date(e.dataInicio).getTime() > agora).length, label: "Por disputar" },
-              { valor: resultados.length, label: "Corridas disputadas" },
-              { valor: new Set(provas.map((e) => e.provincia)).size, label: "Províncias" },
+              { valor: provas.length, label: provas.length === 1 ? "Prova" : "Provas" },
+              { valor: porDisputar, label: "Por disputar" },
+              { valor: resultados.length, label: resultados.length === 1 ? "Corrida disputada" : "Corridas disputadas" },
+              { valor: provincias, label: provincias === 1 ? "Província" : "Províncias" },
             ]}
           >
             <IndicePagina indice={indice} />

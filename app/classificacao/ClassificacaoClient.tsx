@@ -9,12 +9,11 @@ import { Abertura, Seccao } from "@/components/painel/blocos";
 import { TEMPORADA } from "@/lib/data";
 import type { Equipa, Piloto } from "@/lib/types";
 import { useIdioma } from "@/lib/i18n/contexto";
+import { categoriasComPilotos, doCampeonato } from "@/lib/desporto";
 import { Aviso, EmblemaEquipa, Posicao, iniciais } from "@/app/calendario/pecas";
 
 type PilotoClass = Piloto & { posicao: number };
 type EquipaClass = Equipa & { posicao: number };
-
-const CATEGORIAS = ["Todas", "MX1", "MX2", "Rally / Enduro"];
 
 /** "1.º" em português, "1st" em inglês. */
 function ordinal(n: number, idioma: string) {
@@ -37,9 +36,12 @@ export function ClassificacaoClient({
   const { t, idioma } = useIdioma();
   const [aba, setAba] = useState<"pilotos" | "equipas">("pilotos");
   const [categoria, setCategoria] = useState("Todas");
+  // Só as categorias com pilotos, pela ordem de sempre (MX1, MX2, Rally / Enduro, Velocidade, Moto 4, Karting).
+  const categorias = useMemo(() => categoriasComPilotos(pilotos), [pilotos]);
 
   const lista = useMemo(() => {
-    const filtrados = categoria === "Todas" ? pilotos : pilotos.filter((p) => p.categoria === categoria);
+    // "Todas" é a geral do Campeonato Nacional: velocidade, moto 4 e karting têm a sua tabela à parte.
+    const filtrados = categoria === "Todas" ? pilotos.filter(doCampeonato) : pilotos.filter((p) => p.categoria === categoria);
     return filtrados.map((p, i) => ({ ...p, posicao: i + 1 }));
   }, [pilotos, categoria]);
 
@@ -78,9 +80,9 @@ export function ClassificacaoClient({
 
           {aba === "pilotos" && (
             <div role="group" aria-label="Categoria" className="no-scrollbar -mx-1 flex max-w-full gap-2 overflow-x-auto px-1">
-              {CATEGORIAS.map((c) => (
+              {categorias.map((c) => (
                 <button key={c} type="button" onClick={() => setCategoria(c)} aria-pressed={categoria === c} className="pilula">
-                  {c}
+                  {c === "Todas" ? "Geral" : c}
                 </button>
               ))}
             </div>

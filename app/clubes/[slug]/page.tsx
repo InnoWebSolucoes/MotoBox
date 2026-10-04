@@ -99,7 +99,9 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
     .slice(0, 3)
     .map(comResumo);
 
-  const fonte = (i: number) => perfil?.fontes[i];
+  // Os placeholders (lib/clubes-perfis.ts) não têm fonte: sem índice, não há ligação.
+  const fonte = (i?: number) => (i === undefined ? undefined : perfil?.fontes[i]);
+  const cronologiaComFontes = Boolean(perfil?.destaques.every((d) => fonte(d.fonte)));
   // Sem perfil alargado, a história é a descrição da base de dados (e a abertura, a primeira frase).
   const historia = perfil?.historia.length ? perfil.historia : [clube.descricao];
   const abertura = perfil?.resumo ?? primeiraFrase(clube.descricao);
@@ -180,7 +182,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                   itens={perfil.numeros.map((n) => ({
                     valor: n.valor,
                     texto: n.rotulo,
-                    nota: <LigacaoFonte fonte={fonte(n.fonte)} />,
+                    nota: fonte(n.fonte) && <LigacaoFonte fonte={fonte(n.fonte)} />,
                   }))}
                 />
               )}
@@ -228,7 +230,9 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
         <Seccao className="!pt-0">
           <h2 className="titulo-3">Percurso do clube</h2>
           <p className="mt-4 max-w-[56ch] text-[15px] leading-relaxed text-white/65">
-            Os momentos que o clube e a imprensa publicaram, por ordem, cada um com a sua fonte.
+            {cronologiaComFontes
+              ? "Os momentos que o clube e a imprensa publicaram, por ordem, cada um com a sua fonte."
+              : "Os momentos que marcaram o clube, por ordem."}
           </p>
           <ol className="mt-8 grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
             {perfil.destaques.map((d, i) => (
@@ -242,9 +246,11 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                 </span>
                 <h3 className="mt-8 text-lg font-semibold leading-snug">{d.titulo}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-white/75">{d.texto}</p>
-                <p className="mt-auto pt-5">
-                  <LigacaoFonte fonte={fonte(d.fonte)} />
-                </p>
+                {fonte(d.fonte) && (
+                  <p className="mt-auto pt-5">
+                    <LigacaoFonte fonte={fonte(d.fonte)} />
+                  </p>
+                )}
               </li>
             ))}
           </ol>
@@ -261,9 +267,11 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
               </Chip>
               <h2 className="titulo-3 mt-8">{viagens.titulo}</h2>
               <p className="mt-4 max-w-[44ch] text-[15px] leading-relaxed text-white/70">{viagens.nota}</p>
-              <p className="mt-4">
-                <LigacaoFonte fonte={fonte(viagens.fonte)} />
-              </p>
+              {fonte(viagens.fonte) && (
+                <p className="mt-4">
+                  <LigacaoFonte fonte={fonte(viagens.fonte)} />
+                </p>
+              )}
             </div>
             <div className="painel painel-escuro self-start p-2 md:p-4">
               <table className="w-full text-left text-sm">
@@ -342,9 +350,9 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                 O clube não publicou regras de adesão. Pergunte directamente nas redes do clube.
               </p>
             )}
-            {aderir && (
+            {fonte(aderir?.fonte) && (
               <p className="mt-6">
-                <LigacaoFonte fonte={fonte(aderir.fonte)} />
+                <LigacaoFonte fonte={fonte(aderir?.fonte)} />
               </p>
             )}
           </section>
@@ -363,8 +371,8 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                 Fontes
               </TituloPainel>
               <p className="mt-4 max-w-[40ch] text-sm leading-relaxed text-white/65">
-                Informação verificada em Outubro de 2026, a partir de reportagens e das páginas públicas do clube. Só
-                publicamos o que vem numa fonte.
+                Reportagens e páginas públicas do clube consultadas em Outubro de 2026. Os dados sem fonte ao lado
+                são indicativos e podem mudar.
               </p>
               <Link
                 href={`/contacto?assunto=${encodeURIComponent(`Correcção ao clube ${clube.nome}`)}`}

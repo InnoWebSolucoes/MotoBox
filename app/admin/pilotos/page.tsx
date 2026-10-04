@@ -78,7 +78,7 @@ export default function AdminPilotos() {
                     definir({ equipaSlug: v, equipa: eq?.nome ?? "" } as Partial<Piloto>);
                   }} />
               </Campo>
-              <Campo etiqueta="Categoria">
+              <Campo etiqueta="Categoria" ajuda="Uma de: MX1, MX2, Rally / Enduro, Velocidade, Moto 4 ou Karting (é o que liga o piloto à modalidade).">
                 <Input value={r.categoria} onChange={(e) => definir({ categoria: e.target.value } as Partial<Piloto>)} />
               </Campo>
               <Campo etiqueta="Província">

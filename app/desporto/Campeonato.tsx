@@ -3,7 +3,7 @@ import { Retrato } from "@/components/Brand";
 import { Seccao } from "@/components/painel/blocos";
 import { Monograma, Seta } from "@/components/painel/kit";
 import { TEMPORADA, classificacaoEquipas, classificacaoPilotos } from "@/lib/data";
-import { instante } from "@/lib/desporto";
+import { doCampeonato, instante } from "@/lib/desporto";
 import type { Corrida, Equipa, Evento, Piloto } from "@/lib/types";
 import { LinhaEvento } from "@/app/calendario/ListaEventos";
 import { FilaPilotos, Posicao, ProximaProva, TituloBloco, UltimosResultados, Vazio, iniciais } from "./Partes";
@@ -33,7 +33,7 @@ export function Campeonato({
 }) {
   const agora = instante();
   const proxima = provas.find((e) => new Date(e.dataInicio).getTime() > agora);
-  const classificacao = classificacaoPilotos(pilotos);
+  const classificacao = classificacaoPilotos(pilotos.filter(doCampeonato));
   const topPilotos = classificacao.slice(0, 5);
   const topEquipas = classificacaoEquipas(equipas.filter((e) => e.tipo === "Equipa")).slice(0, 6);
   const cores = new Map(equipas.map((e) => [e.slug, e.cor]));

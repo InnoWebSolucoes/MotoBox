@@ -5,6 +5,7 @@
    eventos ainda estão para vir.
    ============================================================ */
 
+import { DISCIPLINAS_PROVA } from "./desporto";
 import type { Clube, Evento, Noticia } from "./types";
 
 /** O artigo marcado como destaque mais recente; sem nenhum, o mais recente. */
@@ -40,9 +41,9 @@ export function eventosPassados(eventos: Evento[], agora = Date.now()): Evento[]
     .sort((a, b) => +new Date(b.dataInicio) - +new Date(a.dataInicio));
 }
 
-/** Provas antigas (Motocross, Enduro...) aparecem todas como "Prova". */
+/** As provas de cada modalidade (Motocross, Enduro, Karting...) aparecem todas como "Prova". */
 export function tipoEvento(e: Evento): string {
-  return ["Motocross", "Enduro", "Velocidade", "Rally"].includes(e.disciplina) ? "Prova" : e.disciplina;
+  return (DISCIPLINAS_PROVA as readonly string[]).includes(e.disciplina) ? "Prova" : e.disciplina;
 }
 
 /** "Lobito, Benguela", "Luanda" ou "Angola" quando a sede não é pública. */

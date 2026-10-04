@@ -4,8 +4,9 @@ import type { Provincia } from "./provincias";
 /**
  * Tipo de evento. Os da comunidade vêm primeiro (passeios, raides,
  * encontros, concentrações, acções solidárias, formações); "Prova" junta
- * qualquer competição. Motocross, Enduro, Velocidade e Rally ficam por
- * compatibilidade com eventos antigos e contam como prova.
+ * qualquer competição sem modalidade. Motocross, Enduro, Velocidade, Rally,
+ * Moto 4 e Karting são as modalidades de Desporto (ver DISCIPLINAS_PROVA em
+ * lib/desporto.ts) e contam como prova.
  */
 export const TIPOS_EVENTO = [
   "Passeio", "Raide", "Encontro", "Concentração", "Solidária", "Formação", "Prova",
@@ -13,7 +14,7 @@ export const TIPOS_EVENTO = [
 
 export type Disciplina =
   | (typeof TIPOS_EVENTO)[number]
-  | "Motocross" | "Enduro" | "Velocidade" | "Rally";
+  | "Motocross" | "Enduro" | "Velocidade" | "Rally" | "Moto 4" | "Karting";
 
 /** Categorias dos artigos, a secção principal do site. */
 export const CATEGORIAS_ARTIGO = [
@@ -66,6 +67,7 @@ export interface Evento {
   slug: string;
   titulo: string;
   disciplina: Disciplina;
+  /** Ronda do Campeonato Nacional; sem ela, a prova é de fora do campeonato. */
   ronda?: number;
   temporada: number;
   circuito: string;
@@ -161,6 +163,7 @@ export interface Corrida {
   slug: string;
   eventoSlug: string;
   nome: string;
+  /** Ronda do Campeonato Nacional; 0 numa corrida fora do campeonato (não mostra "Ronda"). */
   ronda: number;
   temporada: number;
   circuito: string;

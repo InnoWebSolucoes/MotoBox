@@ -9,7 +9,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Calendário de provas 2026",
   description:
-    "As provas do motociclismo angolano em 2026: motocross, enduro e rally-raid. Datas, circuitos, horários e bilhetes.",
+    "As provas de Desporto em Angola em 2026: motocross, enduro, rally-raid, velocidade, moto 4 e karting. Datas, circuitos, horários e bilhetes.",
 };
 
 export default async function CalendarioPage() {
