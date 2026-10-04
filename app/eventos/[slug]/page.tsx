@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { CalendarDays, CalendarPlus } from "lucide-react";
 import { lerEvento, lerEventos } from "@/lib/supabase/publico";
 import { eventosFuturos, intervaloDatas, tipoEvento } from "@/lib/motobox";
+import { eComunidade } from "@/lib/desporto";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, BotaoMB, Numeros, Seccao } from "@/components/painel/blocos";
 import { CartaoEvento } from "@/components/painel/cartoes";
@@ -15,7 +16,7 @@ export const revalidate = 60;
 
 export async function generateStaticParams() {
   const eventos = await lerEventos();
-  return eventos.map((e) => ({ slug: e.slug }));
+  return eventos.filter((e) => eComunidade(e.disciplina)).map((e) => ({ slug: e.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -53,9 +54,12 @@ export default async function EventoPagina({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const evento = await lerEvento(slug);
   if (!evento) notFound();
+  // Uma prova tem a sua página no calendário do Desporto (bilhetes, horários, resultados).
+  if (!eComunidade(evento.disciplina)) redirect(`/calendario/${evento.slug}`);
 
   const futuro = eventosFuturos([evento]).length > 0;
-  const outros = eventosFuturos(await lerEventos()).filter((e) => e.slug !== evento.slug).slice(0, 3);
+  const outros = eventosFuturos((await lerEventos()).filter((e) => eComunidade(e.disciplina)))
+    .filter((e) => e.slug !== evento.slug).slice(0, 3);
   const quando = intervaloDatas(evento.dataInicio, evento.dataFim);
 
   return (

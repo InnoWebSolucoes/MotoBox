@@ -161,6 +161,33 @@
   .prosa p + p {
     margin-top: 1.25em;
   }
+  .prosa :is(p, h2, figure) + :is(p, h2, figure) {
+    margin-top: 1.25em;
+  }
+  .prosa h2 {
+    padding-top: 0.75em;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .prosa figure {
+    margin-block: 2.5em;
+    border-left: 2px solid var(--color-mb-red);
+    padding-left: 1.5rem;
+  }
+  .prosa blockquote {
+    font-size: 1.375rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .prosa figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgb(255 255 255 / 0.5);
+  }
   .prosa p:first-child::first-letter {
     float: left;
     font-size: 3.6em;

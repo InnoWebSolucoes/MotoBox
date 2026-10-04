@@ -10,6 +10,7 @@ import { CartaoArtigo } from "@/components/painel/cartoes";
 import { NewsletterPainel } from "@/components/painel/Newsletter";
 import { Seta } from "@/components/painel/kit";
 import { Partilhar } from "./Partilhar";
+import { CorpoArtigo } from "./CorpoArtigo";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -74,9 +75,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
       <Seccao>
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_16rem] xl:gap-20">
           <div className="prosa max-w-[68ch]">
-            {artigo.corpo.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
+            <CorpoArtigo corpo={artigo.corpo} />
 
             {artigo.fonte && (
               <p className="!mt-10 border-l-2 border-mb-red pl-4 !text-sm !text-white/60">

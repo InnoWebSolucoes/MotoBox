@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/contexto";
+import { caminhoDaPagina } from "@/lib/base";
 
 /* ============================================================
    MOTOBOX — Botão de acção
@@ -28,7 +29,7 @@ const ROTULO: Record<Estado, string> = {
 };
 
 export function BarraAccao() {
-  const caminho = usePathname();
+  const caminho = caminhoDaPagina(usePathname());
   const estado = estadoPara(caminho);
   // Nas páginas interiores o painel ocupa o ecrã inteiro: o botão flutua por cima.
   const flutua = estado === "voltar";

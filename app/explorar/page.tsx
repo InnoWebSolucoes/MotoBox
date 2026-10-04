@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  CalendarDays, Mail, MessagesSquare, Newspaper, Route, ShieldCheck, Star, Store, Users, BookOpen,
+  CalendarDays, Mail, MessagesSquare, Newspaper, Route, ShieldCheck, Star, Store, Trophy, Users, BookOpen,
 } from "lucide-react";
-import { lerClubes, lerEventos, lerNoticias } from "@/lib/supabase/publico";
+import { lerClubes, lerEventos, lerNoticias, lerPilotos } from "@/lib/supabase/publico";
+import { classificacaoPilotos } from "@/lib/data";
+import { eComunidade, eProva } from "@/lib/desporto";
 import { lerRedes } from "@/lib/redes";
 import { artigoEmDestaque, clubeDoMes, diaMes, eventosFuturos, localClube } from "@/lib/motobox";
 import { Chip, FotoFundo, Logotipo, Moldura, Seta, ordem } from "@/components/painel/kit";
@@ -22,30 +24,37 @@ export const metadata: Metadata = {
 
 /* ============================================================
    MOTOBOX — Painel
-   Uma grelha de 16 colunas que cabe no ecrã: o artigo em
-   destaque no painel grande, os clubes, os eventos e a história
+   Uma grelha de 16 colunas que enche o ecrã: o artigo em
+   destaque no painel grande, os clubes, o desporto e os eventos
    por baixo; à direita as redes, o tempo, o clube do mês e as
-   secções de serviço. No telemóvel, os painéis empilham-se.
+   secções de serviço. As linhas têm altura mínima: num ecrã
+   baixo a página rola, em vez de cortar o que está nos painéis.
+   No telemóvel, os painéis empilham-se.
    ============================================================ */
 
 export default async function Painel() {
-  const [artigos, clubes, eventos, redes] = await Promise.all([
-    lerNoticias(), lerClubes(), lerEventos(), lerRedes(),
+  const [artigos, clubes, eventos, redes, pilotos] = await Promise.all([
+    lerNoticias(), lerClubes(), lerEventos(), lerRedes(), lerPilotos(),
   ]);
 
   const destaque = artigoEmDestaque(artigos);
   const outros = artigos.filter((a) => a.slug !== destaque?.slug).slice(0, 3);
   const clube = clubeDoMes(clubes);
-  const proximo = eventosFuturos(eventos)[0];
+  // Eventos da comunidade no painel de Eventos; as provas vão para o Desporto.
+  const proximo = eventosFuturos(eventos.filter((e) => eComunidade(e.disciplina)))[0];
+  const proximaProva = eventosFuturos(eventos.filter((e) => eProva(e.disciplina)))[0];
+  const lider = classificacaoPilotos(pilotos)[0];
   const instagram = redes.find((r) => r.rede === "instagram");
   const provincias = new Set(clubes.map((c) => c.provincia).filter(Boolean)).size;
 
   return (
-    <Moldura>
+    <Moldura className="lg:min-h-[36.25rem]">
+      {/* A moldura enche o ecrã, mas nunca fica mais baixa do que a grelha precisa:
+          num ecrã baixo, a página rola em vez de cortar os painéis. */}
       <Logotipo />
       <h1 className="sr-only">Painel da MotoBox Angola</h1>
 
-      <div className="grid grid-cols-[var(--tile)_var(--tile)_minmax(0,1fr)] gap-[var(--intervalo)] lg:h-full lg:grid-cols-[var(--tile)_repeat(15,minmax(0,1fr))] lg:grid-rows-[var(--tile)_minmax(0,1fr)_minmax(0,0.74fr)]">
+      <div className="grid grid-cols-[var(--tile)_var(--tile)_minmax(0,1fr)] gap-[var(--intervalo)] lg:h-full lg:grid-cols-[var(--tile)_repeat(15,minmax(0,1fr))] lg:grid-rows-[var(--tile)_minmax(18.5rem,1fr)_minmax(12rem,0.8fr)]">
         {/* ---------- Artigo em destaque ---------- */}
         <section
           aria-label="Artigos"
@@ -66,7 +75,7 @@ export default async function Painel() {
               </span>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-6 md:p-8 xl:pr-[21rem]">
                 <p className="text-sm text-white/80">Artigo em destaque · {destaque.categoria}</p>
-                <h2 className="titulo-3 mt-3 max-w-[20ch] text-balance">{destaque.titulo}</h2>
+                <h2 className="titulo-3 mt-3 line-clamp-3 max-w-[20ch] text-balance">{destaque.titulo}</h2>
                 <p className="mt-3 line-clamp-3 max-w-[50ch] text-sm leading-relaxed text-white/85 md:text-[15px]">
                   {destaque.resumo}
                 </p>
@@ -107,8 +116,22 @@ export default async function Painel() {
           icone={<Users />}
           titulo="Clubes"
           texto={`${clubes.length} clubes${provincias ? ` em ${provincias} províncias` : ""}, de todos os tipos de mota`}
-          className="order-2 col-span-full h-64 lg:order-none lg:col-[1/6] lg:row-[3/4] lg:h-auto"
+          className="order-2 col-span-full h-64 lg:order-none lg:col-[1/5] lg:row-[3/4] lg:h-auto"
           i={1}
+        />
+
+        {/* ---------- Desporto ---------- */}
+        <PainelFoto
+          href="/desporto"
+          foto={["competicao", "kilamba"]}
+          icone={<Trophy />}
+          titulo="Desporto"
+          texto={[
+            lider ? `Campeonato Nacional: ${lider.nome} lidera com ${lider.estatisticas.pontos} pontos` : "Campeonato Nacional, pilotos e resultados",
+            proximaProva ? `Próxima prova: ${proximaProva.titulo}, ${diaMes(proximaProva.dataInicio).dia} ${diaMes(proximaProva.dataInicio).mes}` : "",
+          ].filter(Boolean).join(". ")}
+          className="order-3 col-span-full h-64 lg:order-none lg:col-[5/9] lg:row-[3/4] lg:h-auto"
+          i={2}
         />
 
         {/* ---------- Eventos ---------- */}
@@ -122,18 +145,7 @@ export default async function Painel() {
               ? `Próximo: ${proximo.titulo}, ${diaMes(proximo.dataInicio).dia} ${diaMes(proximo.dataInicio).mes}`
               : "Passeios, encontros e raides"
           }
-          className="order-3 col-span-full h-64 lg:order-none lg:col-[6/9] lg:row-[3/4] lg:h-auto"
-          i={2}
-        />
-
-        {/* ---------- Sobre ---------- */}
-        <PainelFoto
-          href="/sobre"
-          foto="painel-sobre"
-          icone={<BookOpen />}
-          titulo="O que é a MotoBox?"
-          texto="A nossa história"
-          className="order-6 col-span-full h-64 lg:order-none lg:col-[9/12] lg:row-[3/4] lg:h-auto"
+          className="order-4 col-span-full h-64 lg:order-none lg:col-[9/12] lg:row-[3/4] lg:h-auto"
           i={3}
         />
 
@@ -169,7 +181,7 @@ export default async function Painel() {
         {clube && (
           <Link
             href={`/clubes/${clube.slug}`}
-            className="painel revelar group order-5 col-span-full flex h-[26rem] flex-col p-5 lg:order-none lg:col-[12/17] lg:row-[2/3] lg:h-auto"
+            className="painel revelar group order-6 col-span-full flex h-[26rem] flex-col p-5 lg:order-none lg:col-[12/17] lg:row-[2/3] lg:h-auto"
             style={ordem(7)}
           >
             <FotoFundo nome={[clube.imagem, clube.slug]} veu="cima" tamanhos="(max-width: 1024px) 100vw, 30vw" />
@@ -189,12 +201,13 @@ export default async function Painel() {
           </Link>
         )}
 
-        {/* ---------- Secções de serviço ---------- */}
-        <div className="order-4 col-span-full grid grid-cols-2 gap-[var(--intervalo)] lg:order-none lg:col-[12/17] lg:row-[3/4] lg:grid-rows-2">
-          <Ficha href="/rotas" icone={<Route />} titulo="Rotas" i={8} />
-          <Ficha href="/seguranca" icone={<ShieldCheck />} titulo="Segurança" i={9} />
-          <Ficha href="/marketplace" icone={<Store />} titulo="Marketplace" i={10} />
-          <Ficha href="/forum" icone={<MessagesSquare />} titulo="Fórum" i={11} />
+        {/* ---------- Secções de serviço: três em cima, duas em baixo ---------- */}
+        <div className="order-5 col-span-full grid grid-cols-6 gap-[var(--intervalo)] lg:order-none lg:col-[12/17] lg:row-[3/4] lg:grid-rows-2">
+          <Ficha href="/rotas" icone={<Route />} titulo="Rotas" className="col-span-2" estreita i={8} />
+          <Ficha href="/seguranca" icone={<ShieldCheck />} titulo="Segurança" className="col-span-2" estreita i={9} />
+          <Ficha href="/sobre" icone={<BookOpen />} titulo="A MotoBox" className="col-span-2" estreita i={10} />
+          <Ficha href="/marketplace" icone={<Store />} titulo="Marketplace" className="col-span-3" i={11} />
+          <Ficha href="/forum" icone={<MessagesSquare />} titulo="Fórum" className="col-span-3" i={12} />
         </div>
       </div>
     </Moldura>
@@ -233,17 +246,28 @@ function PainelFoto({
   );
 }
 
-/** Ficha escura pequena: quadrado de ícone em cima, título e seta em baixo. */
-function Ficha({ href, icone, titulo, i }: { href: string; icone: ReactNode; titulo: string; i: number }) {
+/**
+ * Ficha escura pequena: quadrado de ícone em cima, título e seta numa só
+ * linha em baixo, para caber inteira mesmo nas linhas mais baixas da grelha.
+ */
+function Ficha({ href, icone, titulo, className = "", estreita = false, i }: {
+  href: string; icone: ReactNode; titulo: string; className?: string;
+  /** Uma de três lado a lado: abaixo dos ecrãs largos (2xl) fica só com o título. */
+  estreita?: boolean;
+  i: number;
+}) {
   return (
     <Link
       href={href}
-      className="painel painel-escuro revelar group flex h-36 flex-col p-4 transition-colors hover:bg-near-black lg:h-auto xl:p-5"
+      className={`painel painel-escuro revelar group @container flex h-32 min-w-0 flex-col justify-between gap-2 p-3 transition-colors hover:bg-near-black lg:h-auto 2xl:p-4 ${className}`}
       style={ordem(i)}
     >
       <Chip className="self-end">{icone}</Chip>
-      <span className="mt-auto text-[15px] font-semibold leading-tight">{titulo}</span>
-      <Seta className="mt-2 size-3.5" />
+      <span className="flex items-center justify-between gap-2">
+        <span className="truncate text-[15px] font-semibold leading-tight">{titulo}</span>
+        {/* A seta só aparece quando a ficha tem largura para ela e para o título. */}
+        <Seta className={`hidden size-3.5 shrink-0 @min-[6.25rem]:block ${estreita ? "max-2xl:!hidden" : ""}`} />
+      </span>
     </Link>
   );
 }

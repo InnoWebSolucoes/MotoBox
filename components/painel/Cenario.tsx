@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { caminhoDaPagina } from "@/lib/base";
 import { Fundo } from "./Fundo";
 import { BarraAccao } from "./BarraAccao";
 
@@ -11,7 +12,7 @@ import { BarraAccao } from "./BarraAccao";
  * própria estrutura e fica de fora.
  */
 export function Cenario({ children }: { children: ReactNode }) {
-  const caminho = usePathname();
+  const caminho = caminhoDaPagina(usePathname());
   if (caminho === "/admin" || caminho.startsWith("/admin/")) return <>{children}</>;
 
   return (

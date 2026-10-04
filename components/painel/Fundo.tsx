@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { comBase } from "@/lib/base";
+import { caminhoDaPagina, comBase } from "@/lib/base";
 
 /* ============================================================
    MOTOBOX — Fundo em vídeo
@@ -15,7 +15,7 @@ import { comBase } from "@/lib/base";
    ============================================================ */
 
 export function Fundo() {
-  const caminho = usePathname();
+  const caminho = caminhoDaPagina(usePathname());
   const nitido = caminho === "/";
   const video = useRef<HTMLVideoElement>(null);
 

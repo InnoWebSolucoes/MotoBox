@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import { CalendarDays, Megaphone } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Megaphone, Trophy } from "lucide-react";
 import { lerEventos } from "@/lib/supabase/publico";
 import { TIPOS_EVENTO } from "@/lib/types";
 import { eventosFuturos, eventosPassados, tipoEvento } from "@/lib/motobox";
+import { eComunidade } from "@/lib/desporto";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, BotaoMB, CartaoNumerado, Pilulas, Seccao } from "@/components/painel/blocos";
+import { Chip, Seta } from "@/components/painel/kit";
 import { CartaoEvento } from "@/components/painel/cartoes";
 
 export const metadata: Metadata = {
@@ -15,7 +18,8 @@ export const metadata: Metadata = {
 
 export default async function Eventos({ searchParams }: { searchParams: Promise<{ tipo?: string }> }) {
   const { tipo } = await searchParams;
-  const eventos = await lerEventos();
+  // As provas do campeonato vivem no calendário do Desporto; aqui ficam os eventos da comunidade.
+  const eventos = (await lerEventos()).filter((e) => eComunidade(e.disciplina));
 
   const presentes = TIPOS_EVENTO.filter((t) => eventos.some((e) => tipoEvento(e) === t));
   const activo = presentes.find((t) => t === tipo);
@@ -54,6 +58,18 @@ export default async function Eventos({ searchParams }: { searchParams: Promise<
             />
           </div>
         )}
+
+        <Link
+          href="/calendario"
+          className="painel painel-escuro group mt-8 flex items-center gap-4 p-4 transition-colors hover:bg-near-black md:p-5"
+        >
+          <Chip><Trophy /></Chip>
+          <span className="min-w-0 flex-1 text-sm leading-snug text-white/80 md:text-[15px]">
+            <span className="text-white">Provas do Campeonato Nacional</span>: motocross, enduro e rally-raid estão no
+            calendário do Desporto, com bilhetes, horários e resultados.
+          </span>
+          <Seta className="size-4 shrink-0" />
+        </Link>
 
         {futuros.length ? (
           <div className="mt-8 grid gap-[var(--intervalo)]">

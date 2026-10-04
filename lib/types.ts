@@ -43,6 +43,11 @@ export interface Clube {
   actividades: string[];
   /** Quando e onde se juntam, em texto livre. Ex.: "Domingos às 7h, Marginal de Luanda". */
   encontros?: string;
+  /**
+   * Uma linha de apresentação para os cartões. Não existe na base de dados:
+   * as páginas juntam-na a partir do perfil alargado (lib/clubes-perfis.ts).
+   */
+  resumo?: string;
   /** Endereço do logótipo (ou vazio). */
   logo: string;
   /** Fotografia de capa (endereço ou chave de lib/imagens.ts). */
@@ -75,6 +80,11 @@ export interface Evento {
   organizador: string;
   horarios: { dia: string; hora: string; sessao: string }[];
   bilhetes?: TipoBilhete[];
+  /**
+   * Como se participa quando a MotoBox não vende bilhetes online:
+   * "Entrada livre", "5.000 Kz pagos no local", "Inscrição através do clube".
+   */
+  entrada?: string;
   distanciaVolta?: string;
   numeroVoltas?: number;
   recordeVolta?: { piloto: string; tempo: string; ano: number };

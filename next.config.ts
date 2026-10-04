@@ -25,23 +25,16 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
     ],
   },
-  // Endereços da versão anterior (calendário de provas, notícias...) levam
-  // à secção nova mais próxima, para não partir ligações de emails e redes.
+  // Endereços da versão anterior que mudaram de sítio (notícias, rotas) ou
+  // saíram (vídeos, patrocinadores) levam à secção mais próxima. O Desporto
+  // (calendário, resultados, classificação, pilotos, equipas, bilhetes)
+  // continua nos endereços de sempre.
   async redirects() {
     return [
       { source: "/noticias", destination: "/artigos", permanent: false },
       { source: "/noticias/:slug", destination: "/artigos/:slug", permanent: false },
       { source: "/clubes/rotas", destination: "/rotas", permanent: false },
       { source: "/clubes/rotas/:slug", destination: "/rotas/:slug", permanent: false },
-      { source: "/calendario", destination: "/eventos", permanent: false },
-      { source: "/calendario/:slug", destination: "/eventos/:slug", permanent: false },
-      { source: "/bilhetes", destination: "/eventos", permanent: false },
-      { source: "/bilhetes/:slug", destination: "/eventos/:slug", permanent: false },
-      { source: "/desporto/:path*", destination: "/eventos", permanent: false },
-      { source: "/classificacao", destination: "/eventos", permanent: false },
-      { source: "/resultados/:path*", destination: "/eventos", permanent: false },
-      { source: "/pilotos/:path*", destination: "/artigos", permanent: false },
-      { source: "/equipas/:path*", destination: "/clubes", permanent: false },
       { source: "/videos", destination: "/artigos", permanent: false },
       { source: "/patrocinadores", destination: "/sobre", permanent: false },
     ];

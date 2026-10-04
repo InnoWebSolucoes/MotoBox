@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Flag, HeartHandshake, MapPinned, Route, Users, Venus } from "lucide-react";
 import { lerClubes } from "@/lib/supabase/publico";
+import { comResumo } from "@/lib/clubes-perfis";
 import { ROTAS } from "@/lib/rotas";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import {
   Abertura, BotaoMB, Cabecalho, CartaoIcone, CartaoNumerado, Numeros, Pilulas, Seccao,
 } from "@/components/painel/blocos";
-import { CartaoClube } from "@/components/painel/cartoes";
 import { Chip, Foto, Seta } from "@/components/painel/kit";
 import { JuntarClube } from "./JuntarClube";
+import { CartaoClube } from "./Partes";
 import { TIPOS_CLUBE, tipoPorSlug } from "./comum";
 
 export const metadata: Metadata = {
@@ -24,7 +25,8 @@ export default async function Clubes({
   searchParams: Promise<{ tipo?: string; provincia?: string }>;
 }) {
   const { tipo, provincia } = await searchParams;
-  const clubes = await lerClubes();
+  // A linha de apresentação dos cartões vem do perfil alargado, que vive no código.
+  const clubes = (await lerClubes()).map(comResumo);
 
   const tipoActivo = tipoPorSlug(tipo);
   const tiposPresentes = TIPOS_CLUBE.filter((t) => clubes.some((c) => c.tipo === t.tipo));
