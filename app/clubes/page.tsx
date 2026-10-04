@@ -11,7 +11,10 @@ import {
 import { Chip, Foto, Seta } from "@/components/painel/kit";
 import { JuntarClube } from "./JuntarClube";
 import { CartaoClube } from "./Partes";
-import { TIPOS_CLUBE, tipoPorSlug } from "./comum";
+import { TIPOS_CLUBE, eMovimento, tipoPorSlug } from "./comum";
+
+/** O movimento das Lady Riders na MotoBox. */
+const LADY_RIDERS = "ladies-in-2-wheels-angola";
 
 export const metadata: Metadata = {
   title: "Clubes",
@@ -26,7 +29,10 @@ export default async function Clubes({
 }) {
   const { tipo, provincia } = await searchParams;
   // A linha de apresentação dos cartões vem do perfil alargado, que vive no código.
-  const clubes = (await lerClubes()).map(comResumo);
+  const todos = (await lerClubes()).map(comResumo);
+  // Os movimentos (ex.: Lady Riders) têm secção própria: não são clubes.
+  const clubes = todos.filter((c) => !eMovimento(c));
+  const movimentos = todos.filter(eMovimento);
 
   const tipoActivo = tipoPorSlug(tipo);
   const tiposPresentes = TIPOS_CLUBE.filter((t) => clubes.some((c) => c.tipo === t.tipo));
@@ -38,7 +44,7 @@ export default async function Clubes({
   const lista = clubes.filter(
     (c) => (!tipoActivo || c.tipo === tipoActivo.tipo) && (!provinciaActiva || c.provincia === provinciaActiva),
   );
-  const ladyRiders = clubes.filter((c) => c.tipo === "Lady Riders" || /presidido por uma motociclista/i.test(c.descricao));
+  const mulheres = todos.filter((c) => eMovimento(c) || c.tipo === "Lady Riders" || /presidido por uma motociclista/i.test(c.descricao));
 
   // Ligações dos filtros, mantendo o outro filtro escolhido.
   const ligacao = (t?: string, p?: string) => {
@@ -55,7 +61,7 @@ export default async function Clubes({
         foto="banner-clubes"
         sobretitulo="Clubes de Angola"
         titulo="Quem anda de mota em grupo"
-        texto="Grupos de passeio, Lady Riders, scooters e clássicas, raides pelo país e viagens além-fronteiras. Os clubes de motas de Angola, todos no mesmo sítio."
+        texto="Grupos de passeio, scooters e clássicas, raides pelo país e viagens além-fronteiras, e movimentos como as Lady Riders. Os clubes de motas de Angola, todos no mesmo sítio."
       >
         <div className="flex flex-wrap gap-[var(--intervalo)]">
           <BotaoMB href="#lista">Encontrar um clube</BotaoMB>
@@ -87,9 +93,9 @@ export default async function Clubes({
           <Numeros
             className="self-end"
             itens={[
-              { valor: clubes.length, texto: "clubes e grupos na MotoBox" },
+              { valor: clubes.length, texto: "clubes na MotoBox" },
               { valor: provincias.length, texto: "províncias com sede publicada" },
-              { valor: ladyRiders.length, texto: "clubes de mulheres ou presididos por mulheres" },
+              { valor: mulheres.length, texto: "movimentos e clubes de mulheres ou presididos por mulheres" },
               { valor: 2006, texto: "a primeira viagem em grupo além-fronteiras" },
             ]}
           />
@@ -147,20 +153,41 @@ export default async function Clubes({
         </p>
       </Seccao>
 
-      {/* ---------- Lady Riders ---------- */}
-      <Seccao className="!pt-4">
-        <CartaoNumerado
-          numero={<Venus className="size-5" aria-hidden />}
-          sobretitulo="Lady Riders"
-          titulo="Elas também conduzem"
-          foto="clube-ladies-in-2-wheels"
-          href="/clubes?tipo=lady-riders"
-        >
-          Há motociclistas angolanas a viajar juntas pelo país e além-fronteiras: as Ladies in 2 Wheels in Angola já
-          rodaram até à Namíbia, ao Botswana e à África do Sul, com a filantropia na bagagem. E há clubes mistos
-          presididos por mulheres, como o Clube Anjos Bantu.
-        </CartaoNumerado>
-      </Seccao>
+      {/* ---------- Movimentos ---------- */}
+      {movimentos.length > 0 && (
+        <Seccao id="movimentos" className="!pt-4">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <h2 className="titulo-2">Movimentos</h2>
+            <p className="max-w-[52ch] text-sm text-white/60">
+              Não são clubes: juntam motards de vários clubes à volta de uma causa.
+            </p>
+          </div>
+          {/* As Lady Riders têm o cartão grande; outros movimentos que venham a entrar, em cartões. */}
+          {movimentos.some((c) => c.slug === LADY_RIDERS) && (
+            <div className="mt-8">
+              <CartaoNumerado
+                numero={<Venus className="size-5" aria-hidden />}
+                sobretitulo="Lady Riders"
+                titulo="Elas também conduzem"
+                foto="clube-ladies-in-2-wheels"
+                href={`/clubes/${LADY_RIDERS}`}
+              >
+                As Lady Riders não são um clube: são mulheres que já rodam nos seus clubes, muitas nos Amigos da
+                Picada, e se juntam para levar mais mulheres para a estrada. As Ladies in 2 Wheels in Angola já rodaram
+                até à Namíbia, ao Botswana e à África do Sul, com a filantropia na bagagem. E há clubes mistos
+                presididos por mulheres, como o Clube Anjos Bantu.
+              </CartaoNumerado>
+            </div>
+          )}
+          {movimentos.some((c) => c.slug !== LADY_RIDERS) && (
+            <div className="mt-[var(--intervalo)] grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
+              {movimentos.filter((c) => c.slug !== LADY_RIDERS).map((c) => (
+                <CartaoClube key={c.slug} clube={c} />
+              ))}
+            </div>
+          )}
+        </Seccao>
+      )}
 
       {/* ---------- Antes do primeiro passeio ---------- */}
       <Seccao className="!pt-4">

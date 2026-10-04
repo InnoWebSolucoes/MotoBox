@@ -17,12 +17,13 @@ export const comBase = (caminho: string) => `${BASE}${caminho.startsWith("/") ? 
 /**
  * Caminho da página sem o prefixo nem a barra final, com a entrada sempre
  * como "/". Por trás do encaminhamento de innoweb.agency, usePathname()
- * pode chegar vazio ou com "/motobox" à frente na página de entrada: sem
- * isto, a entrada era tratada como página interior.
+ * pode chegar vazio, com "/motobox" à frente ou como "/index" (a entrada
+ * pré-gerada servida pelo encaminhamento): sem isto, a entrada era tratada
+ * como página interior e o botão trocava "Explorar" por "Voltar ao painel".
  */
 export function caminhoDaPagina(caminho: string | null | undefined): string {
   const limpo = semBase((caminho ?? "").replace(/\/+$/, ""));
-  return limpo === "" ? "/" : limpo;
+  return limpo === "" || limpo === "/index" ? "/" : limpo;
 }
 
 /** "/motobox/forum" → "/forum" (para caminhos lidos de window.location). */

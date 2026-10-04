@@ -10,7 +10,7 @@ import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, BotaoMB, CartaoNumerado, Numeros, Seccao } from "@/components/painel/blocos";
 import { Chip, Monograma, Seta } from "@/components/painel/kit";
 import { Icon } from "@/components/ui";
-import { nomeTipo, redesDoClube } from "../comum";
+import { eMovimento, nomeTipo, redesDoClube } from "../comum";
 import { CartaoClube, primeiraFrase } from "../Partes";
 
 // O Next exige um literal aqui, não aceita constante importada.
@@ -93,6 +93,8 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
   const perfil = perfilClube(clube.slug);
   const redes = redesDoClube(clube);
   const tipo = nomeTipo(clube.tipo);
+  // Um movimento (ex.: Lady Riders) não é um clube: os textos dizem "movimento".
+  const termo = eMovimento(clube) ? "movimento" : "clube";
   const outros = (await lerClubes())
     .filter((c) => c.slug !== clube.slug)
     .sort((a, b) => Number(b.tipo === clube.tipo) - Number(a.tipo === clube.tipo))
@@ -144,7 +146,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
             },
             {
               valor: <span className="block text-xl hyphens-auto break-words md:text-2xl lg:text-3xl">{tipo}</span>,
-              texto: "tipo de clube",
+              texto: `tipo de ${termo}`,
             },
             { valor: clube.actividades.length, texto: "actividades conhecidas" },
           ]}
@@ -155,7 +157,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
             <div className="flex items-center gap-4">
               <Monograma nome={clube.nome} cor={clube.cor} className="size-16 text-xl" />
               <div className="min-w-0">
-                <p className="text-sm text-white/60">Sobre o clube</p>
+                <p className="text-sm text-white/60">Sobre o {termo}</p>
                 <h2 className={perfil ? "titulo-3 mt-1" : "titulo-4 mt-1"}>{perfil ? "A história" : clube.nome}</h2>
               </div>
             </div>
@@ -163,7 +165,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
           </div>
 
           {perfil && (
-            <aside aria-label="O clube em resumo" className="space-y-[var(--intervalo)] self-start">
+            <aside aria-label={`O ${termo} em resumo`} className="space-y-[var(--intervalo)] self-start">
               {/* A ficha curta da base de dados, que o perfil alargado não repete por inteiro. */}
               <div className="painel painel-escuro p-6">
                 <p className="text-sm text-mb-red-light">Em poucas palavras</p>
@@ -172,7 +174,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
 
               {perfil.lema && (
                 <figure className="flex min-h-48 flex-col rounded-[var(--raio)] bg-mb-red p-6 lg:p-8">
-                  <figcaption className="text-sm text-white/85">Lema do clube</figcaption>
+                  <figcaption className="text-sm text-white/85">Lema do {termo}</figcaption>
                   <blockquote className="titulo-4 mt-auto pt-10 text-balance">«{perfil.lema}»</blockquote>
                 </figure>
               )}
@@ -228,11 +230,11 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
       {/* ---------- Percurso (cronologia) ---------- */}
       {perfil && perfil.destaques.length > 0 && (
         <Seccao className="!pt-0">
-          <h2 className="titulo-3">Percurso do clube</h2>
+          <h2 className="titulo-3">Percurso do {termo}</h2>
           <p className="mt-4 max-w-[56ch] text-[15px] leading-relaxed text-white/65">
             {cronologiaComFontes
-              ? "Os momentos que o clube e a imprensa publicaram, por ordem, cada um com a sua fonte."
-              : "Os momentos que marcaram o clube, por ordem."}
+              ? `Os momentos que o ${termo} e a imprensa publicaram, por ordem, cada um com a sua fonte.`
+              : `Os momentos que marcaram o ${termo}, por ordem.`}
           </p>
           <ol className="mt-8 grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
             {perfil.destaques.map((d, i) => (
@@ -322,15 +324,15 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
               </ul>
             ) : (
               <p className="mt-6 text-[15px] leading-relaxed text-white/70">
-                O clube não publicou um ponto de encontro fixo. As próximas saídas costumam ser anunciadas nas redes do
-                clube.
+                O {termo} não publicou um ponto de encontro fixo. As próximas saídas costumam ser anunciadas nas redes do{" "}
+                {termo}.
               </p>
             )}
           </section>
 
           <section aria-labelledby="aderir" className="painel painel-escuro p-6 lg:p-10">
             <TituloPainel id="aderir" icone={<UserPlus />}>
-              Como entrar no clube
+              {eMovimento(clube) ? "Como fazer parte" : "Como entrar no clube"}
             </TituloPainel>
             {aderir && aderir.passos.length > 1 ? (
               <ol className="mt-6 space-y-4">
@@ -347,7 +349,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
               <p className="mt-6 text-[15px] leading-relaxed text-white/85">{aderir.passos[0]}</p>
             ) : (
               <p className="mt-6 text-[15px] leading-relaxed text-white/70">
-                O clube não publicou regras de adesão. Pergunte directamente nas redes do clube.
+                O {termo} não publicou regras de adesão. Pergunte directamente nas redes do {termo}.
               </p>
             )}
             {fonte(aderir?.fonte) && (
@@ -371,11 +373,11 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                 Fontes
               </TituloPainel>
               <p className="mt-4 max-w-[40ch] text-sm leading-relaxed text-white/65">
-                Reportagens e páginas públicas do clube consultadas em Outubro de 2026. Os dados sem fonte ao lado
+                Reportagens e páginas públicas do {termo} consultadas em Outubro de 2026. Os dados sem fonte ao lado
                 são indicativos e podem mudar.
               </p>
               <Link
-                href={`/contacto?assunto=${encodeURIComponent(`Correcção ao clube ${clube.nome}`)}`}
+                href={`/contacto?assunto=${encodeURIComponent(`Correcção ao ${termo} ${clube.nome}`)}`}
                 className="group mt-5 inline-flex items-center gap-2 text-sm"
               >
                 <span className="sublinhado">Viu um erro? Escreva-nos</span>
@@ -411,15 +413,15 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
           sobretitulo="Esta página é sua?"
           titulo="Ajude-nos a completar a ficha"
         >
-          A informação vem das páginas públicas do clube e a fotografia de capa é ilustrativa. Se faz parte do{" "}
+          A informação vem das páginas públicas do {termo} e a fotografia de capa é ilustrativa. Se faz parte do{" "}
           {clube.nome}, envie-nos o logótipo, fotografias vossas, a sede e as datas dos próximos passeios.
           <span className="mt-6 flex flex-wrap gap-[var(--intervalo)]">
-            <BotaoMB href={`/contacto?assunto=${encodeURIComponent(`Actualizar o clube ${clube.nome}`)}`}>
+            <BotaoMB href={`/contacto?assunto=${encodeURIComponent(`Actualizar o ${termo} ${clube.nome}`)}`}>
               Falar com a MotoBox
             </BotaoMB>
             {clube.contacto && (
               <BotaoMB href={`mailto:${clube.contacto}`} externo variante="escuro">
-                Contactar o clube
+                Contactar o {termo}
               </BotaoMB>
             )}
           </span>

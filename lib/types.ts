@@ -25,7 +25,9 @@ export type CategoriaArtigo = (typeof CATEGORIAS_ARTIGO)[number];
 
 export type TipoClube =
   | "Moto-turismo" | "Lady Riders" | "Todo-o-terreno" | "Clube de marca"
-  | "Clássicas" | "Scooters e urbano" | "Outro";
+  | "Clássicas" | "Scooters e urbano" | "Outro"
+  /** Não é um clube: junta motards de vários clubes à volta de uma causa (ex.: mulheres na estrada). */
+  | "Movimento";
 
 /**
  * Clube de lazer: pessoas que saem juntas, viajam, organizam encontros.

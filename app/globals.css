@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Computador com ecrã baixo (portáteis, Windows com escala a 125–150%): o painel
+   aperta-se para caber sem rolar. "baixo" até 820px de altura, "mbaixo" até 700px. */
+@custom-variant baixo (@media (min-width: 1024px) and (max-height: 820px));
+@custom-variant mbaixo (@media (min-width: 1024px) and (max-height: 700px));
+
 /* ============================================================
    MOTOBOX ANGOLA — Design System
    Painel de comando: um vídeo de fundo, por cima uma grelha de
@@ -73,6 +78,22 @@
 @media (min-width: 768px) {
   :root {
     --gutter: 3.125rem;
+  }
+}
+
+/* Ecrã baixo no computador: margens e zona do botão mais curtas, para o painel caber. */
+@media (min-width: 1024px) and (max-height: 820px) {
+  :root {
+    --gutter: 1.5rem;
+    --zona-accao: 6.25rem;
+  }
+}
+
+/* O painel (Explorar) nunca rola no computador: a grelha aperta-se à altura do ecrã.
+   Só num ecrã mais baixo do que 540px volta a rolar, para nada ficar inacessível. */
+@media (min-width: 1024px) and (min-height: 540px) {
+  html:has([data-painel-fixo]) {
+    overflow: hidden;
   }
 }
 
@@ -221,7 +242,7 @@
   @media (min-width: 1024px) {
     .moldura-fixa {
       height: var(--moldura-h);
-      min-height: 34rem;
+      min-height: 26rem;
     }
   }
 

@@ -15,7 +15,12 @@ export const TIPOS_CLUBE: { tipo: TipoClube; slug: string; nome: string; descric
   { tipo: "Scooters e urbano", slug: "scooters-e-urbano", nome: "Scooters e urbano", descricao: "Scooters, Vespas e quem anda de mota na cidade." },
   // "Outro" junta sobretudo clubes de convívio e solidariedade.
   { tipo: "Outro", slug: "outros", nome: "Convívio e solidariedade", descricao: "Clubes que vivem sobretudo do convívio e das acções solidárias." },
+  // Os movimentos têm secção própria em /clubes e não entram na lista nem nos filtros dos clubes.
+  { tipo: "Movimento", slug: "movimentos", nome: "Movimento", descricao: "Não é um clube: junta motards de vários clubes à volta de uma causa." },
 ];
+
+/** Movimento (ex.: Lady Riders): junta gente de vários clubes, não é um clube. */
+export const eMovimento = (c: Pick<Clube, "tipo">) => c.tipo === "Movimento";
 
 export const slugTexto = (t: string) =>
   t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

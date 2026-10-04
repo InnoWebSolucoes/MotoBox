@@ -5,6 +5,7 @@ import {
   Backpack,
   BedDouble,
   Bike,
+  Construction,
   Camera,
   Clock,
   CloudSun,
@@ -43,6 +44,7 @@ import {
 } from "@/lib/rotas";
 import { MARGEM_MOTA, NOME_PISO, duracao, minMota, paragensDoDia, totais, urlMapaEmbebido, urlNavegacao, urlPonto } from "@/lib/rotas-mapas";
 import { urlCommons } from "@/lib/rotas-fotos";
+import { estadoDaEstrada, type Estado } from "@/lib/rotas-estrada";
 import { FONTE_SOL, solDoAno } from "@/lib/rotas-sol";
 import { lerClubes } from "@/lib/supabase/publico";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
@@ -84,6 +86,14 @@ const COMO_CALCULAMOS =
   `a subida acumulada é uma estimativa.`;
 
 const km = (n: number) => n.toLocaleString("pt-PT");
+
+/** Estado da estrada: verde, âmbar ou vermelho, com texto (não só cor). */
+const NOME_ESTADO: Record<Estado, string> = { boa: "Boa", irregular: "Irregular", má: "Má" };
+const COR_ESTADO: Record<Estado, string> = {
+  boa: "bg-ok/20 text-[#4ade80]",
+  irregular: "bg-gold/20 text-gold",
+  má: "bg-mb-red text-white",
+};
 const metros = (n: number) => `${n.toLocaleString("pt-PT")} m`;
 
 /** Classes do botão largo do painel (como BotaoMB), para a ligação de descarga. */
@@ -176,6 +186,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
   const outras = [...ROTAS.slice(indice + 1), ...ROTAS.slice(0, indice)].slice(0, 3);
 
   const t = totais(rota);
+  const estrada = estadoDaEstrada(rota.slug);
   const capa = rota.fotos[0];
   const galeria = rota.fotos.slice(1);
   const clima = CLIMA[rota.clima];
@@ -389,6 +400,41 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
         />
         <p className="mt-4 max-w-[90ch] text-xs leading-relaxed text-white/45">{COMO_CALCULAMOS}</p>
       </Seccao>
+
+      {/* ============ ESTADO DA ESTRADA ============ */}
+      {estrada && (
+        <Seccao id="estrada" className="!pt-0">
+          <div className="painel painel-escuro grid gap-8 p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] lg:gap-14 lg:p-10">
+            <div>
+              <Cabecalho icone={<Construction />} titulo="Estado da estrada" />
+              <p className="mt-4 max-w-[44ch] text-[15px] leading-relaxed text-white/70">
+                O que contam os motards que passaram por lá ({estrada.quando}). As estradas mudam depressa: uma é
+                arranjada, outra abre buracos.
+              </p>
+              <Link
+                href={`/contacto?assunto=${encodeURIComponent(`Estado da estrada: ${rota.nome}`)}`}
+                className="group mt-5 inline-flex items-center gap-2 text-sm"
+              >
+                <span className="sublinhado">Passou lá há pouco? Conte-nos como está</span>
+                <Seta className="size-3" />
+              </Link>
+            </div>
+            <ul className="space-y-[var(--intervalo)]">
+              {estrada.relatos.map((r) => (
+                <li key={r.troco} className="rounded-[var(--raio)] bg-white/5 p-4 md:p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                    <p className="font-semibold">{r.troco}</p>
+                    <span className={`rounded-[4px] px-2.5 py-1 text-xs font-medium ${COR_ESTADO[r.estado]}`}>
+                      {NOME_ESTADO[r.estado]}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-[15px] leading-relaxed text-white/75">{r.nota}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Seccao>
+      )}
 
       {/* ============ ITINERÁRIO ============ */}
       <Seccao id="itinerario" className="!pt-0">

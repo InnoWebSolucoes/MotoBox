@@ -847,6 +847,33 @@ export const eventos: Evento[] = [
       },
     ],
   },
+  // Ubuntu 2027 (factos: Africa Ubuntu Breakfast Run desde 2016, último domingo de Janeiro,
+  // três pilares; percurso e mais de mil motas: Sofia Mussungo, reunião de 4 de Outubro de 2026).
+  // Placeholder (a confirmar): horários e programa.
+  {
+    slug: "ubuntu-2027",
+    titulo: "Ubuntu 2027: o pequeno-almoço motard africano em Luanda",
+    disciplina: "Passeio",
+    temporada: 2027,
+    circuito: "Kilamba → Ilha de Luanda",
+    provincia: "Luanda",
+    localidade: "Luanda",
+    dataInicio: "2027-01-31",
+    dataFim: "2027-01-31",
+    estado: "agendado",
+    imagem: "passeios",
+    resumo:
+      "No último domingo de Janeiro, motards de todo o continente saem à estrada à mesma hora. Em Luanda, a volta parte do Kilamba e acaba na Ilha, com mais de mil motas esperadas.",
+    descricao:
+      "A Africa Ubuntu Breakfast Run nasceu na África do Sul em 2016 e corre-se todos os anos no último domingo de Janeiro: no mesmo dia, grupos de motards de dezenas de países africanos saem para a estrada e acabam a manhã à mesa, cada um na sua cidade. Assenta em três pilares da irmandade motard: lealdade, honra e respeito. Em Luanda, a volta sai do Kilamba e termina na Ilha de Luanda, onde o dia continua com actividades no ponto de chegada. O percurso muda pouco de ano para ano, pela Samba ou pela Rocha, e é anunciado nas semanas antes. Esperam-se mais de mil motas, de clubes e de quem anda sozinho.",
+    organizador: "MotoBox Angola",
+    horarios: [
+      { dia: "Domingo", hora: "06:30", sessao: "Concentração no Kilamba e registo" },
+      { dia: "Domingo", hora: "08:00", sessao: "Partida em grupo, à mesma hora que o resto de África" },
+      { dia: "Domingo", hora: "09:30", sessao: "Chegada à Ilha de Luanda e pequeno-almoço" },
+      { dia: "Domingo", hora: "10:30", sessao: "Actividades, fotografia de grupo e entrega dos pins Ubuntu" },
+    ],
+  },
 ];
 
 /* ============================================================
@@ -900,12 +927,13 @@ export const clubes: Clube[] = [
   {
     slug: "ladies-in-2-wheels-angola",
     nome: "Ladies in 2 Wheels in Angola",
-    tipo: "Lady Riders",
+    // Movimento, não clube: reúne mulheres que já rodam nos seus clubes (Sofia Mussungo, 4 de Outubro de 2026).
+    tipo: "Movimento",
     provincia: "Luanda",
     cidade: "Luanda", // Placeholder (a confirmar com o clube)
     fundacao: 2019, // Placeholder (a confirmar com o clube)
     descricao:
-      "Motards femininas angolanas que viajam de mota, fazem turismo e acções filantrópicas, «and lots of fun». No perfil guardam viagens a Malanje e a países vizinhos, da Namíbia ao Botswana, à África do Sul e à RD Congo, e um raide ibérico. Levam a conversa sobre mulheres na estrada também à rádio. Lema: «Life is a ride kinda girls. Whatever we can do, you can too».",
+      "Motards femininas angolanas que viajam de mota, fazem turismo e acções filantrópicas, «and lots of fun». No perfil guardam viagens a Malanje e a países vizinhos, da Namíbia ao Botswana, à África do Sul e à RD Congo, e um raide ibérico. Levam a conversa sobre mulheres na estrada também à rádio. Lema: «Life is a ride kinda girls. Whatever we can do, you can too». Não é um clube: é um movimento de mulheres que já rodam nos seus clubes, muitas nos Amigos da Picada, para incentivar mais mulheres a andar de mota.",
     actividades: [
       "Viagens de mota em grupo",
       "Turismo pelo país",
