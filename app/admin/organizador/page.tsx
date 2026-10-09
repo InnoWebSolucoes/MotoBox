@@ -17,8 +17,9 @@ import { useAdmin, type ColeccaoNome } from "@/lib/admin/store";
 import type { CampoAlterado, Proposta, ResultadoOrganizador } from "@/lib/admin/organizador";
 import type { ResultadoCorrida, TipoBilhete } from "@/lib/types";
 import { formatKz } from "@/lib/data";
+import { FileUp, Sparkles, X } from "lucide-react";
 import {
-  CabecalhoPagina, Painel, Campo, Input, Area, Seleccao, Confirmar, useAviso,
+  Aviso, Botao, CabecalhoPagina, Painel, Campo, Input, Area, Seleccao, Confirmar, Etiqueta, Vazio, useAviso,
 } from "@/components/admin/kit";
 import { comBase } from "@/lib/base";
 
@@ -29,15 +30,15 @@ const ACEITES = "image/jpeg,image/png,image/webp,image/gif,application/pdf";
 /** Tamanho máximo somado dos anexos, antes da codificação. */
 const LIMITE_BYTES = 3 * 1024 * 1024;
 
-const ROTULO: Record<string, { nome: string; novo: string; href: string }> = {
+const ROTULO: Record<string, { nome: string; novo: string; href?: string }> = {
   equipas: { nome: "Equipa", novo: "Nova equipa", href: "/admin/equipas" },
   pilotos: { nome: "Piloto", novo: "Novo piloto", href: "/admin/pilotos" },
   eventos: { nome: "Evento", novo: "Novo evento", href: "/admin/eventos" },
   bilhetes: { nome: "Bilhetes", novo: "Bilhetes para evento existente", href: "/admin/bilheteira" },
   corridas: { nome: "Resultado", novo: "Novo resultado", href: "/admin/corridas" },
   noticias: { nome: "Notícia", novo: "Nova notícia", href: "/admin/noticias" },
-  patrocinadores: { nome: "Patrocinador", novo: "Novo patrocinador", href: "/admin/patrocinadores" },
-  videos: { nome: "Vídeo", novo: "Novo vídeo", href: "/admin/videos" },
+  patrocinadores: { nome: "Patrocinador", novo: "Novo patrocinador" },
+  videos: { nome: "Vídeo", novo: "Novo vídeo" },
 };
 
 /** Campos de texto editáveis em cada cartão, pela ordem em que aparecem. */
@@ -363,18 +364,20 @@ export default function OrganizadorPage() {
     <>
       <CabecalhoPagina
         titulo="Organizador IA"
-        descricao="Cole mensagens, cartazes, listas de preços ou resultados, ou peça mudanças ao que já está publicado. O Claude transforma tudo em propostas para criar, alterar ou apagar eventos, bilhetes, pilotos, equipas, resultados, notícias, patrocinadores e vídeos, prontas a rever e guardar."
+        sobretitulo="Visão geral"
+        icone={<Sparkles />}
+        descricao="Cole mensagens, cartazes, listas de preços ou resultados, ou peça mudanças ao que já está publicado. O Claude transforma tudo em propostas para criar, alterar ou apagar eventos, bilhetes, pilotos, equipas, resultados e artigos, prontas a rever e guardar."
       />
 
       {semChave && (
-        <Painel titulo="O Organizador ainda não está ligado" className="mb-6">
-          <p role="status" className="border-l-2 border-gold/60 pl-3 text-sm leading-relaxed text-ink-200">{semChave}</p>
-        </Painel>
+        <div className="mb-[var(--intervalo)]">
+          <Aviso tom="atencao" titulo="O Organizador ainda não está ligado">{semChave}</Aviso>
+        </div>
       )}
 
       {/* grid-cols-1 dá à coluna única largura mínima 0: sem isso, um título
           comprido de um cartão alargava a página inteira no telemóvel. */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="grid grid-cols-1 gap-[var(--intervalo)] xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <Painel titulo="Material" descricao="Texto solto, fotografias de cartazes ou PDF, ou o que quer mudar. Não precisa de estar arrumado.">
           <div className="space-y-4">
             <Area
@@ -385,19 +388,19 @@ export default function OrganizadorPage() {
             <div>
               <input ref={entrada} type="file" accept={ACEITES} multiple className="hidden"
                 onChange={(e) => { void juntar(e.target.files); e.target.value = ""; }} />
-              <button type="button" onClick={() => entrada.current?.click()}
-                className="h-10 border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-ink-800">
+              <Botao onClick={() => entrada.current?.click()}>
+                <FileUp className="size-4" aria-hidden />
                 Anexar imagem ou PDF
-              </button>
+              </Botao>
               {anexos.length > 0 && (
                 <ul className="mt-3 space-y-1.5">
                   {anexos.map((a, i) => (
-                    <li key={`${a.nome}-${i}`} className="flex items-center gap-2 border border-ink-700 px-3 py-2 text-xs text-ink-300">
+                    <li key={`${a.nome}-${i}`} className="flex items-center gap-2 rounded-[var(--raio)] bg-black/20 px-3 py-2 text-xs text-white/75">
                       <span className="flex-1 truncate">{a.nome}</span>
-                      <span className="tabular-nums text-ink-500">{Math.ceil(a.bytes / 1024)} KB</span>
+                      <span className="tabular-nums text-white/45">{Math.ceil(a.bytes / 1024)} KB</span>
                       <button type="button" onClick={() => setAnexos((l) => l.filter((_, j) => j !== i))}
-                        className="text-ink-400 hover:text-mb-red" aria-label={`Remover ${a.nome}`}>
-                        Remover
+                        className="inline-flex items-center gap-1 rounded-[4px] px-1.5 py-0.5 text-white/60 hover:bg-mb-red hover:text-white" aria-label={`Remover ${a.nome}`}>
+                        <X className="size-3" aria-hidden />Remover
                       </button>
                     </li>
                   ))}
@@ -405,36 +408,34 @@ export default function OrganizadorPage() {
               )}
             </div>
 
-            {erro && <p role="alert" className="border-l-2 border-mb-red pl-3 text-sm text-mb-red">{erro}</p>}
+            {erro && <Aviso tom="erro">{erro}</Aviso>}
 
-            <button type="button" onClick={analisar} disabled={aAnalisar}
-              className="h-11 w-full bg-mb-red px-5 font-display text-sm uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60">
+            <Botao variante="primario" tamanho="lg" className="w-full" onClick={analisar} disabled={aAnalisar}>
+              <Sparkles className="size-4" aria-hidden />
               {aAnalisar ? "A analisar… pode demorar um minuto" : "Organizar com IA"}
-            </button>
-            <p className="text-xs text-ink-500">
+            </Botao>
+            <p className="text-xs leading-relaxed text-white/50">
               Nada é publicado sem a sua confirmação. As propostas aparecem ao lado para rever.
             </p>
           </div>
         </Painel>
 
-        <div className="space-y-6">
+        <div className="space-y-[var(--intervalo)]">
           {resumo && (
             <Painel titulo="O que foi encontrado"
               accoes={
                 <div className="flex gap-2">
                   {porGuardar > 0 && (
-                    <button type="button" onClick={guardarTudo}
-                      className="h-9 bg-mb-red px-4 font-display text-[11px] uppercase tracking-wider text-white hover:bg-mb-red-dark">
+                    <Botao variante="primario" tamanho="sm" onClick={guardarTudo}>
                       Guardar tudo ({porGuardar})
-                    </button>
+                    </Botao>
                   )}
-                  <button type="button" onClick={limpar}
-                    className="h-9 border border-ink-600 px-3 font-display text-[11px] uppercase tracking-wider text-ink-300 hover:text-white">
+                  <Botao variante="fantasma" tamanho="sm" onClick={limpar}>
                     Limpar
-                  </button>
+                  </Botao>
                 </div>
               }>
-              <p className="text-sm leading-relaxed text-ink-300">{resumo}</p>
+              <p className="text-sm leading-relaxed text-white/75">{resumo}</p>
               {remocoesPorConfirmar > 0 && (
                 <p className="mt-3 text-xs text-gold">
                   {remocoesPorConfirmar === 1 ? "Há 1 remoção" : `Há ${remocoesPorConfirmar} remoções`} por confirmar.
@@ -447,10 +448,9 @@ export default function OrganizadorPage() {
           {pendentes.length > 0 && (
             <Painel titulo="Tarefas pendentes" descricao="O que falta confirmar ou pedir antes de publicar."
               accoes={
-                <button type="button" onClick={copiarPendentes}
-                  className="h-9 border border-ink-600 px-3 font-display text-[11px] uppercase tracking-wider text-ink-300 hover:text-white">
+                <Botao variante="fantasma" tamanho="sm" onClick={copiarPendentes}>
                   Copiar lista
-                </button>
+                </Botao>
               }>
               <ul className="space-y-2">
                 {pendentes.map((p, i) => (
@@ -458,7 +458,7 @@ export default function OrganizadorPage() {
                     <label className="flex cursor-pointer items-start gap-3 text-sm">
                       <input type="checkbox" checked={p.feito} className="mt-0.5 accent-mb-red"
                         onChange={() => setPendentes((l) => l.map((x, j) => (j === i ? { ...x, feito: !x.feito } : x)))} />
-                      <span className={p.feito ? "text-ink-600 line-through" : "text-ink-200"}>{p.texto}</span>
+                      <span className={p.feito ? "text-white/35 line-through" : "text-white/85"}>{p.texto}</span>
                     </label>
                   </li>
                 ))}
@@ -477,9 +477,9 @@ export default function OrganizadorPage() {
 
           {!resumo && !aAnalisar && (
             <Painel>
-              <p className="py-10 text-center text-sm text-ink-500">
-                As propostas aparecem aqui depois de organizar o material.
-              </p>
+              <Vazio titulo="Ainda sem propostas">
+                Depois de organizar o material, as propostas aparecem aqui, uma por cartão, para rever e guardar.
+              </Vazio>
             </Painel>
           )}
         </div>
@@ -530,7 +530,7 @@ function CartaoProposta({ cartao, ligacoes, aoAlterar, aoAlterarCampo, aoEscreve
     detalhes = <ListaBilhetes bilhetes={p.registo.bilhetes ?? []} titulo="Bilhetes" />;
   } else if (p.tipo === "criar" && p.coleccao === "corridas") {
     detalhes = (
-      <p className="text-xs text-ink-400">
+      <p className="text-xs text-white/60">
         {p.registo.resultados.length} classificados{p.registo.vencedor ? ` · vencedor: ${p.registo.vencedor}` : ""}
       </p>
     );
@@ -547,39 +547,39 @@ function CartaoProposta({ cartao, ligacoes, aoAlterar, aoAlterarCampo, aoEscreve
     <Painel>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1 basis-60">
-          <p className="font-display text-[10px] uppercase tracking-widest text-mb-red">{etiqueta}</p>
-          <h3 className="truncate font-display text-lg uppercase tracking-tight text-white">{titulo(p) || "Sem título"}</h3>
+          <p className="text-xs font-medium text-mb-red-light">{etiqueta}</p>
+          <h3 className="mt-0.5 truncate text-lg font-semibold text-white">{titulo(p) || "Sem título"}</h3>
         </div>
         {guardado ? (
           apagar ? (
-            <span className="border border-ink-600 bg-ink-800 px-2.5 py-1 font-display text-[10px] uppercase tracking-widest text-ink-300">
-              Apagado
-            </span>
+            <Etiqueta>Apagado</Etiqueta>
           ) : (
-            <Link href={rotulo.href} className="border border-ok/40 bg-ok/15 px-2.5 py-1 font-display text-[10px] uppercase tracking-widest text-ok">
-              Guardado · abrir
-            </Link>
+            rotulo.href ? (
+              <Link href={rotulo.href} className="inline-flex items-center rounded-[4px] bg-ok/20 px-2 py-0.5 text-xs font-medium text-[#4ade80] hover:bg-ok/30">
+                Guardado · abrir
+              </Link>
+            ) : (
+              <Etiqueta tom="ok">Guardado</Etiqueta>
+            )
           )
         ) : (
           <div className="flex gap-2">
-            <button type="button" onClick={aoDescartar} disabled={aGuardar}
-              className="h-9 border border-ink-600 px-3 font-display text-[11px] uppercase tracking-wider text-ink-300 hover:text-white">
+            <Botao variante="fantasma" tamanho="sm" onClick={aoDescartar} disabled={aGuardar}>
               Descartar
-            </button>
-            <button type="button" onClick={apagar ? () => setConfirmar(true) : aoGuardar} disabled={aGuardar}
-              className="h-9 bg-mb-red px-4 font-display text-[11px] uppercase tracking-wider text-white hover:bg-mb-red-dark disabled:opacity-60">
+            </Botao>
+            <Botao variante={apagar ? "perigo" : "primario"} tamanho="sm" onClick={apagar ? () => setConfirmar(true) : aoGuardar} disabled={aGuardar}>
               {aGuardar ? (apagar ? "A apagar…" : "A guardar…") : apagar ? "Apagar…" : "Guardar"}
-            </button>
+            </Botao>
           </div>
         )}
       </div>
 
       {(p.tipo === "alterar" || p.tipo === "apagar") && p.motivo && (
-        <p className="mt-2 text-sm text-ink-300">{p.motivo}</p>
+        <p className="mt-2 text-sm text-white/70">{p.motivo}</p>
       )}
 
       {cartao.erro && (
-        <p role="alert" className="mt-3 border-l-2 border-mb-red pl-3 text-sm text-mb-red">{cartao.erro}</p>
+        <p role="alert" className="mt-3 border-l-2 border-mb-red pl-3 text-sm text-mb-red-light">{cartao.erro}</p>
       )}
 
       {p.avisos.length > 0 && !guardado && (
@@ -631,8 +631,8 @@ function CampoAlteracao({ f, desactivado, rascunho, opcoesLigacao, aoMudar, aoEs
   const legivel = (x: unknown) =>
     f.tipo === "ligacao" && x ? nomeDe(x) : f.tipo === "ligacoes" && Array.isArray(x) ? x.map(nomeDe) : x;
   const antes = (
-    <p className="mb-1.5 text-xs text-ink-500">
-      Antes: <span className="text-ink-400 line-through decoration-ink-600">{resumoValor(f, legivel(f.antes))}</span>
+    <p className="mb-1.5 text-xs text-white/45">
+      Antes: <span className="text-white/55 line-through decoration-white/30">{resumoValor(f, legivel(f.antes))}</span>
     </p>
   );
 
@@ -640,8 +640,8 @@ function CampoAlteracao({ f, desactivado, rascunho, opcoesLigacao, aoMudar, aoEs
   if (f.tipo === "objeto") {
     const obj = (f.depois && typeof f.depois === "object" ? f.depois : {}) as Record<string, unknown>;
     return (
-      <div className="border-t border-ink-800 pt-3">
-        <p className="mb-1.5 text-[11px] font-display uppercase tracking-widest text-ink-300">{f.etiqueta}</p>
+      <div className="border-t border-white/[0.08] pt-3">
+        <p className="mb-1.5 text-[13px] font-medium text-white/75">{f.etiqueta}</p>
         {antes}
         <div className="grid gap-3 sm:grid-cols-3">
           {Object.entries(f.chaves ?? {}).map(([k, t]) => (
@@ -709,7 +709,7 @@ function CampoAlteracao({ f, desactivado, rascunho, opcoesLigacao, aoMudar, aoEs
     case "resultados":
       editor = (
         <>
-          <p className="mb-1.5 text-xs text-ink-300">Depois: {resumoValor(f, v)}</p>
+          <p className="mb-1.5 text-xs text-white/65">Depois: {resumoValor(f, v)}</p>
           <Area rows={8} disabled={desactivado} className="font-mono text-xs"
             value={rascunho?.texto ?? JSON.stringify(v, null, 2)}
             onChange={(e) => aoEscrever(e.target.value, lerListaJson(f.tipo))} />
@@ -733,12 +733,12 @@ function CampoAlteracao({ f, desactivado, rascunho, opcoesLigacao, aoMudar, aoEs
     : undefined;
 
   return (
-    <div className="border-t border-ink-800 pt-3">
+    <div className="border-t border-white/[0.08] pt-3">
       <Campo etiqueta={f.etiqueta} ajuda={ajuda}>
         {antes}
         {editor}
       </Campo>
-      {rascunho?.erro && <p role="alert" className="mt-1 text-xs text-mb-red">{rascunho.erro}</p>}
+      {rascunho?.erro && <p role="alert" className="mt-1 text-xs text-mb-red-light">{rascunho.erro}</p>}
     </div>
   );
 }
@@ -750,12 +750,12 @@ function ListaBilhetes({ bilhetes, titulo }: {
   if (bilhetes.length === 0) return null;
   return (
     <div>
-      <p className="mb-2 font-display text-[10px] uppercase tracking-widest text-ink-500">{titulo}</p>
-      <ul className="divide-y divide-ink-800 border border-ink-800">
+      <p className="mb-2 text-[13px] font-medium text-white/75">{titulo}</p>
+      <ul className="divide-y divide-white/[0.07] overflow-hidden rounded-[var(--raio)] border border-white/10 bg-black/[0.15]">
         {bilhetes.map((b) => (
           <li key={b.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
             <span className="text-white">{b.nome}</span>
-            <span className="tabular-nums text-ink-300">
+            <span className="tabular-nums text-white/65">
               {formatKz(b.preco)}{b.disponiveis ? ` · ${b.disponiveis} lugares` : ""}
             </span>
           </li>

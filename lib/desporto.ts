@@ -9,6 +9,8 @@
    ============================================================ */
 
 import type { Corrida, Disciplina, Evento } from "@/lib/types";
+import type { Bloco, ConteudoPagina, Tabela, Texto } from "@/lib/desporto-conteudo";
+import { src as fotoSrc } from "@/lib/imagens";
 
 /** Disciplinas que são provas: vão para o calendário de Desporto ("Prova" é uma competição sem modalidade). */
 export const DISCIPLINAS_PROVA = [
@@ -170,17 +172,42 @@ export const MODALIDADES: Modalidade[] = [
  */
 export const CATEGORIAS_PILOTO = ["MX1", "MX2", "Rally / Enduro", "Velocidade", "Moto 4", "Karting"] as const;
 
-/** Categorias que pontuam para o Campeonato Nacional; as outras correm em taças à parte. */
+/**
+ * Categorias que pontuam para o Campeonato Nacional; as outras correm em taças à parte.
+ * É o valor de partida: o painel muda-o em Modalidades › Página Desporto
+ * (paginas.desporto → campeonato.categorias), que as páginas lêem no servidor.
+ */
 export const CATEGORIAS_CAMPEONATO: readonly string[] = ["MX1", "MX2", "Rally / Enduro"];
 
 export const doCampeonato = (p: { categoria: string }) => CATEGORIAS_CAMPEONATO.includes(p.categoria);
 
-/** "Todas" e as categorias que têm pilotos: as conhecidas pela ordem de CATEGORIAS_PILOTO, as outras a seguir. */
-export function categoriasComPilotos(pilotos: { categoria: string }[]): string[] {
+/** O mesmo filtro, com as categorias do campeonato gravadas no painel. */
+export const doCampeonatoDe = (categorias: readonly string[]) => (p: { categoria: string }) =>
+  categorias.includes(p.categoria);
+
+/**
+ * "Todas" e as categorias que têm pilotos: as conhecidas pela ordem de
+ * `ordem` (por omissão CATEGORIAS_PILOTO; o painel pode mudá-la), as outras a seguir.
+ */
+export function categoriasComPilotos(pilotos: { categoria: string }[], ordem: readonly string[] = CATEGORIAS_PILOTO): string[] {
   const presentes = new Set(pilotos.map((p) => p.categoria).filter(Boolean));
-  const conhecidas: readonly string[] = CATEGORIAS_PILOTO;
+  const conhecidas: readonly string[] = ordem;
   const outras = [...presentes].filter((c) => !conhecidas.includes(c)).sort((a, b) => a.localeCompare(b));
   return ["Todas", ...conhecidas.filter((c) => presentes.has(c)), ...outras];
+}
+
+/**
+ * Chave da fotografia de um piloto para o <Retrato>. O retrato de sempre
+ * vem do slug; quando o painel grava outra fotografia no campo `foto`
+ * (carregada, colada ou escolhida da biblioteca), é essa que aparece.
+ * O `foto` de partida ("kiala") é um atalho para o mesmo retrato do slug.
+ */
+export function retratoDe(p: { slug: string; foto?: string | null }): string {
+  const f = typeof p.foto === "string" ? p.foto.trim() : "";
+  if (!f) return p.slug;
+  const escolhida = fotoSrc(f);
+  if (!escolhida || escolhida === fotoSrc(p.slug)) return p.slug;
+  return f;
 }
 
 /** Corridas que contam para o Campeonato Nacional (as de fora têm ronda 0). */
@@ -188,8 +215,109 @@ export function corridasDoCampeonato(corridas: Corrida[]): Corrida[] {
   return corridas.filter((c) => c.ronda > 0);
 }
 
+/**
+ * Modalidade da lista de partida. As páginas públicas lêem a lista editada
+ * no painel (app/desporto/dados.ts → lerModalidades); isto é só o código.
+ */
 export function lerModalidade(slug: string): Modalidade | undefined {
   return MODALIDADES.find((m) => m.slug === slug);
+}
+
+/* ---------- Modalidades editáveis (painel → páginas públicas) ---------- */
+
+/** Troca {chave} pelos valores (ex.: "Temporada {ano}" → "Temporada 2026"). */
+export function preencher(texto: string, valores: Record<string, string | number>): string {
+  return texto.replace(/\{(\w+)\}/g, (todo, k: string) => (k in valores ? String(valores[k]) : todo));
+}
+
+/** Uma modalidade como o painel a grava: a ficha e o guia da sua página. */
+export type ModalidadeCompleta = Modalidade & { guia: ConteudoPagina };
+
+/**
+ * A modalidade em destaque (a casa do Campeonato Nacional): a primeira do
+ * grupo "principal"; sem nenhuma, o Motocross; sem ele, a primeira da lista.
+ */
+export function principalDe<M extends Pick<Modalidade, "slug" | "grupo">>(lista: M[]): M | undefined {
+  return lista.find((m) => m.grupo === "principal") ?? lista.find((m) => m.slug === MODALIDADE_PRINCIPAL) ?? lista[0];
+}
+
+const listaDe = <T,>(v: unknown, f: (x: unknown) => T): T[] => (Array.isArray(v) ? v.map(f) : []);
+const texto = (v: unknown) => (typeof v === "string" ? v : v === undefined || v === null ? "" : String(v));
+const objecto = (v: unknown): Record<string, unknown> => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
+const numeros = (v: unknown) => listaDe(v, Number).filter((n) => Number.isInteger(n) && n > 0);
+
+function textoGuia(v: unknown): Texto {
+  const o = objecto(v);
+  return { texto: texto(o.texto), fontes: numeros(o.fontes) };
+}
+function blocoGuia(v: unknown): Bloco {
+  const o = objecto(v);
+  return { titulo: texto(o.titulo), paragrafos: listaDe(o.paragrafos, textoGuia) };
+}
+function tabelaGuia(v: unknown): Tabela {
+  const o = objecto(v);
+  const nota = o.nota ? textoGuia(o.nota) : undefined;
+  return {
+    titulo: texto(o.titulo),
+    colunas: listaDe(o.colunas, texto),
+    linhas: listaDe(o.linhas, (l) => listaDe(l, texto)),
+    ...(nota && nota.texto.trim() ? { nota } : {}),
+  };
+}
+
+/**
+ * O guia de uma modalidade, completo e com a forma certa, venha de onde vier
+ * (o de partida, um gravado antigo ou uma modalidade nova ainda sem guia).
+ * O que falta fica vazio, e a página esconde as partes vazias.
+ */
+export function normalizarGuia(v: unknown): ConteudoPagina {
+  const g = objecto(v);
+  const angola = objecto(g.angola);
+  const comecar = objecto(g.comecar);
+  return {
+    numeros: listaDe(g.numeros, (n) => ({ valor: texto(objecto(n).valor), label: texto(objecto(n).label) })),
+    abertura: texto(g.abertura),
+    factos: listaDe(g.factos, (f) => ({ rotulo: texto(objecto(f).rotulo), valor: texto(objecto(f).valor) })),
+    formato: listaDe(g.formato, blocoGuia),
+    classes: listaDe(g.classes, tabelaGuia),
+    maquinas: listaDe(g.maquinas, textoGuia),
+    equipamento: listaDe(g.equipamento, textoGuia),
+    angola: {
+      intro: listaDe(angola.intro, textoGuia),
+      marcos: listaDe(angola.marcos, (m) => {
+        const o = objecto(m);
+        return { ano: texto(o.ano), texto: texto(o.texto), fontes: numeros(o.fontes) };
+      }),
+      blocos: listaDe(angola.blocos, blocoGuia),
+    },
+    internacional: listaDe(g.internacional, (i) => {
+      const o = objecto(i);
+      const seguir = texto(o.seguir);
+      return { nome: texto(o.nome), texto: textoGuia(o.texto), ...(seguir ? { seguir } : {}) };
+    }),
+    lusofonia: listaDe(g.lusofonia, textoGuia),
+    comecar: {
+      passos: listaDe(comecar.passos, (p) => ({ titulo: texto(objecto(p).titulo), texto: textoGuia(objecto(p).texto) })),
+      seguranca: listaDe(comecar.seguranca, texto),
+    },
+    fontes: listaDe(g.fontes, (f) => ({ nome: texto(objecto(f).nome), url: texto(objecto(f).url) })),
+  };
+}
+
+/** Uma modalidade gravada no painel, completa (campos em falta ficam vazios). */
+export function normalizarModalidade(v: unknown): ModalidadeCompleta {
+  const o = objecto(v);
+  const grupo = texto(o.grupo);
+  return {
+    slug: texto(o.slug),
+    nome: texto(o.nome),
+    disciplinas: listaDe(o.disciplinas, texto) as Disciplina[],
+    grupo: grupo === "principal" || grupo === "outras" ? grupo : "competicao",
+    descricao: texto(o.descricao),
+    imagem: texto(o.imagem),
+    categorias: listaDe(o.categorias, texto),
+    guia: normalizarGuia(o.guia),
+  };
 }
 
 /** Eventos do calendário que pertencem à modalidade. */

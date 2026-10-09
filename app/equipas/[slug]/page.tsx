@@ -10,6 +10,7 @@ import { classificacaoEquipas } from "@/lib/data";
 import { lerEquipa, lerEquipas, lerPilotos } from "@/lib/supabase/publico";
 import { EmblemaEquipa, Ficha, LigacaoSeta, Posicao, fotoEquipa } from "@/app/calendario/pecas";
 import { CartaoPiloto } from "@/app/pilotos/CartaoPiloto";
+import { lerExtrasEquipas } from "@/app/desporto/dados";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -37,7 +38,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
   const equipa = await lerEquipa(slug);
   if (!equipa) notFound();
 
-  const [equipas, pilotos] = await Promise.all([lerEquipas(), lerPilotos()]);
+  const [equipas, pilotos, extras] = await Promise.all([lerEquipas(), lerPilotos(), lerExtrasEquipas()]);
   const seus = pilotos.filter((p) => p.equipaSlug === equipa.slug);
   const posicao = classificacaoEquipas(equipas).find((e) => e.slug === equipa.slug)?.posicao;
   const outras = equipas.filter((e) => e.tipo === equipa.tipo && e.slug !== equipa.slug).slice(0, 3);
@@ -51,7 +52,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
 
   return (
     <PaginaInterior icone={<Shield />}>
-      <Abertura foto={fotoEquipa(equipa)} sobretitulo={`${equipa.tipo} · ${equipa.base}`} titulo={equipa.nome} texto={frase}>
+      <Abertura foto={fotoEquipa(equipa, extras[equipa.slug]?.foto)} sobretitulo={`${equipa.tipo} · ${equipa.base}`} titulo={equipa.nome} texto={frase}>
         <div className="flex flex-wrap items-center gap-3">
           {posicao && (
             <span

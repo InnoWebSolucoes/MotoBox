@@ -3,27 +3,34 @@
 import Link from "next/link";
 import { Icon, PageHero, Tag } from "@/components/ui";
 import { useIdioma } from "@/lib/i18n/contexto";
+import type { ConteudoImportar } from "@/lib/conteudo/grupos/paginas";
 import { FormularioImportacao } from "./FormularioImportacao";
-import {
-  CATEGORIAS, FONTES, ONDE_PROCURAR, PASSOS, REGRAS, TEXTO, type Bi,
-} from "./conteudo";
+import type { Bi } from "./conteudo";
 
 /* ============================================================
    MOTOBOX — Marketplace: importar do estrangeiro
    Explica o processo, o que a lei pede, onde procurar (sem
-   parceiros inventados) e recebe o pedido. O texto vive em
-   ./conteudo.ts, nas duas línguas.
+   parceiros inventados) e recebe o pedido. O texto chega por
+   props (conteúdo editável "paginas.marketplace-importar"), nas
+   duas línguas; ./conteudo.ts é o texto de partida.
    ============================================================ */
 
 const pilula =
   "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--raio)] px-6 text-[15px] transition-colors";
 
 /** Domínio sem "www.", para mostrar por baixo do nome de cada sítio. */
-const dominio = (url: string) => new URL(url).hostname.replace(/^www\./, "");
+const dominio = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+};
 
-export function ImportarClient() {
+export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
+  const { CATEGORIAS, FONTES, FORM, ONDE_PROCURAR, PASSOS, REGRAS, TEXTO } = dados;
   const { idioma } = useIdioma();
-  const x = (v: Bi) => v[idioma];
+  const x = (v: Bi | undefined) => v?.[idioma] ?? "";
 
   return (
     <>
@@ -54,7 +61,7 @@ export function ImportarClient() {
           </div>
           <ol className="mt-10 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
             {PASSOS.map((p, i) => (
-              <li key={p.titulo.pt} className="border-t-2 border-white/10 pt-5 first:border-mb-red!">
+              <li key={i} className="border-t-2 border-white/10 pt-5 first:border-mb-red!">
                 <span className="font-display text-5xl leading-none text-mb-red tabular-nums">{i + 1}</span>
                 <h3 className="mt-3 font-display text-xl uppercase leading-tight text-white">{x(p.titulo)}</h3>
                 <p className="mt-2 text-sm text-ink-400 leading-relaxed">{x(p.texto)}</p>
@@ -77,11 +84,11 @@ export function ImportarClient() {
         <section aria-labelledby="o-que" className="border-t border-white/6 py-16">
           <h2 id="o-que" className="titulo-3">{x(TEXTO.oQueTitulo)}</h2>
           <div className="mt-8 grid gap-x-10 md:grid-cols-2">
-            {CATEGORIAS.map((c) => (
-              <div key={c.nome.pt} className="border-b border-white/6 py-5">
+            {CATEGORIAS.map((c, i) => (
+              <div key={i} className="border-b border-white/6 py-5">
                 <h3 className="font-display text-xl uppercase text-white">{x(c.nome)}</h3>
                 <p className="mt-1.5 text-sm text-ink-400 leading-relaxed">{x(c.texto)}</p>
-                {c.ligacao && (
+                {c.ligacao?.href && (
                   <Link
                     href={c.ligacao.href}
                     className="mt-2 inline-flex items-center gap-1.5 font-ui text-sm text-mb-red transition-colors hover:text-mb-red-light"
@@ -103,7 +110,7 @@ export function ImportarClient() {
           </div>
           <ol className="mt-8 grid gap-x-10 md:grid-cols-2">
             {REGRAS.map((r, i) => (
-              <li key={r.titulo.pt} className="flex gap-4 border-b border-white/6 py-5">
+              <li key={i} className="flex gap-4 border-b border-white/6 py-5">
                 <span className="w-6 shrink-0 font-display text-2xl leading-none text-mb-red tabular-nums">{i + 1}</span>
                 <div>
                   <h3 className="font-display text-lg uppercase leading-tight text-white">{x(r.titulo)}</h3>
@@ -140,15 +147,15 @@ export function ImportarClient() {
           </div>
 
           <div className="mt-10 space-y-12">
-            {ONDE_PROCURAR.map((g) => (
-              <div key={g.grupo.pt}>
+            {ONDE_PROCURAR.map((g, i) => (
+              <div key={i}>
                 <h3 className="eyebrow text-mb-red">{x(g.grupo)}</h3>
                 {g.classificados && (
                   <p className="mt-2 max-w-3xl text-xs text-ink-500 leading-relaxed">{x(TEXTO.classificadosAviso)}</p>
                 )}
                 <ul className="mt-4 grid gap-x-10 md:grid-cols-2">
-                  {g.sitios.map((s) => (
-                    <li key={s.url} className="border-b border-white/6">
+                  {g.sitios.map((s, j) => (
+                    <li key={j} className="border-b border-white/6">
                       <a
                         href={s.url}
                         target="_blank"
@@ -196,9 +203,11 @@ export function ImportarClient() {
               </div>
               <p className="mt-2 text-sm text-ink-400 leading-relaxed">
                 {x(TEXTO.carteirasTexto)}
-                <a href="#fonte-4" className="ml-1 align-super text-[10px] text-mb-red hover:underline" aria-label={`${x(TEXTO.fontesTitulo)} 4`}>
-                  [4]
-                </a>
+                {(TEXTO.carteirasFontes ?? []).map((n) => (
+                  <a key={n} href={`#fonte-${n}`} className="ml-1 align-super text-[10px] text-mb-red hover:underline" aria-label={`${x(TEXTO.fontesTitulo)} ${n}`}>
+                    [{n}]
+                  </a>
+                ))}
               </p>
             </div>
           </div>
@@ -213,8 +222,8 @@ export function ImportarClient() {
             <h2 id="pedido-titulo" className="titulo-2 mt-2">{x(TEXTO.formTitulo)}</h2>
             <p className="mt-4 text-base text-ink-300 leading-relaxed">{x(TEXTO.formSub)}</p>
             <ul className="mt-8">
-              {TEXTO.formDicas.map((d) => (
-                <li key={d.pt} className="flex gap-3 border-b border-white/6 py-3.5 last:border-0">
+              {TEXTO.formDicas.map((d, i) => (
+                <li key={i} className="flex gap-3 border-b border-white/6 py-3.5 last:border-0">
                   <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-mb-red/15 text-mb-red">
                     <Icon name="check" className="size-3.5" />
                   </span>
@@ -223,7 +232,7 @@ export function ImportarClient() {
               ))}
             </ul>
           </div>
-          <FormularioImportacao />
+          <FormularioImportacao textos={FORM} />
         </div>
       </section>
 
@@ -231,8 +240,8 @@ export function ImportarClient() {
       <section aria-labelledby="fontes-importar" className="coluna py-12">
         <h2 id="fontes-importar" className="mb-4 text-lg font-semibold text-white">{x(TEXTO.fontesTitulo)}</h2>
         <ol className="grid gap-x-10 text-xs sm:grid-cols-2">
-          {FONTES.map((f) => (
-            <li key={f.n} id={`fonte-${f.n}`} className="flex scroll-mt-24 gap-3 border-b border-white/6 py-2.5">
+          {FONTES.map((f, i) => (
+            <li key={`${f.n}-${i}`} id={`fonte-${f.n}`} className="flex scroll-mt-24 gap-3 border-b border-white/6 py-2.5">
               <span className="w-5 shrink-0 text-right text-ink-600 tabular-nums">{f.n}</span>
               <a
                 href={f.url}

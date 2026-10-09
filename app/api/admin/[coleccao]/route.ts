@@ -149,7 +149,10 @@ export async function GET(
     return NextResponse.json({ dados: data ? definicoesDaBase(data) : null });
   }
 
-  const { data, error } = await db.from(TABELA[coleccao]).select("*");
+  let consulta = db.from(TABELA[coleccao]).select("*");
+  // As linhas "conteudo.*" de paginas_legais são o conteúdo editável (API própria em /api/admin/conteudo).
+  if (coleccao === "paginasLegais") consulta = consulta.not("slug", "like", "conteudo.%");
+  const { data, error } = await consulta;
   // Uma tabela nova ainda por criar não pode tirar o painel inteiro do ar:
   // devolve-se vazia, com o aviso para a página a mostrar.
   if (tabelaEmFalta(error)) return NextResponse.json({ dados: [], emFalta: true });

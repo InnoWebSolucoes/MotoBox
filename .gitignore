@@ -42,3 +42,7 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Conteúdo e ficheiros gravados pelo painel em desenvolvimento, sem base de dados
+.conteudo-local.json
+public/media-local/

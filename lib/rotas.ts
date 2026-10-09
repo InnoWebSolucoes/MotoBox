@@ -25,136 +25,28 @@
 
    As fotografias são reais, dos próprios lugares, do Wikimedia
    Commons, com o autor e a licença (lib/rotas-fotos.ts).
+
+   Isto é o conteúdo de partida. O site lê as rotas do conteúdo
+   editável (grupo "rotas", ver lib/rotas-conteudo.ts), que o painel
+   de gestão edita em /admin/rotas; enquanto ninguém gravar, vale o
+   que está aqui. O mesmo para os textos de /rotas e o que é comum a
+   todas as rotas (documento "paginas.rotas", paginaRotasPadrao()).
    ============================================================ */
 
-import type { Provincia } from "@/lib/types";
-import { CLIMA, type CidadeClima } from "@/lib/rotas-clima";
+import { CLIMA } from "@/lib/rotas-clima";
 import { BASE } from "@/lib/rotas-dados";
+import { ESTADO_ESTRADA } from "@/lib/rotas-estrada";
 import { F, fx } from "@/lib/rotas-fontes";
-import { FOTOS, urlCommons, type Foto } from "@/lib/rotas-fotos";
-import { CALCULO } from "@/lib/rotas-tracados";
+import { FOTOS, urlCommons } from "@/lib/rotas-fotos";
+import { CALCULO, TRACADOS } from "@/lib/rotas-tracados";
+import { TEXTOS_PAGINA_ROTAS, type ClimaCidade, type ConteudoPaginaRotas } from "@/lib/rotas-pagina";
+import { assinaturaParagens, type Facto, type FonteRota, type Paragem, type Rota, type Troco } from "@/lib/rotas-tipos";
 
 export { CLIMA } from "@/lib/rotas-clima";
-export type { Foto } from "@/lib/rotas-fotos";
-
-export type Piso = "Asfalto" | "Asfalto e terra" | "Asfalto e areia";
-
-/** Quanto a rota pede a quem conduz, dito pelas fontes (estrada, piso, isolamento). */
-export type Exigencia = "Tranquila" | "Média" | "Exigente" | "Aventura";
-
-export interface FonteRota {
-  nome: string;
-  url: string;
-}
-
-/** Um facto e as fontes que o sustentam. */
-export interface Facto {
-  texto: string;
-  fontes: FonteRota[];
-}
-
-export interface Lugar {
-  nome: string;
-  onde: string;
-  nota: string;
-  fontes: FonteRota[];
-}
-
-export interface Ponto {
-  nome: string;
-  lat: number;
-  lng: number;
-  nota: string;
-  fontes: FonteRota[];
-}
-
-export interface Paragem {
-  nome: string;
-  lat: number;
-  lng: number;
-  /** Altitude em metros, do modelo SRTM. */
-  alt: number;
-  /** Onde foi verificada a coordenada. */
-  fonte: FonteRota;
-}
-
-export interface Troco {
-  dia: number;
-  /** Índices em `paragens`: cada troço vai de uma paragem à seguinte. */
-  de: number;
-  para: number;
-  /** Distância e tempo de carro, do OSRM. */
-  km: number;
-  minCarro: number;
-  piso: "asfalto" | "buracos" | "terra" | "areia";
-  /** A estrada: número, por onde passa, estado. */
-  estrada: string;
-  /** O que se vê pelo caminho. */
-  ver: string;
-  aviso?: string;
-  fontes: FonteRota[];
-}
-
-export interface DiaHorario {
-  titulo: string;
-  passos: { hora: string; texto: string }[];
-}
-
-export interface Rota {
-  slug: string;
-  nome: string;
-  /** Uma linha, por baixo do nome. */
-  subtitulo: string;
-  /** Como aparece no cartão, ex.: "Huíla · Namibe". */
-  regiao: string;
-  /** Para ligar a rota aos clubes da mesma zona. */
-  provincias: Provincia[];
-  /** Cidade de onde normalmente se parte. */
-  partida: string;
-  piso: Piso;
-  /** O piso em concreto: estradas, troços de terra, areia. */
-  pisoDetalhe: string;
-  exigencia: Exigencia;
-  /** Porquê esta exigência, numa frase. */
-  exigenciaPorque: string;
-  melhorEpoca: string;
-  /** Para o cabeçalho, ex.: "Jun–Ago". */
-  epocaCurta: string;
-  resumo: string;
-  descricao: string[];
-  /** Distâncias como as fontes as publicam, para comparar com o OSRM. */
-  distancias: { texto: string; fonte: FonteRota }[];
-  destaques: string[];
-  dicas: string[];
-  /** Miniatura da fotografia de capa (as páginas dos clubes usam-na). */
-  imagem: string;
-  fotos: Foto[];
-  fontes: FonteRota[];
-
-  paragens: Paragem[];
-  trocos: Troco[];
-  dias: number;
-  diasNota: Facto;
-  horario: DiaHorario[];
-  /** Cidade de referência para o clima e para o nascer e o pôr do sol. */
-  clima: CidadeClima;
-  altimetria: { min: number; max: number; subida: number; descida: number };
-  combustivel: Facto[];
-  /** O maior intervalo entre postos, dito com números. */
-  semCombustivel: Facto;
-  comer: Lugar[];
-  dormir: Lugar[];
-  saude: Lugar[];
-  perigos: Facto[];
-  licencas: Facto[];
-  rede: Facto[];
-  motas: Facto[];
-  /** Lista de verificação própria desta rota. */
-  levar: string[];
-  agua: Facto;
-  grupo: Facto;
-  pontos: Ponto[];
-}
+// Os tipos vivem em lib/rotas-tipos.ts (leve, para o painel e o browser).
+export type {
+  DiaHorario, Exigencia, Facto, FonteRota, Foto, Lugar, Paragem, Piso, Ponto, Rota, Troco,
+} from "@/lib/rotas-tipos";
 
 /* ---------------- Dados como se escrevem em lib/rotas-dados.ts ---------------- */
 
@@ -191,6 +83,9 @@ function montar(r: RotaBase): Rota {
     altimetria: c.altimetria,
     fotos,
     imagem: urlCommons(fotos[0], 960),
+    estrada: ESTADO_ESTRADA[r.slug] ?? null,
+    tracado: TRACADOS[r.slug] ?? "",
+    tracadoDe: assinaturaParagens(c.paragens),
   };
 }
 
@@ -198,12 +93,18 @@ export const ROTAS: Rota[] = BASE.map(montar);
 
 export const lerRota = (slug: string) => ROTAS.find((r) => r.slug === slug);
 
+/** O que é comum a todas as rotas e entra na lista de fontes de cada uma. */
+type Comum = Pick<ConteudoPaginaRotas, "DOCUMENTOS" | "EMERGENCIA" | "REDE_GERAL" | "PRECO_COMBUSTIVEL" | "CLIMA">;
+
 /**
  * Todas as fontes citadas na página de uma rota, sem repetições. Os elementos
  * do OpenStreetMap entram como uma só fonte: cada um tem a ligação no sítio
- * onde é citado.
+ * onde é citado. `comum` é o que está no conteúdo editável (por omissão, o
+ * do código).
  */
-export function fontesDaRota(rota: Rota): FonteRota[] {
+export function fontesDaRota(rota: Rota, comum?: Comum): FonteRota[] {
+  const c: Comum = comum ?? { DOCUMENTOS, EMERGENCIA, REDE_GERAL, PRECO_COMBUSTIVEL, CLIMA: CLIMA_CIDADES };
+  const clima = climaDaRota(rota, c.CLIMA);
   const todas: FonteRota[] = [
     ...rota.fontes,
     ...rota.distancias.map((d) => d.fonte),
@@ -213,11 +114,11 @@ export function fontesDaRota(rota: Rota): FonteRota[] {
     ...[rota.combustivel, rota.perigos, rota.licencas, rota.rede, rota.motas].flat().flatMap((f) => f.fontes),
     ...[rota.comer, rota.dormir, rota.saude].flat().flatMap((l) => l.fontes),
     ...rota.pontos.flatMap((p) => p.fontes),
-    ...DOCUMENTOS.flatMap((d) => d.fontes),
-    ...EMERGENCIA.fontes,
-    ...REDE_GERAL.fontes,
-    ...PRECO_COMBUSTIVEL.fontes,
-    CLIMA[rota.clima].fonte,
+    ...c.DOCUMENTOS.flatMap((d) => d.fontes),
+    ...c.EMERGENCIA.fontes,
+    ...c.REDE_GERAL.fontes,
+    ...c.PRECO_COMBUSTIVEL.fontes,
+    ...(clima ? [clima.fonte] : []),
     F.osrm,
     F.srtm,
   ];
@@ -225,6 +126,7 @@ export function fontesDaRota(rota: Rota): FonteRota[] {
   const lista: FonteRota[] = [];
   let osm = false;
   for (const f of todas) {
+    if (!f?.url) continue;
     if (/openstreetmap\.org\/(node|way|relation)\//.test(f.url)) {
       osm = true;
       continue;
@@ -388,3 +290,36 @@ export const REGRAS_ESTRADA: { texto: string; fonte: FonteRota }[] = [
   { texto: "Luzes acesas do anoitecer ao amanhecer e com pouca visibilidade (art. 59.º).", fonte: F.codigoDnvt },
   { texto: "Não se levam passageiros com menos de 7 anos na mota (art. 90.º).", fonte: F.codigoDnvt },
 ];
+
+/* ---------------- Clima e página das rotas (conteúdo editável) ---------------- */
+
+/** As tabelas de clima do código, em lista (como ficam no conteúdo editável). */
+export const CLIMA_CIDADES: ClimaCidade[] = Object.entries(CLIMA).map(([chave, c]) => ({
+  chave,
+  cidade: c.cidade,
+  lat: c.lat,
+  lng: c.lng,
+  fonte: c.fonte,
+  nota: c.nota,
+  meses: c.meses,
+}));
+
+/** A cidade de clima de uma rota (ou a primeira da lista, se a dela já não existir). */
+export const climaDaRota = (rota: Pick<Rota, "clima">, cidades: ClimaCidade[]): ClimaCidade | undefined =>
+  cidades.find((c) => c.chave === rota.clima) ?? cidades[0];
+
+/** O documento "paginas.rotas" como estava no código: textos de /rotas e o comum a todas as rotas. */
+export function paginaRotasPadrao(): ConteudoPaginaRotas {
+  return {
+    ...TEXTOS_PAGINA_ROTAS,
+    EMERGENCIA,
+    DOCUMENTOS,
+    REDE_GERAL,
+    PRECO_COMBUSTIVEL,
+    LEVAR_BASE,
+    CLIMA_POR_REGIAO,
+    CHECKLIST_VIAGEM,
+    REGRAS_ESTRADA,
+    CLIMA: CLIMA_CIDADES,
+  };
+}

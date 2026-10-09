@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { Clock, Newspaper, UserRound } from "lucide-react";
 import { lerNoticia, lerNoticias } from "@/lib/supabase/publico";
 import { dataArtigo } from "@/lib/motobox";
+import { lerDoc } from "@/lib/conteudo";
+import type { ConteudoPaginaArtigos } from "@/lib/conteudo/grupos/eventos";
+import { fotoDe } from "@/app/eventos/foto";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, Seccao } from "@/components/painel/blocos";
 import { CartaoArtigo } from "@/components/painel/cartoes";
@@ -36,6 +39,8 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
   const { slug } = await params;
   const artigo = await lerNoticia(slug);
   if (!artigo) notFound();
+  // Os textos fixos (etiquetas, fonte, relacionados) editam-se no painel: Artigos → Página Artigos.
+  const t = await lerDoc<ConteudoPaginaArtigos>("paginas.artigos");
 
   // Relacionados: mesma categoria e etiquetas em comum primeiro.
   const relacionados = (await lerNoticias())
@@ -51,7 +56,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
   return (
     <PaginaInterior icone={<Newspaper />}>
       <Abertura
-        foto={[artigo.slug, artigo.imagem]}
+        foto={fotoDe(artigo.slug, artigo.imagem)}
         sobretitulo={
           <Link href={`/artigos?categoria=${encodeURIComponent(artigo.categoria)}`} className="hover:text-white">
             {artigo.categoria}
@@ -67,7 +72,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
           </span>
           <time dateTime={artigo.data}>{dataArtigo(artigo.data)}</time>
           <span className="inline-flex items-center gap-2">
-            <Clock className="size-4" aria-hidden /> {artigo.leitura} min de leitura
+            <Clock className="size-4" aria-hidden /> {artigo.leitura}{` ${t.artigoLeitura}`}
           </span>
         </div>
       </Abertura>
@@ -79,7 +84,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
 
             {artigo.fonte && (
               <p className="!mt-10 border-l-2 border-mb-red pl-4 !text-sm !text-white/60">
-                Fonte:{" "}
+                {t.artigoFonte}{" "}
                 {artigo.fonteUrl ? (
                   <a href={artigo.fonteUrl} target="_blank" rel="noopener noreferrer" className="sublinhado text-white/80">
                     {artigo.fonte}
@@ -94,7 +99,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
           <aside className="flex flex-col gap-8 lg:sticky lg:top-8 lg:self-start">
             {artigo.tags.length > 0 && (
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white/50">Etiquetas</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-white/50">{t.artigoEtiquetas}</p>
                 <ul className="mt-3 flex flex-wrap gap-1.5">
                   {artigo.tags.map((t) => (
                     <li key={t} className="rounded-[4px] bg-white/7 px-2.5 py-1 text-xs text-white/80">
@@ -104,9 +109,9 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
                 </ul>
               </div>
             )}
-            <Partilhar titulo={artigo.titulo} />
+            <Partilhar titulo={artigo.titulo} rotulo={t.artigoPartilhar} botao={t.artigoPartilharBotao} copiadoTexto={t.artigoCopiado} />
             <Link href="/artigos" className="group inline-flex items-center gap-2 text-sm">
-              <span className="sublinhado">Todos os artigos</span>
+              <span className="sublinhado">{t.artigoTodos}</span>
               <Seta className="size-3" />
             </Link>
           </aside>
@@ -115,7 +120,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
 
       {relacionados.length > 0 && (
         <Seccao className="!pt-0">
-          <h2 className="titulo-3">Continue a ler</h2>
+          <h2 className="titulo-3">{t.artigoContinuar}</h2>
           <div className="mt-8 grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
             {relacionados.map((a) => (
               <CartaoArtigo key={a.slug} artigo={a} />
@@ -124,9 +129,11 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
         </Seccao>
       )}
 
-      <Seccao className="!pt-0">
-        <NewsletterPainel />
-      </Seccao>
+      {t.artigoNewsletter && (
+        <Seccao className="!pt-0">
+          <NewsletterPainel />
+        </Seccao>
+      )}
     </PaginaInterior>
   );
 }

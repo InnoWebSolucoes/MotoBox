@@ -7,18 +7,26 @@ import {
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, BotaoMB, Cabecalho, Numeros, Seccao } from "@/components/painel/blocos";
 import { Foto } from "@/components/painel/kit";
-import {
-  ACIDENTE, CABECA, CAPACETE, CHUVA, EQUIPAMENTO, FONTES, GRUPO, HISTORIAS, NUMEROS, PASSAGEIROS, SECCOES,
-  SEGURO, UI, VERIFICACAO, VISIBILIDADE, type Bi,
-} from "./conteudo";
+import { lerDoc } from "@/lib/conteudo";
+import { SEGURANCA_PADRAO, type ConteudoSeguranca } from "@/lib/conteudo/grupos/paginas";
+import { fundir } from "@/lib/conteudo/grupos/site";
+import type { Bi } from "./conteudo";
 
-export const metadata: Metadata = {
-  title: "Segurança",
-  description:
-    "Guia prático para quem anda de mota em Angola: capacete, chuva, visibilidade, equipamento, passageiros, verificação antes de sair, passeios em grupo e o que fazer num acidente. Com fontes.",
-};
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
 
-const t = (b: Bi) => b.pt;
+/* O texto vive no conteúdo editável ("paginas.seguranca", editado em
+   Gestão › Páginas); ./conteudo.ts é o texto de partida. */
+async function lerSeguranca(): Promise<ConteudoSeguranca> {
+  return fundir(SEGURANCA_PADRAO, await lerDoc<ConteudoSeguranca>("paginas.seguranca"));
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { SEO } = await lerSeguranca();
+  return { title: SEO.titulo, description: SEO.descricao };
+}
+
+const t = (b: Bi | string | undefined) => (typeof b === "string" ? b : b?.pt ?? "");
 
 const ICONES_CABECA: Record<string, React.ReactNode> = {
   eyeOff: <EyeOff />,
@@ -42,8 +50,8 @@ function Numero({ n, nome }: { n: number; nome: string }) {
 function Lista({ itens }: { itens: Bi[] }) {
   return (
     <ul className="space-y-3 text-[15px] leading-relaxed text-white/85">
-      {itens.map((i) => (
-        <li key={i.pt} className="flex gap-3">
+      {itens.map((i, n) => (
+        <li key={n} className="flex gap-3">
           <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-mb-red" />
           {t(i)}
         </li>
@@ -61,13 +69,19 @@ function Lei({ texto, fonte }: { texto: Bi; fonte: Bi }) {
   );
 }
 
-export default function Seguranca() {
-  const nome = (id: string) => t(SECCOES.find((s) => s.id === id)!.nome);
+export default async function Seguranca() {
+  const {
+    ACIDENTE, CABECA, CAPACETE, CHUVA, EQUIPAMENTO, FONTES, FOTOS, GRUPO, HISTORIAS, NUMEROS, PASSAGEIROS, SECCOES,
+    SEGURO, UI, VERIFICACAO, VISIBILIDADE,
+  } = await lerSeguranca();
+  // Uma secção sem nome gravado fica com o nome de partida.
+  const nome = (id: string) =>
+    t(SECCOES.find((s) => s.id === id)?.nome ?? SEGURANCA_PADRAO.SECCOES.find((s) => s.id === id)?.nome);
 
   return (
     <PaginaInterior icone={<ShieldCheck />}>
       <Abertura
-        foto="banner-seguranca"
+        foto={FOTOS.abertura}
         sobretitulo={t(UI.eyebrow)}
         titulo={
           <>
@@ -87,12 +101,12 @@ export default function Seguranca() {
           itens={NUMEROS.map((n) => ({
             valor: (
               <>
-                {n.prefixo && <span className="mr-2 text-xl text-white/60">{t(n.prefixo)}</span>}
+                {t(n.prefixo) && <span className="mr-2 text-xl text-white/60">{t(n.prefixo)}</span>}
                 {n.valor}
               </>
             ),
             texto: t(n.texto),
-            nota: `Fonte: ${t(n.fonte)}`,
+            nota: `${t(UI.fonte)}: ${t(n.fonte)}`,
           }))}
         />
         <nav aria-label={t(UI.nestaPagina)} className="mt-10">
@@ -118,13 +132,13 @@ export default function Seguranca() {
             <Lei texto={CAPACETE.lei} fonte={CAPACETE.leiFonte} />
           </div>
           <figure>
-            <Foto nome="artigo-capacete" alt={t(CAPACETE.fotoLegenda)} className="aspect-[4/5] lg:aspect-auto lg:h-full lg:min-h-[28rem]" largura={1000} />
+            <Foto nome={FOTOS.capacete} alt={t(CAPACETE.fotoLegenda)} className="aspect-[4/5] lg:aspect-auto lg:h-full lg:min-h-[28rem]" largura={1000} />
             <figcaption className="mt-2 text-xs text-white/50">{t(CAPACETE.fotoLegenda)}</figcaption>
           </figure>
         </div>
         <div className="mt-10 grid gap-[var(--intervalo)] lg:grid-cols-3">
-          {CAPACETE.grupos.map((g) => (
-            <div key={g.titulo.pt} className="painel painel-escuro p-6">
+          {CAPACETE.grupos.map((g, i) => (
+            <div key={i} className="painel painel-escuro p-6">
               <h3 className="mb-5 text-xl font-semibold">{t(g.titulo)}</h3>
               <Lista itens={g.itens} />
             </div>
@@ -140,12 +154,12 @@ export default function Seguranca() {
           <div className="flex min-h-48 flex-col justify-end rounded-[var(--raio)] bg-mb-red p-6">
             <span className="text-6xl font-semibold leading-none">{CHUVA.numero}</span>
             <span className="mt-3 text-[15px]">{t(CHUVA.numeroTexto)}</span>
-            <span className="mt-1 text-xs text-white/75">Fonte: {t(CHUVA.numeroFonte)}</span>
+            <span className="mt-1 text-xs text-white/75">{t(UI.fonte)}: {t(CHUVA.numeroFonte)}</span>
           </div>
         </div>
         <ol className="mt-10 grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
           {CHUVA.dicas.map((d, i) => (
-            <li key={d.titulo.pt} className="painel painel-escuro flex min-h-48 flex-col p-6">
+            <li key={i} className="painel painel-escuro flex min-h-48 flex-col p-6">
               <span className="text-3xl font-semibold text-mb-red-light">{i + 1}</span>
               <h3 className="mt-auto pt-6 text-lg font-semibold">{t(d.titulo)}</h3>
               <p className="mt-2 text-sm leading-relaxed text-white/80">{t(d.texto)}</p>
@@ -164,7 +178,7 @@ export default function Seguranca() {
               <Lista itens={VISIBILIDADE.dicas} />
             </div>
           </div>
-          <Foto nome="noite" className="min-h-80" largura={1000} />
+          <Foto nome={FOTOS.visibilidade} className="min-h-80" largura={1000} />
         </div>
       </Seccao>
 
@@ -178,8 +192,8 @@ export default function Seguranca() {
           itens={EQUIPAMENTO.numeros.map((n) => ({ valor: n.valor, texto: t(n.texto), nota: t(EQUIPAMENTO.estudo) }))}
         />
         <div className="mt-[var(--intervalo)] grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-4">
-          {EQUIPAMENTO.pecas.map((p) => (
-            <div key={p.nome.pt} className="painel painel-escuro p-6">
+          {EQUIPAMENTO.pecas.map((p, i) => (
+            <div key={i} className="painel painel-escuro p-6">
               <h3 className="text-xl font-semibold">{t(p.nome)}</h3>
               <p className="mt-3 text-sm leading-relaxed text-white/80">{t(p.texto)}</p>
             </div>
@@ -207,12 +221,12 @@ export default function Seguranca() {
         <Numero n={6} nome={nome("cabeca")} />
         <Cabecalho icone={<Brain />} titulo={t(CABECA.titulo)} texto={t(CABECA.lead)} />
         <div className="mt-10 grid gap-[var(--intervalo)] md:grid-cols-2">
-          {CABECA.temas.map((tema) => (
-            <div key={tema.titulo.pt} className="painel painel-escuro flex flex-col p-6 lg:p-8">
+          {CABECA.temas.map((tema, i) => (
+            <div key={i} className="painel painel-escuro flex flex-col p-6 lg:p-8">
               <div className="flex items-start justify-between gap-4">
                 <span aria-hidden className="text-white [&_svg]:size-7">{ICONES_CABECA[tema.icone]}</span>
                 <span className="rounded-[4px] bg-mb-red px-2.5 py-1 text-sm font-semibold">
-                  {typeof tema.destaque === "string" ? tema.destaque : t(tema.destaque)}
+                  {t(tema.destaque)}
                 </span>
               </div>
               <h3 className="mt-10 text-xl font-semibold">{t(tema.titulo)}</h3>
@@ -275,7 +289,7 @@ export default function Seguranca() {
         </div>
         <ol className="mt-10 grid gap-[var(--intervalo)] lg:grid-cols-3">
           {ACIDENTE.passos.map((p, i) => (
-            <li key={p.nome.pt} className="painel painel-escuro p-6">
+            <li key={i} className="painel painel-escuro p-6">
               <p className="flex items-center gap-3 text-xl font-semibold">
                 <span className="grid size-9 place-items-center rounded-[4px] bg-mb-red text-sm">{i + 1}</span>
                 {t(p.nome)}
@@ -305,8 +319,8 @@ export default function Seguranca() {
         <Numero n={11} nome={nome("historias")} />
         <Cabecalho icone={<BookOpen />} titulo={t(HISTORIAS.titulo)} texto={t(HISTORIAS.aviso)} />
         <div className="mt-10 grid gap-[var(--intervalo)] md:grid-cols-2">
-          {HISTORIAS.lista.map((h) => (
-            <article key={h.titulo.pt} className="painel painel-escuro flex flex-col p-6 lg:p-8">
+          {HISTORIAS.lista.map((h, i) => (
+            <article key={i} className="painel painel-escuro flex flex-col p-6 lg:p-8">
               <h3 className="text-xl font-semibold">{t(h.titulo)}</h3>
               <p className="mt-3 text-[15px] leading-relaxed text-white/80">{t(h.texto)}</p>
               <p className="mt-auto pt-6 text-sm">
@@ -325,7 +339,7 @@ export default function Seguranca() {
               {t(HISTORIAS.forum)}
             </Link>
             <Link href="/contacto" className="inline-flex h-12 items-center rounded-[var(--raio)] bg-white px-5 text-sm text-black transition-colors hover:bg-white/85">
-              Escrever à MotoBox
+              {t(HISTORIAS.contacto)}
             </Link>
           </div>
         </div>
@@ -337,7 +351,7 @@ export default function Seguranca() {
         <p className="mt-3 max-w-[70ch] text-sm text-white/65">{t(UI.fontesSub)}</p>
         <ol className="mt-6 grid gap-x-10 gap-y-2 text-sm text-white/65 md:grid-cols-2">
           {FONTES.map((f, i) => (
-            <li key={f.url}>
+            <li key={i}>
               <span className="text-white/40">[{i + 1}]</span>{" "}
               <a href={f.url} target="_blank" rel="noopener noreferrer" className="hover:text-white">
                 {t(f.nome)}

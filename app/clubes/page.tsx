@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Flag, HeartHandshake, MapPinned, Route, Users, Venus } from "lucide-react";
 import { lerClubes } from "@/lib/supabase/publico";
-import { comResumo } from "@/lib/clubes-perfis";
-import { ROTAS } from "@/lib/rotas";
+import { comResumoDe, normalizarPerfil, type PerfilClube } from "@/lib/clubes-perfis";
+import { lerDoc, lerGrupo, lerListaDados } from "@/lib/conteudo";
+import type { ConteudoPaginaClubes } from "@/lib/conteudo/grupos/clubes";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import {
   Abertura, BotaoMB, Cabecalho, CartaoIcone, CartaoNumerado, Numeros, Pilulas, Seccao,
@@ -12,15 +13,19 @@ import { Chip, Foto, Seta } from "@/components/painel/kit";
 import { JuntarClube } from "./JuntarClube";
 import { CartaoClube } from "./Partes";
 import { TIPOS_CLUBE, eMovimento, tipoPorSlug } from "./comum";
+import { fotoDe } from "@/app/eventos/foto";
 
-/** O movimento das Lady Riders na MotoBox. */
-const LADY_RIDERS = "ladies-in-2-wheels-angola";
+/** O que o cartão de rota precisa (as rotas vêm do conteúdo editável). */
+type RotaCartao = { slug: string; nome: string; imagem?: string; regiao: string; piso: string; exigencia: string };
 
-export const metadata: Metadata = {
-  title: "Clubes",
-  description:
-    "Todos os clubes de motas de Angola: moto-turismo, Lady Riders, scooters, clássicas e convívio. Encontre um clube perto de si ou junte o seu à MotoBox.",
-};
+/** Ícones dos primeiros passos, pela ordem dos cartões (repetem-se se houver mais cartões). */
+const ICONES_PASSOS = [Users, Route, HeartHandshake];
+
+// Os textos fixos desta página editam-se no painel: Clubes e movimentos → Página Clubes.
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await lerDoc<ConteudoPaginaClubes>("paginas.clubes");
+  return { title: "Clubes", description: t.descricaoPesquisa };
+}
 
 export default async function Clubes({
   searchParams,
@@ -28,14 +33,20 @@ export default async function Clubes({
   searchParams: Promise<{ tipo?: string; provincia?: string }>;
 }) {
   const { tipo, provincia } = await searchParams;
-  // A linha de apresentação dos cartões vem do perfil alargado, que vive no código.
-  const todos = (await lerClubes()).map(comResumo);
+  const [t, perfisGravados, rotas] = await Promise.all([
+    lerDoc<ConteudoPaginaClubes>("paginas.clubes"),
+    lerGrupo<PerfilClube>("clubes-perfis"),
+    lerListaDados<RotaCartao>("rotas"),
+  ]);
+  // A linha de apresentação dos cartões vem do perfil alargado (editável no painel).
+  const perfis = new Map(perfisGravados.map((d) => [d.chave, normalizarPerfil(d.dados)]));
+  const todos = (await lerClubes()).map(comResumoDe(perfis));
   // Os movimentos (ex.: Lady Riders) têm secção própria: não são clubes.
   const clubes = todos.filter((c) => !eMovimento(c));
   const movimentos = todos.filter(eMovimento);
 
   const tipoActivo = tipoPorSlug(tipo);
-  const tiposPresentes = TIPOS_CLUBE.filter((t) => clubes.some((c) => c.tipo === t.tipo));
+  const tiposPresentes = TIPOS_CLUBE.filter((tp) => clubes.some((c) => c.tipo === tp.tipo));
   const provincias = [...new Set(clubes.map((c) => c.provincia).filter(Boolean))].sort((a, b) =>
     a === "Luanda" ? -1 : b === "Luanda" ? 1 : a.localeCompare(b),
   );
@@ -46,10 +57,18 @@ export default async function Clubes({
   );
   const mulheres = todos.filter((c) => eMovimento(c) || c.tipo === "Lady Riders" || /presidido por uma motociclista/i.test(c.descricao));
 
+  // O movimento com o cartão grande (as Lady Riders, escolhido no painel).
+  const destaque = t.movimentoDestaque;
+  // As rotas de "Para onde ir de mota": as escolhidas no painel ou, sem escolha, as três primeiras.
+  const escolhidas = (t.rotasEscolhidas ?? [])
+    .map((s) => rotas.find((r) => r.slug === s))
+    .filter((r): r is RotaCartao => Boolean(r));
+  const rotasMostradas = escolhidas.length ? escolhidas : rotas.slice(0, 3);
+
   // Ligações dos filtros, mantendo o outro filtro escolhido.
-  const ligacao = (t?: string, p?: string) => {
+  const ligacao = (tp?: string, p?: string) => {
     const q = new URLSearchParams();
-    if (t) q.set("tipo", t);
+    if (tp) q.set("tipo", tp);
     if (p) q.set("provincia", p);
     const s = q.toString();
     return `/clubes${s ? `?${s}` : ""}`;
@@ -57,15 +76,10 @@ export default async function Clubes({
 
   return (
     <PaginaInterior icone={<Users />}>
-      <Abertura
-        foto="banner-clubes"
-        sobretitulo="Clubes de Angola"
-        titulo="Quem anda de mota em grupo"
-        texto="Grupos de passeio, scooters e clássicas, raides pelo país e viagens além-fronteiras, e movimentos como as Lady Riders. Os clubes de motas de Angola, todos no mesmo sítio."
-      >
+      <Abertura foto={t.foto} sobretitulo={t.sobretitulo} titulo={t.titulo} texto={t.texto}>
         <div className="flex flex-wrap gap-[var(--intervalo)]">
-          <BotaoMB href="#lista">Encontrar um clube</BotaoMB>
-          <BotaoMB href="#juntar" variante="escuro">Juntar o meu clube</BotaoMB>
+          <BotaoMB href="#lista">{t.botaoLista}</BotaoMB>
+          <BotaoMB href="#juntar" variante="escuro">{t.botaoJuntar}</BotaoMB>
         </div>
       </Abertura>
 
@@ -74,29 +88,22 @@ export default async function Clubes({
         <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <Cabecalho
             icone={<Flag />}
-            titulo="Andar de mota por gosto, em Angola"
+            titulo={t.introTitulo}
             texto={
               <>
-                <p>
-                  O movimento motard angolano ganhou forma no início dos anos 2000, com grupos de amigos que saíam
-                  juntos por Luanda. Em 2006, os Amigos da Picada atravessaram a fronteira pela primeira vez, numa
-                  viagem em grupo até à Namíbia, e abriram caminho a uma ideia simples: conhecer Angola de mota.
-                </p>
-                <p className="mt-4">
-                  Hoje há saídas de domingo à volta das cidades, raides a Malanje, a Benguela ou ao Soyo, viagens
-                  além-fronteiras e acções solidárias em hospitais e comunidades. Em Julho de 2026, o primeiro Dia do
-                  Motard Angolano juntou os clubes no Autódromo de Luanda.
-                </p>
+                {(t.introParagrafos ?? []).map((p, i) => (
+                  <p key={i} className={i > 0 ? "mt-4" : undefined}>{p}</p>
+                ))}
               </>
             }
           />
           <Numeros
             className="self-end"
             itens={[
-              { valor: clubes.length, texto: "clubes na MotoBox" },
-              { valor: provincias.length, texto: "províncias com sede publicada" },
-              { valor: mulheres.length, texto: "movimentos e clubes de mulheres ou presididos por mulheres" },
-              { valor: 2006, texto: "a primeira viagem em grupo além-fronteiras" },
+              { valor: clubes.length, texto: t.numeroClubes },
+              { valor: provincias.length, texto: t.numeroProvincias },
+              { valor: mulheres.length, texto: t.numeroMulheres },
+              ...(t.numeroFixoValor ? [{ valor: t.numeroFixoValor, texto: t.numeroFixoTexto }] : []),
             ]}
           />
         </div>
@@ -105,7 +112,7 @@ export default async function Clubes({
       {/* ---------- Lista ---------- */}
       <Seccao id="lista" className="!pt-4">
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <h2 className="titulo-2">Todos os clubes</h2>
+          <h2 className="titulo-2">{t.listaTitulo}</h2>
           <p className="text-sm text-white/60">
             {lista.length} {lista.length === 1 ? "clube" : "clubes"}
             {tipoActivo ? ` · ${tipoActivo.nome}` : ""}
@@ -118,8 +125,8 @@ export default async function Clubes({
             rotulo="Tipo de clube"
             activa={tipoActivo?.slug ?? "todos"}
             itens={[
-              { chave: "todos", texto: "Todos os tipos", href: ligacao(undefined, provinciaActiva) },
-              ...tiposPresentes.map((t) => ({ chave: t.slug, texto: t.nome, href: ligacao(t.slug, provinciaActiva) })),
+              { chave: "todos", texto: t.listaTodosTipos, href: ligacao(undefined, provinciaActiva) },
+              ...tiposPresentes.map((tp) => ({ chave: tp.slug, texto: tp.nome, href: ligacao(tp.slug, provinciaActiva) })),
             ]}
           />
           {provincias.length > 1 && (
@@ -127,7 +134,7 @@ export default async function Clubes({
               rotulo="Província"
               activa={provinciaActiva ?? "todas"}
               itens={[
-                { chave: "todas", texto: "Todo o país", href: ligacao(tipoActivo?.slug) },
+                { chave: "todas", texto: t.listaTodoPais, href: ligacao(tipoActivo?.slug) },
                 ...provincias.map((p) => ({ chave: p, texto: p, href: ligacao(tipoActivo?.slug, p) })),
               ]}
             />
@@ -142,46 +149,39 @@ export default async function Clubes({
           </div>
         ) : (
           <div className="painel painel-escuro mt-8 p-10">
-            <p className="text-white/75">Ainda não há clubes com este filtro.</p>
+            <p className="text-white/75">{t.listaVazio}</p>
             <Link href="#juntar" className="mt-4 inline-flex items-center gap-2 text-sm">
-              <span className="sublinhado">Conhece um? Junte-o à MotoBox</span>
+              <span className="sublinhado">{t.listaVazioLigacao}</span>
             </Link>
           </div>
         )}
-        <p className="mt-4 text-xs text-white/45">
-          Informação recolhida nas páginas públicas dos clubes. Fotografias de capa ilustrativas.
-        </p>
+        {t.listaNota && <p className="mt-4 text-xs text-white/45">{t.listaNota}</p>}
       </Seccao>
 
       {/* ---------- Movimentos ---------- */}
       {movimentos.length > 0 && (
         <Seccao id="movimentos" className="!pt-4">
           <div className="flex flex-wrap items-end justify-between gap-6">
-            <h2 className="titulo-2">Movimentos</h2>
-            <p className="max-w-[52ch] text-sm text-white/60">
-              Não são clubes: juntam motards de vários clubes à volta de uma causa.
-            </p>
+            <h2 className="titulo-2">{t.movimentosTitulo}</h2>
+            <p className="max-w-[52ch] text-sm text-white/60">{t.movimentosTexto}</p>
           </div>
-          {/* As Lady Riders têm o cartão grande; outros movimentos que venham a entrar, em cartões. */}
-          {movimentos.some((c) => c.slug === LADY_RIDERS) && (
+          {/* O movimento em destaque tem o cartão grande; os outros, em cartões. */}
+          {movimentos.some((c) => c.slug === destaque) && (
             <div className="mt-8">
               <CartaoNumerado
                 numero={<Venus className="size-5" aria-hidden />}
-                sobretitulo="Lady Riders"
-                titulo="Elas também conduzem"
-                foto="clube-ladies-in-2-wheels"
-                href={`/clubes/${LADY_RIDERS}`}
+                sobretitulo={t.movimentoSobretitulo}
+                titulo={t.movimentoTitulo}
+                foto={t.movimentoFoto}
+                href={`/clubes/${destaque}`}
               >
-                As Lady Riders não são um clube: são mulheres que já rodam nos seus clubes, muitas nos Amigos da
-                Picada, e se juntam para levar mais mulheres para a estrada. As Ladies in 2 Wheels in Angola já rodaram
-                até à Namíbia, ao Botswana e à África do Sul, com a filantropia na bagagem. E há clubes mistos
-                presididos por mulheres, como o Clube Anjos Bantu.
+                {t.movimentoTexto}
               </CartaoNumerado>
             </div>
           )}
-          {movimentos.some((c) => c.slug !== LADY_RIDERS) && (
+          {movimentos.some((c) => c.slug !== destaque) && (
             <div className="mt-[var(--intervalo)] grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
-              {movimentos.filter((c) => c.slug !== LADY_RIDERS).map((c) => (
+              {movimentos.filter((c) => c.slug !== destaque).map((c) => (
                 <CartaoClube key={c.slug} clube={c} />
               ))}
             </div>
@@ -191,65 +191,68 @@ export default async function Clubes({
 
       {/* ---------- Antes do primeiro passeio ---------- */}
       <Seccao className="!pt-4">
-        <Cabecalho
-          titulo="Antes do primeiro passeio em grupo"
-          texto="Entrar num clube é mais fácil do que parece. Estes três passos ajudam."
-        />
+        <Cabecalho titulo={t.passosTitulo} texto={t.passosTexto} />
         <div className="mt-10 grid gap-[var(--intervalo)] md:grid-cols-3">
-          <CartaoIcone icone={<Users />} titulo="Siga e apareça">
-            Siga o clube nas redes e vá a um encontro aberto. A maior parte dos clubes recebe bem quem chega com
-            vontade de rodar.
-          </CartaoIcone>
-          <CartaoIcone icone={<Route />} titulo="Conheça as regras do grupo">
-            Líder à frente, fecho atrás, ziguezague nas rectas e fila indiana nas curvas.{" "}
-            <Link href="/artigos/andar-em-grupo-regras" className="sublinhado text-white">Ler as regras</Link>
-          </CartaoIcone>
-          <CartaoIcone icone={<HeartHandshake />} titulo="Vá equipado">
-            Capacete homologado e apertado, luvas, casaco e calçado fechado. E a mota verificada antes de sair.{" "}
-            <Link href="/seguranca" className="sublinhado text-white">Ver segurança</Link>
-          </CartaoIcone>
+          {(t.passos ?? []).map((p, i) => {
+            const Icone = ICONES_PASSOS[i % ICONES_PASSOS.length];
+            return (
+              <CartaoIcone key={i} icone={<Icone />} titulo={p.titulo}>
+                {p.texto}
+                {p.ligacao && p.ligacaoTexto && (
+                  <>
+                    {" "}
+                    <Link href={p.ligacao} className="sublinhado text-white">{p.ligacaoTexto}</Link>
+                  </>
+                )}
+              </CartaoIcone>
+            );
+          })}
         </div>
       </Seccao>
 
       {/* ---------- Rotas ---------- */}
-      <Seccao className="!pt-4">
-        <Cabecalho
-          icone={<MapPinned />}
-          titulo="Para onde ir de mota"
-          texto="Da Serra da Leba às quedas de Kalandula: estrada, piso, melhor época e cuidados de cada destino, com as fontes à vista."
-          accao={{ href: "/rotas", texto: "Todas as rotas" }}
-        />
-        <div className="mt-10 grid gap-[var(--intervalo)] md:grid-cols-3">
-          {ROTAS.slice(0, 3).map((r) => (
-            <Link key={r.slug} href={`/rotas/${r.slug}`} className="painel painel-escuro group flex flex-col p-[var(--intervalo)]">
-              <Foto nome={[r.slug, r.imagem]} className="aspect-[4/3]" largura={700} tamanhos="(max-width: 768px) 100vw, 33vw" />
-              <div className="flex items-end justify-between gap-4 p-4 md:p-5">
-                <div>
-                  <p className="text-[0.8125rem] text-white/60">{r.regiao}</p>
-                  <h3 className="mt-1 text-lg font-semibold leading-snug">{r.nome}</h3>
-                  <p className="mt-1 text-[0.8125rem] text-white/60">{r.piso} · {r.exigencia}</p>
+      {t.rotasMostrar && rotasMostradas.length > 0 && (
+        <Seccao className="!pt-4">
+          <Cabecalho
+            icone={<MapPinned />}
+            titulo={t.rotasTitulo}
+            texto={t.rotasTexto}
+            accao={{ href: "/rotas", texto: t.rotasLigacao }}
+          />
+          <div className="mt-10 grid gap-[var(--intervalo)] md:grid-cols-3">
+            {rotasMostradas.map((r) => (
+              <Link key={r.slug} href={`/rotas/${r.slug}`} className="painel painel-escuro group flex flex-col p-[var(--intervalo)]">
+                <Foto nome={fotoDe(r.slug, r.imagem)} className="aspect-[4/3]" largura={700} tamanhos="(max-width: 768px) 100vw, 33vw" />
+                <div className="flex items-end justify-between gap-4 p-4 md:p-5">
+                  <div>
+                    <p className="text-[0.8125rem] text-white/60">{r.regiao}</p>
+                    <h3 className="mt-1 text-lg font-semibold leading-snug">{r.nome}</h3>
+                    <p className="mt-1 text-[0.8125rem] text-white/60">{r.piso} · {r.exigencia}</p>
+                  </div>
+                  <Seta className="mb-1 size-3.5" />
                 </div>
-                <Seta className="mb-1 size-3.5" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </Seccao>
+              </Link>
+            ))}
+          </div>
+        </Seccao>
+      )}
 
       {/* ---------- Juntar um clube ---------- */}
       <Seccao id="juntar" className="!pt-4">
         <div className="grid gap-[var(--intervalo)] lg:grid-cols-[1fr_1.5fr]">
           <div className="flex min-h-80 flex-col rounded-[var(--raio)] bg-mb-red p-6 md:p-8">
             <Chip className="!bg-white/15"><Users /></Chip>
-            <h2 className="titulo-3 mt-auto max-w-[14ch] pt-16">Tem um clube? Junte-o à MotoBox</h2>
-            <ul className="mt-6 space-y-2 text-[15px] text-white/90">
-              <li>Página própria do clube, com as redes e o contacto</li>
-              <li>Os vossos passeios e encontros na secção Eventos</li>
-              <li>É gratuito, e a equipa confirma os dados antes de publicar</li>
-            </ul>
+            <h2 className="titulo-3 mt-auto max-w-[14ch] pt-16">{t.juntarTitulo}</h2>
+            {(t.juntarVantagens ?? []).length > 0 && (
+              <ul className="mt-6 space-y-2 text-[15px] text-white/90">
+                {t.juntarVantagens.map((v, i) => (
+                  <li key={i}>{v}</li>
+                ))}
+              </ul>
+            )}
           </div>
           <div className="painel painel-escuro p-6 md:p-10">
-            <JuntarClube />
+            <JuntarClube botao={t.juntarBotao} nota={t.juntarNota} sucesso={t.juntarSucesso} />
           </div>
         </div>
       </Seccao>

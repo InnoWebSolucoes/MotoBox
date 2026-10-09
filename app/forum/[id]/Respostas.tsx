@@ -13,6 +13,7 @@ import { useIdioma } from "@/lib/i18n/contexto";
 import { interfaceEn } from "@/lib/i18n/interface-en";
 import { RESPOSTA_MAX, RESPOSTA_MIN, type RespostaPublica } from "@/lib/forum/tipos";
 import { comBase } from "@/lib/base";
+import { FORUM_PADRAO, type ConteudoForum } from "@/lib/conteudo/grupos/comunidade";
 
 /* ============================================================
    MOTOBOX — Respostas dos membros e caixa de resposta
@@ -49,13 +50,15 @@ function useDiscussao(): Discussao {
 }
 
 /** As que o servidor ainda não trouxe (o `router.refresh()` demora um instante). */
-export function RespostasNovas({ idsServidor, topicoId }: { idsServidor: string[]; topicoId: string }) {
+export function RespostasNovas({
+  idsServidor, topicoId, reportar,
+}: { idsServidor: string[]; topicoId: string; reportar?: string }) {
   const { novas } = useDiscussao();
   const porMostrar = novas.filter((r) => !idsServidor.includes(r.id));
   if (porMostrar.length === 0) return null;
   return (
     <ol>
-      {porMostrar.map((r) => <ItemResposta key={r.id} resposta={r} topicoId={topicoId} />)}
+      {porMostrar.map((r) => <ItemResposta key={r.id} resposta={r} topicoId={topicoId} reportar={reportar} />)}
     </ol>
   );
 }
@@ -63,7 +66,9 @@ export function RespostasNovas({ idsServidor, topicoId }: { idsServidor: string[
 /* ---------- Uma resposta ---------- */
 
 /** Mesmo desenho das respostas de exemplo: avatar com a cor da pessoa, nome, quando, texto. */
-export function ItemResposta({ resposta: r, topicoId }: { resposta: RespostaPublica; topicoId: string }) {
+export function ItemResposta({
+  resposta: r, topicoId, reportar = FORUM_PADRAO.topico.reportar,
+}: { resposta: RespostaPublica; topicoId: string; reportar?: string }) {
   return (
     <li className="border-b border-white/6 py-8">
       <div className="flex items-center gap-3 sm:gap-5">
@@ -93,7 +98,7 @@ export function ItemResposta({ resposta: r, topicoId }: { resposta: RespostaPubl
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
           {/* A denúncia aponta ao tópico: a moderação vê a discussão inteira. */}
-          <Denunciar tipo="forum" alvoId={topicoId} rotulo="Reportar" icone={false}
+          <Denunciar tipo="forum" alvoId={topicoId} rotulo={reportar} icone={false}
             classeBotao="font-ui text-sm text-ink-500 transition-colors hover:text-white" />
         </div>
       </div>
@@ -138,7 +143,13 @@ function TempoRelativo({ iso, className }: { iso: string; className?: string }) 
 
 const chaveRascunho = (topicoId: string) => `motobox-resposta-${topicoId}`;
 
-export function CaixaResposta({ topicoId }: { topicoId: string }) {
+export function CaixaResposta({
+  topicoId, textos: t = FORUM_PADRAO.resposta,
+}: {
+  topicoId: string;
+  /** Textos da caixa, editáveis no painel (paginas.forum). */
+  textos?: ConteudoForum["resposta"];
+}) {
   const exigirSessao = useExigirSessao();
   const { utilizador, perfil } = useAuth();
   const { idioma } = useIdioma();
@@ -221,7 +232,7 @@ export function CaixaResposta({ topicoId }: { topicoId: string }) {
 
   return (
     <form onSubmit={publicar} noValidate>
-      <h2 id="responder" className="font-display text-xl uppercase text-white">Responder</h2>
+      <h2 id="responder" className="font-display text-xl uppercase text-white">{t.titulo}</h2>
       <textarea
         ref={campo}
         rows={5}
@@ -229,7 +240,7 @@ export function CaixaResposta({ topicoId }: { topicoId: string }) {
         aria-labelledby="responder"
         aria-invalid={Boolean(erro)}
         aria-describedby={erro ? "responder-erro" : undefined}
-        placeholder={tr("Escreva a sua resposta…")}
+        placeholder={tr(t.placeholder)}
         onInput={() => { guardarRascunho(); if (erro) setErro(null); setPublicada(false); }}
         className="mt-4 w-full resize-y bg-ink-900 p-4 text-base text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 outline-none focus:ring-2 focus:ring-mb-red"
       />
@@ -243,26 +254,26 @@ export function CaixaResposta({ topicoId }: { topicoId: string }) {
           {publicada ? (
             <span className="inline-flex items-center gap-1.5 text-ink-200">
               <Icon name="check" className="size-4" />
-              <span>Resposta publicada.</span>
+              <span>{t.publicada}</span>
             </span>
           ) : utilizador ? (
             <>
-              <span>A responder como</span>{" "}
+              <span>{t.aResponderComo}</span>{" "}
               <span className="text-white">{nome}</span>
             </>
           ) : (
-            <span>Ao publicar, pedimos que entre ou crie conta.</span>
+            <span>{t.semSessao}</span>
           )}
         </p>
         <Button type="submit" disabled={aEnviar}>
           {aEnviar ? (
             <>
               <span className="size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden />
-              <span>A publicar…</span>
+              <span>{t.aPublicar}</span>
             </>
           ) : (
             <>
-              <span>Publicar resposta</span>
+              <span>{t.publicar}</span>
               <Icon name="arrow" className="size-4" />
             </>
           )}

@@ -30,6 +30,7 @@ import type { Encomenda } from "@/lib/admin/types";
 import { RecortarAvatar, useTextosRecorte, type EstadoRecorte } from "./RecortarAvatar";
 import { comBase } from "@/lib/base";
 import { PROVINCIAS } from "@/lib/provincias";
+import { fotoDe } from "@/app/eventos/foto";
 
 type Aba = "resumo" | "preferencias" | "notificacoes" | "anuncios";
 
@@ -309,7 +310,7 @@ export function ContaClient({
                 <div>
                   {feed.map((n) => (
                     <Link key={n.slug} href={`/artigos/${n.slug}`} className="group flex gap-3.5 border-b border-white/6 py-3 first:pt-0 last:border-0 last:pb-0">
-                      <Placeholder nome={[n.slug, n.imagem]} className="media size-16 shrink-0" tamanhos="64px" />
+                      <Placeholder nome={fotoDe(n.slug, n.imagem)} className="media size-16 shrink-0" tamanhos="64px" />
                       <div className="min-w-0 flex-1">
                         <p className="eyebrow text-mb-red">{n.categoria}</p>
                         <p className="mt-1 text-sm text-white line-clamp-2 group-hover:text-mb-red transition-colors">{n.titulo}</p>

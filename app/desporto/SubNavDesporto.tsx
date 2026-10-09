@@ -24,7 +24,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { caminhoDaPagina } from "@/lib/base";
-import { MODALIDADE_PRINCIPAL, SECCOES_DESPORTO, SECCOES_MOTOCROSS, lerModalidade } from "@/lib/desporto";
+import { MODALIDADE_PRINCIPAL, SECCOES_DESPORTO, SECCOES_MOTOCROSS } from "@/lib/desporto";
 
 /** Pílula: escura e opaca no computador (o painel rola por baixo sem se ver), a activa a vermelho. */
 const PILULA =
@@ -32,10 +32,16 @@ const PILULA =
 
 export function SubNavDesporto({
   modalidade,
+  nome,
+  principal,
   seccoes: proprias,
 }: {
   /** Sem ela, a faixa é a de Desporto (campeonato). */
   modalidade?: string;
+  /** Nome da modalidade, como está gravado no painel (Modalidades). */
+  nome?: string;
+  /** A modalidade em destaque, a casa do campeonato (por omissão, o Motocross). */
+  principal?: boolean;
   /** Secções da modalidade (ver `seccoesDaModalidade`). Por omissão, as do Motocross na principal e nenhuma nas outras. */
   seccoes?: { href: string; chave: string }[];
 }) {
@@ -43,17 +49,17 @@ export function SubNavDesporto({
   const pathname = caminhoDaPagina(usePathname());
   const faixa = useRef<HTMLDivElement>(null);
 
-  const m = modalidade ? lerModalidade(modalidade) : undefined;
+  const ePrincipal = principal ?? modalidade === MODALIDADE_PRINCIPAL;
   const raiz = modalidade ? `/desporto/${modalidade}` : "/desporto";
   const seccoes = !modalidade
     ? SECCOES_DESPORTO
-    : (proprias ?? (modalidade === MODALIDADE_PRINCIPAL ? SECCOES_MOTOCROSS : []));
+    : (proprias ?? (ePrincipal ? SECCOES_MOTOCROSS.map((s, i) => (i === 0 ? { ...s, href: raiz } : s)) : []));
 
   // A secção acesa: a própria página, ou uma página dentro dela (/pilotos/x acende Pilotos).
   const acesa = (href: string) => pathname === href || (href !== raiz && pathname.startsWith(href + "/"));
   // O segundo elo do caminho é a modalidade. No nível de Desporto a secção onde
   // se está já vem acesa nas pílulas, por isso o caminho fica só "Desporto".
-  const segundo = m ? { href: raiz, nome: m.nome } : undefined;
+  const segundo = modalidade && nome ? { href: raiz, nome } : undefined;
 
   // No telemóvel a fila desliza: se a secção acesa ficou fora da vista, centrá-la.
   useEffect(() => {
@@ -110,7 +116,7 @@ export function SubNavDesporto({
 
         {seccoes.length > 0 && (
           <nav
-            aria-label={modalidade ? (modalidade === MODALIDADE_PRINCIPAL ? t("desporto.seccoesMotocross") : m?.nome) : t("nav.desporto")}
+            aria-label={modalidade ? (modalidade === MODALIDADE_PRINCIPAL ? t("desporto.seccoesMotocross") : nome) : t("nav.desporto")}
             className="flex shrink-0 gap-[var(--intervalo)]"
           >
             {seccoes.map((s) => (

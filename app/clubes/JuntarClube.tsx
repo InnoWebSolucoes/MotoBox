@@ -11,9 +11,19 @@ import { TIPOS_CLUBE } from "./comum";
    Segue pelo mesmo caminho do contacto (/api/contacto, que cai
    em Mensagens no painel), com assunto próprio para a equipa
    saber que é um clube a registar.
+   O botão, a nota e o título de sucesso editam-se no painel
+   (Clubes e movimentos → Página Clubes).
    ============================================================ */
 
-export function JuntarClube() {
+export function JuntarClube({
+  botao = "Enviar o clube",
+  nota = "A equipa confirma os dados antes de publicar a página.",
+  sucesso = "Pedido recebido",
+}: {
+  botao?: string;
+  nota?: string;
+  sucesso?: string;
+}) {
   const [form, setForm] = useState({
     clube: "", tipo: "Moto-turismo", provincia: "Luanda", redes: "",
     nome: "", email: "", telefone: "", mensagem: "",
@@ -71,7 +81,7 @@ export function JuntarClube() {
     return (
       <div className="flex min-h-72 flex-col justify-end" role="status">
         <span className="chip-mb chip-mb-lg" aria-hidden><Check /></span>
-        <p className="titulo-4 mt-8">Pedido recebido</p>
+        <p className="titulo-4 mt-8">{sucesso}</p>
         <p className="mt-3 max-w-md text-[15px] leading-relaxed text-white/75">
           Obrigado. A equipa da MotoBox vai confirmar os dados do {form.clube.trim() || "clube"} e responde
           para <span className="text-white">{form.email}</span>.
@@ -142,12 +152,12 @@ export function JuntarClube() {
           disabled={estado === "a-enviar"}
           className="group inline-flex h-14 min-w-56 items-center justify-between gap-6 rounded-[var(--raio)] bg-mb-red px-5 text-[15px] text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60"
         >
-          {estado === "a-enviar" ? "A enviar..." : "Enviar o clube"}
+          {estado === "a-enviar" ? "A enviar..." : botao}
           <svg viewBox="0 0 14 14" className="size-3.5" aria-hidden>
             <path fill="currentColor" d="M0 11.6 9.6 2H1V0h12v12h-2V3.4L1.4 13z" />
           </svg>
         </button>
-        <p className="text-xs text-white/50">A equipa confirma os dados antes de publicar a página.</p>
+        {nota && <p className="text-xs text-white/50">{nota}</p>}
       </div>
       {erros.geral && <p className="text-sm text-mb-red-light sm:col-span-2" role="alert">{erros.geral}</p>}
     </form>

@@ -7,6 +7,7 @@ import { FotoFundo, Seta } from "@/components/painel/kit";
 import { lerEquipas, lerPilotos } from "@/lib/supabase/publico";
 import type { Equipa, Piloto } from "@/lib/types";
 import { Aviso, EmblemaEquipa, Etiqueta, LigacaoSeta, fotoEquipa } from "@/app/calendario/pecas";
+import { lerExtrasEquipas } from "@/app/desporto/dados";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export default async function EquipasPage() {
-  const [equipas, pilotos] = await Promise.all([lerEquipas(), lerPilotos()]);
+  const [equipas, pilotos, extras] = await Promise.all([lerEquipas(), lerPilotos(), lerExtrasEquipas()]);
   const competicao = equipas.filter((e) => e.tipo === "Equipa");
   const clubes = equipas.filter((e) => e.tipo === "Clube");
 
@@ -77,7 +78,7 @@ export default async function EquipasPage() {
             <p className="mt-3 text-[15px] text-white/65">{g.descricao}</p>
             <div className="mt-8 grid gap-[var(--intervalo)] md:grid-cols-2">
               {g.lista.map((e) => (
-                <CartaoEquipa key={e.slug} equipa={e} pilotos={pilotos.filter((p) => p.equipaSlug === e.slug)} />
+                <CartaoEquipa key={e.slug} equipa={e} capa={extras[e.slug]?.foto} pilotos={pilotos.filter((p) => p.equipaSlug === e.slug)} />
               ))}
             </div>
           </Seccao>
@@ -104,11 +105,11 @@ export default async function EquipasPage() {
 }
 
 /** Cartão de equipa: fotografia com a cor da equipa a subir de baixo, plantel e números. */
-function CartaoEquipa({ equipa: e, pilotos }: { equipa: Equipa; pilotos: Piloto[] }) {
+function CartaoEquipa({ equipa: e, pilotos, capa }: { equipa: Equipa; pilotos: Piloto[]; capa?: string }) {
   return (
     <Link href={`/equipas/${e.slug}`} className="painel painel-escuro group flex flex-col p-[var(--intervalo)]">
       <div className="relative isolate flex aspect-[16/10] flex-col justify-end overflow-hidden rounded-[var(--raio)] p-5">
-        <FotoFundo nome={fotoEquipa(e)} veu="nenhum" largura={900} tamanhos="(max-width: 768px) 100vw, 45vw" />
+        <FotoFundo nome={fotoEquipa(e, capa)} veu="nenhum" largura={900} tamanhos="(max-width: 768px) 100vw, 45vw" />
         <div
           aria-hidden
           className="absolute inset-0 -z-10"

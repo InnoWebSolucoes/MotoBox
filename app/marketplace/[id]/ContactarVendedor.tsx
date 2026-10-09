@@ -19,6 +19,8 @@ interface Anuncio {
   vendedorNome: string;
   /** Conta de quem publicou, quando o anúncio foi criado no site. */
   vendedorAuthId?: string;
+  /** Mensagem já escrita ao abrir a janela (editável no painel). */
+  mensagemInicial?: string;
 }
 
 /**
@@ -64,9 +66,9 @@ export function ContactarVendedor(props: Anuncio) {
 }
 
 function JanelaContacto({
-  anuncioId, titulo, preco, vendedorNome, email, aoFechar,
+  anuncioId, titulo, preco, vendedorNome, email, aoFechar, mensagemInicial,
 }: Anuncio & { email: string; aoFechar: () => void }) {
-  const [mensagem, setMensagem] = useState(MENSAGEM_INICIAL);
+  const [mensagem, setMensagem] = useState(mensagemInicial?.trim() ? mensagemInicial : MENSAGEM_INICIAL);
   const [estado, setEstado] = useState<"idle" | "a-enviar" | "email" | "equipa">("idle");
   const [erro, setErro] = useState<string | null>(null);
   const janela = useRef<HTMLDivElement>(null);

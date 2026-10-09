@@ -1,18 +1,30 @@
 import type { Metadata } from "next";
 import { Globe2 } from "lucide-react";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
+import { lerDoc } from "@/lib/conteudo";
+import { IMPORTAR_PADRAO, type ConteudoImportar } from "@/lib/conteudo/grupos/paginas";
+import { fundir } from "@/lib/conteudo/grupos/site";
 import { ImportarClient } from "./ImportarClient";
 
-export const metadata: Metadata = {
-  title: "Importar do estrangeiro",
-  description:
-    "Peças, equipamento, motas e mais de Portugal, Espanha e do resto da Europa, com orçamento até Angola: como funciona, o que diz a lei, onde procurar e como pedir.",
-};
+// O Next exige um literal aqui, não aceita constante importada.
+export const revalidate = 60;
 
-export default function ImportarPage() {
+/* O texto vive no conteúdo editável ("paginas.marketplace-importar",
+   editado em Gestão › Páginas); ./conteudo.ts é o texto de partida. */
+async function lerImportar(): Promise<ConteudoImportar> {
+  return fundir(IMPORTAR_PADRAO, await lerDoc<ConteudoImportar>("paginas.marketplace-importar"));
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { SEO } = await lerImportar();
+  return { title: SEO.titulo, description: SEO.descricao };
+}
+
+export default async function ImportarPage() {
+  const dados = await lerImportar();
   return (
     <PaginaInterior icone={<Globe2 />}>
-      <ImportarClient />
+      <ImportarClient dados={dados} />
     </PaginaInterior>
   );
 }

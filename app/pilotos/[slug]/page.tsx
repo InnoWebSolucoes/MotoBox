@@ -8,6 +8,7 @@ import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, BotaoMB, Numeros, Seccao } from "@/components/painel/blocos";
 import { Seta } from "@/components/painel/kit";
 import { classificacaoPilotos } from "@/lib/data";
+import { retratoDe } from "@/lib/desporto";
 import { diaMes } from "@/lib/motobox";
 import { lerCorridas, lerEquipa, lerPiloto, lerPilotos } from "@/lib/supabase/publico";
 import { EmblemaEquipa, Ficha, LigacaoSeta, Posicao, iniciais } from "@/app/calendario/pecas";
@@ -63,7 +64,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
   return (
     <PaginaInterior icone={<UserRound />}>
       <Abertura
-        foto={piloto.slug}
+        foto={retratoDe(piloto)}
         posicaoFoto="center 30%"
         sobretitulo={`${piloto.categoria} · #${piloto.numero} · ${piloto.equipa}`}
         titulo={piloto.nome}
@@ -108,7 +109,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
           <div className="min-w-0">
             <div className="flex items-center gap-4">
               <Retrato
-                nome={piloto.slug}
+                nome={retratoDe(piloto)}
                 iniciais={iniciais(piloto.nome)}
                 cor={equipa?.cor}
                 className="size-16 shrink-0 rounded-[var(--raio)] [container-type:size]"
@@ -257,7 +258,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                         <li key={c.slug}>
                           <Link href={`/pilotos/${c.slug}`} className="group flex items-center gap-3 rounded-[var(--raio)] bg-white/5 p-[var(--intervalo)] pr-3 transition-colors hover:bg-white/10">
                             <Retrato
-                              nome={c.slug}
+                              nome={retratoDe(c)}
                               iniciais={iniciais(c.nome)}
                               className="size-9 shrink-0 rounded-[4px] [container-type:size]"
                               largura={120}

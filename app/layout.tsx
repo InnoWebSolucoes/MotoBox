@@ -8,6 +8,9 @@ import { AuthProvider } from "@/lib/auth/contexto";
 import { SessaoObrigatoriaProvider } from "@/components/SessaoObrigatoria";
 import { IntroCapacete } from "@/components/IntroCapacete";
 import { Cenario } from "@/components/painel/Cenario";
+import { lerDoc } from "@/lib/conteudo";
+import { ENTRADA_PADRAO, type ConteudoEntrada } from "@/lib/conteudo/grupos/site";
+import { src as fotoSrc, urlLocal } from "@/lib/imagens";
 
 const letra = Instrument_Sans({
   variable: "--font-mb",
@@ -57,7 +60,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // O vídeo de fundo de todo o site (Gestão › Entrada e painel), já em endereços prontos a usar.
+  const entrada = await lerDoc<ConteudoEntrada>("site.entrada").catch(() => ENTRADA_PADRAO);
+  const video = entrada?.video || ENTRADA_PADRAO.video;
+  const fundo = {
+    video: video.startsWith("/") ? urlLocal(video) : video,
+    poster: fotoSrc([entrada?.poster, ENTRADA_PADRAO.poster], { w: 1920 }) ?? urlLocal(ENTRADA_PADRAO.poster),
+  };
+
   return (
     <html lang="pt-AO" className={`${letra.variable} ${logo.variable}`}>
       <body className="min-h-dvh antialiased">
@@ -70,7 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <IdiomaProvider>
           <AuthProvider>
             <SessaoObrigatoriaProvider>
-              <Cenario>{children}</Cenario>
+              <Cenario fundo={fundo}>{children}</Cenario>
               <CookieBanner />
               <IntroCapacete />
             </SessaoObrigatoriaProvider>

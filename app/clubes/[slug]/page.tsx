@@ -5,7 +5,9 @@ import type { ReactNode } from "react";
 import { BookOpen, CalendarDays, Globe, Mail, UserPlus, Users } from "lucide-react";
 import { lerClube, lerClubes } from "@/lib/supabase/publico";
 import { localClube } from "@/lib/motobox";
-import { comResumo, perfilClube, type FonteClube } from "@/lib/clubes-perfis";
+import { comResumoDe, normalizarPerfil, type FonteClube, type PerfilClube } from "@/lib/clubes-perfis";
+import { lerDoc, lerGrupo } from "@/lib/conteudo";
+import { textoClube, type ConteudoPaginaClubes } from "@/lib/conteudo/grupos/clubes";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, BotaoMB, CartaoNumerado, Numeros, Seccao } from "@/components/painel/blocos";
 import { Chip, Monograma, Seta } from "@/components/painel/kit";
@@ -21,13 +23,20 @@ export async function generateStaticParams() {
   return clubes.map((c) => ({ slug: c.slug }));
 }
 
+/** Os perfis alargados, já normalizados, por slug (editáveis no painel: Clubes e movimentos). */
+async function lerPerfis(): Promise<Map<string, PerfilClube | undefined>> {
+  const grupo = await lerGrupo<PerfilClube>("clubes-perfis");
+  return new Map(grupo.map((d) => [d.chave, normalizarPerfil(d.dados)]));
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const c = await lerClube(slug);
   if (!c) return { title: "Clube não encontrado" };
+  const perfil = (await lerPerfis()).get(slug);
   return {
     title: c.nome,
-    description: (perfilClube(slug)?.resumo ?? c.descricao).slice(0, 160),
+    description: (perfil?.resumo || c.descricao).slice(0, 160),
   };
 }
 
@@ -36,7 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
  * Mostra só quem publicou ("Bikers of Africa", "Instagram"); o título inteiro
  * fica no `title` e na lista de fontes no fim da página.
  */
-function LigacaoFonte({ fonte }: { fonte?: FonteClube }) {
+function LigacaoFonte({ fonte, prefixo }: { fonte?: FonteClube; prefixo: string }) {
   if (!fonte) return null;
   return (
     <a
@@ -46,7 +55,7 @@ function LigacaoFonte({ fonte }: { fonte?: FonteClube }) {
       title={fonte.nome}
       className="text-xs text-white/50 underline decoration-white/25 underline-offset-2 transition-colors hover:text-white"
     >
-      Fonte: {fonte.nome.split(":")[0]}
+      {`${prefixo} `}{fonte.nome.split(":")[0]}
       <span className="sr-only"> (abre numa nova janela)</span>
     </a>
   );
@@ -90,29 +99,36 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
   const clube = await lerClube(slug);
   if (!clube) notFound();
 
-  const perfil = perfilClube(clube.slug);
+  const [perfis, textos] = await Promise.all([lerPerfis(), lerDoc<ConteudoPaginaClubes>("paginas.clubes")]);
+  const perfil = perfis.get(clube.slug);
   const redes = redesDoClube(clube);
   const tipo = nomeTipo(clube.tipo);
   // Um movimento (ex.: Lady Riders) não é um clube: os textos dizem "movimento".
   const termo = eMovimento(clube) ? "movimento" : "clube";
+  // Os textos fixos da página (editáveis no painel), com o termo e o nome do clube.
+  const t = (texto: string) => textoClube(texto, termo, clube.nome);
+  // O mesmo, como pedaços de texto lado a lado (o termo e o nome à parte), para os textos dentro de parágrafos.
+  const tp = (texto: string) =>
+    texto.split(/(\{termo\}|\{nome\})/).filter(Boolean).map((p) => (p === "{termo}" ? termo : p === "{nome}" ? clube.nome : p));
   const outros = (await lerClubes())
     .filter((c) => c.slug !== clube.slug)
     .sort((a, b) => Number(b.tipo === clube.tipo) - Number(a.tipo === clube.tipo))
     .slice(0, 3)
-    .map(comResumo);
+    .map(comResumoDe(perfis));
 
   // Os placeholders (lib/clubes-perfis.ts) não têm fonte: sem índice, não há ligação.
   const fonte = (i?: number) => (i === undefined ? undefined : perfil?.fontes[i]);
   const cronologiaComFontes = Boolean(perfil?.destaques.every((d) => fonte(d.fonte)));
   // Sem perfil alargado, a história é a descrição da base de dados (e a abertura, a primeira frase).
   const historia = perfil?.historia.length ? perfil.historia : [clube.descricao];
-  const abertura = perfil?.resumo ?? primeiraFrase(clube.descricao);
+  const abertura = perfil?.resumo || primeiraFrase(clube.descricao);
   // O perfil completa o campo `encontros` da base de dados; o mesmo texto sai uma vez só.
   const encontros = [
     ...new Set([clube.encontros?.trim(), ...(perfil?.encontros ?? [])].filter((e): e is string => Boolean(e))),
   ];
   const aderir = perfil?.comoAderir;
   const viagens = perfil?.viagens;
+  const prefixoFonte = textos.fichaFontePrefixo;
 
   return (
     <PaginaInterior icone={<Users />}>
@@ -139,16 +155,16 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
         <Numeros
           colunas={4}
           itens={[
-            { valor: clube.fundacao ?? "?", texto: clube.fundacao ? "ano de fundação" : "fundação por confirmar" },
+            { valor: clube.fundacao ?? "?", texto: clube.fundacao ? t(textos.fichaRotuloFundacao) : t(textos.fichaRotuloFundacaoFalta) },
             {
               valor: <span className="block text-xl hyphens-auto break-words md:text-2xl lg:text-3xl">{clube.provincia || "Angola"}</span>,
-              texto: clube.cidade || "sede por confirmar",
+              texto: clube.cidade || t(textos.fichaRotuloSedeFalta),
             },
             {
               valor: <span className="block text-xl hyphens-auto break-words md:text-2xl lg:text-3xl">{tipo}</span>,
-              texto: `tipo de ${termo}`,
+              texto: t(textos.fichaRotuloTipo),
             },
-            { valor: clube.actividades.length, texto: "actividades conhecidas" },
+            { valor: clube.actividades.length, texto: t(textos.fichaRotuloActividades) },
           ]}
         />
 
@@ -157,8 +173,8 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
             <div className="flex items-center gap-4">
               <Monograma nome={clube.nome} cor={clube.cor} className="size-16 text-xl" />
               <div className="min-w-0">
-                <p className="text-sm text-white/60">Sobre o {termo}</p>
-                <h2 className={perfil ? "titulo-3 mt-1" : "titulo-4 mt-1"}>{perfil ? "A história" : clube.nome}</h2>
+                <p className="text-sm text-white/60">{tp(textos.fichaSobre)}</p>
+                <h2 className={perfil ? "titulo-3 mt-1" : "titulo-4 mt-1"}>{perfil ? t(textos.fichaHistoria) : clube.nome}</h2>
               </div>
             </div>
             <Historia paragrafos={historia} />
@@ -168,13 +184,13 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
             <aside aria-label={`O ${termo} em resumo`} className="space-y-[var(--intervalo)] self-start">
               {/* A ficha curta da base de dados, que o perfil alargado não repete por inteiro. */}
               <div className="painel painel-escuro p-6">
-                <p className="text-sm text-mb-red-light">Em poucas palavras</p>
+                <p className="text-sm text-mb-red-light">{t(textos.fichaPoucasPalavras)}</p>
                 <p className="mt-3 text-[15px] leading-relaxed text-white/85">{clube.descricao}</p>
               </div>
 
               {perfil.lema && (
                 <figure className="flex min-h-48 flex-col rounded-[var(--raio)] bg-mb-red p-6 lg:p-8">
-                  <figcaption className="text-sm text-white/85">Lema do {termo}</figcaption>
+                  <figcaption className="text-sm text-white/85">{tp(textos.fichaLema)}</figcaption>
                   <blockquote className="titulo-4 mt-auto pt-10 text-balance">«{perfil.lema}»</blockquote>
                 </figure>
               )}
@@ -184,7 +200,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                   itens={perfil.numeros.map((n) => ({
                     valor: n.valor,
                     texto: n.rotulo,
-                    nota: fonte(n.fonte) && <LigacaoFonte fonte={fonte(n.fonte)} />,
+                    nota: fonte(n.fonte) && <LigacaoFonte fonte={fonte(n.fonte)} prefixo={prefixoFonte} />,
                   }))}
                 />
               )}
@@ -193,13 +209,13 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                 <dl className="painel painel-escuro space-y-5 p-6">
                   {perfil.estilo && (
                     <div>
-                      <dt className="text-sm text-mb-red-light">Estilo</dt>
+                      <dt className="text-sm text-mb-red-light">{t(textos.fichaEstilo)}</dt>
                       <dd className="mt-1.5 text-[15px] leading-relaxed text-white/85">{perfil.estilo}</dd>
                     </div>
                   )}
                   {perfil.motas && (
                     <div>
-                      <dt className="text-sm text-mb-red-light">Motas</dt>
+                      <dt className="text-sm text-mb-red-light">{t(textos.fichaMotas)}</dt>
                       <dd className="mt-1.5 text-[15px] leading-relaxed text-white/85">{perfil.motas}</dd>
                     </div>
                   )}
@@ -213,7 +229,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
       {/* ---------- O que fazem ---------- */}
       {clube.actividades.length > 0 && (
         <Seccao className="!pt-0">
-          <h2 className="titulo-3">O que fazem</h2>
+          <h2 className="titulo-3">{t(textos.fichaActividades)}</h2>
           <ol className="mt-8 grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
             {clube.actividades.map((a, i) => (
               <li key={a} className="painel painel-escuro flex min-h-36 flex-col p-5">
@@ -230,11 +246,9 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
       {/* ---------- Percurso (cronologia) ---------- */}
       {perfil && perfil.destaques.length > 0 && (
         <Seccao className="!pt-0">
-          <h2 className="titulo-3">Percurso do {termo}</h2>
+          <h2 className="titulo-3">{tp(textos.fichaPercurso)}</h2>
           <p className="mt-4 max-w-[56ch] text-[15px] leading-relaxed text-white/65">
-            {cronologiaComFontes
-              ? `Os momentos que o ${termo} e a imprensa publicaram, por ordem, cada um com a sua fonte.`
-              : `Os momentos que marcaram o ${termo}, por ordem.`}
+            {cronologiaComFontes ? t(textos.fichaPercursoComFontes) : t(textos.fichaPercursoSemFontes)}
           </p>
           <ol className="mt-8 grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
             {perfil.destaques.map((d, i) => (
@@ -244,13 +258,13 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                     d.ano ? "bg-mb-red text-white" : "bg-white/10 text-white/70"
                   }`}
                 >
-                  {d.ano ?? "Sem data certa"}
+                  {d.ano ?? t(textos.fichaSemData)}
                 </span>
                 <h3 className="mt-8 text-lg font-semibold leading-snug">{d.titulo}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-white/75">{d.texto}</p>
                 {fonte(d.fonte) && (
                   <p className="mt-auto pt-5">
-                    <LigacaoFonte fonte={fonte(d.fonte)} />
+                    <LigacaoFonte fonte={fonte(d.fonte)} prefixo={prefixoFonte} />
                   </p>
                 )}
               </li>
@@ -271,7 +285,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
               <p className="mt-4 max-w-[44ch] text-[15px] leading-relaxed text-white/70">{viagens.nota}</p>
               {fonte(viagens.fonte) && (
                 <p className="mt-4">
-                  <LigacaoFonte fonte={fonte(viagens.fonte)} />
+                  <LigacaoFonte fonte={fonte(viagens.fonte)} prefixo={prefixoFonte} />
                 </p>
               )}
             </div>
@@ -280,14 +294,14 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                 <caption className="sr-only">{viagens.titulo}</caption>
                 <thead>
                   <tr className="text-xs text-white/50">
-                    <th scope="col" className="px-3 py-3 font-normal">Ano</th>
-                    <th scope="col" className="px-3 py-3 font-normal">Raide e países</th>
-                    <th scope="col" className="px-3 py-3 text-right font-normal">km</th>
+                    <th scope="col" className="px-3 py-3 font-normal">{t(textos.fichaViagensAno)}</th>
+                    <th scope="col" className="px-3 py-3 font-normal">{t(textos.fichaViagensNome)}</th>
+                    <th scope="col" className="px-3 py-3 text-right font-normal">{t(textos.fichaViagensKm)}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {viagens.lista.map((v) => (
-                    <tr key={`${v.ano}-${v.nome}`} className="border-t border-white/10 align-top">
+                  {viagens.lista.map((v, i) => (
+                    <tr key={`${i}-${v.ano}-${v.nome}`} className="border-t border-white/10 align-top">
                       <td className="px-3 py-3.5">
                         <span className="inline-block rounded-[4px] bg-mb-red px-2 py-1 text-xs font-semibold tabular-nums">
                           {v.ano}
@@ -312,7 +326,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
         <div className="grid gap-[var(--intervalo)] lg:grid-cols-2">
           <section aria-labelledby="encontros" className="painel painel-escuro p-6 lg:p-10">
             <TituloPainel id="encontros" icone={<CalendarDays />}>
-              Onde e quando se encontram
+              {t(textos.fichaEncontros)}
             </TituloPainel>
             {encontros.length > 0 ? (
               <ul className="mt-6 divide-y divide-white/10">
@@ -323,16 +337,13 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                 ))}
               </ul>
             ) : (
-              <p className="mt-6 text-[15px] leading-relaxed text-white/70">
-                O {termo} não publicou um ponto de encontro fixo. As próximas saídas costumam ser anunciadas nas redes do{" "}
-                {termo}.
-              </p>
+              <p className="mt-6 text-[15px] leading-relaxed text-white/70">{tp(textos.fichaEncontrosVazio)}</p>
             )}
           </section>
 
           <section aria-labelledby="aderir" className="painel painel-escuro p-6 lg:p-10">
             <TituloPainel id="aderir" icone={<UserPlus />}>
-              {eMovimento(clube) ? "Como fazer parte" : "Como entrar no clube"}
+              {eMovimento(clube) ? t(textos.fichaAderirMovimento) : t(textos.fichaAderirClube)}
             </TituloPainel>
             {aderir && aderir.passos.length > 1 ? (
               <ol className="mt-6 space-y-4">
@@ -348,13 +359,11 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
             ) : aderir?.passos.length === 1 ? (
               <p className="mt-6 text-[15px] leading-relaxed text-white/85">{aderir.passos[0]}</p>
             ) : (
-              <p className="mt-6 text-[15px] leading-relaxed text-white/70">
-                O {termo} não publicou regras de adesão. Pergunte directamente nas redes do {termo}.
-              </p>
+              <p className="mt-6 text-[15px] leading-relaxed text-white/70">{tp(textos.fichaAderirVazio)}</p>
             )}
             {fonte(aderir?.fonte) && (
               <p className="mt-6">
-                <LigacaoFonte fonte={fonte(aderir?.fonte)} />
+                <LigacaoFonte fonte={fonte(aderir?.fonte)} prefixo={prefixoFonte} />
               </p>
             )}
           </section>
@@ -370,17 +379,14 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
           >
             <div>
               <TituloPainel id="fontes" icone={<BookOpen />}>
-                Fontes
+                {t(textos.fichaFontes)}
               </TituloPainel>
-              <p className="mt-4 max-w-[40ch] text-sm leading-relaxed text-white/65">
-                Reportagens e páginas públicas do {termo} consultadas em Outubro de 2026. Os dados sem fonte ao lado
-                são indicativos e podem mudar.
-              </p>
+              <p className="mt-4 max-w-[40ch] text-sm leading-relaxed text-white/65">{tp(textos.fichaFontesNota)}</p>
               <Link
                 href={`/contacto?assunto=${encodeURIComponent(`Correcção ao ${termo} ${clube.nome}`)}`}
                 className="group mt-5 inline-flex items-center gap-2 text-sm"
               >
-                <span className="sublinhado">Viu um erro? Escreva-nos</span>
+                <span className="sublinhado">{t(textos.fichaErro)}</span>
                 <Seta className="size-3" />
               </Link>
             </div>
@@ -410,18 +416,17 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
       <Seccao className="!pt-0">
         <CartaoNumerado
           numero={<Mail className="size-5" aria-hidden />}
-          sobretitulo="Esta página é sua?"
-          titulo="Ajude-nos a completar a ficha"
+          sobretitulo={t(textos.fichaPaginaSobretitulo)}
+          titulo={t(textos.fichaPaginaTitulo)}
         >
-          A informação vem das páginas públicas do {termo} e a fotografia de capa é ilustrativa. Se faz parte do{" "}
-          {clube.nome}, envie-nos o logótipo, fotografias vossas, a sede e as datas dos próximos passeios.
+          {tp(textos.fichaPaginaTexto)}
           <span className="mt-6 flex flex-wrap gap-[var(--intervalo)]">
             <BotaoMB href={`/contacto?assunto=${encodeURIComponent(`Actualizar o ${termo} ${clube.nome}`)}`}>
-              Falar com a MotoBox
+              {t(textos.fichaPaginaBotao)}
             </BotaoMB>
             {clube.contacto && (
               <BotaoMB href={`mailto:${clube.contacto}`} externo variante="escuro">
-                Contactar o {termo}
+                {tp(textos.fichaContactar)}
               </BotaoMB>
             )}
           </span>
@@ -431,9 +436,9 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
       {outros.length > 0 && (
         <Seccao className="!pt-0">
           <div className="flex flex-wrap items-end justify-between gap-6">
-            <h2 className="titulo-3">Outros clubes</h2>
+            <h2 className="titulo-3">{t(textos.fichaOutros)}</h2>
             <Link href="/clubes" className="group inline-flex items-center gap-2 text-sm">
-              <span className="sublinhado">Todos os clubes</span>
+              <span className="sublinhado">{t(textos.fichaTodos)}</span>
               <Seta className="size-3" />
             </Link>
           </div>

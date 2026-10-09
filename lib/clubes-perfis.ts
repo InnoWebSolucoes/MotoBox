@@ -992,8 +992,57 @@ export const PERFIS_CLUBES: Record<string, PerfilClube> = {
   },
 };
 
+/* ------------------------------------------------------------
+   Os perfis acima são o conteúdo de partida. O painel de gestão
+   (/admin/clubes) edita-os e grava-os no conteúdo editável (grupo
+   "clubes-perfis"); as páginas lêem-nos de lá com lerGrupo/lerItem
+   e passam-nos por normalizarPerfil.
+   ------------------------------------------------------------ */
+
 export const perfilClube = (slug: string): PerfilClube | undefined => PERFIS_CLUBES[slug];
 
 /** O clube com a linha de apresentação do perfil (`resumo`), para os cartões. */
 export const comResumo = <T extends Clube>(c: T): T =>
   c.resumo ? c : { ...c, resumo: perfilClube(c.slug)?.resumo };
+
+const lista = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
+const textoOuNada = (v: unknown): string | undefined => (typeof v === "string" && v.trim() ? v : undefined);
+const indice = (v: unknown): number | undefined =>
+  typeof v === "number" && Number.isInteger(v) && v >= 0 ? v : undefined;
+
+/**
+ * Um perfil tal como as páginas o esperam, a partir do que estiver gravado:
+ * listas sempre presentes, textos vazios e blocos desligados (null) como
+ * ausentes. Sem dados, devolve undefined (a página mostra só a ficha).
+ */
+export function normalizarPerfil(v: unknown): PerfilClube | undefined {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return undefined;
+  const p = v as Record<string, unknown>;
+  const viagens = p.viagens && typeof p.viagens === "object" ? (p.viagens as Record<string, unknown>) : null;
+  const aderir = p.comoAderir && typeof p.comoAderir === "object" ? (p.comoAderir as Record<string, unknown>) : null;
+  const passos = aderir ? lista<string>(aderir.passos).filter((x) => typeof x === "string" && x.trim()) : [];
+  return {
+    resumo: typeof p.resumo === "string" ? p.resumo : "",
+    lema: textoOuNada(p.lema),
+    historia: lista<string>(p.historia).filter((x) => typeof x === "string" && x.trim()),
+    destaques: lista<MomentoClube>(p.destaques).map((d) => ({ ...d, ano: textoOuNada(d.ano), fonte: indice(d.fonte) })),
+    viagens: viagens
+      ? {
+          titulo: String(viagens.titulo ?? ""),
+          nota: String(viagens.nota ?? ""),
+          fonte: indice(viagens.fonte),
+          lista: lista<ViagemClube>(viagens.lista).map((x) => ({ ...x, km: textoOuNada(x.km) })),
+        }
+      : undefined,
+    encontros: lista<string>(p.encontros).filter((x) => typeof x === "string" && x.trim()),
+    comoAderir: aderir && passos.length ? { passos, fonte: indice(aderir.fonte) } : undefined,
+    estilo: textoOuNada(p.estilo),
+    motas: textoOuNada(p.motas),
+    numeros: lista<NumeroClube>(p.numeros).map((n) => ({ ...n, fonte: indice(n.fonte) })),
+    fontes: lista<FonteClube>(p.fontes),
+  };
+}
+
+/** O clube com o `resumo` do seu perfil (lido do conteúdo editável), para os cartões. */
+export const comResumoDe = <T extends Clube>(perfis: Map<string, PerfilClube | undefined>) => (c: T): T =>
+  c.resumo ? c : { ...c, resumo: perfis.get(c.slug)?.resumo };

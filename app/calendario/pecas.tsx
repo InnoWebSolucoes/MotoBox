@@ -222,6 +222,8 @@ const FOTO_PROVINCIA: Record<string, string> = {
   Cabinda: "geral",
 };
 
-export function fotoEquipa(e: { slug: string; provincia: string; tipo: string }): string[] {
-  return [e.slug, FOTO_PROVINCIA[e.provincia] ?? (e.tipo === "Clube" ? "passeios" : "competicao")];
+export function fotoEquipa(e: { slug: string; provincia: string; tipo: string }, capa?: string): string[] {
+  // A fotografia de capa gravada no painel (Equipas) vem primeiro.
+  const base = [e.slug, FOTO_PROVINCIA[e.provincia] ?? (e.tipo === "Clube" ? "passeios" : "competicao")];
+  return capa ? [capa, ...base] : base;
 }

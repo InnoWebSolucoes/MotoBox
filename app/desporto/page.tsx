@@ -7,23 +7,27 @@ import { Abertura, Chamada, Seccao } from "@/components/painel/blocos";
 import { Foto, FotoFundo, Seta } from "@/components/painel/kit";
 import { TEMPORADA, formatData } from "@/lib/data";
 import {
-  MODALIDADES, MODALIDADE_PRINCIPAL, SECCOES_MOTOCROSS, eProva, eventosDaModalidade, instante, type Modalidade,
+  SECCOES_MOTOCROSS, eProva, eventosDaModalidade, instante, preencher, principalDe, type ModalidadeCompleta,
 } from "@/lib/desporto";
-import { lerConteudo } from "@/lib/desporto-conteudo";
+import type { PaginaDesporto } from "@/lib/conteudo/grupos/desporto";
 import { lerCorridas, lerDefinicoes, lerEquipas, lerEventos, lerPilotos } from "@/lib/supabase/publico";
 import type { Evento } from "@/lib/types";
 import { Campeonato } from "./Campeonato";
+import { lerModalidades, lerPaginaDesporto } from "./dados";
 import { Etiqueta, TituloBloco } from "./Partes";
 import { SubNavDesporto } from "./SubNavDesporto";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Desporto",
-  description:
-    "A competição a motor em Angola, modalidade a modalidade: motocross e Campeonato Nacional, enduro, rally-raid, velocidade, moto 4 e quads, karting e automobilismo. Calendário, resultados, pilotos, equipas e a cena em Angola.",
-};
+/* Os textos fixos, as federações e as modalidades editam-se no painel
+   (Modalidades e Modalidades › Página Desporto); sem nada gravado, são os
+   de partida (lib/conteudo/grupos/desporto.ts e lib/desporto.ts). */
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { entrada } = await lerPaginaDesporto();
+  return { title: entrada.pesquisaTitulo, description: entrada.pesquisaDescricao };
+}
 
 /** Rótulos das secções do Motocross, em texto (a página é de servidor). */
 const ROTULO_SECCAO: Record<string, string> = {
@@ -34,60 +38,44 @@ const ROTULO_SECCAO: Record<string, string> = {
   "/equipas": "Equipas",
 };
 
-/** Quem organiza, com fonte (o detalhe está nos guias de cada modalidade). */
-const FEDERACOES = [
-  {
-    sigla: "FAM",
-    nome: "Federação Angolana de Motociclismo",
-    texto: "Federação das motas desde 2024, membro da FIM desde 2025: motocross, velocidade e o resto do motociclismo.",
-    fontes: [{ nome: "FIM", url: "https://www.fim-moto.com/en/fim/continental-unions-national-federations/fim-africa/federations/fam" }],
-    modalidades: ["motocross", "velocidade"],
-  },
-  {
-    sigla: "FADM",
-    nome: "Federação Angolana de Desportos Motorizados",
-    texto: "O membro angolano da FIA. Em 2026 organiza a velocidade automóvel, o rali-raid, o karting e o drift e drag.",
-    fontes: [
-      { nome: "FIA", url: "https://www.fia.com/members/region/africa-4/member_club/sport-1" },
-      { nome: "FADM", url: "https://www.fadm.ao/wp-content/uploads/2026/04/Calendarios-FADM.pdf" },
-    ],
-    modalidades: ["rally", "automobilismo"],
-  },
-];
-
 /** "3 provas" / "1 prova". */
 const nProvas = (n: number) => `${n} ${n === 1 ? "prova" : "provas"}`;
 
+/** Ligação de fora (abre noutra janela) ou do site. */
+const eExterna = (href: string) => /^https?:\/\//.test(href);
+
 export default async function DesportoPage() {
-  const [eventos, corridas, pilotos, equipas, { bilheteiraAberta }] = await Promise.all([
-    lerEventos(), lerCorridas(), lerPilotos(), lerEquipas(), lerDefinicoes(),
+  const [eventos, corridas, pilotos, equipas, { bilheteiraAberta }, lista, t] = await Promise.all([
+    lerEventos(), lerCorridas(), lerPilotos(), lerEquipas(), lerDefinicoes(), lerModalidades(), lerPaginaDesporto(),
   ]);
   const provas = eventos.filter((e) => eProva(e.disciplina));
   const agora = instante();
+  const valores = { ano: TEMPORADA, campeonato: t.campeonato.nome };
 
-  const modalidades = MODALIDADES.map((m) => {
-    const lista = eventosDaModalidade(m, provas);
+  const modalidades = lista.map((m) => {
+    const listaProvas = eventosDaModalidade(m, provas);
     return {
       m,
-      total: lista.length,
-      proxima: lista.find((e) => new Date(e.dataInicio).getTime() > agora),
-      ultima: lista.filter((e) => new Date(e.dataFim).getTime() < agora).at(-1),
-      destaque: lerConteudo(m.slug)?.numeros[0],
+      total: listaProvas.length,
+      proxima: listaProvas.find((e) => new Date(e.dataInicio).getTime() > agora),
+      ultima: listaProvas.filter((e) => new Date(e.dataFim).getTime() < agora).at(-1),
+      destaque: m.guia.numeros[0],
     };
   });
-  const principal = modalidades.find((x) => x.m.slug === MODALIDADE_PRINCIPAL)!;
-  const competicao = modalidades.filter((x) => x.m.grupo === "competicao");
+  const principalM = principalDe(lista);
+  const principal = modalidades.find((x) => x.m.slug === principalM?.slug);
+  const competicao = modalidades.filter((x) => x !== principal && x.m.grupo !== "outras");
   // Ao lado do Motocross cabem duas; as restantes descem para uma fila de cartões por baixo.
   const aoLado = competicao.slice(0, 2);
   const fila = competicao.slice(2);
-  const outras = modalidades.filter((x) => x.m.grupo === "outras");
+  const outras = modalidades.filter((x) => x !== principal && x.m.grupo === "outras");
 
   const numeros = [
-    { valor: provas.length, texto: "Provas" },
-    { valor: corridas.length, texto: "Corridas disputadas" },
-    { valor: pilotos.length, texto: "Pilotos" },
-    { valor: MODALIDADES.length, texto: "Modalidades" },
-    { valor: provas.filter((e) => new Date(e.dataInicio).getTime() > agora).length, texto: "Por disputar" },
+    { valor: provas.length, texto: t.entrada.numeros.provas },
+    { valor: corridas.length, texto: t.entrada.numeros.corridas },
+    { valor: pilotos.length, texto: t.entrada.numeros.pilotos },
+    { valor: lista.length, texto: t.entrada.numeros.modalidades },
+    { valor: provas.filter((e) => new Date(e.dataInicio).getTime() > agora).length, texto: t.entrada.numeros.porDisputar },
   ];
 
   return (
@@ -96,10 +84,10 @@ export default async function DesportoPage() {
       <PaginaInterior icone={<Trophy />}>
         <Abertura
           compacta
-          foto="mxgp"
-          sobretitulo={`Temporada ${TEMPORADA}`}
-          titulo="Desporto"
-          texto="A competição a motor em Angola: o Campeonato Nacional, com o calendário, a classificação, os resultados, os pilotos e as equipas, e cada modalidade com a sua página, do motocross ao karting."
+          foto={t.entrada.foto}
+          sobretitulo={preencher(t.entrada.sobretitulo, valores)}
+          titulo={t.entrada.titulo}
+          texto={t.entrada.texto}
         />
 
         {/* ============ NÚMEROS DA TEMPORADA ============ */}
@@ -107,7 +95,7 @@ export default async function DesportoPage() {
           <dl className="grid grid-cols-2 gap-[var(--intervalo)] sm:grid-cols-5">
             {numeros.map((n, i) => (
               <div
-                key={n.texto}
+                key={`${i}-${n.texto}`}
                 className={`painel painel-escuro flex min-h-32 flex-col-reverse justify-start p-5 lg:min-h-40 ${
                   i === 0 ? "col-span-2 sm:col-span-1" : ""
                 }`}
@@ -120,48 +108,50 @@ export default async function DesportoPage() {
         </Seccao>
 
         {/* ============ CAMPEONATO NACIONAL: o que estava nas antigas secções Calendário, Resultados e Pilotos ============ */}
-        <Campeonato provas={provas} corridas={corridas} pilotos={pilotos} equipas={equipas} bilheteiraAberta={bilheteiraAberta} />
+        <Campeonato provas={provas} corridas={corridas} pilotos={pilotos} equipas={equipas} bilheteiraAberta={bilheteiraAberta} textos={t} />
 
         {/* ============ COMPETIÇÃO: MOTOCROSS EM DESTAQUE, DUAS AO LADO E AS RESTANTES NUMA FILA ============ */}
         <Seccao id="modalidades" className="!pt-0 !scroll-mt-28">
-          <TituloBloco grande icone={<Flag />} sobretitulo="Competição" titulo="Modalidades" />
+          <TituloBloco grande icone={<Flag />} sobretitulo={t.modalidades.sobretitulo} titulo={t.modalidades.titulo} />
 
           <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-[var(--intervalo)] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
             {/* Motocross: a casa do campeonato, em grande, com atalhos para as secções */}
-            <div className="painel group relative isolate flex min-h-[30rem] flex-col justify-end lg:min-h-[34rem]">
-              <FotoFundo nome={principal.m.imagem} veu="baixo" tamanhos="(max-width: 1024px) 100vw, 55vw" />
-              {/* Ligação que cobre o cartão; os atalhos por cima ficam clicáveis à parte. */}
-              <Link href={`/desporto/${principal.m.slug}`} className="absolute inset-0" aria-label={principal.m.nome} />
-              <div className="pointer-events-none relative p-6 md:p-10">
-                <Etiqueta tom="vermelho">Campeonato Nacional</Etiqueta>
-                <h3 className="titulo-2 mt-5">{principal.m.nome}</h3>
-                <p className="mt-4 max-w-[46ch] text-[15px] leading-relaxed text-white/85">
-                  <C>{principal.m.descricao}</C>
-                </p>
-                {principal.proxima && (
-                  <p className="mt-4 flex flex-wrap items-baseline gap-x-2 text-sm text-white/85">
-                    <span className="text-mb-red-light">Próxima prova</span>
-                    <span>{principal.proxima.titulo}</span>
-                    <span className="text-white/55">
-                      · {formatData(principal.proxima.dataInicio, { day: "2-digit", month: "short" })}
-                    </span>
+            {principal && (
+              <div className="painel group relative isolate flex min-h-[30rem] flex-col justify-end lg:min-h-[34rem]">
+                <FotoFundo nome={principal.m.imagem} veu="baixo" tamanhos="(max-width: 1024px) 100vw, 55vw" />
+                {/* Ligação que cobre o cartão; os atalhos por cima ficam clicáveis à parte. */}
+                <Link href={`/desporto/${principal.m.slug}`} className="absolute inset-0" aria-label={principal.m.nome} />
+                <div className="pointer-events-none relative p-6 md:p-10">
+                  {t.modalidades.etiquetaPrincipal && <Etiqueta tom="vermelho">{t.modalidades.etiquetaPrincipal}</Etiqueta>}
+                  <h3 className="titulo-2 mt-5">{principal.m.nome}</h3>
+                  <p className="mt-4 max-w-[46ch] text-[15px] leading-relaxed text-white/85">
+                    <C>{principal.m.descricao}</C>
                   </p>
-                )}
-                <div className="pointer-events-auto mt-7 flex flex-wrap gap-2">
-                  {SECCOES_MOTOCROSS.slice(1).map((s) => (
-                    <Link key={s.href} href={s.href} className="pilula bg-black/50 backdrop-blur-md hover:bg-black/75">
-                      {ROTULO_SECCAO[s.href]}
+                  {principal.proxima && (
+                    <p className="mt-4 flex flex-wrap items-baseline gap-x-2 text-sm text-white/85">
+                      <span className="text-mb-red-light">{t.modalidades.proximaPrincipal}</span>
+                      <span>{principal.proxima.titulo}</span>
+                      <span className="text-white/55">
+                        · {formatData(principal.proxima.dataInicio, { day: "2-digit", month: "short" })}
+                      </span>
+                    </p>
+                  )}
+                  <div className="pointer-events-auto mt-7 flex flex-wrap gap-2">
+                    {SECCOES_MOTOCROSS.slice(1).map((s) => (
+                      <Link key={s.href} href={s.href} className="pilula bg-black/50 backdrop-blur-md hover:bg-black/75">
+                        {ROTULO_SECCAO[s.href]}
+                      </Link>
+                    ))}
+                    <Link
+                      href={`/desporto/${principal.m.slug}#o-que-e`}
+                      className="pilula bg-black/50 backdrop-blur-md hover:bg-black/75"
+                    >
+                      {t.modalidades.pilulaGuia}
                     </Link>
-                  ))}
-                  <Link
-                    href={`/desporto/${principal.m.slug}#o-que-e`}
-                    className="pilula bg-black/50 backdrop-blur-md hover:bg-black/75"
-                  >
-                    Guia
-                  </Link>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* As duas primeiras (Enduro e Rally-Raid): fotografia ao lado do texto */}
             <div className="grid grid-cols-[minmax(0,1fr)] gap-[var(--intervalo)]">
@@ -176,7 +166,7 @@ export default async function DesportoPage() {
                     <Foto nome={m.imagem} className="min-h-40" largura={500} tamanhos="(max-width: 640px) 120px, 192px" />
                     <div className="flex min-w-0 flex-col p-3 sm:p-5">
                       <p className="text-[0.8125rem] text-white/60">
-                        {total > 0 ? <span className="text-mb-red-light">{nProvas(total)}</span> : "Guia e cena em Angola"}
+                        {total > 0 ? <span className="text-mb-red-light">{nProvas(total)}</span> : t.modalidades.semProvas}
                       </p>
                       <h3 className="mt-1.5 text-2xl font-semibold leading-tight tracking-tight">{m.nome}</h3>
                       <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-white/70 sm:line-clamp-2">
@@ -184,7 +174,7 @@ export default async function DesportoPage() {
                       </p>
                       {marco && (
                         <p className="mt-3 text-xs leading-snug text-white/55">
-                          <span className="text-white/85">{proxima ? "Próxima:" : "Última:"}</span> {marco.titulo} ·{" "}
+                          <span className="text-white/85">{proxima ? t.modalidades.proxima : t.modalidades.ultima}</span> {marco.titulo} ·{" "}
                           {formatData(marco.dataInicio, { day: "2-digit", month: "short" })}
                         </p>
                       )}
@@ -204,7 +194,7 @@ export default async function DesportoPage() {
               }`}
             >
               {fila.map(({ m, total, proxima, ultima }) => (
-                <CartaoModalidade key={m.slug} m={m} total={total} marco={proxima ?? ultima} futura={Boolean(proxima)} />
+                <CartaoModalidade key={m.slug} m={m} total={total} marco={proxima ?? ultima} futura={Boolean(proxima)} t={t} />
               ))}
             </div>
           )}
@@ -213,14 +203,10 @@ export default async function DesportoPage() {
         {/* ============ OUTRAS MODALIDADES (as que ainda não têm provas no calendário) ============ */}
         {outras.length > 0 && (
           <Seccao className="!pt-0">
-            <TituloBloco
-              sobretitulo="Tudo o que tem motor"
-              titulo="Outras modalidades"
-              texto="Cada uma tem página própria: o que é, as classes, quem corre em Angola, os campeonatos de referência e como começar. Com fontes."
-            />
+            <TituloBloco sobretitulo={t.outras.sobretitulo} titulo={t.outras.titulo} texto={t.outras.texto} />
             <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-[var(--intervalo)] sm:grid-cols-2 xl:grid-cols-4">
               {outras.map(({ m, total, destaque }) => (
-                <CartaoModalidade key={m.slug} m={m} total={total} destaque={destaque} />
+                <CartaoModalidade key={m.slug} m={m} total={total} destaque={destaque} t={t} />
               ))}
             </div>
           </Seccao>
@@ -228,33 +214,35 @@ export default async function DesportoPage() {
 
         {/* ============ QUEM ORGANIZA ============ */}
         <Seccao className="!pt-0">
-          <TituloBloco grande icone={<Landmark />} sobretitulo="Federações" titulo="Quem organiza" />
+          <TituloBloco grande icone={<Landmark />} sobretitulo={t.federacoes.sobretitulo} titulo={t.federacoes.titulo} />
           <ul className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-[var(--intervalo)] md:grid-cols-2 lg:grid-cols-3">
-            {FEDERACOES.map((f) => (
-              <li key={f.sigla} className="painel painel-escuro flex flex-col p-6 lg:p-8">
+            {t.federacoes.lista.map((f, i) => (
+              <li key={`${i}-${f.sigla}`} className="painel painel-escuro flex flex-col p-6 lg:p-8">
                 <p className="text-4xl font-semibold leading-none tracking-tight">{f.sigla}</p>
                 <p className="mt-3 text-sm text-white/65">{f.nome}</p>
                 <p className="mt-6 text-[15px] leading-relaxed text-white/85">
                   <C>{f.texto}</C>
                 </p>
-                <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/50">
-                  <span>Fontes:</span>
-                  {f.fontes.map((fonte) => (
-                    <a
-                      key={fonte.url}
-                      href={fonte.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-white/70 underline decoration-white/20 underline-offset-2 transition-colors hover:text-white"
-                    >
-                      {fonte.nome}
-                      <ExternalLink className="size-3" aria-hidden />
-                    </a>
-                  ))}
-                </p>
+                {f.fontes.length > 0 && (
+                  <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/50">
+                    <span>{t.federacoes.rotuloFontes}</span>
+                    {f.fontes.map((fonte) => (
+                      <a
+                        key={fonte.url}
+                        href={fonte.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-white/70 underline decoration-white/20 underline-offset-2 transition-colors hover:text-white"
+                      >
+                        {fonte.nome}
+                        <ExternalLink className="size-3" aria-hidden />
+                      </a>
+                    ))}
+                  </p>
+                )}
                 <div className="mt-auto flex flex-wrap gap-2 pt-8">
                   {f.modalidades.map((slug) => {
-                    const m = MODALIDADES.find((x) => x.slug === slug);
+                    const m = lista.find((x) => x.slug === slug);
                     return m ? (
                       <Link key={slug} href={`/desporto/${slug}`} className="pilula">
                         {m.nome}
@@ -264,9 +252,17 @@ export default async function DesportoPage() {
                 </div>
               </li>
             ))}
-            <li className="md:col-span-2 lg:col-span-1">
-              <Chamada href="/contacto" icone={<Megaphone />} titulo="Organiza provas? Fale connosco" className="h-full" />
-            </li>
+            {t.organiza.titulo && (
+              <li className="md:col-span-2 lg:col-span-1">
+                <Chamada
+                  href={t.organiza.href || "/contacto"}
+                  externo={eExterna(t.organiza.href)}
+                  icone={<Megaphone />}
+                  titulo={t.organiza.titulo}
+                  className="h-full"
+                />
+              </li>
+            )}
           </ul>
         </Seccao>
       </PaginaInterior>
@@ -285,13 +281,15 @@ function CartaoModalidade({
   marco,
   futura = false,
   destaque,
+  t,
 }: {
-  m: Modalidade;
+  m: ModalidadeCompleta;
   total: number;
   marco?: Evento;
   /** O marco é a próxima prova (e não a última). */
   futura?: boolean;
   destaque?: { valor: string; label: string };
+  t: PaginaDesporto;
 }) {
   return (
     <Link href={`/desporto/${m.slug}`} className="painel painel-escuro group flex flex-col p-[var(--intervalo)]">
@@ -315,7 +313,7 @@ function CartaoModalidade({
         </p>
         {marco ? (
           <div className="mt-5 border-t border-white/10 pt-4">
-            <p className="text-[0.8125rem] text-mb-red-light">{futura ? "Próxima prova" : "Última prova"}</p>
+            <p className="text-[0.8125rem] text-mb-red-light">{futura ? t.modalidades.proximaProva : t.modalidades.ultimaProva}</p>
             <p className="mt-1 text-[15px] font-medium leading-snug text-white">{marco.titulo}</p>
             <p className="mt-1 text-xs leading-snug text-white/55">
               {formatData(marco.dataInicio, { day: "2-digit", month: "long" })} · {marco.circuito}, {marco.provincia}
@@ -330,7 +328,7 @@ function CartaoModalidade({
           </p>
         ) : null}
         <span className="mt-auto flex items-center justify-between gap-3 pt-6 text-sm">
-          <span className="sublinhado">Conhecer a modalidade</span>
+          <span className="sublinhado">{t.modalidades.conhecer}</span>
           <Seta className="size-3.5" />
         </span>
       </div>

@@ -7,9 +7,11 @@ import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, BotaoMB, Seccao } from "@/components/painel/blocos";
 import { Seta } from "@/components/painel/kit";
 import { intervaloDatas } from "@/lib/motobox";
-import { lerCorrida, lerCorridas, lerEvento } from "@/lib/supabase/publico";
+import { lerCorrida, lerCorridas, lerEvento, lerPilotos } from "@/lib/supabase/publico";
+import { retratoDe } from "@/lib/desporto";
 import { Ficha, LegendaResultados, TituloSeccao, iniciais } from "@/app/calendario/pecas";
 import { TabelaResultados } from "../TabelaResultados";
+import { fotoDe } from "@/app/eventos/foto";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -46,12 +48,18 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
   );
   const classificados = corrida.resultados.filter((r) => !r.estado);
   const melhorVolta = corrida.resultados.find((r) => r.melhorVolta);
+  // A fotografia de cada piloto vem da sua ficha (a gravada no painel, ou o retrato de origem).
+  const fichas = new Map((await lerPilotos()).map((p) => [p.slug, p]));
+  const retrato = (slug: string) => {
+    const p = fichas.get(slug);
+    return p ? retratoDe(p) : slug;
+  };
 
   return (
     <PaginaInterior icone={<Trophy />}>
       <Abertura
         compacta
-        foto={[corrida.slug, corrida.imagem]}
+        foto={fotoDe(corrida.slug, corrida.imagem)}
         sobretitulo={[corrida.ronda > 0 ? `Ronda ${corrida.ronda}` : null, corrida.categoria, String(corrida.temporada)]
           .filter(Boolean)
           .join(" · ")}
@@ -75,7 +83,7 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
                   className="painel group relative isolate flex aspect-[4/3] flex-col justify-between p-5 sm:aspect-[4/5] lg:aspect-[4/3] lg:p-6"
                 >
                   <Retrato
-                    nome={r.pilotoSlug}
+                    nome={retrato(r.pilotoSlug)}
                     iniciais={iniciais(r.piloto)}
                     className="foto-painel absolute inset-0 -z-20 [container-type:size]"
                     tamanhos="(max-width: 640px) 100vw, 33vw"

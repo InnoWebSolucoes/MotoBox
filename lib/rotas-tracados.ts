@@ -13,8 +13,11 @@
    - traçado: a geometria completa do OSRM, simplificada (Douglas-
      Peucker, 12 m) e codificada como polilinha (precisão 5), para o GPX.
 
-   Se mudar uma paragem, volte a gerar este ficheiro: lib/rotas.ts
-   recusa arrancar com paragens que não batam certo.
+   Se mudar uma paragem aqui no código, volte a gerar este ficheiro:
+   lib/rotas.ts recusa arrancar com paragens que não batam certo.
+   No painel de gestão (/admin/rotas), o botão "Recalcular o traçado"
+   faz o mesmo cálculo (lib/rotas-calculo.ts) e grava o resultado com
+   a rota, no conteúdo editável; o site e o GPX usam esse.
    ============================================================ */
 
 export interface CalculoRota {

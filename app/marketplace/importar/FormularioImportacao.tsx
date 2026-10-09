@@ -6,7 +6,7 @@ import { useExigirSessao } from "@/components/SessaoObrigatoria";
 import { useAuth } from "@/lib/auth/contexto";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { comBase } from "@/lib/base";
-import { FORM, type Bi } from "./conteudo";
+import type { Bi, FORM as FORM_PADRAO } from "./conteudo";
 import {
   CATEGORIAS_IMPORTACAO, MENSAGENS_ERRO, PROVINCIAS_ANGOLA, validarPedido, type CampoPedido,
 } from "./opcoes";
@@ -16,8 +16,11 @@ import {
    Qualquer pessoa preenche; enviar pede sessão (janela "Entre
    para continuar" na própria página). O rascunho fica neste
    navegador: quem cria conta volta pela ligação do email com a
-   página recarregada e encontra tudo como deixou.
+   página recarregada e encontra tudo como deixou. Os textos
+   chegam por props (conteúdo editável), nas duas línguas.
    ============================================================ */
+
+type TextosForm = typeof FORM_PADRAO;
 
 const RASCUNHO = "motobox-importacao-rascunho";
 
@@ -58,15 +61,15 @@ function guardarRascunho(c: Campos | null) {
 
 const semSubscricao = () => () => {};
 
-export function FormularioImportacao() {
+export function FormularioImportacao({ textos }: { textos: TextosForm }) {
   // O servidor desenha o formulário vazio; no navegador, volta a montar-se com o rascunho.
   const noNavegador = useSyncExternalStore(semSubscricao, () => true, () => false);
-  return <Formulario key={noNavegador ? "navegador" : "servidor"} restaurar={noNavegador} />;
+  return <Formulario key={noNavegador ? "navegador" : "servidor"} restaurar={noNavegador} FORM={textos} />;
 }
 
-function Formulario({ restaurar }: { restaurar: boolean }) {
+function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm }) {
   const { idioma } = useIdioma();
-  const x = (v: Bi) => v[idioma];
+  const x = (v: Bi | undefined) => v?.[idioma] ?? "";
   const { perfil, utilizador } = useAuth();
   const exigirSessao = useExigirSessao();
 

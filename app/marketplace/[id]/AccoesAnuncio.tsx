@@ -35,13 +35,15 @@ function Coracao({ cheio }: { cheio: boolean }) {
  * na conta (user_metadata.favoritos, via /api/conta/favoritos) e partilhar.
  */
 export function AccoesAnuncio({
-  anuncioId, titulo, preco, vendedorNome, vendedorAuthId,
+  anuncioId, titulo, preco, vendedorNome, vendedorAuthId, mensagemInicial,
 }: {
   anuncioId: string;
   titulo: string;
   preco: number;
   vendedorNome: string;
   vendedorAuthId?: string;
+  /** Mensagem já escrita ao abrir "Contactar vendedor" (editável no painel). */
+  mensagemInicial?: string;
 }) {
   const { utilizador } = useAuth();
   const exigirSessao = useExigirSessao();
@@ -158,6 +160,7 @@ export function AccoesAnuncio({
           preco={preco}
           vendedorNome={vendedorNome}
           vendedorAuthId={vendedorAuthId}
+          mensagemInicial={mensagemInicial}
         />
         <div className="flex gap-2">
           <Button

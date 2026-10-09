@@ -11,7 +11,12 @@
  * recorte são aplicados em `src()`, não guardados aqui.
  */
 
+import { BASE, comBase } from "@/lib/base";
+
 const U = (id: string) => `https://images.unsplash.com/${id}`;
+
+/** Caminho de um ficheiro do próprio site, com o prefixo /motobox. */
+export const urlLocal = (caminho: string) => (caminho.startsWith(`${BASE}/`) ? caminho : comBase(caminho));
 
 /** Provas, circuitos, notícias e vídeos — imagens largas. */
 export const CENAS: Record<string, string> = {
@@ -184,6 +189,9 @@ export function src(
     // Um endereço completo (miniatura do YouTube, imagem colada no painel,
     // logótipo carregado) usa-se tal como está.
     if (/^https:\/\//.test(c)) return c;
+    // Um caminho local ("/videos/fundo.jpg", ou um ficheiro do painel em
+    // desenvolvimento) leva o prefixo do site, se ainda não o tiver.
+    if (c.startsWith("/")) return urlLocal(c);
     // chaves derivadas do tipo "capacete-2" (galerias) caem na imagem base
     const base = TODAS[c] ?? TODAS[c.replace(/-\d+$/, "")];
     if (base) return `${base}?auto=format&fit=crop&w=${w}&q=${q}`;

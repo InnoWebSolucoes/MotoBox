@@ -608,11 +608,12 @@
   html, .rolagem { scroll-behavior: auto; }
 }
 
-/* ---------- Componentes herdados no site público ----------
-   A letra condensada em caixa alta fica só no painel de gestão: no
-   site público, os componentes antigos que a pedem passam à letra do
-   painel. Fora de camada de propósito, para ganhar ao `uppercase`. */
-body:not(:has(.painel-gestao)) .font-display {
+/* ---------- Componentes herdados ----------
+   A letra condensada em caixa alta era do desenho antigo. O site e o
+   painel de gestão usam agora a mesma letra: os componentes antigos que
+   a pedem passam à letra do site. Fora de camada de propósito, para
+   ganhar ao `uppercase`. */
+.font-display {
   font-family: var(--font-sans);
   font-weight: 600;
   letter-spacing: -0.01em;

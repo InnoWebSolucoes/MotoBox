@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, Lock, MessagesSquare, Pin } from "lucide-react";
 import { lerCategoriasForum, lerTopicos } from "@/lib/supabase/publico";
+import { lerDoc } from "@/lib/conteudo";
+import { comPadrao, FORUM_PADRAO, type ConteudoForum } from "@/lib/conteudo/grupos/comunidade";
 import { dataArtigo } from "@/lib/motobox";
 import type { TopicoForum } from "@/lib/types";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
@@ -12,23 +14,18 @@ import { Icon } from "@/components/ui";
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Fórum",
-  description:
-    "O fórum da comunidade motard angolana: passeios e viagens, mecânica, equipamento, primeira mota, clubes e conversa geral.",
-};
+/** Os textos da página, editáveis no painel (Fórum → Página Fórum). */
+const lerTextos = async () => comPadrao(await lerDoc<ConteudoForum>("paginas.forum"), FORUM_PADRAO);
 
-const REGRAS = [
-  "Respeito em primeiro lugar. Sem insultos.",
-  "Sem publicidade não autorizada.",
-  "Vendas só no Marketplace.",
-  "Pesquise antes de abrir um tópico novo.",
-  "Sem conteúdo fora do tema motard.",
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await lerTextos();
+  return { title: seo.titulo, description: seo.descricao };
+}
 
 export default async function Forum({ searchParams }: { searchParams: Promise<{ categoria?: string }> }) {
   const { categoria } = await searchParams;
-  const [topicos, categorias] = await Promise.all([lerTopicos(), lerCategoriasForum()]);
+  const [topicos, categorias, t] = await Promise.all([lerTopicos(), lerCategoriasForum(), lerTextos()]);
+  const { abertura, lista: tl, lateral } = t;
 
   const activa = categorias.find((c) => c.slug === categoria);
   const lista = activa ? topicos.filter((t) => t.categoriaSlug === activa.slug) : topicos;
@@ -40,12 +37,12 @@ export default async function Forum({ searchParams }: { searchParams: Promise<{ 
     <PaginaInterior icone={<MessagesSquare />}>
       <Abertura
         compacta
-        foto="banner-forum"
-        sobretitulo="Comunidade"
-        titulo="Fórum"
-        texto="Onde quem anda de mota em Angola conversa: dúvidas de mecânica, passeios por organizar, a primeira mota e tudo o resto."
+        foto={abertura.foto}
+        sobretitulo={abertura.sobretitulo || undefined}
+        titulo={abertura.titulo}
+        texto={abertura.texto || undefined}
       >
-        <BotaoMB href="/conta">Abrir um tópico</BotaoMB>
+        {abertura.botao && <BotaoMB href={abertura.botaoLigacao || "/conta"}>{abertura.botao}</BotaoMB>}
       </Abertura>
 
       <Seccao>
@@ -55,7 +52,7 @@ export default async function Forum({ searchParams }: { searchParams: Promise<{ 
               rotulo="Categorias do fórum"
               activa={activa?.slug ?? "todas"}
               itens={[
-                { chave: "todas", texto: "Todas", href: "/forum" },
+                { chave: "todas", texto: tl.todas, href: "/forum" },
                 ...categorias.map((c) => ({ chave: c.slug, texto: c.nome, href: `/forum?categoria=${c.slug}` })),
               ]}
             />
@@ -64,23 +61,23 @@ export default async function Forum({ searchParams }: { searchParams: Promise<{ 
 
             {lista.length ? (
               <ol className="mt-8 grid gap-[var(--intervalo)]">
-                {[...fixados, ...recentes].map((t) => (
-                  <li key={t.id}>
-                    <LinhaTopico topico={t} />
+                {[...fixados, ...recentes].map((tp) => (
+                  <li key={tp.id}>
+                    <LinhaTopico topico={tp} textos={tl} />
                   </li>
                 ))}
               </ol>
             ) : (
               <div className="painel painel-escuro mt-8 p-10">
-                <p className="text-lg font-semibold">Ainda não há tópicos nesta categoria</p>
-                <p className="mt-2 text-sm text-white/60">Comece a conversa: abra o primeiro.</p>
+                <p className="text-lg font-semibold">{tl.vazioTitulo}</p>
+                <p className="mt-2 text-sm text-white/60">{tl.vazioTexto}</p>
               </div>
             )}
           </div>
 
           <aside className="grid content-start gap-[var(--intervalo)]">
             <div className="painel painel-escuro p-6">
-              <h2 className="text-lg font-semibold">Categorias</h2>
+              <h2 className="text-lg font-semibold">{lateral.categorias}</h2>
               <ul className="mt-4 divide-y divide-white/8">
                 {categorias.map((c) => (
                   <li key={c.slug}>
@@ -96,18 +93,20 @@ export default async function Forum({ searchParams }: { searchParams: Promise<{ 
               </ul>
             </div>
             <div className="painel painel-escuro p-6">
-              <h2 className="text-lg font-semibold">Regras da casa</h2>
+              <h2 className="text-lg font-semibold">{lateral.regrasTitulo}</h2>
               <ol className="mt-4 space-y-2.5 text-sm text-white/75">
-                {REGRAS.map((r, i) => (
-                  <li key={r} className="flex gap-3">
+                {lateral.regras.map((r, i) => (
+                  <li key={`${i}-${r}`} className="flex gap-3">
                     <span className="text-mb-red-light tabular-nums">{i + 1}</span>
                     {r}
                   </li>
                 ))}
               </ol>
-              <Link href="/regulamento" className="mt-5 inline-flex text-sm">
-                <span className="sublinhado">Regulamento da comunidade</span>
-              </Link>
+              {lateral.regulamento && (
+                <Link href={lateral.regulamentoLigacao || "/regulamento"} className="mt-5 inline-flex text-sm">
+                  <span className="sublinhado">{lateral.regulamento}</span>
+                </Link>
+              )}
             </div>
           </aside>
         </div>
@@ -116,7 +115,7 @@ export default async function Forum({ searchParams }: { searchParams: Promise<{ 
   );
 }
 
-function LinhaTopico({ topico: t }: { topico: TopicoForum }) {
+function LinhaTopico({ topico: t, textos }: { topico: TopicoForum; textos: ConteudoForum["lista"] }) {
   return (
     <Link href={`/forum/${t.id}`} className="painel painel-escuro group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 p-4 md:p-5">
       <span
@@ -130,13 +129,13 @@ function LinhaTopico({ topico: t }: { topico: TopicoForum }) {
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/55">
           <span className="text-mb-red-light">{t.categoria}</span>
           {t.fixado && (
-            <span className="inline-flex items-center gap-1"><Pin className="size-3" aria-hidden /> Fixado</span>
+            <span className="inline-flex items-center gap-1"><Pin className="size-3" aria-hidden />{` ${textos.fixado}`}</span>
           )}
           {t.resolvido && (
-            <span className="inline-flex items-center gap-1"><CheckCircle2 className="size-3" aria-hidden /> Resolvido</span>
+            <span className="inline-flex items-center gap-1"><CheckCircle2 className="size-3" aria-hidden />{` ${textos.resolvido}`}</span>
           )}
           {t.bloqueado && (
-            <span className="inline-flex items-center gap-1"><Lock className="size-3" aria-hidden /> Fechado</span>
+            <span className="inline-flex items-center gap-1"><Lock className="size-3" aria-hidden />{` ${textos.fechado}`}</span>
           )}
         </span>
         <span className="mt-1 block text-[15px] font-medium leading-snug md:text-base">{t.titulo}</span>

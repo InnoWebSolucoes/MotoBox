@@ -5,28 +5,29 @@ import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Seccao } from "@/components/painel/blocos";
 import { TEMPORADA, classificacaoPilotos } from "@/lib/data";
 import {
-  MODALIDADES, MODALIDADE_PRINCIPAL, corridasDaModalidade, corridasDoCampeonato, eProva, eventosDaModalidade, instante,
-  lerModalidade, seccoesDaModalidade, type Modalidade,
+  corridasDaModalidade, corridasDoCampeonato, eProva, eventosDaModalidade, instante, preencher, principalDe,
+  seccoesDaModalidade, type ModalidadeCompleta,
 } from "@/lib/desporto";
-import { lerConteudo, type ConteudoPagina } from "@/lib/desporto-conteudo";
+import type { PaginaDesporto } from "@/lib/conteudo/grupos/desporto";
 import { lerCorridas, lerDefinicoes, lerEquipas, lerEventos, lerPilotos } from "@/lib/supabase/publico";
 import type { Corrida, Equipa, Evento, Piloto } from "@/lib/types";
 import { LinhaEvento } from "@/app/calendario/ListaEventos";
 import { SubNavDesporto } from "../SubNavDesporto";
 import { Campeonato } from "../Campeonato";
+import { lerModalidades, lerPaginaDesporto } from "../dados";
 import {
   FilaPilotos, HeroModalidade, NotaMotobox, ProximaProva, TituloBloco, UltimosResultados, Vazio, Voltar,
 } from "../Partes";
-import { GuiaModalidade, IndicePagina, SECCOES_GUIA } from "../Guia";
+import { GuiaModalidade, IndicePagina, seccoesGuia } from "../Guia";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
 
-// A lista de modalidades vive no código (lib/desporto.ts): outra URL é 404.
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return MODALIDADES.map((m) => ({ modalidade: m.slug }));
+// As modalidades editam-se no painel (Modalidades): uma criada depois do build
+// gera-se no primeiro pedido (`dynamicParams` no valor por omissão, `true`);
+// um endereço que não é de nenhuma modalidade dá 404.
+export async function generateStaticParams() {
+  return (await lerModalidades()).map((m) => ({ modalidade: m.slug }));
 }
 
 export async function generateMetadata({
@@ -35,33 +36,34 @@ export async function generateMetadata({
   params: Promise<{ modalidade: string }>;
 }): Promise<Metadata> {
   const { modalidade } = await params;
-  const m = lerModalidade(modalidade);
+  const [lista, t] = await Promise.all([lerModalidades(), lerPaginaDesporto()]);
+  const m = lista.find((x) => x.slug === modalidade);
   if (!m) return { title: "Desporto" };
   return {
     title: `${m.nome} · Desporto`,
-    description: `${m.descricao} O que é, classes, a cena em Angola, os campeonatos de referência e como começar.`,
+    description: [m.descricao, t.modalidade.pesquisaSufixo].filter(Boolean).join(" "),
   };
 }
 
 export default async function ModalidadePage({ params }: { params: Promise<{ modalidade: string }> }) {
   const { modalidade } = await params;
-  const m = lerModalidade(modalidade);
-  const c = lerConteudo(modalidade);
-  if (!m || !c) notFound();
+  const [lista, t] = await Promise.all([lerModalidades(), lerPaginaDesporto()]);
+  const m = lista.find((x) => x.slug === modalidade);
+  if (!m) notFound();
 
   const [eventos, corridas, pilotos, equipas, { bilheteiraAberta }] = await Promise.all([
     lerEventos(), lerCorridas(), lerPilotos(), lerEquipas(), lerDefinicoes(),
   ]);
-  const dados = { m, c, eventos, corridas, pilotos, equipas, bilheteiraAberta };
+  const dados = { m, c: m.guia, t, eventos, corridas, pilotos, equipas, bilheteiraAberta };
 
-  if (m.slug === MODALIDADE_PRINCIPAL) {
+  if (m.slug === principalDe(lista)?.slug) {
     return <PaginaMotocross {...dados} />;
   }
   return <PaginaModalidade {...dados} />;
 }
 
 type Dados = {
-  m: Modalidade; c: ConteudoPagina;
+  m: ModalidadeCompleta; c: ModalidadeCompleta["guia"]; t: PaginaDesporto;
   eventos: Evento[]; corridas: Corrida[]; pilotos: Piloto[]; equipas: Equipa[];
   /** Interruptor "Bilheteira aberta" das Definições. */
   bilheteiraAberta: boolean;
@@ -69,23 +71,25 @@ type Dados = {
 
 /* ---------------- Motocross: o Campeonato Nacional e o guia ---------------- */
 
-function PaginaMotocross({ m, c, eventos, corridas: todas, pilotos, equipas, bilheteiraAberta }: Dados) {
+function PaginaMotocross({ m, c, t, eventos, corridas: todas, pilotos, equipas, bilheteiraAberta }: Dados) {
   const provas = eventosDaModalidade(m, eventos);
   // Só as corridas do Campeonato Nacional: as de fora (velocidade, karting...) ficam nas suas modalidades.
   const corridas = corridasDoCampeonato(todas);
   const indice = [
-    { id: "campeonato", nome: "Campeonato" },
-    { id: "calendario", nome: "Calendário" },
-    ...SECCOES_GUIA,
+    { id: "campeonato", nome: t.modalidade.indiceCampeonato },
+    { id: "calendario", nome: t.modalidade.indiceCalendario },
+    ...seccoesGuia(c, t.guia),
   ];
+  const valores = { ano: TEMPORADA, campeonato: t.campeonato.nome, modalidade: m.nome };
 
   return (
     <>
-      <SubNavDesporto modalidade={m.slug} />
+      <SubNavDesporto modalidade={m.slug} nome={m.nome} principal />
       <PaginaInterior icone={<Trophy />}>
         <HeroModalidade
           m={m}
-          eyebrow={`Campeonato Nacional ${TEMPORADA}`}
+          eyebrow={preencher(t.modalidade.sobretituloPrincipal, valores)}
+          notaFoto={t.modalidade.notaFoto}
           numeros={[
             { valor: provas.length, label: "Provas" },
             { valor: corridas.length, label: "Corridas disputadas" },
@@ -93,26 +97,28 @@ function PaginaMotocross({ m, c, eventos, corridas: todas, pilotos, equipas, bil
             { valor: equipas.filter((e) => e.tipo === "Equipa").length, label: "Equipas" },
           ]}
         >
-          <IndicePagina indice={indice} />
+          <IndicePagina indice={indice} rotulo={t.guia.nestaPagina} />
         </HeroModalidade>
 
-        <Campeonato provas={provas} corridas={corridas} pilotos={pilotos} equipas={equipas} bilheteiraAberta={bilheteiraAberta} />
+        <Campeonato provas={provas} corridas={corridas} pilotos={pilotos} equipas={equipas} bilheteiraAberta={bilheteiraAberta} textos={t} />
 
         <GuiaModalidade
           c={c}
           indice={indice}
-          nota={<NotaMotobox provas={provas.length} ancora="campeonato" />}
-          cabecalho={<CabecalhoGuia m={m} />}
+          textos={t.guia}
+          verificadoEm={t.campeonato.verificadoEm}
+          nota={<NotaMotobox provas={provas.length} ancora="campeonato" textos={t.modalidade.naMotobox} />}
+          cabecalho={<CabecalhoGuia m={m} t={t} />}
         />
-        <VoltarDesporto />
+        <VoltarDesporto t={t} />
       </PaginaInterior>
     </>
   );
 }
 
-/* ---------------- As outras seis: guia completo, e a competição quando a há ---------------- */
+/* ---------------- As outras: guia completo, e a competição quando a há ---------------- */
 
-function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteiraAberta }: Dados) {
+function PaginaModalidade({ m, c, t, eventos, corridas, pilotos, equipas, bilheteiraAberta }: Dados) {
   const agora = instante();
   const provas = eventosDaModalidade(m, eventos).filter((e) => eProva(e.disciplina));
   const proxima = provas.find((e) => new Date(e.dataInicio).getTime() > agora);
@@ -121,18 +127,24 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
   const seus = classificacaoPilotos(pilotos).filter((p) => m.categorias.includes(p.categoria));
   const cores = new Map(equipas.map((e) => [e.slug, e.cor]));
   const comProvas = provas.length > 0;
-  const indice = comProvas ? [{ id: "provas", nome: "Provas" }, ...SECCOES_GUIA] : SECCOES_GUIA;
+  const guia = seccoesGuia(c, t.guia);
+  const indice = comProvas ? [{ id: "provas", nome: t.modalidade.indiceProvas }, ...guia] : guia;
   const porDisputar = provas.filter((e) => new Date(e.dataInicio).getTime() > agora).length;
   const provincias = new Set(provas.map((e) => e.provincia)).size;
+  const valores = {
+    ano: TEMPORADA, campeonato: t.campeonato.nome, modalidade: m.nome, categorias: m.categorias.join(", "),
+  };
+  const tm = t.modalidade;
 
   return (
     <>
-      <SubNavDesporto modalidade={m.slug} seccoes={seccoesDaModalidade(m.slug, resultados.length > 0)} />
+      <SubNavDesporto modalidade={m.slug} nome={m.nome} principal={false} seccoes={seccoesDaModalidade(m.slug, resultados.length > 0)} />
       <PaginaInterior icone={<Trophy />}>
         {comProvas ? (
           <HeroModalidade
             m={m}
-            eyebrow={`Desporto · Temporada ${TEMPORADA}`}
+            eyebrow={preencher(tm.sobretituloCompeticao, valores)}
+            notaFoto={tm.notaFoto}
             numeros={[
               { valor: provas.length, label: provas.length === 1 ? "Prova" : "Provas" },
               { valor: porDisputar, label: "Por disputar" },
@@ -140,11 +152,11 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
               { valor: provincias, label: provincias === 1 ? "Província" : "Províncias" },
             ]}
           >
-            <IndicePagina indice={indice} />
+            <IndicePagina indice={indice} rotulo={t.guia.nestaPagina} />
           </HeroModalidade>
         ) : (
-          <HeroModalidade m={m} eyebrow="Desporto · Outras modalidades" numeros={c.numeros} conteudo>
-            <IndicePagina indice={indice} />
+          <HeroModalidade m={m} eyebrow={preencher(tm.sobretituloSemProvas, valores)} notaFoto={tm.notaFoto} numeros={c.numeros} conteudo>
+            <IndicePagina indice={indice} rotulo={t.guia.nestaPagina} />
           </HeroModalidade>
         )}
 
@@ -152,7 +164,7 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
           <>
             {proxima && (
               <Seccao className="!pt-0">
-                <ProximaProva e={proxima} bilheteiraAberta={bilheteiraAberta} />
+                <ProximaProva e={proxima} bilheteiraAberta={bilheteiraAberta} textos={t.proximaProva} />
               </Seccao>
             )}
 
@@ -160,9 +172,9 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
               <div className="grid grid-cols-[minmax(0,1fr)] gap-x-12 gap-y-14 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] xl:gap-x-16">
                 <div>
                   <TituloBloco
-                    sobretitulo={`Temporada ${TEMPORADA}`}
-                    titulo="Provas"
-                    accao={{ href: "/calendario", texto: "Calendário" }}
+                    sobretitulo={preencher(tm.provas.sobretitulo, valores)}
+                    titulo={tm.provas.titulo}
+                    accao={{ href: "/calendario", texto: tm.provas.ligacao }}
                   />
                   {/* As linhas são do calendário e trazem o seu intervalo. */}
                   <ol className="mt-8">
@@ -173,16 +185,13 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
                 </div>
                 <div>
                   <TituloBloco
-                    sobretitulo="Arquivo"
-                    titulo="Resultados"
-                    accao={resultados.length > 0 ? { href: `/desporto/${m.slug}/resultados`, texto: "Arquivo" } : undefined}
+                    sobretitulo={preencher(tm.resultados.sobretitulo, valores)}
+                    titulo={tm.resultados.titulo}
+                    accao={resultados.length > 0 ? { href: `/desporto/${m.slug}/resultados`, texto: tm.resultados.ligacao } : undefined}
                   />
                   <div className="mt-8">
                     {resultados.length === 0 ? (
-                      <Vazio
-                        titulo="Sem resultados publicados"
-                        texto="Os resultados aparecem aqui assim que a primeira corrida da temporada terminar."
-                      />
+                      <Vazio titulo={tm.resultados.vazioTitulo} texto={tm.resultados.vazioTexto} />
                     ) : (
                       <UltimosResultados corridas={resultados.slice(0, 3)} />
                     )}
@@ -194,9 +203,9 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
             {seus.length > 0 && (
               <Seccao className="!pt-0">
                 <TituloBloco
-                  sobretitulo={`Categoria ${m.categorias.join(", ")}`}
-                  titulo="Pilotos"
-                  accao={{ href: "/pilotos", texto: "Todos os pilotos" }}
+                  sobretitulo={preencher(tm.pilotos.sobretitulo, valores)}
+                  titulo={tm.pilotos.titulo}
+                  accao={{ href: "/pilotos", texto: tm.pilotos.ligacao }}
                 />
                 <div className="mt-8">
                   <FilaPilotos pilotos={seus} cores={cores} />
@@ -209,10 +218,12 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
         <GuiaModalidade
           c={c}
           indice={indice}
-          nota={<NotaMotobox provas={provas.length} />}
-          cabecalho={comProvas ? <CabecalhoGuia m={m} /> : undefined}
+          textos={t.guia}
+          verificadoEm={t.campeonato.verificadoEm}
+          nota={<NotaMotobox provas={provas.length} textos={tm.naMotobox} />}
+          cabecalho={comProvas ? <CabecalhoGuia m={m} t={t} /> : undefined}
         />
-        <VoltarDesporto />
+        <VoltarDesporto t={t} />
       </PaginaInterior>
     </>
   );
@@ -221,22 +232,22 @@ function PaginaModalidade({ m, c, eventos, corridas, pilotos, equipas, bilheteir
 /* ---------------- Peças ---------------- */
 
 /** Passagem da competição (dados da MotoBox) para o guia (texto com fontes). */
-function CabecalhoGuia({ m }: { m: Modalidade }) {
+function CabecalhoGuia({ m, t }: { m: ModalidadeCompleta; t: PaginaDesporto }) {
   return (
     <TituloBloco
       grande
       icone={<BookOpen />}
       sobretitulo={m.nome}
-      titulo="Conhecer a modalidade"
-      texto="O que é, as classes, a cena em Angola, os campeonatos de referência e como começar. Com fontes."
+      titulo={t.modalidade.guiaTitulo}
+      texto={t.modalidade.guiaTexto}
     />
   );
 }
 
-function VoltarDesporto() {
+function VoltarDesporto({ t }: { t: PaginaDesporto }) {
   return (
     <Seccao className="!pt-0">
-      <Voltar href="/desporto">Todos os desportos</Voltar>
+      <Voltar href="/desporto">{t.modalidade.voltar}</Voltar>
     </Seccao>
   );
 }

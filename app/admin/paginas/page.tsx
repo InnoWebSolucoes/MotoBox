@@ -1,184 +1,24 @@
-"use client";
+import { redirect } from "next/navigation";
+import { DOCS } from "@/lib/conteudo/registo";
+import { IndicePaginas } from "./_editor/Indice";
+import { EditorPagina, EDITORES } from "./_editor/EditorPagina";
+import { DESTINOS } from "./_editor/destinos";
 
-import { useState } from "react";
-import { useAdmin, slugify } from "@/lib/admin/store";
-import { formatDataCurta } from "@/lib/data";
-import {
-  CabecalhoPagina, Painel, Campo, Input, Area, Estado, Interruptor,
-  useAviso, Confirmar,
-} from "@/components/admin/kit";
-import type { PaginaLegal } from "@/lib/admin/types";
-import { comBase } from "@/lib/base";
+/* ============================================================
+   MOTOBOX ADMIN — Páginas
+   Sem parâmetros: a lista de todas as páginas do site.
+   Com ?doc=<chave>: o editor dessa página. Um documento que se
+   edita noutra secção (ex.: a entrada de Clubes) segue para lá.
+   ============================================================ */
 
-export default function AdminPaginas() {
-  const { estado, criar, atualizar, remover } = useAdmin();
-  const { mostrar, elemento } = useAviso();
+export default async function AdminPaginas({ searchParams }: { searchParams: Promise<{ doc?: string }> }) {
+  const { doc } = await searchParams;
+  if (!doc) return <IndicePaginas />;
 
-  const [activa, setActiva] = useState<string>(estado.paginasLegais[0]?.slug ?? "");
-  const [aApagar, setAApagar] = useState<PaginaLegal | null>(null);
+  const destino = DESTINOS[doc];
+  if (destino && !EDITORES[doc] && !destino.href.startsWith("/admin/paginas")) redirect(destino.href);
+  if (!DOCS.has(doc)) redirect("/admin/paginas");
 
-  const pagina = estado.paginasLegais.find((p) => p.slug === activa);
-
-  const definir = (campos: Partial<PaginaLegal>) => {
-    if (!pagina) return;
-    atualizar("paginasLegais", pagina.slug, {
-      ...campos,
-      atualizado: new Date().toISOString().slice(0, 10),
-    });
-  };
-
-  const novaPagina = async () => {
-    const slug = `pagina-${Date.now().toString(36).slice(-4)}`;
-    const falha = await criar("paginasLegais", {
-      slug, titulo: "Nova página", descricao: "",
-      atualizado: new Date().toISOString().slice(0, 10),
-      publicado: false,
-      seccoes: [{ titulo: "1. Secção", corpo: ["Texto da secção."] }],
-    } as unknown as Record<string, unknown>);
-    if (falha) { mostrar(falha, "erro"); return; }
-    setActiva(slug);
-    mostrar("Página criada.");
-  };
-
-  return (
-    <>
-      <CabecalhoPagina
-        titulo="Páginas legais"
-        descricao="Termos e condições, privacidade, cookies e regulamento da comunidade."
-        accoes={
-          <button type="button" onClick={novaPagina}
-            className="h-10 bg-mb-red px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark">
-            Nova página
-          </button>
-        }
-      />
-
-      <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
-        {/* Lista de páginas */}
-        <nav className="border border-ink-700/60 bg-ink-900">
-          <ul>
-            {estado.paginasLegais.map((p) => (
-              <li key={p.slug}>
-                <button type="button" onClick={() => setActiva(p.slug)}
-                  className={`flex w-full items-center gap-2 border-l-2 px-3 py-2.5 text-left text-sm transition-colors ${
-                    p.slug === activa
-                      ? "border-mb-red bg-mb-red/10 text-white"
-                      : "border-transparent text-ink-300 hover:bg-ink-850 hover:text-white"
-                  }`}>
-                  <span className="min-w-0 flex-1 truncate">{p.titulo}</span>
-                  <span className={`size-1.5 shrink-0 rounded-full ${p.publicado ? "bg-ok" : "bg-ink-600"}`}
-                    title={p.publicado ? "Publicada" : "Rascunho"} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* Editor */}
-        {pagina ? (
-          <div className="space-y-4">
-            <Painel
-              titulo={pagina.titulo}
-              descricao={`/${pagina.slug} · atualizada em ${formatDataCurta(pagina.atualizado)}`}
-              accoes={
-                <>
-                  <a href={comBase(`/${pagina.slug}`)} target="_blank" rel="noreferrer"
-                    className="border border-ink-600 px-3 py-1.5 font-display text-[11px] uppercase tracking-wider text-white transition-colors hover:border-mb-red">
-                    Pré-visualizar
-                  </a>
-                  <button type="button" onClick={() => setAApagar(pagina)}
-                    className="border border-ink-700 px-3 py-1.5 font-display text-[11px] uppercase tracking-wider text-ink-400 transition-colors hover:border-mb-red hover:text-white">
-                    Apagar
-                  </button>
-                </>
-              }
-            >
-              <div className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Campo etiqueta="Título">
-                    <Input value={pagina.titulo} onChange={(e) => definir({ titulo: e.target.value })} />
-                  </Campo>
-                  <Campo etiqueta="Endereço da página">
-                    <Input value={`/${pagina.slug}`} disabled />
-                  </Campo>
-                </div>
-                <Campo etiqueta="Descrição" ajuda="Usada nos metadados e no cabeçalho da página.">
-                  <Area rows={2} value={pagina.descricao} onChange={(e) => definir({ descricao: e.target.value })} />
-                </Campo>
-                <Interruptor
-                  activo={pagina.publicado}
-                  etiqueta="Página publicada"
-                  descricao="Quando desligada, a página deixa de estar acessível no site público."
-                  onChange={(v) => { definir({ publicado: v }); mostrar(v ? "Página publicada." : "Página despublicada."); }}
-                />
-              </div>
-            </Painel>
-
-            <Painel titulo="Secções" descricao="Cada secção é um bloco com título e parágrafos.">
-              <div className="space-y-4">
-                {pagina.seccoes.map((s, i) => (
-                  <div key={i} className="border border-ink-700 bg-ink-950 p-3">
-                    <div className="mb-2 flex items-center gap-2">
-                      <Input value={s.titulo} aria-label={`Título da secção ${i + 1}`}
-                        onChange={(e) => definir({
-                          seccoes: pagina.seccoes.map((x, j) => j === i ? { ...x, titulo: e.target.value } : x),
-                        })} />
-                      <button type="button" aria-label="Mover para cima" disabled={i === 0}
-                        onClick={() => {
-                          const l = [...pagina.seccoes];
-                          [l[i - 1], l[i]] = [l[i], l[i - 1]];
-                          definir({ seccoes: l });
-                        }}
-                        className="border border-ink-700 px-2 py-2 text-ink-400 transition-colors hover:text-white disabled:opacity-30">↑</button>
-                      <button type="button" aria-label="Mover para baixo" disabled={i === pagina.seccoes.length - 1}
-                        onClick={() => {
-                          const l = [...pagina.seccoes];
-                          [l[i], l[i + 1]] = [l[i + 1], l[i]];
-                          definir({ seccoes: l });
-                        }}
-                        className="border border-ink-700 px-2 py-2 text-ink-400 transition-colors hover:text-white disabled:opacity-30">↓</button>
-                      <button type="button" aria-label="Remover secção"
-                        onClick={() => definir({ seccoes: pagina.seccoes.filter((_, j) => j !== i) })}
-                        className="border border-ink-700 px-2 py-2 text-ink-400 transition-colors hover:border-mb-red hover:text-white">×</button>
-                    </div>
-                    <Area rows={4} value={s.corpo.join("\n\n")}
-                      aria-label={`Corpo da secção ${i + 1}`}
-                      placeholder="Um parágrafo por linha em branco."
-                      onChange={(e) => definir({
-                        seccoes: pagina.seccoes.map((x, j) => j === i ? { ...x, corpo: e.target.value.split(/\n\s*\n/) } : x),
-                      })} />
-                  </div>
-                ))}
-                <button type="button"
-                  onClick={() => definir({ seccoes: [...pagina.seccoes, { titulo: `${pagina.seccoes.length + 1}. Nova secção`, corpo: [""] }] })}
-                  className="border border-ink-600 px-4 py-2 font-display text-[11px] uppercase tracking-wider text-white transition-colors hover:border-mb-red">
-                  Juntar secção
-                </button>
-              </div>
-            </Painel>
-          </div>
-        ) : (
-          <Painel><p className="py-10 text-center text-sm text-ink-500">Selecione uma página.</p></Painel>
-        )}
-      </div>
-
-      <Confirmar
-        aberta={aApagar !== null}
-        aoFechar={() => setAApagar(null)}
-        aoConfirmar={() => {
-          if (aApagar) {
-            remover("paginasLegais", aApagar.slug);
-            setActiva(estado.paginasLegais.find((p) => p.slug !== aApagar.slug)?.slug ?? "");
-            mostrar("Página apagada.");
-          }
-        }}
-        titulo="Apagar página"
-        mensagem="A página legal será removida e deixará de estar acessível no site."
-        textoConfirmar="Apagar"
-        perigo
-      />
-
-      {elemento}
-    </>
-  );
+  const def = DOCS.get(doc);
+  return <EditorPagina key={doc} chave={doc} titulo={def?.titulo} pagina={def?.pagina} />;
 }

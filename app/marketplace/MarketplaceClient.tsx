@@ -7,14 +7,9 @@ import { SeloVerificado } from "@/components/SeloVerificado";
 import { Foto, Seta } from "@/components/painel/kit";
 import { formatKz } from "@/lib/data";
 import type { AnuncioMarketplace } from "@/lib/types";
+import { MARKETPLACE_PADRAO, type ConteudoMarketplace } from "@/lib/conteudo/grupos/comunidade";
 
 const CATEGORIAS = ["Todas", "Motas", "Peças", "Equipamento", "Acessórios"] as const;
-const ORDENS = [
-  { id: "recentes", label: "Mais recentes" },
-  { id: "preco-asc", label: "Preço: menor primeiro" },
-  { id: "preco-desc", label: "Preço: maior primeiro" },
-  { id: "vistos", label: "Mais vistos" },
-] as const;
 
 const dataCurta = (iso: string) => {
   const [, m, d] = iso.slice(0, 10).split("-");
@@ -22,7 +17,20 @@ const dataCurta = (iso: string) => {
   return `${Number(d)} ${MESES[Number(m) - 1] ?? ""}`;
 };
 
-export function MarketplaceClient({ anuncios }: { anuncios: AnuncioMarketplace[] }) {
+export function MarketplaceClient({
+  anuncios,
+  textos: t = MARKETPLACE_PADRAO.lista,
+}: {
+  anuncios: AnuncioMarketplace[];
+  /** Textos da lista, editáveis no painel (paginas.marketplace). */
+  textos?: ConteudoMarketplace["lista"];
+}) {
+  const ORDENS = [
+    { id: "recentes", label: t.recentes },
+    { id: "preco-asc", label: t.precoMenor },
+    { id: "preco-desc", label: t.precoMaior },
+    { id: "vistos", label: t.maisVistos },
+  ];
   const [categoria, setCategoria] = useState<string>("Todas");
   const [provincia, setProvincia] = useState("Todas");
   const [ordem, setOrdem] = useState<string>("recentes");
@@ -64,14 +72,14 @@ export function MarketplaceClient({ anuncios }: { anuncios: AnuncioMarketplace[]
         <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1">
           {CATEGORIAS.map((c) => (
             <button key={c} type="button" onClick={() => setCategoria(c)} aria-pressed={categoria === c} className="pilula">
-              {c}
+              {c === "Todas" ? t.todas : c}
             </button>
           ))}
         </div>
         <div className="grid gap-2 sm:grid-cols-[1fr_1fr_1.3fr] xl:w-[38rem]">
           <select value={provincia} onChange={(e) => setProvincia(e.target.value)} aria-label="Filtrar por província" className="campo h-10 text-sm">
             {provincias.map((p) => (
-              <option key={p} value={p}>{p === "Todas" ? "Todas as províncias" : p}</option>
+              <option key={p} value={p}>{p === "Todas" ? t.todasProvincias : p}</option>
             ))}
           </select>
           <select value={ordem} onChange={(e) => setOrdem(e.target.value)} aria-label="Ordenar" className="campo h-10 text-sm">
@@ -85,7 +93,7 @@ export function MarketplaceClient({ anuncios }: { anuncios: AnuncioMarketplace[]
             <input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              placeholder="Marca, modelo..."
+              placeholder={t.procurar}
               className="campo h-10 pl-10 text-sm"
             />
           </label>
@@ -93,7 +101,7 @@ export function MarketplaceClient({ anuncios }: { anuncios: AnuncioMarketplace[]
       </div>
 
       <p className="mt-6 text-sm text-white/55" aria-live="polite">
-        {filtrados.length} {filtrados.length === 1 ? "anúncio" : "anúncios"}
+        {filtrados.length} {filtrados.length === 1 ? t.umAnuncio : t.variosAnuncios}
       </p>
 
       {filtrados.length ? (
@@ -116,7 +124,7 @@ export function MarketplaceClient({ anuncios }: { anuncios: AnuncioMarketplace[]
               <div className="flex flex-1 flex-col p-4 pt-5">
                 <p className="text-2xl font-semibold tabular-nums tracking-tight">{formatKz(a.preco)}</p>
                 <p className="mt-1 text-xs text-white/55">
-                  {a.negociavel ? "Negociável" : "Preço fixo"} · {dataCurta(a.publicado)}
+                  {a.negociavel ? t.negociavel : t.precoFixo} · {dataCurta(a.publicado)}
                 </p>
                 <h2 className="mt-3 line-clamp-2 text-[15px] font-medium leading-snug">{a.titulo}</h2>
                 <div className="mt-auto flex items-center justify-between gap-3 pt-5 text-xs text-white/55">
@@ -136,8 +144,8 @@ export function MarketplaceClient({ anuncios }: { anuncios: AnuncioMarketplace[]
         </div>
       ) : (
         <div className="painel painel-escuro mt-4 p-10">
-          <p className="text-lg font-semibold">Nenhum anúncio encontrado</p>
-          <p className="mt-2 text-sm text-white/60">Alargue os filtros ou tente outra pesquisa.</p>
+          <p className="text-lg font-semibold">{t.vazioTitulo}</p>
+          <p className="mt-2 text-sm text-white/60">{t.vazioTexto}</p>
         </div>
       )}
     </>

@@ -15,10 +15,13 @@ import { CartaoPiloto } from "./CartaoPiloto";
 export function PilotosClient({
   pilotos: originais,
   cores,
+  ordemCategorias,
 }: {
   pilotos: (Piloto & { posicao: number })[];
   /** Cor de cada equipa, por slug. */
   cores: Record<string, string>;
+  /** Ordem das categorias (Modalidades › Página Desporto); por omissão, a do código. */
+  ordemCategorias?: string[];
 }) {
   const pilotos = useConteudo(originais, ["bio"]);
   const { t } = useIdioma();
@@ -27,7 +30,7 @@ export function PilotosClient({
   const [busca, setBusca] = useState("");
 
   // Só as categorias com pilotos, pela ordem de sempre (MX1, MX2, Rally / Enduro, Velocidade, Moto 4, Karting).
-  const categorias = useMemo(() => categoriasComPilotos(pilotos), [pilotos]);
+  const categorias = useMemo(() => categoriasComPilotos(pilotos, ordemCategorias), [pilotos, ordemCategorias]);
 
   const provincias = useMemo(
     () =>

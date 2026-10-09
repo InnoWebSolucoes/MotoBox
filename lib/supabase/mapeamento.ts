@@ -89,12 +89,10 @@ export function daBase<T>(coleccao: ColeccaoNome, linha: Record<string, unknown>
     saida[nome] = valor;
   }
 
-  // O campo booleano `publicado` das outras tabelas não existe nos
-  // tipos públicos da app — é usado só para filtrar leituras.
-  if (coleccao !== "anuncios" && coleccao !== "paginasLegais") {
-    delete saida.publicado;
-  }
-
+  // O campo booleano `publicado` das outras tabelas fica: o painel de
+  // gestão precisa dele para mostrar o que está fora do site. As leituras
+  // públicas (chave anónima) só recebem linhas publicadas, por isso no
+  // site vale sempre true.
   return saida as T;
 }
 

@@ -8,6 +8,7 @@ import { hrefEvento, instante, vendaBilhetes } from "@/lib/desporto";
 import { intervaloDatas } from "@/lib/motobox";
 import { lerDefinicoes, lerEventos } from "@/lib/supabase/publico";
 import { Aviso, Etiqueta } from "@/app/calendario/pecas";
+import { fotoDe } from "@/app/eventos/foto";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -90,7 +91,7 @@ export default async function BilhetesPage() {
               >
                 {/* Fotografia, com a ronda e a disciplina por cima */}
                 <div className="relative">
-                  <Foto nome={[e.slug, e.imagem]} className="h-full min-h-56 sm:min-h-72" largura={1000} tamanhos="(max-width: 1024px) 100vw, 40vw" />
+                  <Foto nome={fotoDe(e.slug, e.imagem)} className="h-full min-h-56 sm:min-h-72" largura={1000} tamanhos="(max-width: 1024px) 100vw, 40vw" />
                   <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
                     {e.ronda && <Etiqueta tom="vermelho">Ronda {e.ronda}</Etiqueta>}
                     <Etiqueta tom="vidro">{e.disciplina}</Etiqueta>

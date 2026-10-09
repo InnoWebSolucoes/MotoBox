@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Clube, Evento, Noticia } from "@/lib/types";
 import { dataArtigo, diaMes, intervaloDatas, localClube, tipoEvento } from "@/lib/motobox";
 import { Foto, FotoFundo, Monograma, Seta } from "./kit";
+import { fotoDe } from "@/app/eventos/foto";
 
 /* ============================================================
    MOTOBOX — Cartões
@@ -17,7 +18,7 @@ export function CartaoArtigo({ artigo, grande = false }: { artigo: Noticia; gran
         href={`/artigos/${artigo.slug}`}
         className="painel group relative flex min-h-[26rem] flex-col justify-end p-6 md:p-10 lg:min-h-[32rem]"
       >
-        <FotoFundo nome={[artigo.slug, artigo.imagem]} veu="esquerda" tamanhos="(max-width: 1024px) 100vw, 75vw" />
+        <FotoFundo nome={fotoDe(artigo.slug, artigo.imagem)} veu="esquerda" tamanhos="(max-width: 1024px) 100vw, 75vw" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 to-transparent" aria-hidden />
         <p className="text-sm text-white/80">
           {artigo.categoria} · {dataArtigo(artigo.data)}
@@ -34,7 +35,7 @@ export function CartaoArtigo({ artigo, grande = false }: { artigo: Noticia; gran
 
   return (
     <Link href={`/artigos/${artigo.slug}`} className="painel painel-escuro group flex flex-col p-[var(--intervalo)]">
-      <Foto nome={[artigo.slug, artigo.imagem]} className="aspect-[16/10]" largura={800} tamanhos="(max-width: 768px) 100vw, 33vw" />
+      <Foto nome={fotoDe(artigo.slug, artigo.imagem)} className="aspect-[16/10]" largura={800} tamanhos="(max-width: 768px) 100vw, 33vw" />
       <div className="flex flex-1 flex-col p-4 pt-5 md:p-5">
         <p className="text-[0.8125rem] text-white/60">
           <span className="text-mb-red-light">{artigo.categoria}</span> · {dataArtigo(artigo.data)}
@@ -96,7 +97,7 @@ export function CartaoEvento({ evento }: { evento: Evento }) {
         <h3 className="mt-1.5 text-lg font-semibold leading-snug md:text-xl">{evento.titulo}</h3>
         <p className="mt-1 text-sm text-white/60">{intervaloDatas(evento.dataInicio, evento.dataFim)}</p>
       </div>
-      <Foto nome={[evento.slug, evento.imagem]} className="hidden md:block" largura={600} tamanhos="14rem" />
+      <Foto nome={fotoDe(evento.slug, evento.imagem)} className="hidden md:block" largura={600} tamanhos="14rem" />
     </Link>
   );
 }

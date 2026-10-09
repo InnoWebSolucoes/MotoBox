@@ -11,6 +11,15 @@ export type Bi = { pt: string; en: string };
 
 const b = (pt: string, en: string): Bi => ({ pt, en });
 
+/* ---------------- Fotografias da página ---------------- */
+
+/** Chave de fotografia do site (lib/imagens.ts) ou endereço de uma imagem carregada. */
+export const FOTOS = {
+  abertura: "banner-seguranca",
+  capacete: "artigo-capacete",
+  visibilidade: "noite",
+};
+
 /* ---------------- Navegação da página ---------------- */
 
 export const SECCOES: { id: string; nome: Bi }[] = [
@@ -669,7 +678,7 @@ export const HISTORIAS = {
     "A near miss, a lesson learned, something that saved the day. Share it on the Forum or write to us: with your permission, we may publish it here.",
   ),
   forum: b("Contar no Fórum", "Share on the Forum"),
-  contacto: b("Escrever à Motobox", "Write to Motobox"),
+  contacto: b("Escrever à MotoBox", "Write to MotoBox"),
 };
 
 /* ---------------- Fontes ---------------- */

@@ -11,9 +11,23 @@ import { C } from "@/components/T";
 import { Abertura, BotaoMB, Numeros, Seccao } from "@/components/painel/blocos";
 import { Chip, FotoFundo, Seta } from "@/components/painel/kit";
 import { formatData } from "@/lib/data";
-import { vendaBilhetes, type Modalidade } from "@/lib/desporto";
+import { retratoDe, vendaBilhetes, type Modalidade } from "@/lib/desporto";
+import type { PaginaDesporto } from "@/lib/conteudo/grupos/desporto";
 import type { Corrida, Evento, Piloto } from "@/lib/types";
 import { Contagem } from "./Contagem";
+import { fotoDe } from "@/app/eventos/foto";
+
+/**
+ * Um texto com um valor no meio ("Ronda {ronda}" → "Ronda " e 1), em nós de
+ * texto separados, como estava escrito à mão: a tradução automática da
+ * página continua a encontrar a palavra.
+ */
+export function comValor(modelo: string, chave: string, valor: ReactNode): ReactNode {
+  const [antes, ...resto] = modelo.split(`{${chave}}`);
+  if (resto.length === 0) return modelo;
+  const depois = resto.join(String(valor));
+  return <>{antes}{valor}{depois || null}</>;
+}
 
 export function iniciais(nome: string) {
   return nome.split(" ").map((p) => p[0]).slice(0, 2).join("");
@@ -133,6 +147,7 @@ export function HeroModalidade({
   eyebrow,
   numeros,
   conteudo = false,
+  notaFoto = "Fotografia ilustrativa.",
   children,
 }: {
   m: Modalidade;
@@ -140,6 +155,8 @@ export function HeroModalidade({
   numeros: { valor: number | string; label: string }[];
   /** Números do guia (texto a traduzir), não contagens da base. */
   conteudo?: boolean;
+  /** Nota por baixo dos números (Modalidades › Página Desporto). Vazia, não aparece. */
+  notaFoto?: string;
   children?: ReactNode;
 }) {
   return (
@@ -156,7 +173,7 @@ export function HeroModalidade({
           />
         )}
         {children}
-        <p className="mt-6 text-xs text-white/45">Fotografia ilustrativa.</p>
+        {notaFoto && <p className="mt-6 text-xs text-white/45">{notaFoto}</p>}
       </Seccao>
     </>
   );
@@ -165,16 +182,23 @@ export function HeroModalidade({
 /* ---------------- Competição ---------------- */
 
 /** Próxima prova em destaque, com contagem decrescente e bilhetes (quando `vendaBilhetes` o diz). */
-export function ProximaProva({ e, bilheteiraAberta }: { e: Evento; bilheteiraAberta: boolean }) {
+/** Textos de partida da próxima prova (os editados vêm de paginas.desporto → proximaProva). */
+const PROXIMA_PADRAO: PaginaDesporto["proximaProva"] = {
+  etiqueta: "Próxima prova", ronda: "Ronda {ronda}", bilhetes: "Bilhetes", detalhes: "Ver detalhes", comecaEm: "Começa em",
+};
+
+export function ProximaProva({
+  e, bilheteiraAberta, textos = PROXIMA_PADRAO,
+}: { e: Evento; bilheteiraAberta: boolean; textos?: PaginaDesporto["proximaProva"] }) {
   return (
     <div className="painel relative isolate overflow-hidden">
-      <FotoFundo nome={[e.slug, e.imagem]} veu="esquerda" tamanhos="(max-width: 1024px) 100vw, 80vw" />
+      <FotoFundo nome={fotoDe(e.slug, e.imagem)} veu="esquerda" tamanhos="(max-width: 1024px) 100vw, 80vw" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/20 to-transparent" aria-hidden />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-10 p-6 pt-8 md:p-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-end lg:p-12">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <Etiqueta tom="vermelho">Próxima prova</Etiqueta>
-            {e.ronda ? <Etiqueta>Ronda {e.ronda}</Etiqueta> : null}
+            <Etiqueta tom="vermelho">{textos.etiqueta}</Etiqueta>
+            {e.ronda ? <Etiqueta>{comValor(textos.ronda, "ronda", e.ronda)}</Etiqueta> : null}
           </div>
           <h2 className="titulo-2 mt-6 max-w-[18ch] text-balance">{e.titulo}</h2>
           <p className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-[15px] text-white/85">
@@ -190,16 +214,16 @@ export function ProximaProva({ e, bilheteiraAberta }: { e: Evento; bilheteiraAbe
           <div className="mt-8 flex flex-wrap gap-[var(--intervalo)]">
             {vendaBilhetes(e, bilheteiraAberta) === "a-venda" && (
               <BotaoMB href={`/bilhetes/${e.slug}`} className="sm:w-56">
-                Bilhetes
+                {textos.bilhetes}
               </BotaoMB>
             )}
             <BotaoMB href={`/calendario/${e.slug}`} variante="escuro" className="!bg-black/50 backdrop-blur-md hover:!bg-black/70 sm:w-56">
-              Ver detalhes
+              {textos.detalhes}
             </BotaoMB>
           </div>
         </div>
         <div>
-          <p className="text-sm text-white/70">Começa em</p>
+          <p className="text-sm text-white/70">{textos.comecaEm}</p>
           <Contagem data={e.dataInicio} className="mt-3" />
         </div>
       </div>
@@ -255,7 +279,7 @@ export function FilaPilotos({ pilotos, cores }: { pilotos: (Piloto & { posicao?:
             <Link href={`/pilotos/${p.slug}`} className="painel painel-escuro group flex h-full flex-col p-[var(--intervalo)]">
               <div className="relative aspect-[3/4] overflow-hidden rounded-[var(--raio)]">
                 <Retrato
-                  nome={p.slug}
+                  nome={retratoDe(p)}
                   iniciais={iniciais(p.nome)}
                   cor={cores.get(p.equipaSlug)}
                   className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
@@ -310,7 +334,7 @@ export function ArquivoCorridas({ corridas }: { corridas: Corrida[] }) {
                   className="painel painel-escuro grid grid-cols-[minmax(0,1fr)] gap-[var(--intervalo)] p-[var(--intervalo)] lg:grid-cols-[19rem_minmax(0,1fr)]"
                 >
                   <div className="group relative isolate flex min-h-[15rem] flex-col justify-end overflow-hidden rounded-[var(--raio)] p-5">
-                    <FotoFundo nome={[c.slug, c.imagem]} veu="baixo" largura={800} tamanhos="(max-width: 1024px) 100vw, 304px" />
+                    <FotoFundo nome={fotoDe(c.slug, c.imagem)} veu="baixo" largura={800} tamanhos="(max-width: 1024px) 100vw, 304px" />
                     <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-black/45 to-black/0" aria-hidden />
                     <div className="flex flex-wrap gap-2">
                       {c.ronda > 0 && <Etiqueta tom="vermelho">Ronda {c.ronda}</Etiqueta>}
@@ -377,20 +401,27 @@ export function ArquivoCorridas({ corridas }: { corridas: Corrida[] }) {
  * Sem provas, fica a nota (e o convite a organizadores) dentro de uma página
  * com conteúdo, nunca a página inteira.
  */
-export function NotaMotobox({ provas, ancora = "provas" }: { provas: number; ancora?: string }) {
+export function NotaMotobox({
+  provas, ancora = "provas", textos = NOTA_PADRAO,
+}: {
+  provas: number;
+  ancora?: string;
+  /** Textos da caixa (paginas.desporto → modalidade.naMotobox). */
+  textos?: PaginaDesporto["modalidade"]["naMotobox"];
+}) {
   if (provas > 0) {
     return (
       <div className="painel painel-escuro p-6">
-        <p className="text-sm text-mb-red-light">Na MotoBox</p>
+        <p className="text-sm text-mb-red-light">{textos.titulo}</p>
         <p className="mt-3 flex items-baseline gap-2">
           <span className="text-4xl font-semibold leading-none tabular-nums">{provas}</span>
           <span className="text-sm text-white/65">{provas === 1 ? "prova" : "provas"}</span>
         </p>
         <p className="mt-3 text-sm leading-relaxed text-white/70">
-          O calendário, os resultados e os pilotos desta modalidade estão no topo da página.
+          {textos.comProvasTexto}
         </p>
         <a href={`#${ancora}`} className="group mt-5 inline-flex items-center gap-2 text-sm text-white">
-          <span className="sublinhado">Ver provas e resultados</span>
+          <span className="sublinhado">{textos.comProvasLigacao}</span>
           <Seta className="size-3" />
         </a>
       </div>
@@ -398,16 +429,25 @@ export function NotaMotobox({ provas, ancora = "provas" }: { provas: number; anc
   }
   return (
     <div className="painel painel-escuro p-6">
-      <p className="text-sm text-mb-red-light">Na MotoBox</p>
-      <p className="mt-3 text-[15px] font-semibold leading-snug">Sem provas no calendário da MotoBox por agora</p>
+      <p className="text-sm text-mb-red-light">{textos.titulo}</p>
+      <p className="mt-3 text-[15px] font-semibold leading-snug">{textos.semProvasTitulo}</p>
       <p className="mt-2 text-sm leading-relaxed text-white/70">
-        Quando um clube, uma associação ou a federação publicar provas desta modalidade na MotoBox, o calendário, os
-        resultados e os pilotos aparecem nesta página.
+        {textos.semProvasTexto}
       </p>
       <Link href="/contacto" className="group mt-5 inline-flex items-center gap-2 text-sm text-white">
-        <span className="sublinhado">Organiza provas? Fale connosco</span>
+        <span className="sublinhado">{textos.semProvasLigacao}</span>
         <Seta className="size-3" />
       </Link>
     </div>
   );
 }
+
+const NOTA_PADRAO: PaginaDesporto["modalidade"]["naMotobox"] = {
+  titulo: "Na MotoBox",
+  comProvasTexto: "O calendário, os resultados e os pilotos desta modalidade estão no topo da página.",
+  comProvasLigacao: "Ver provas e resultados",
+  semProvasTitulo: "Sem provas no calendário da MotoBox por agora",
+  semProvasTexto:
+    "Quando um clube, uma associação ou a federação publicar provas desta modalidade na MotoBox, o calendário, os resultados e os pilotos aparecem nesta página.",
+  semProvasLigacao: "Organiza provas? Fale connosco",
+};

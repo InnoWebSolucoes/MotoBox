@@ -1,21 +1,33 @@
 "use client";
 
+/* ============================================================
+   MOTOBOX ADMIN — Mensagens
+   O que chega pelo formulário de /contacto. Abrir marca como
+   lida; a resposta segue por email (com a mensagem original
+   citada) e fica guardada na mensagem. Arquivar tira-a da
+   caixa de entrada sem a apagar.
+   ============================================================ */
+
 import { useMemo, useState } from "react";
+import { Archive, ArchiveRestore, Inbox, Mail, Phone, Send, Trash2 } from "lucide-react";
 import { useAdmin } from "@/lib/admin/store";
-import { formatDataCurta } from "@/lib/data";
 import {
-  CabecalhoPagina, Painel, Ferramentas, Procura, Seleccao, Estatistica,
-  Gaveta, Campo, Area, useAviso, Confirmar,
+  Abas, Area, Botao, CabecalhoPagina, Campo, Confirmar, Estatistica, Etiqueta, Ferramentas, Gaveta,
+  Painel, Procura, Vazio, useAviso, usePaginacao,
 } from "@/components/admin/kit";
 import type { Mensagem } from "@/lib/admin/types";
 import { comBase } from "@/lib/base";
+import { dataCurta, dataHora, haQuanto } from "../moderacao/_comum/formato";
+import { Avatar, Ficha } from "../moderacao/_comum/partes";
+
+type Vista = "entrada" | "porler" | "arquivo" | "todas";
 
 export default function AdminMensagens() {
   const { estado, atualizar, remover, registar } = useAdmin();
   const { mostrar, elemento } = useAviso();
 
   const [procura, setProcura] = useState("");
-  const [vista, setVista] = useState("entrada");
+  const [vista, setVista] = useState<Vista>("entrada");
   const [aberta, setAberta] = useState<Mensagem | null>(null);
   const [resposta, setResposta] = useState("");
   const [aApagar, setAApagar] = useState<Mensagem | null>(null);
@@ -33,17 +45,19 @@ export default function AdminMensagens() {
       })
       .sort((a, b) => b.recebido.localeCompare(a.recebido));
   }, [estado.mensagens, procura, vista]);
+  const { fatia, controlos } = usePaginacao(filtradas, 20);
 
   const contagem = useMemo(() => ({
     porLer: estado.mensagens.filter((m) => !m.lida && !m.arquivada).length,
     entrada: estado.mensagens.filter((m) => !m.arquivada).length,
     arquivo: estado.mensagens.filter((m) => m.arquivada).length,
+    respondidas: estado.mensagens.filter((m) => m.respondidaEm).length,
   }), [estado.mensagens]);
 
   const abrir = (m: Mensagem) => {
     setAberta(m);
     setResposta(m.resposta ?? "");
-    if (!m.lida) atualizar("mensagens", m.id, { lida: true });
+    if (!m.lida) void atualizar("mensagens", m.id, { lida: true });
   };
 
   /** Só guarda o texto, sem enviar: serve de rascunho. */
@@ -77,121 +91,148 @@ export default function AdminMensagens() {
     }
   };
 
-  const arquivar = (m: Mensagem, valor: boolean) => {
-    atualizar("mensagens", m.id, { arquivada: valor });
-    mostrar(valor ? "Mensagem arquivada." : "Mensagem reposta na entrada.");
-    setAberta(null);
+  const arquivar = async (m: Mensagem, valor: boolean) => {
+    const falha = await atualizar("mensagens", m.id, { arquivada: valor });
+    mostrar(falha ?? (valor ? "Mensagem arquivada." : "Mensagem reposta na caixa de entrada."), falha ? "erro" : "ok");
+    if (!falha) setAberta(null);
+  };
+
+  const marcarLida = async (m: Mensagem, lida: boolean) => {
+    const falha = await atualizar("mensagens", m.id, { lida });
+    if (falha) mostrar(falha, "erro");
   };
 
   return (
     <>
       <CabecalhoPagina
         titulo="Mensagens"
-        descricao="Pedidos recebidos pelo formulário de contacto do site."
+        sobretitulo="Comunidade"
+        icone={<Mail />}
+        descricao="O que chega pelo formulário de contacto do site. Responda daqui: a resposta segue por email para quem escreveu."
       />
 
-      <div className="mb-6 grid grid-cols-3 gap-3">
-        <Estatistica rotulo="Por ler" valor={contagem.porLer} tom={contagem.porLer ? "red" : "neutral"} />
-        <Estatistica rotulo="Caixa de entrada" valor={contagem.entrada} />
-        <Estatistica rotulo="Arquivadas" valor={contagem.arquivo} />
+      <div className="mb-[var(--intervalo)] grid grid-cols-2 gap-[var(--intervalo)] lg:grid-cols-4">
+        <Estatistica rotulo="Por ler" valor={contagem.porLer} tom={contagem.porLer ? "red" : "neutral"} icone={<Inbox />} />
+        <Estatistica rotulo="Na caixa de entrada" valor={contagem.entrada} icone={<Mail />} />
+        <Estatistica rotulo="Respondidas por email" valor={contagem.respondidas} tom="ok" icone={<Send />} />
+        <Estatistica rotulo="Arquivadas" valor={contagem.arquivo} icone={<Archive />} />
       </div>
 
       <Painel>
-        <Ferramentas>
-          <Procura valor={procura} onChange={setProcura} placeholder="Nome, assunto ou conteúdo…" />
-          <Seleccao valor={vista} onChange={setVista} aria-label="Vista"
-            opcoes={[
-              { valor: "entrada", nome: "Caixa de entrada" },
-              { valor: "porler", nome: "Por ler" },
-              { valor: "arquivo", nome: "Arquivo" },
-              { valor: "", nome: "Todas" },
+        <div className="mb-4">
+          <Abas<Vista>
+            rotulo="Pastas"
+            activa={vista}
+            onChange={setVista}
+            abas={[
+              { chave: "entrada", nome: "Caixa de entrada", contador: contagem.entrada },
+              { chave: "porler", nome: "Por ler", contador: contagem.porLer },
+              { chave: "arquivo", nome: "Arquivo", contador: contagem.arquivo },
+              { chave: "todas", nome: "Todas", contador: estado.mensagens.length },
             ]}
-            className="w-auto min-w-[170px]" />
+          />
+        </div>
+        <Ferramentas>
+          <Procura valor={procura} onChange={setProcura} placeholder="Nome, email, assunto ou texto…" />
         </Ferramentas>
 
         {filtradas.length === 0 ? (
-          <p className="py-12 text-center text-sm text-ink-500">Sem mensagens nesta vista.</p>
+          <Vazio titulo={vista === "porler" ? "Não há mensagens por ler" : "Sem mensagens aqui"}>
+            {procura ? "Nenhuma mensagem corresponde à procura." : "Quando alguém escrever pelo formulário de contacto, a mensagem aparece aqui."}
+          </Vazio>
         ) : (
-          <ul className="divide-y divide-ink-800">
-            {filtradas.map((m) => (
+          <ul className="divide-y divide-white/[0.07]">
+            {fatia.map((m) => (
               <li key={m.id}>
                 <button type="button" onClick={() => abrir(m)}
-                  className="flex w-full items-start gap-3 py-3 text-left transition-colors hover:bg-ink-850">
-                  <span className={`mt-1.5 size-2 shrink-0 rounded-full ${m.lida ? "bg-ink-700" : "bg-mb-red"}`} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-baseline gap-2">
-                      <p className={`truncate ${m.lida ? "text-ink-300" : "font-medium text-white"}`}>{m.nome}</p>
-                      <p className="truncate text-xs text-ink-500">{m.email}</p>
-                      <span className="ml-auto shrink-0 text-xs text-ink-500">{formatDataCurta(m.recebido)}</span>
-                    </div>
-                    <p className={`mt-0.5 truncate text-sm ${m.lida ? "text-ink-400" : "text-ink-200"}`}>{m.assunto}</p>
-                    <p className="mt-0.5 truncate text-xs text-ink-500">{m.mensagem}</p>
-                    {m.respondidaEm
-                      ? <p className="mt-1 text-[11px] text-ok">Respondida por email · {formatDataCurta(m.respondidaEm)}</p>
-                      : m.resposta && <p className="mt-1 text-[11px] text-gold">Resposta por enviar</p>}
-                  </div>
+                  className="group flex w-full items-start gap-3 rounded-[var(--raio)] px-2 py-3.5 text-left transition-colors hover:bg-white/[0.05]">
+                  <span className="relative">
+                    <Avatar nome={m.nome} cor={m.lida ? "#4a4a52" : "#e10600"} />
+                    {!m.lida && <span className="sr-only">Por ler</span>}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-baseline gap-x-2">
+                      <span className={`truncate ${m.lida ? "text-white/75" : "font-semibold text-white"}`}>{m.nome}</span>
+                      <span className="truncate text-xs text-white/45">{m.email}</span>
+                      <span className="ml-auto shrink-0 text-xs text-white/45">{haQuanto(m.recebido)}</span>
+                    </span>
+                    <span className={`mt-0.5 block truncate text-sm ${m.lida ? "text-white/65" : "text-white"}`}>{m.assunto || "Sem assunto"}</span>
+                    <span className="mt-0.5 block truncate text-xs text-white/45">{m.mensagem}</span>
+                    <span className="mt-1.5 flex flex-wrap gap-1.5">
+                      {m.respondidaEm
+                        ? <Etiqueta tom="ok">Respondida a {dataCurta(m.respondidaEm)}</Etiqueta>
+                        : m.resposta ? <Etiqueta tom="ouro">Resposta por enviar</Etiqueta> : null}
+                      {m.arquivada && vista === "todas" && <Etiqueta>Arquivada</Etiqueta>}
+                    </span>
+                  </span>
                 </button>
               </li>
             ))}
           </ul>
         )}
+        {controlos}
       </Painel>
 
       <Gaveta
         aberta={aberta !== null}
         aoFechar={() => setAberta(null)}
-        titulo={aberta?.assunto ?? ""}
-        descricao={aberta ? `${aberta.nome} · ${aberta.email}` : undefined}
-        largura="max-w-xl"
+        titulo={aberta?.assunto || "Mensagem"}
+        descricao={aberta ? `De ${aberta.nome} · ${aberta.email}` : undefined}
+        largura="max-w-2xl"
         rodape={aberta && (
           <>
-            <button type="button" onClick={() => setAApagar(aberta)}
-              className="mr-auto h-10 border border-ink-700 px-3 font-display text-xs uppercase tracking-wider text-ink-400 transition-colors hover:border-mb-red hover:text-white">
-              Apagar
-            </button>
-            <button type="button" onClick={() => arquivar(aberta, !aberta.arquivada)}
-              className="h-10 border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-ink-800">
-              {aberta.arquivada ? "Repor" : "Arquivar"}
-            </button>
-            <button type="button" onClick={() => void guardarRascunho(aberta)} disabled={aEnviar}
-              className="h-10 border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-ink-800 disabled:opacity-60">
+            <Botao variante="perigo" className="mr-auto" onClick={() => setAApagar(aberta)}>
+              <Trash2 className="size-4" aria-hidden />Apagar
+            </Botao>
+            <Botao variante="fantasma" onClick={() => void arquivar(aberta, !aberta.arquivada)}>
+              {aberta.arquivada ? <><ArchiveRestore className="size-4" aria-hidden />Repor na entrada</> : <><Archive className="size-4" aria-hidden />Arquivar</>}
+            </Botao>
+            <Botao variante="secundario" onClick={() => void guardarRascunho(aberta)} disabled={aEnviar}>
               Guardar rascunho
-            </button>
-            <button type="button" onClick={() => void enviarResposta(aberta)} disabled={aEnviar}
-              className="h-10 bg-mb-red px-5 font-display text-xs uppercase tracking-wider text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60">
+            </Botao>
+            <Botao variante="primario" onClick={() => void enviarResposta(aberta)} disabled={aEnviar}>
+              <Send className="size-4" aria-hidden />
               {aEnviar ? "A enviar…" : aberta.respondidaEm ? "Enviar de novo" : "Enviar resposta"}
-            </button>
+            </Botao>
           </>
         )}
       >
         {aberta && (
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-3 border border-ink-700 bg-ink-950 p-3 text-sm">
-              <div><p className="text-[10px] uppercase tracking-widest text-ink-500">Recebida</p><p className="text-white">{formatDataCurta(aberta.recebido)}</p></div>
-              {aberta.telefone && <div><p className="text-[10px] uppercase tracking-widest text-ink-500">Telefone</p><p className="text-white">{aberta.telefone}</p></div>}
-            </div>
+          <div className="space-y-5">
+            <Ficha linhas={[
+              ["Recebida", dataHora(aberta.recebido) || aberta.recebido],
+              ["Email", <a key="e" href={`mailto:${aberta.email}`} className="sublinhado">{aberta.email}</a>],
+              ...(aberta.telefone ? [["Telefone", <a key="t" href={`tel:${aberta.telefone.replace(/\s+/g, "")}`} className="inline-flex items-center gap-1.5"><Phone className="size-3.5" aria-hidden /><span className="sublinhado">{aberta.telefone}</span></a>] as [string, React.ReactNode]] : []),
+            ]} />
 
-            <div className="border border-ink-700 bg-ink-950 p-3">
-              <p className="mb-1.5 text-[10px] uppercase tracking-widest text-ink-500">Mensagem</p>
-              <p className="whitespace-pre-wrap text-sm text-ink-200">{aberta.mensagem}</p>
+            <div>
+              <p className="mb-1.5 text-[13px] font-medium text-white/75">Mensagem</p>
+              <div className="rounded-[var(--raio)] border border-white/10 bg-black/[0.18] p-4">
+                <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-white/90 [overflow-wrap:anywhere]">{aberta.mensagem}</p>
+              </div>
             </div>
 
             {aberta.respondidaEm && (
-              <p className="border-l-2 border-ok pl-3 text-sm text-ink-300">
-                Resposta enviada para {aberta.email} em {formatDataCurta(aberta.respondidaEm)}.
+              <p className="border-l-2 border-ok pl-3 text-sm text-white/70">
+                Resposta enviada para {aberta.email} a {dataHora(aberta.respondidaEm)}.
               </p>
             )}
 
             <Campo etiqueta="Resposta"
-              ajuda={`"Enviar resposta" manda este texto por email para ${aberta.email}, com a mensagem original citada. Se a pessoa responder, a resposta chega ao email de contacto das Definições.`}>
-              <Area rows={6} value={resposta} onChange={(e) => setResposta(e.target.value)}
-                placeholder="Escreva a resposta…" />
+              ajuda={`«Enviar resposta» manda este texto por email para ${aberta.email}, com a mensagem original citada. Se a pessoa responder, a resposta chega ao email de contacto das Definições.`}>
+              <Area rows={7} value={resposta} onChange={(e) => setResposta(e.target.value)} placeholder="Escreva a resposta…" />
             </Campo>
 
-            <a href={`mailto:${aberta.email}?subject=${encodeURIComponent(`Re: ${aberta.assunto}`)}&body=${encodeURIComponent(resposta)}`}
-              className="inline-flex h-10 items-center border border-ink-600 px-4 font-display text-xs uppercase tracking-wider text-white transition-colors hover:border-mb-red">
-              Responder pelo meu programa de email
-            </a>
+            <div className="flex flex-wrap gap-2">
+              <a href={`mailto:${aberta.email}?subject=${encodeURIComponent(`Re: ${aberta.assunto}`)}&body=${encodeURIComponent(resposta)}`}
+                className="inline-flex h-9 items-center gap-2 rounded-[var(--raio)] bg-white/10 px-3 text-[13px] text-white transition-colors hover:bg-white/[0.16]">
+                <Mail className="size-4" aria-hidden />
+                Responder pelo meu programa de email
+              </a>
+              <Botao tamanho="sm" variante="fantasma" onClick={() => { void marcarLida(aberta, false); setAberta(null); }}>
+                Marcar como por ler
+              </Botao>
+            </div>
           </div>
         )}
       </Gaveta>
@@ -199,11 +240,14 @@ export default function AdminMensagens() {
       <Confirmar
         aberta={aApagar !== null}
         aoFechar={() => setAApagar(null)}
-        aoConfirmar={() => {
-          if (aApagar) { remover("mensagens", aApagar.id); setAberta(null); mostrar("Mensagem apagada."); }
+        aoConfirmar={async () => {
+          if (!aApagar) return;
+          const falha = await remover("mensagens", aApagar.id);
+          if (!falha) setAberta(null);
+          mostrar(falha ?? "Mensagem apagada.", falha ? "erro" : "ok");
         }}
         titulo="Apagar mensagem"
-        mensagem="A mensagem será removida permanentemente."
+        mensagem="A mensagem é apagada de vez. Para a tirar só da caixa de entrada, arquive-a."
         textoConfirmar="Apagar"
         perigo
       />

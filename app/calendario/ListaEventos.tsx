@@ -14,6 +14,7 @@ import { eComunidade, entradaDoEvento, hrefEvento, vendaBilhetes, type VendaBilh
 import { diaMes } from "@/lib/motobox";
 import type { Evento } from "@/lib/types";
 import { Etiqueta } from "./pecas";
+import { fotoDe } from "@/app/eventos/foto";
 
 /**
  * Estado público do evento. "Bilhetes à venda" só quando a MotoBox vende
@@ -136,7 +137,7 @@ export function CartaoEvento({ e, agora, bilheteiraAberta }: { e: Evento; agora:
       }`}
     >
       <div className="relative">
-        <Foto nome={[e.slug, e.imagem]} className="aspect-[16/10]" largura={800} tamanhos="(max-width: 768px) 100vw, 33vw" />
+        <Foto nome={fotoDe(e.slug, e.imagem)} className="aspect-[16/10]" largura={800} tamanhos="(max-width: 768px) 100vw, 33vw" />
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           <EstadoEvento e={e} venda={venda} vidro />
         </div>

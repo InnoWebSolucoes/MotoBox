@@ -14,34 +14,11 @@
    A primeira de cada lista é a capa.
    ============================================================ */
 
-export interface Foto {
-  /** Caminho no Commons, ex.: "5/52/Serra_da_Leba-Road.jpg" (já codificado para URL). */
-  arquivo: string;
-  /** Tamanho do original, em píxeis. */
-  largura: number;
-  altura: number;
-  /** Página do ficheiro no Commons. */
-  pagina: string;
-  autor: string;
-  licenca: string;
-  licencaUrl: string;
-  alt: string;
-  /** O que a fotografia mostra, para a legenda. */
-  local: string;
-  /** Ponto de recorte (object-position) quando o centro não serve. */
-  foco?: string;
-}
+import type { Foto } from "@/lib/rotas-tipos";
 
-/** Larguras de miniatura que o upload.wikimedia.org aceita. */
-export type LarguraCommons = 960 | 1280 | 1920;
-
-/** Miniatura na largura pedida, ou o original quando é mais estreito. */
-export function urlCommons(foto: Foto, largura: LarguraCommons): string {
-  const base = "https://upload.wikimedia.org/wikipedia/commons";
-  if (foto.largura <= largura) return `${base}/${foto.arquivo}`;
-  const nome = foto.arquivo.split("/").pop();
-  return `${base}/thumb/${foto.arquivo}/${largura}px-${nome}`;
-}
+// O tipo e o endereço de cada fotografia vivem em lib/rotas-tipos.ts (leve,
+// para o browser); ficam aqui também para quem já os importava daqui.
+export { urlCommons, urlFoto, type Foto, type LarguraCommons } from "@/lib/rotas-tipos";
 
 const f = (
   arquivo: string,

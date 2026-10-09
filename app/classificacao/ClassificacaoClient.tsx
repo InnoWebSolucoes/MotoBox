@@ -9,7 +9,7 @@ import { Abertura, Seccao } from "@/components/painel/blocos";
 import { TEMPORADA } from "@/lib/data";
 import type { Equipa, Piloto } from "@/lib/types";
 import { useIdioma } from "@/lib/i18n/contexto";
-import { categoriasComPilotos, doCampeonato } from "@/lib/desporto";
+import { CATEGORIAS_CAMPEONATO, CATEGORIAS_PILOTO, categoriasComPilotos, doCampeonatoDe, retratoDe } from "@/lib/desporto";
 import { Aviso, EmblemaEquipa, Posicao, iniciais } from "@/app/calendario/pecas";
 
 type PilotoClass = Piloto & { posicao: number };
@@ -26,24 +26,35 @@ function ordinal(n: number, idioma: string) {
 const COL_PILOTOS = "md:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,11rem)_3.5rem_3.5rem_3.5rem_5rem]";
 const COL_EQUIPAS = "md:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,9rem)_3.5rem_3.5rem_3.5rem_5rem]";
 
+/** As definições do campeonato editadas no painel (Modalidades › Página Desporto). */
+const CAMPEONATO_PADRAO = {
+  nome: "Campeonato Nacional",
+  categorias: [...CATEGORIAS_CAMPEONATO],
+  categoriasPiloto: [...CATEGORIAS_PILOTO] as string[],
+};
+
 export function ClassificacaoClient({
   pilotos,
   equipas,
+  campeonato = CAMPEONATO_PADRAO,
 }: {
   pilotos: PilotoClass[];
   equipas: EquipaClass[];
+  campeonato?: { nome: string; categorias: string[]; categoriasPiloto: string[] };
 }) {
   const { t, idioma } = useIdioma();
   const [aba, setAba] = useState<"pilotos" | "equipas">("pilotos");
   const [categoria, setCategoria] = useState("Todas");
   // Só as categorias com pilotos, pela ordem de sempre (MX1, MX2, Rally / Enduro, Velocidade, Moto 4, Karting).
-  const categorias = useMemo(() => categoriasComPilotos(pilotos), [pilotos]);
+  const categorias = useMemo(() => categoriasComPilotos(pilotos, campeonato.categoriasPiloto), [pilotos, campeonato.categoriasPiloto]);
 
   const lista = useMemo(() => {
     // "Todas" é a geral do Campeonato Nacional: velocidade, moto 4 e karting têm a sua tabela à parte.
-    const filtrados = categoria === "Todas" ? pilotos.filter(doCampeonato) : pilotos.filter((p) => p.categoria === categoria);
+    const filtrados = categoria === "Todas"
+      ? pilotos.filter(doCampeonatoDe(campeonato.categorias))
+      : pilotos.filter((p) => p.categoria === categoria);
     return filtrados.map((p, i) => ({ ...p, posicao: i + 1 }));
-  }, [pilotos, categoria]);
+  }, [pilotos, categoria, campeonato.categorias]);
 
   const lider = lista[0];
   const maxPontos = lista[0]?.estatisticas.pontos || 1;
@@ -54,7 +65,7 @@ export function ClassificacaoClient({
       <Abertura
         compacta
         foto="geral"
-        sobretitulo={`Campeonato Nacional ${TEMPORADA}`}
+        sobretitulo={`${campeonato.nome} ${TEMPORADA}`}
         titulo={t("paginas.classificacaoTitulo")}
         texto="Pontuação do campeonato nacional de motociclismo, actualizada após cada prova. Pontuação a dobrar na ronda final."
       />
@@ -106,7 +117,7 @@ export function ClassificacaoClient({
                         }`}
                       >
                         <Retrato
-                          nome={p.slug}
+                          nome={retratoDe(p)}
                           iniciais={iniciais(p.nome)}
                           className="foto-painel absolute inset-0 -z-20 [container-type:size]"
                           tamanhos="(max-width: 640px) 100vw, 33vw"
@@ -170,7 +181,7 @@ export function ClassificacaoClient({
 
                         <span className="flex min-w-0 items-center gap-3">
                           <Retrato
-                            nome={p.slug}
+                            nome={retratoDe(p)}
                             iniciais={iniciais(p.nome)}
                             className="size-10 shrink-0 rounded-[4px] [container-type:size]"
                             largura={160}

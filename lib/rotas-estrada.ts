@@ -3,8 +3,9 @@
    O que quem anda de mota conta das estradas, por rota. As
    estradas angolanas mudam depressa (uma é arranjada, outra
    abre buracos), por isso cada relato leva a data e a página
-   pede sempre relatos novos. Actualizar aqui ou, mais tarde,
-   no painel de gestão.
+   pede sempre relatos novos. Isto é o ponto de partida: os
+   relatos editam-se no painel de gestão (/admin/rotas, parte
+   "Estado da estrada" de cada rota).
 
    Relatos de Outubro de 2026: Sofia Mussungo (MotoBox), na
    reunião de 4 de Outubro de 2026, sobre viagens recentes.

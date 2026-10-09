@@ -9,6 +9,7 @@ import { lerDefinicoes, lerEvento, lerEventos } from "@/lib/supabase/publico";
 import type { Evento } from "@/lib/types";
 import { Aviso } from "@/app/calendario/pecas";
 import { Checkout } from "./Checkout";
+import { fotoDe } from "@/app/eventos/foto";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -44,7 +45,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
     <PaginaInterior icone={<Ticket />}>
       <Abertura
         compacta
-        foto={[evento.slug, evento.imagem]}
+        foto={fotoDe(evento.slug, evento.imagem)}
         sobretitulo={sobretitulo}
         titulo={evento.titulo}
         tamanho="2"

@@ -6,38 +6,53 @@ import {
 } from "lucide-react";
 import { lerClubes, lerEventos, lerNoticias, lerPilotos } from "@/lib/supabase/publico";
 import { classificacaoPilotos } from "@/lib/data";
-import { doCampeonato, eComunidade, eProva } from "@/lib/desporto";
+import { doCampeonatoDe, eComunidade, eProva } from "@/lib/desporto";
+import { lerPaginaDesporto } from "@/app/desporto/dados";
 import { lerRedes } from "@/lib/redes";
 import { artigoEmDestaque, diaMes, eventosFuturos } from "@/lib/motobox";
-import { UBUNTU } from "@/lib/ubuntu";
+import { lerDoc } from "@/lib/conteudo";
+import {
+  CONTAGEM_PADRAO, PAINEL_PADRAO, fundir, preencher, type ConteudoContagem, type ConteudoPainel,
+} from "@/lib/conteudo/grupos/site";
 import { Chip, FotoFundo, Logotipo, Moldura, Seta, ordem } from "@/components/painel/kit";
 import { Tempo } from "@/components/painel/Tempo";
 import { ContagemUbuntu } from "@/components/painel/ContagemUbuntu";
 import { Icon } from "@/components/ui";
+import { fotoDe } from "@/app/eventos/foto";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Explorar",
-  description:
-    "O painel da MotoBox: artigos, clubes de todo o país, eventos, rotas, segurança, marketplace e fórum, à distância de um toque.",
-};
+/** Textos e fotografias fixos do painel e a contagem decrescente (Gestão › Entrada e painel). */
+async function lerTextos(): Promise<{ p: ConteudoPainel; c: ConteudoContagem }> {
+  const [p, c] = await Promise.all([
+    lerDoc<ConteudoPainel>("site.painel"),
+    lerDoc<ConteudoContagem>("site.contagem"),
+  ]);
+  return { p: fundir(PAINEL_PADRAO, p), c: fundir(CONTAGEM_PADRAO, c) };
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { p } = await lerTextos();
+  return { title: p.seo.titulo, description: p.seo.descricao };
+}
 
 /* ============================================================
    MOTOBOX — Painel
    Uma grelha de 16 colunas que enche o ecrã: o artigo em
    destaque no painel grande, os clubes, o desporto e os eventos
-   por baixo; à direita as redes, o tempo, a contagem para o
-   Ubuntu e as secções de serviço. No computador o painel nunca rola: a grelha
+   por baixo; à direita as redes, o tempo, a contagem decrescente
+   (hoje para o Ubuntu) e as secções de serviço. Os textos e as
+   fotografias fixos vêm do conteúdo editável ("site.painel" e
+   "site.contagem"); os números e os destaques, dos dados. No computador o painel nunca rola: a grelha
    aperta-se à altura do ecrã e, num ecrã baixo (variantes "baixo" e
    "mbaixo" em globals.css), os textos secundários encolhem ou saem.
    No telemóvel, os painéis empilham-se.
    ============================================================ */
 
 export default async function Painel() {
-  const [artigos, clubes, eventos, redes, pilotos] = await Promise.all([
-    lerNoticias(), lerClubes(), lerEventos(), lerRedes(), lerPilotos(),
+  const [artigos, clubes, eventos, redes, pilotos, { p, c }] = await Promise.all([
+    lerNoticias(), lerClubes(), lerEventos(), lerRedes(), lerPilotos(), lerTextos(),
   ]);
 
   const destaque = artigoEmDestaque(artigos);
@@ -45,10 +60,13 @@ export default async function Painel() {
   // Eventos da comunidade no painel de Eventos; as provas vão para o Desporto.
   const proximo = eventosFuturos(eventos.filter((e) => eComunidade(e.disciplina)))[0];
   const proximaProva = eventosFuturos(eventos.filter((e) => eProva(e.disciplina)))[0];
-  const lider = classificacaoPilotos(pilotos.filter(doCampeonato))[0];
+  // O líder conta só as categorias do campeonato definidas em Modalidades › Página Desporto.
+  const { campeonato } = await lerPaginaDesporto();
+  const lider = classificacaoPilotos(pilotos.filter(doCampeonatoDe(campeonato.categorias)))[0];
   const instagram = redes.find((r) => r.rede === "instagram");
-  const soClubes = clubes.filter((c) => c.tipo !== "Movimento");
-  const provincias = new Set(soClubes.map((c) => c.provincia).filter(Boolean)).size;
+  const soClubes = clubes.filter((cl) => cl.tipo !== "Movimento");
+  const provincias = new Set(soClubes.map((cl) => cl.provincia).filter(Boolean)).size;
+  const data = (iso: string) => `${diaMes(iso).dia} ${diaMes(iso).mes}`;
 
   return (
     <Moldura>
@@ -66,7 +84,7 @@ export default async function Painel() {
         >
           {destaque ? (
             <>
-              <FotoFundo nome={[destaque.slug, destaque.imagem]} veu="esquerda" prioridade tamanhos="(max-width: 1024px) 100vw, 70vw" />
+              <FotoFundo nome={fotoDe(destaque.slug, destaque.imagem)} veu="esquerda" prioridade tamanhos="(max-width: 1024px) 100vw, 70vw" />
               <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/10 to-transparent" aria-hidden />
               <Link
                 href={`/artigos/${destaque.slug}`}
@@ -77,7 +95,7 @@ export default async function Painel() {
                 <Chip><Newspaper /></Chip>
               </span>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-6 md:p-8 xl:pr-[21rem] baixo:p-6 baixo:xl:pr-[19rem]">
-                <p className="text-sm text-white/80">Artigo em destaque · {destaque.categoria}</p>
+                <p className="text-sm text-white/80">{p.destaque.rotulo} · {destaque.categoria}</p>
                 <h2 className="titulo-3 mt-3 line-clamp-3 max-w-[20ch] text-balance baixo:mt-2 baixo:line-clamp-2 baixo:text-[1.75rem]">{destaque.titulo}</h2>
                 <p className="mt-3 line-clamp-3 max-w-[50ch] text-sm leading-relaxed text-white/85 md:text-[15px] baixo:line-clamp-2 mbaixo:hidden">
                   {destaque.resumo}
@@ -88,7 +106,7 @@ export default async function Painel() {
               {/* Mais artigos, por cima da fotografia */}
               <aside className="absolute bottom-0 right-0 z-20 hidden w-[20rem] p-5 xl:block baixo:w-[18rem] baixo:p-4">
                 <div className="rounded-[var(--raio)] bg-black/60 p-4 backdrop-blur-md baixo:p-3">
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/55">Mais artigos</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/55">{p.destaque.maisArtigos}</p>
                   <ul className="mt-3 divide-y divide-white/10">
                     {outros.map((a, n) => (
                       // Num ecrã baixo ficam dois artigos; num muito baixo, um.
@@ -103,23 +121,23 @@ export default async function Painel() {
                     ))}
                   </ul>
                   <Link href="/artigos" className="mt-2 inline-flex items-center gap-2 text-sm text-white">
-                    <span className="sublinhado">Todos os artigos</span>
+                    <span className="sublinhado">{p.destaque.todosArtigos}</span>
                   </Link>
                 </div>
               </aside>
             </>
           ) : (
-            <PainelVazio href="/artigos" titulo="Artigos" icone={<Newspaper />} />
+            <PainelVazio href="/artigos" titulo={p.destaque.semArtigos} icone={<Newspaper />} />
           )}
         </section>
 
         {/* ---------- Clubes ---------- */}
         <PainelFoto
           href="/clubes"
-          foto="painel-clubes"
+          foto={[p.clubes.foto, "painel-clubes"]}
           icone={<Users />}
-          titulo="Clubes"
-          texto={`${soClubes.length} clubes${provincias ? ` em ${provincias} províncias` : ""}, de todos os tipos de mota`}
+          titulo={p.clubes.titulo}
+          texto={preencher(provincias ? p.clubes.texto : p.clubes.textoSemProvincias, { clubes: soClubes.length, provincias })}
           className="order-2 col-span-full h-64 lg:order-none lg:col-[1/5] lg:row-[3/4] lg:h-auto"
           i={1}
         />
@@ -127,12 +145,12 @@ export default async function Painel() {
         {/* ---------- Desporto ---------- */}
         <PainelFoto
           href="/desporto"
-          foto={["competicao", "kilamba"]}
+          foto={[p.desporto.foto, "competicao", "kilamba"]}
           icone={<Trophy />}
-          titulo="Desporto"
+          titulo={p.desporto.titulo}
           texto={[
-            lider ? `Campeonato Nacional: ${lider.nome} lidera com ${lider.estatisticas.pontos} pontos` : "Campeonato Nacional, pilotos e resultados",
-            proximaProva ? `Próxima prova: ${proximaProva.titulo}, ${diaMes(proximaProva.dataInicio).dia} ${diaMes(proximaProva.dataInicio).mes}` : "",
+            lider ? preencher(p.desporto.textoLider, { piloto: lider.nome, pontos: lider.estatisticas.pontos }) : p.desporto.textoVazio,
+            proximaProva ? preencher(p.desporto.textoProva, { prova: proximaProva.titulo, data: data(proximaProva.dataInicio) }) : "",
           ].filter(Boolean).join(". ")}
           className="order-3 col-span-full h-64 lg:order-none lg:col-[5/9] lg:row-[3/4] lg:h-auto"
           i={2}
@@ -141,13 +159,17 @@ export default async function Painel() {
         {/* ---------- Eventos ---------- */}
         <PainelFoto
           href={proximo ? `/eventos/${proximo.slug}` : "/eventos"}
-          foto={proximo ? [proximo.slug, proximo.imagem] : "painel-eventos"}
+          foto={
+            proximo && p.eventos.fotoDoEvento
+              ? [proximo.slug, proximo.imagem, p.eventos.foto, "painel-eventos"]
+              : [p.eventos.foto, "painel-eventos"]
+          }
           icone={<CalendarDays />}
-          titulo="Eventos"
+          titulo={p.eventos.titulo}
           texto={
             proximo
-              ? `Próximo: ${proximo.titulo}, ${diaMes(proximo.dataInicio).dia} ${diaMes(proximo.dataInicio).mes}`
-              : "Passeios, encontros e raides"
+              ? preencher(p.eventos.textoProximo, { evento: proximo.titulo, data: data(proximo.dataInicio) })
+              : p.eventos.textoVazio
           }
           className="order-4 col-span-full h-64 lg:order-none lg:col-[9/12] lg:row-[3/4] lg:h-auto"
           i={3}
@@ -181,36 +203,42 @@ export default async function Painel() {
           <Tempo />
         </div>
 
-        {/* ---------- Ubuntu 2027: contagem decrescente ---------- */}
+        {/* ---------- Contagem decrescente (hoje: Ubuntu 2027) ---------- */}
         <Link
-          href={`/eventos/${UBUNTU.slug}`}
+          href={c.ligacao || "/eventos"}
           className="painel revelar group order-6 col-span-full flex min-h-[22rem] flex-col p-5 [text-shadow:0_1px_10px_rgb(0_0_0/0.55)] lg:order-none lg:col-[12/17] lg:row-[2/3] lg:min-h-0 mbaixo:p-4"
           style={ordem(7)}
         >
-          <FotoFundo nome={[UBUNTU.slug, "passeios"]} veu="cima" tamanhos="(max-width: 1024px) 100vw, 30vw" />
+          <FotoFundo nome={[c.foto, "passeios"]} veu="cima" tamanhos="(max-width: 1024px) 100vw, 30vw" />
           <div className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-black/75 to-transparent" aria-hidden />
           <div className="flex items-start justify-between gap-4">
-            <p className="text-[15px]">{UBUNTU.nome}</p>
-            <Timer className="size-5" strokeWidth={1.6} aria-hidden />
+            <p className="text-[15px]">{c.sobretitulo}</p>
+            {c.activa ? (
+              <Timer className="size-5" strokeWidth={1.6} aria-hidden />
+            ) : (
+              <CalendarDays className="size-5" strokeWidth={1.6} aria-hidden />
+            )}
           </div>
-          <p className="mt-6 text-lg leading-tight baixo:mt-3">Africa Ubuntu Breakfast Run</p>
-          <p className="mt-1 text-[0.8125rem] text-white/80">31 de Janeiro · {UBUNTU.percurso}</p>
+          <p className="mt-6 text-lg leading-tight baixo:mt-3">{c.titulo}</p>
+          {c.subtitulo && <p className="mt-1 text-[0.8125rem] text-white/80">{c.subtitulo}</p>}
           <div className="mt-auto pt-4">
-            <ContagemUbuntu data={UBUNTU.partida} />
-            <span className="mt-3 inline-flex items-center gap-2 text-sm mbaixo:hidden">
-              <span className="sublinhado">Ver o evento</span>
-              <Seta className="size-3" />
-            </span>
+            {c.activa && c.data && !Number.isNaN(new Date(c.data).getTime()) && <ContagemUbuntu data={c.data} />}
+            {c.textoLigacao && (
+              <span className="mt-3 inline-flex items-center gap-2 text-sm mbaixo:hidden">
+                <span className="sublinhado">{c.textoLigacao}</span>
+                <Seta className="size-3" />
+              </span>
+            )}
           </div>
         </Link>
 
         {/* ---------- Secções de serviço: três em cima, duas em baixo ---------- */}
         <div className="order-5 col-span-full grid grid-cols-6 gap-[var(--intervalo)] lg:order-none lg:col-[12/17] lg:row-[3/4] lg:grid-rows-2">
-          <Ficha href="/rotas" icone={<Route />} titulo="Rotas" className="col-span-2" estreita i={8} />
-          <Ficha href="/seguranca" icone={<ShieldCheck />} titulo="Segurança" className="col-span-2" estreita i={9} />
-          <Ficha href="/sobre" icone={<BookOpen />} titulo="A MotoBox" className="col-span-2" estreita i={10} />
-          <Ficha href="/marketplace" icone={<Store />} titulo="Marketplace" className="col-span-3" i={11} />
-          <Ficha href="/forum" icone={<MessagesSquare />} titulo="Fórum" className="col-span-3" i={12} />
+          <Ficha href="/rotas" icone={<Route />} titulo={p.fichas.rotas} className="col-span-2" estreita i={8} />
+          <Ficha href="/seguranca" icone={<ShieldCheck />} titulo={p.fichas.seguranca} className="col-span-2" estreita i={9} />
+          <Ficha href="/sobre" icone={<BookOpen />} titulo={p.fichas.sobre} className="col-span-2" estreita i={10} />
+          <Ficha href="/marketplace" icone={<Store />} titulo={p.fichas.marketplace} className="col-span-3" i={11} />
+          <Ficha href="/forum" icone={<MessagesSquare />} titulo={p.fichas.forum} className="col-span-3" i={12} />
         </div>
       </div>
     </Moldura>

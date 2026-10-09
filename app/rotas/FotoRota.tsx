@@ -11,7 +11,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { urlCommons, type Foto, type LarguraCommons } from "@/lib/rotas-fotos";
+import { temImagem, urlCommons, type Foto, type LarguraCommons } from "@/lib/rotas-tipos";
 
 export function FotoRota({
   foto,
@@ -28,7 +28,7 @@ export function FotoRota({
   className?: string;
 }) {
   const [falhou, setFalhou] = useState(false);
-  if (falhou) return null;
+  if (falhou || !temImagem(foto)) return null;
   return (
     <Image
       src={urlCommons(foto, largura)}
@@ -44,21 +44,21 @@ export function FotoRota({
   );
 }
 
-/** Fotografia de rota com os cantos do painel (cartões e galeria). */
+/** Fotografia de rota com os cantos do painel (cartões e galeria). Sem fotografia, fica o fundo escuro. */
 export function QuadroRota({
   foto,
   tamanhos,
   largura,
   className = "",
 }: {
-  foto: Foto;
+  foto: Foto | undefined;
   tamanhos: string;
   largura?: LarguraCommons;
   className?: string;
 }) {
   return (
     <div className={`relative overflow-hidden rounded-[var(--raio)] bg-near-black ${className}`}>
-      <FotoRota foto={foto} tamanhos={tamanhos} largura={largura} />
+      {foto && <FotoRota foto={foto} tamanhos={tamanhos} largura={largura} />}
     </div>
   );
 }

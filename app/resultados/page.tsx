@@ -8,6 +8,7 @@ import { intervaloDatas } from "@/lib/motobox";
 import { lerCorridas } from "@/lib/supabase/publico";
 import { Aviso, Etiqueta, LegendaResultados, LigacaoSeta } from "@/app/calendario/pecas";
 import { TabelaResultados } from "./TabelaResultados";
+import { fotoDe } from "@/app/eventos/foto";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -70,7 +71,7 @@ export default async function ResultadosPage() {
                 <article key={c.slug} className="grid gap-[var(--intervalo)] lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-8">
                   {/* Cabeçalho da corrida: fotografia do circuito, texto sobre o véu */}
                   <div className="painel relative isolate flex min-h-[16rem] flex-col justify-end p-5 lg:min-h-[20rem] lg:self-start">
-                    <FotoFundo nome={[c.slug, c.imagem]} veu="baixo" tamanhos="(max-width: 1024px) 100vw, 288px" largura={700} />
+                    <FotoFundo nome={fotoDe(c.slug, c.imagem)} veu="baixo" tamanhos="(max-width: 1024px) 100vw, 288px" largura={700} />
                     <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/45 to-transparent" />
                     <div className="flex flex-wrap gap-1.5">
                       {c.ronda > 0 && <Etiqueta tom="vermelho">Ronda {c.ronda}</Etiqueta>}

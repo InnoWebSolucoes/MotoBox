@@ -1,35 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Check } from "lucide-react";
 import { comBase } from "@/lib/base";
+import type { ConteudoContacto } from "@/lib/conteudo/grupos/paginas";
 
 /* ============================================================
    MOTOBOX — Formulário de contacto
    Vai para /api/contacto, que guarda em Mensagens no painel.
    `site` é a armadilha para robôs. Um ?assunto= no endereço
    (vindo da página de um clube ou de eventos) já chega escrito.
+   Os textos chegam por props (conteúdo editável "paginas.contacto").
    ============================================================ */
 
-const ASSUNTOS = [
-  { id: "informacao", label: "Pedido de informação", desc: "Dúvidas sobre o site, um clube ou um evento." },
-  { id: "clube", label: "Clubes", desc: "Registar ou actualizar a página de um clube." },
-  { id: "evento", label: "Divulgar um evento", desc: "Um passeio, encontro, raide ou formação." },
-  { id: "conteudo", label: "Enviar uma história", desc: "Fotografias, uma viagem ou um tema para artigo." },
-  { id: "parcerias", label: "Parcerias", desc: "Marcas, lojas, oficinas e apoios." },
-  { id: "outro", label: "Outro assunto", desc: "Tudo o resto." },
-];
+type Textos = ConteudoContacto["formulario"];
 
-function assuntoInicial(texto?: string) {
-  if (!texto) return { id: "informacao", extra: "" };
+/** O assunto já escolhido quando a página abre (um ?assunto= vindo de um clube ou de um evento). */
+function assuntoInicial(assuntos: Textos["assuntos"], texto?: string) {
+  const existe = (id: string) => assuntos.some((a) => a.id === id);
+  const primeiro = assuntos[0]?.id ?? "";
+  // Sem pedido, o primeiro da lista; com pedido, o mais parecido, ou o último ("Outro assunto").
+  if (!texto) return { id: existe("informacao") ? "informacao" : primeiro, extra: "" };
   const t = texto.toLowerCase();
-  if (t.includes("clube")) return { id: "clube", extra: texto };
-  if (t.includes("evento")) return { id: "evento", extra: texto };
-  return { id: "outro", extra: texto };
+  const outro = existe("outro") ? "outro" : (assuntos.at(-1)?.id ?? primeiro);
+  if (t.includes("clube")) return { id: existe("clube") ? "clube" : outro, extra: texto };
+  if (t.includes("evento")) return { id: existe("evento") ? "evento" : outro, extra: texto };
+  return { id: outro, extra: texto };
 }
 
-export function ContactoClient({ assunto: pedido }: { assunto?: string }) {
-  const inicio = assuntoInicial(pedido);
+/** "Obrigado, {nome}. … para {email}." com o email destacado. */
+function Agradecimento({ modelo, nome, email }: { modelo: string; nome: string; email: string }) {
+  const partes = modelo.replace(/\{nome\}/g, nome).split("{email}");
+  return (
+    <>
+      {partes.map((p, i) => (
+        <Fragment key={i}>
+          {i > 0 && <span className="text-white">{email}</span>}
+          {p}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+export function ContactoClient({ assunto: pedido, textos: x }: { assunto?: string; textos: Textos }) {
+  const ASSUNTOS = x.assuntos;
+  const inicio = assuntoInicial(ASSUNTOS, pedido);
   const [assunto, setAssunto] = useState(inicio.id);
   const [form, setForm] = useState({
     nome: "", email: "", telefone: "", organizacao: "",
@@ -45,9 +61,9 @@ export function ContactoClient({ assunto: pedido }: { assunto?: string }) {
   async function submeter(e: React.FormEvent) {
     e.preventDefault();
     const err: Record<string, string> = {};
-    if (form.nome.trim().length < 3) err.nome = "Indique o seu nome.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email)) err.email = "Email inválido.";
-    if (form.mensagem.trim().length < 10) err.mensagem = "Escreva a sua mensagem (mínimo 10 caracteres).";
+    if (form.nome.trim().length < 3) err.nome = x.erroNome;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email)) err.email = x.erroEmail;
+    if (form.mensagem.trim().length < 10) err.mensagem = x.erroMensagem;
     setErros(err);
     if (Object.keys(err).length > 0) return;
 
@@ -58,19 +74,19 @@ export function ContactoClient({ assunto: pedido }: { assunto?: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          assunto: inicio.extra && assunto === inicio.id ? inicio.extra : ASSUNTOS.find((a) => a.id === assunto)?.label ?? assunto,
+          assunto: inicio.extra && assunto === inicio.id ? inicio.extra : ASSUNTOS.find((a) => a.id === assunto)?.nome ?? assunto,
           site,
         }),
       });
       if (!r.ok) {
         const j = await r.json().catch(() => ({}));
-        setErros({ geral: String(j.erro ?? "Não foi possível enviar. Tente de novo.") });
+        setErros({ geral: String(j.erro ?? x.erroGeral) });
         setEstado("parado");
         return;
       }
       setEstado("ok");
     } catch {
-      setErros({ geral: "Sem ligação à internet. Tente de novo." });
+      setErros({ geral: x.erroRede });
       setEstado("parado");
     }
   }
@@ -79,10 +95,9 @@ export function ContactoClient({ assunto: pedido }: { assunto?: string }) {
     return (
       <div className="flex min-h-96 flex-col justify-end" role="status">
         <span className="chip-mb chip-mb-lg" aria-hidden><Check /></span>
-        <h2 className="titulo-3 mt-8">Mensagem enviada</h2>
+        <h2 className="titulo-3 mt-8">{x.sucessoTitulo}</h2>
         <p className="mt-3 max-w-md text-[15px] leading-relaxed text-white/75">
-          Obrigado, {form.nome.split(" ")[0]}. Recebemos a sua mensagem e respondemos para{" "}
-          <span className="text-white">{form.email}</span>.
+          <Agradecimento modelo={x.sucessoTexto} nome={form.nome.split(" ")[0]} email={form.email} />
         </p>
         <button
           type="button"
@@ -92,7 +107,7 @@ export function ContactoClient({ assunto: pedido }: { assunto?: string }) {
           }}
           className="mt-8 inline-flex h-12 w-fit items-center rounded-[var(--raio)] bg-white/10 px-5 text-sm transition-colors hover:bg-white/20"
         >
-          Enviar outra mensagem
+          {x.outra}
         </button>
       </div>
     );
@@ -105,7 +120,7 @@ export function ContactoClient({ assunto: pedido }: { assunto?: string }) {
   return (
     <form onSubmit={submeter} noValidate className="space-y-8">
       <fieldset>
-        <legend className="mb-4 text-lg font-semibold">Sobre o que nos escreve?</legend>
+        <legend className="mb-4 text-lg font-semibold">{x.assuntosTitulo}</legend>
         <div className="grid gap-[var(--intervalo)] sm:grid-cols-2">
           {ASSUNTOS.map((a) => (
             <label
@@ -122,8 +137,8 @@ export function ContactoClient({ assunto: pedido }: { assunto?: string }) {
                 className="mt-1 size-4 shrink-0 accent-white"
               />
               <span className="min-w-0">
-                <span className="block text-[15px] font-medium">{a.label}</span>
-                <span className={`mt-0.5 block text-xs ${assunto === a.id ? "text-white/85" : "text-white/55"}`}>{a.desc}</span>
+                <span className="block text-[15px] font-medium">{a.nome}</span>
+                <span className={`mt-0.5 block text-xs ${assunto === a.id ? "text-white/85" : "text-white/55"}`}>{a.texto}</span>
               </span>
             </label>
           ))}
@@ -132,25 +147,25 @@ export function ContactoClient({ assunto: pedido }: { assunto?: string }) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className={rotulo}>Nome</span>
+          <span className={rotulo}>{x.nome}</span>
           <input value={form.nome} onChange={mudar("nome")} className="campo" autoComplete="name" />
           {erro("nome")}
         </label>
         <label className="block">
-          <span className={rotulo}>Email</span>
-          <input type="email" value={form.email} onChange={mudar("email")} className="campo" autoComplete="email" placeholder="o.seu@email.ao" />
+          <span className={rotulo}>{x.email}</span>
+          <input type="email" value={form.email} onChange={mudar("email")} className="campo" autoComplete="email" placeholder={x.emailExemplo} />
           {erro("email")}
         </label>
         <label className="block">
-          <span className={rotulo}>Telefone <span className="text-white/40">(opcional)</span></span>
-          <input type="tel" value={form.telefone} onChange={mudar("telefone")} className="campo" autoComplete="tel" placeholder="+244" />
+          <span className={rotulo}>{x.telefone} <span className="text-white/40">{x.opcional}</span></span>
+          <input type="tel" value={form.telefone} onChange={mudar("telefone")} className="campo" autoComplete="tel" placeholder={x.telefoneExemplo} />
         </label>
         <label className="block">
-          <span className={rotulo}>Clube ou organização <span className="text-white/40">(opcional)</span></span>
+          <span className={rotulo}>{x.organizacao} <span className="text-white/40">{x.opcional}</span></span>
           <input value={form.organizacao} onChange={mudar("organizacao")} className="campo" autoComplete="organization" />
         </label>
         <label className="block sm:col-span-2">
-          <span className={rotulo}>Mensagem</span>
+          <span className={rotulo}>{x.mensagem}</span>
           <textarea value={form.mensagem} onChange={mudar("mensagem")} rows={6} className="campo resize-y" />
           {erro("mensagem")}
         </label>
@@ -167,7 +182,7 @@ export function ContactoClient({ assunto: pedido }: { assunto?: string }) {
           disabled={estado === "a-enviar"}
           className="group inline-flex h-14 min-w-56 items-center justify-between gap-6 rounded-[var(--raio)] bg-mb-red px-5 text-[15px] text-white transition-colors hover:bg-mb-red-dark disabled:opacity-60"
         >
-          {estado === "a-enviar" ? "A enviar..." : "Enviar mensagem"}
+          {estado === "a-enviar" ? x.aEnviar : x.enviar}
           <svg viewBox="0 0 14 14" className="size-3.5" aria-hidden>
             <path fill="currentColor" d="M0 11.6 9.6 2H1V0h12v12h-2V3.4L1.4 13z" />
           </svg>

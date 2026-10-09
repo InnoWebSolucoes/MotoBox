@@ -14,6 +14,7 @@ import { useConteudo } from "@/lib/i18n/useConteudo";
 import { Contagem } from "./Contagem";
 import { CartaoEvento, LinhaEvento } from "./ListaEventos";
 import { Aviso, Etiqueta, LigacaoSeta } from "./pecas";
+import { fotoDe } from "@/app/eventos/foto";
 
 /** Só provas: os passeios, encontros e acções solidárias vivem em /eventos. */
 export function CalendarioClient({
@@ -126,7 +127,7 @@ export function CalendarioClient({
         {/* Destaque: a próxima prova, com a contagem decrescente */}
         {proximo && (
           <div className="painel relative isolate mt-8 grid min-h-[24rem] gap-10 p-6 md:p-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-end">
-            <FotoFundo nome={[proximo.slug, proximo.imagem]} veu="esquerda" tamanhos="(max-width: 1024px) 100vw, 80vw" />
+            <FotoFundo nome={fotoDe(proximo.slug, proximo.imagem)} veu="esquerda" tamanhos="(max-width: 1024px) 100vw, 80vw" />
             <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 to-transparent" aria-hidden />
             <div>
               <p className="sobretitulo text-white/85">Próxima prova</p>

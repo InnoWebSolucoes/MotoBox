@@ -15,6 +15,7 @@ import "server-only";
    ============================================================ */
 
 import { cache } from "react";
+import { lerGrupo } from "@/lib/conteudo";
 import { supabasePublico, supabaseConfigurado } from "./server";
 import { listaDaBase, definicoesDaBase, TABELA } from "./mapeamento";
 import type { ColeccaoNome } from "@/lib/admin/store";
@@ -101,8 +102,17 @@ const NIVEL_PATROCINIO: Record<Patrocinador["nivel"], number> = {
 
 /* ---------- Listas ---------- */
 
-export const lerEventos = () =>
-  ler<Evento>("eventos", eventosLocais, (a, b) => tempo(a.dataInicio) - tempo(b.dataInicio));
+/**
+ * Eventos, com o texto "Como participar" gravado no painel (conteúdo editável,
+ * grupo "eventos-extra": a tabela não tem coluna para ele).
+ */
+export const lerEventos = cache(async () => {
+  const lista = await ler<Evento>("eventos", eventosLocais, (a, b) => tempo(a.dataInicio) - tempo(b.dataInicio));
+  const extras = await lerGrupo<{ entrada?: string }>("eventos-extra");
+  if (!extras.length) return lista;
+  const entrada = new Map(extras.map((x) => [x.chave, String(x.dados?.entrada ?? "").trim()]));
+  return lista.map((e) => (entrada.get(e.slug) ? { ...e, entrada: entrada.get(e.slug) } : e));
+});
 
 export const lerPilotos = () =>
   ler<Piloto>("pilotos", pilotosLocais, (a, b) =>
@@ -138,7 +148,9 @@ export const lerCategoriasForum = () => ler<CategoriaForum>("categoriasForum", c
 export const lerClubes = () =>
   ler<Clube>("clubes", clubesLocais, (a, b) =>
     Number(Boolean(b.destaque)) - Number(Boolean(a.destaque)) || a.nome.localeCompare(b.nome));
-export const lerPaginasLegais  = () => ler<PaginaLegal>("paginasLegais", paginasLegaisSeed);
+/** As linhas "conteudo.*" da mesma tabela são o conteúdo editável (lib/conteudo), não páginas legais. */
+export const lerPaginasLegais = async () =>
+  (await ler<PaginaLegal>("paginasLegais", paginasLegaisSeed)).filter((p) => !p.slug.startsWith("conteudo."));
 
 /* ---------- Registos individuais ---------- */
 // Procuram na lista já lida, que fica em memória durante o pedido.

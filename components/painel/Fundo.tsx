@@ -10,14 +10,25 @@ import { caminhoDaPagina, comBase } from "@/lib/base";
    nítido, sob um véu leve; no painel e nas páginas interiores
    desfoca-se, para os painéis se lerem por cima.
 
-   Vídeo de demonstração (Mixkit, licença livre). Trocar por
-   imagens da MotoBox em public/videos/fundo.mp4 e fundo.jpg.
+   O vídeo e a imagem de espera escolhem-se em Gestão › Entrada e
+   painel (conteúdo "site.entrada"): o layout lê-os e passa-os
+   já como endereços prontos a usar. Por omissão, o vídeo de
+   demonstração (Mixkit, licença livre) em public/videos/fundo.mp4
+   e fundo.jpg.
    ============================================================ */
 
-export function Fundo() {
+/** Endereços finais do vídeo e da imagem de espera. */
+export interface FundoVideo {
+  video: string;
+  poster: string;
+}
+
+export function Fundo({ video: videoUrl, poster }: Partial<FundoVideo> = {}) {
   const caminho = caminhoDaPagina(usePathname());
   const nitido = caminho === "/";
   const video = useRef<HTMLVideoElement>(null);
+  const fonte = videoUrl || comBase("/videos/fundo.mp4");
+  const imagem = poster || comBase("/videos/fundo.jpg");
 
   // Com movimento reduzido fica a primeira imagem, parada.
   useEffect(() => {
@@ -31,7 +42,7 @@ export function Fundo() {
     aplicar();
     consulta.addEventListener("change", aplicar);
     return () => consulta.removeEventListener("change", aplicar);
-  }, []);
+  }, [fonte]);
 
   return (
     <div
@@ -39,6 +50,7 @@ export function Fundo() {
       className="pointer-events-none fixed -left-12 -top-12 -z-10 h-[calc(100lvh+6rem)] w-[calc(100vw+6rem)] bg-near-black"
     >
       <video
+        key={fonte}
         ref={video}
         className={`h-full w-full object-cover transition-[filter,transform] duration-700 ease-[var(--ease-in-circ)] ${
           nitido ? "scale-100" : "scale-105 blur-[18px]"
@@ -48,9 +60,9 @@ export function Fundo() {
         loop
         playsInline
         preload="auto"
-        poster={comBase("/videos/fundo.jpg")}
+        poster={imagem}
       >
-        <source src={comBase("/videos/fundo.mp4")} type="video/mp4" />
+        <source src={fonte} type={/\.webm(\?|$)/i.test(fonte) ? "video/webm" : "video/mp4"} />
       </video>
       <div
         className={`absolute inset-0 transition-colors duration-700 ${nitido ? "bg-black/30" : "bg-black/25"}`}

@@ -18,6 +18,7 @@ import { TabelaResultados } from "@/app/resultados/TabelaResultados";
 import { Contagem } from "./Contagem";
 import { Partilhar } from "./Partilhar";
 import { Etiqueta, Ficha, LegendaResultados, LigacaoSeta, TituloSeccao } from "./pecas";
+import { fotoDe } from "@/app/eventos/foto";
 
 export function DetalheEvento({
   evento,
@@ -64,7 +65,7 @@ export function DetalheEvento({
 
   return (
     <PaginaInterior icone={comunidade ? <CalendarDays /> : <Calendar />}>
-      <Abertura foto={[evento.slug, evento.imagem]} sobretitulo={sobretitulo} titulo={evento.titulo} tamanho="2" texto={evento.resumo}>
+      <Abertura foto={fotoDe(evento.slug, evento.imagem)} sobretitulo={sobretitulo} titulo={evento.titulo} tamanho="2" texto={evento.resumo}>
         {futuro ? (
           <div className="flex flex-col gap-6">
             <div>

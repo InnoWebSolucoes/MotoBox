@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import { Flag, Trophy } from "lucide-react";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, Numeros, Seccao } from "@/components/painel/blocos";
-import {
-  MODALIDADES, MODALIDADE_PRINCIPAL, corridasDaModalidade, lerModalidade, seccoesDaModalidade,
-} from "@/lib/desporto";
+import { TEMPORADA } from "@/lib/data";
+import { corridasDaModalidade, preencher, principalDe, seccoesDaModalidade } from "@/lib/desporto";
 import { lerCorridas, lerEventos } from "@/lib/supabase/publico";
 import { SubNavDesporto } from "../../SubNavDesporto";
 import { ArquivoCorridas, Vazio, Voltar } from "../../Partes";
+import { lerModalidades, lerPaginaDesporto } from "../../dados";
 
 /* Arquivo de resultados de uma modalidade que não é a principal (Enduro,
    Rally-Raid e as que vierem a ter provas). O Motocross tem o seu em /resultados. */
@@ -16,18 +16,16 @@ import { ArquivoCorridas, Vazio, Voltar } from "../../Partes";
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
 
-export const dynamicParams = false;
-
-/** Só as modalidades cujas provas entram no calendário (têm disciplina). */
-export function generateStaticParams() {
-  return MODALIDADES.filter((m) => m.slug !== MODALIDADE_PRINCIPAL && m.disciplinas.length > 0).map((m) => ({
-    modalidade: m.slug,
-  }));
+/** Só as modalidades cujas provas entram no calendário (têm disciplina). Uma nova gera-se no primeiro pedido. */
+export async function generateStaticParams() {
+  const lista = await lerModalidades();
+  const principal = principalDe(lista)?.slug;
+  return lista.filter((m) => m.slug !== principal && m.disciplinas.length > 0).map((m) => ({ modalidade: m.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ modalidade: string }> }): Promise<Metadata> {
   const { modalidade } = await params;
-  const m = lerModalidade(modalidade);
+  const m = (await lerModalidades()).find((x) => x.slug === modalidade);
   if (!m) return { title: "Resultados" };
   return {
     title: `Resultados de ${m.nome} · Desporto`,
@@ -37,52 +35,54 @@ export async function generateMetadata({ params }: { params: Promise<{ modalidad
 
 export default async function ResultadosModalidadePage({ params }: { params: Promise<{ modalidade: string }> }) {
   const { modalidade } = await params;
-  const m = lerModalidade(modalidade);
-  if (!m || m.slug === MODALIDADE_PRINCIPAL) notFound();
+  const [lista, t] = await Promise.all([lerModalidades(), lerPaginaDesporto()]);
+  const m = lista.find((x) => x.slug === modalidade);
+  if (!m || m.slug === principalDe(lista)?.slug) notFound();
 
   const [eventos, corridas] = await Promise.all([lerEventos(), lerCorridas()]);
-  const lista = corridasDaModalidade(m, eventos, corridas);
+  const corridasM = corridasDaModalidade(m, eventos, corridas);
+  const a = t.modalidade.arquivo;
+  const valores = { ano: TEMPORADA, campeonato: t.campeonato.nome, modalidade: m.nome };
 
   return (
     <>
-      <SubNavDesporto modalidade={m.slug} seccoes={seccoesDaModalidade(m.slug, true)} />
+      <SubNavDesporto modalidade={m.slug} nome={m.nome} principal={false} seccoes={seccoesDaModalidade(m.slug, true)} />
       <PaginaInterior icone={<Trophy />}>
         <Abertura
           compacta
           foto={m.imagem}
-          sobretitulo={`${m.nome} · Arquivo`}
-          titulo="Resultados"
-          texto="Corrida a corrida: classificação completa, tempos, pontos e desistências."
+          sobretitulo={preencher(a.sobretitulo, valores)}
+          titulo={preencher(a.titulo, valores)}
+          texto={preencher(a.texto, valores)}
         />
 
         <Seccao>
           <Numeros
             colunas={3}
             itens={[
-              { valor: lista.length, texto: "Corridas registadas" },
-              { valor: new Set(lista.map((c) => c.vencedor)).size, texto: "Vencedores diferentes" },
-              { valor: new Set(lista.map((c) => c.temporada)).size, texto: "Temporadas" },
+              { valor: corridasM.length, texto: a.corridas },
+              { valor: new Set(corridasM.map((c) => c.vencedor)).size, texto: a.vencedores },
+              { valor: new Set(corridasM.map((c) => c.temporada)).size, texto: a.temporadas },
             ]}
           />
         </Seccao>
 
         <Seccao className="!pt-0">
-          {lista.length === 0 ? (
-            <Vazio
-              titulo="Sem resultados publicados"
-              texto="Os resultados aparecem aqui assim que a primeira corrida da temporada terminar."
-            />
+          {corridasM.length === 0 ? (
+            <Vazio titulo={t.modalidade.resultados.vazioTitulo} texto={t.modalidade.resultados.vazioTexto} />
           ) : (
-            <ArquivoCorridas corridas={lista} />
+            <ArquivoCorridas corridas={corridasM} />
           )}
 
-          <p className="mt-10 flex items-start gap-2.5 text-sm text-white/55">
-            <Flag className="mt-0.5 size-4 shrink-0 text-mb-red-light" aria-hidden />
-            DNF: não terminou · DNS: não partiu · DSQ: desclassificado
-          </p>
+          {a.legenda && (
+            <p className="mt-10 flex items-start gap-2.5 text-sm text-white/55">
+              <Flag className="mt-0.5 size-4 shrink-0 text-mb-red-light" aria-hidden />
+              {a.legenda}
+            </p>
+          )}
 
           <div className="mt-10">
-            <Voltar href={`/desporto/${m.slug}`}>{m.nome}</Voltar>
+            <Voltar href={`/desporto/${m.slug}`}>{preencher(a.voltar, valores)}</Voltar>
           </div>
         </Seccao>
       </PaginaInterior>

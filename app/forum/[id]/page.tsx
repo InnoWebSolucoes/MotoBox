@@ -8,6 +8,8 @@ import { Denunciar } from "@/components/Denunciar";
 import { formatData } from "@/lib/data";
 import { lerDefinicoes, lerTopico, lerTopicos } from "@/lib/supabase/publico";
 import { lerRespostas } from "@/lib/forum/respostas";
+import { lerDoc } from "@/lib/conteudo";
+import { comPadrao, FORUM_PADRAO, type ConteudoForum } from "@/lib/conteudo/grupos/comunidade";
 import { CaixaResposta, DiscussaoProvider, ItemResposta, RespostasNovas } from "./Respostas";
 
 // O Next exige um literal aqui, não aceita constante importada.
@@ -42,9 +44,13 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
   const topico = await lerTopico(id);
   if (!topico) notFound();
 
-  const [todos, respostas, definicoes] = await Promise.all([
+  const [todos, respostas, definicoes, textos] = await Promise.all([
     lerTopicos(), lerRespostas(topico.id), lerDefinicoes(),
+    // Textos fixos da página, editáveis no painel (Fórum → Página Fórum).
+    lerDoc<ConteudoForum>("paginas.forum").then((d) => comPadrao(d, FORUM_PADRAO)),
   ]);
+  const tt = textos.topico;
+  const tl = textos.lista;
   const relacionados = todos
     .filter((t) => t.id !== topico.id && t.categoriaSlug === topico.categoriaSlug)
     .slice(0, 4);
@@ -56,7 +62,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
         href="/forum"
         className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white transition-colors"
       >
-        <span aria-hidden>←</span> Fórum
+        <span aria-hidden>←</span> {tt.voltar}
       </Link>
 
       <div className="mt-8 grid gap-16 lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-20">
@@ -70,7 +76,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
                   <Ponto />
                   <span className="inline-flex items-center gap-1 text-mb-red">
                     <Icon name="pin" className="size-3.5" />
-                    Fixado
+                    {tl.fixado}
                   </span>
                 </>
               )}
@@ -79,7 +85,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
                   <Ponto />
                   <span className="inline-flex items-center gap-1 text-ink-200">
                     <Icon name="check" className="size-3.5" />
-                    Resolvido
+                    {tl.resolvido}
                   </span>
                 </>
               )}
@@ -88,7 +94,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
                   <Ponto />
                   <span className="inline-flex items-center gap-1">
                     <Icon name="lock" className="size-3.5" />
-                    Fechado
+                    {tl.fechado}
                   </span>
                 </>
               )}
@@ -99,7 +105,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
             </h1>
 
             <p className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-ink-500">
-                            <span>{topico.visualizacoes.toLocaleString("pt-PT")} visualizações</span>
+                            <span>{topico.visualizacoes.toLocaleString("pt-PT")}{` ${tt.visualizacoes}`}</span>
               <Ponto />
               <span>{formatData(topico.criado)}</span>
             </p>
@@ -113,7 +119,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
               <div className="min-w-0">
                 <p className="truncate font-ui text-lg leading-tight text-white">{topico.autor}</p>
                 <p className="mt-0.5 flex flex-wrap gap-x-2 text-sm text-ink-500">
-                  <span>Autor do tópico</span>
+                  <span>{tt.autorDoTopico}</span>
                   <Ponto />
                   <span>{formatData(topico.criado, { day: "2-digit", month: "long", year: "numeric" })}</span>
                 </p>
@@ -121,7 +127,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
             </div>
             <div className="mt-4 sm:pl-[4.25rem]">
               <p className="text-lg leading-relaxed text-ink-100">{topico.excerto}</p>
-              <Accoes nomes={["Gosto", "Citar", "Partilhar"]} topicoId={topico.id} />
+              <Accoes nomes={["Gosto", "Citar", "Partilhar"]} topicoId={topico.id} reportar={tt.reportar} />
             </div>
           </article>
 
@@ -129,28 +135,28 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
           <DiscussaoProvider>
             <section aria-labelledby="respostas" className="mt-14">
               <h2 id="respostas" className="border-b border-white/8 pb-4 text-xl font-semibold text-white">
-                {respostas.length === 1 ? "1 resposta" : `${respostas.length} respostas`}
+                {`${respostas.length} ${respostas.length === 1 ? tt.respostaSingular : tt.respostaPlural}`}
               </h2>
               {respostas.length === 0 && (
-                <p className="py-8 text-[15px] text-white/60">Ainda sem respostas. Seja o primeiro a ajudar.</p>
+                <p className="py-8 text-[15px] text-white/60">{tt.semRespostas}</p>
               )}
 
               <ol>
                 {respostas.map((r) => (
-                  <ItemResposta key={r.id} resposta={r} topicoId={topico.id} />
+                  <ItemResposta key={r.id} resposta={r} topicoId={topico.id} reportar={tt.reportar} />
                 ))}
               </ol>
-              <RespostasNovas idsServidor={respostas.map((r) => r.id)} topicoId={topico.id} />
+              <RespostasNovas idsServidor={respostas.map((r) => r.id)} topicoId={topico.id} reportar={tt.reportar} />
             </section>
 
             {/* Caixa de resposta: sempre a última coisa da discussão */}
             <section className="mt-12">
               {topico.bloqueado ? (
-                <Fechado titulo="Tópico fechado" texto="Este tópico não aceita novas respostas." />
+                <Fechado titulo={tt.fechadoTitulo} texto={tt.fechadoTexto} />
               ) : !definicoes.forumAberto ? (
-                <Fechado titulo="Fórum fechado" texto="De momento o fórum não aceita novas respostas." />
+                <Fechado titulo={tt.forumFechadoTitulo} texto={tt.forumFechadoTexto} />
               ) : (
-                <CaixaResposta topicoId={topico.id} />
+                <CaixaResposta topicoId={topico.id} textos={textos.resposta} />
               )}
             </section>
           </DiscussaoProvider>
@@ -160,7 +166,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
         {relacionados.length > 0 && (
           <aside aria-labelledby="relacionados" className="lg:pt-1">
             <h2 id="relacionados" className="eyebrow text-ink-400">
-              Tópicos relacionados
+              {tt.relacionados}
             </h2>
             <ul className="mt-3">
               {relacionados.map((t) => (
@@ -172,7 +178,7 @@ export default async function TopicoPage({ params }: { params: Promise<{ id: str
                     <span className="mt-1.5 flex flex-wrap gap-x-2 text-sm text-ink-500">
                       <span>{t.autor}</span>
                       <Ponto />
-                      <span>{t.respostas} respostas</span>
+                      <span>{t.respostas}{` ${tt.respostaPlural}`}</span>
                     </span>
                   </Link>
                 </li>
@@ -222,7 +228,7 @@ function Avatar({ cor, texto, className }: { cor: string; texto: string; classNa
 }
 
 /** "Reportar" abre a denúncia real: vai para Moderação, apontada ao tópico. */
-function Accoes({ nomes, topicoId }: { nomes: string[]; topicoId: string }) {
+function Accoes({ nomes, topicoId, reportar }: { nomes: string[]; topicoId: string; reportar: string }) {
   return (
     <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
       {nomes.map((a) => (
@@ -230,7 +236,7 @@ function Accoes({ nomes, topicoId }: { nomes: string[]; topicoId: string }) {
           {a}
         </button>
       ))}
-      <Denunciar tipo="forum" alvoId={topicoId} rotulo="Reportar" icone={false}
+      <Denunciar tipo="forum" alvoId={topicoId} rotulo={reportar} icone={false}
         classeBotao="font-ui text-sm text-ink-500 transition-colors hover:text-white" />
     </div>
   );

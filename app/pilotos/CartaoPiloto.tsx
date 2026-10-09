@@ -8,6 +8,7 @@ import { Retrato } from "@/components/Brand";
 import { Seta } from "@/components/painel/kit";
 import type { Piloto } from "@/lib/types";
 import { Etiqueta, iniciais } from "@/app/calendario/pecas";
+import { retratoDe } from "@/lib/desporto";
 
 export function CartaoPiloto({
   piloto: p,
@@ -28,7 +29,7 @@ export function CartaoPiloto({
       {/* No telemóvel o retrato fica ao lado do texto; a partir de sm, por cima. */}
       <div className="relative aspect-[4/5] self-start overflow-hidden rounded-[var(--raio)] sm:self-auto">
         <Retrato
-          nome={p.slug}
+          nome={retratoDe(p)}
           iniciais={iniciais(p.nome)}
           cor={cor}
           className="foto-painel absolute inset-0 [container-type:size]"

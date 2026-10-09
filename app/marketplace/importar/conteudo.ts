@@ -65,6 +65,8 @@ export const TEXTO = {
     "Estamos a estudar o pagamento por carteiras digitais angolanas, como a PayPay África, autorizada pelo Banco Nacional de Angola. Ainda não está disponível.",
     "We're looking into payment through Angolan digital wallets such as PayPay África, which is authorised by the National Bank of Angola. It isn't available yet.",
   ),
+  /** Números das fontes citadas no fim do texto das carteiras (ver FONTES). */
+  carteirasFontes: [4] as number[],
 
   formTitulo: b("Pedir importação", "Request an import"),
   formSub: b(

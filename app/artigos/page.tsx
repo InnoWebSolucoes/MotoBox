@@ -2,20 +2,22 @@ import type { Metadata } from "next";
 import { Newspaper } from "lucide-react";
 import { lerNoticias } from "@/lib/supabase/publico";
 import { CATEGORIAS_ARTIGO } from "@/lib/types";
+import { lerDoc } from "@/lib/conteudo";
+import type { ConteudoPaginaArtigos } from "@/lib/conteudo/grupos/eventos";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Pilulas, Seccao } from "@/components/painel/blocos";
 import { CartaoArtigo } from "@/components/painel/cartoes";
 import { NewsletterPainel } from "@/components/painel/Newsletter";
 
-export const metadata: Metadata = {
-  title: "Artigos",
-  description:
-    "Histórias da comunidade motard angolana, clubes, viagens, guias e segurança. Os artigos da MotoBox.",
-};
+// Os textos fixos desta página editam-se no painel: Artigos → Página Artigos.
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await lerDoc<ConteudoPaginaArtigos>("paginas.artigos");
+  return { title: "Artigos", description: t.descricaoPesquisa };
+}
 
 export default async function Artigos({ searchParams }: { searchParams: Promise<{ categoria?: string }> }) {
   const { categoria } = await searchParams;
-  const artigos = await lerNoticias();
+  const [artigos, t] = await Promise.all([lerNoticias(), lerDoc<ConteudoPaginaArtigos>("paginas.artigos")]);
 
   // Só aparecem as categorias que têm artigos, pela ordem oficial.
   const presentes = CATEGORIAS_ARTIGO.filter((c) => artigos.some((a) => a.categoria === c));
@@ -26,20 +28,19 @@ export default async function Artigos({ searchParams }: { searchParams: Promise<
   return (
     <PaginaInterior icone={<Newspaper />}>
       <header className="coluna pb-10 pt-28 lg:pt-32">
-        <p className="sobretitulo surgir text-white/80">MotoBox · Artigos</p>
+        <p className="sobretitulo surgir text-white/80">{t.sobretitulo}</p>
         <h1 className="titulo-1 surgir mt-4 max-w-[14ch] text-balance" style={{ ["--i" as string]: 1 }}>
-          Histórias de quem anda de mota
+          {t.titulo}
         </h1>
         <p className="texto-lead surgir mt-6 max-w-[52ch] text-white/85" style={{ ["--i" as string]: 2 }}>
-          Clubes, viagens, guias e segurança: o que se passa na comunidade motard angolana, contado por quem
-          lá anda.
+          {t.texto}
         </p>
         <div className="surgir mt-10" style={{ ["--i" as string]: 3 }}>
           <Pilulas
             rotulo="Categorias de artigos"
             activa={activa}
             itens={[
-              { chave: "todas", texto: "Todos", href: "/artigos" },
+              { chave: "todas", texto: t.todos, href: "/artigos" },
               ...presentes.map((c) => ({ chave: c, texto: c, href: `/artigos?categoria=${encodeURIComponent(c)}` })),
             ]}
           />
@@ -59,13 +60,15 @@ export default async function Artigos({ searchParams }: { searchParams: Promise<
             )}
           </div>
         ) : (
-          <p className="painel painel-escuro p-10 text-white/70">Ainda não há artigos nesta categoria.</p>
+          <p className="painel painel-escuro p-10 text-white/70">{t.vazio}</p>
         )}
       </Seccao>
 
-      <Seccao className="!pt-0">
-        <NewsletterPainel />
-      </Seccao>
+      {t.newsletter && (
+        <Seccao className="!pt-0">
+          <NewsletterPainel />
+        </Seccao>
+      )}
     </PaginaInterior>
   );
 }

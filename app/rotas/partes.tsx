@@ -1,9 +1,8 @@
 /* Peças partilhadas pela lista e pelo detalhe das rotas, no estilo do painel. */
 
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { Check } from "lucide-react";
-import type { Exigencia, Facto, FonteRota, Lugar } from "@/lib/rotas";
-import type { Foto } from "@/lib/rotas-fotos";
+import { origemFoto, type Exigencia, type Facto, type FonteRota, type Foto, type Lugar } from "@/lib/rotas-tipos";
 import { Chip } from "@/components/painel/kit";
 
 /** Cor discreta por exigência: informação, não alarme. */
@@ -37,19 +36,36 @@ export function LinksFontes({ fontes, className = "" }: { fontes: FonteRota[]; c
   );
 }
 
-/** Crédito obrigatório das licenças Creative Commons: autor, licença e ligação. */
+const LIGACAO_CREDITO = "underline decoration-white/20 underline-offset-2 hover:text-white";
+
+/** Texto com ligação, ou só o texto quando não há ligação. */
+function TalvezLigacao({ href, children }: { href: string; children: ReactNode }) {
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={LIGACAO_CREDITO}>
+      {children}
+    </a>
+  ) : (
+    <>{children}</>
+  );
+}
+
+/** Crédito obrigatório das licenças Creative Commons: autor, licença e ligação. Só o que existir. */
 export function CreditoFoto({ foto, className = "" }: { foto: Foto; className?: string }) {
+  const partes: ReactNode[] = [];
+  if (foto.autor) partes.push(<TalvezLigacao key="autor" href={foto.pagina}>{foto.autor}</TalvezLigacao>);
+  if (foto.licenca) partes.push(<TalvezLigacao key="licenca" href={foto.licencaUrl}>{foto.licenca}</TalvezLigacao>);
+  const origem = origemFoto(foto);
+  if (origem) partes.push(origem);
+  if (!partes.length) return null;
   return (
     <span className={className}>
       Foto:{" "}
-      <a href={foto.pagina} target="_blank" rel="noopener noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-white">
-        {foto.autor}
-      </a>
-      {" · "}
-      <a href={foto.licencaUrl} target="_blank" rel="noopener noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-white">
-        {foto.licenca}
-      </a>
-      {" · Wikimedia Commons"}
+      {partes.map((p, i) => (
+        <Fragment key={i}>
+          {i > 0 && " · "}
+          {p}
+        </Fragment>
+      ))}
     </span>
   );
 }
