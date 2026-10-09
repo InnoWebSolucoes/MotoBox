@@ -43,7 +43,7 @@ export function Contagem({ data, className = "" }: { data: string; className?: s
           <span className="block text-[2rem] font-semibold leading-none tracking-tight tabular-nums md:text-[2.75rem]">
             {montado ? String(u.v).padStart(2, "0") : "--"}
           </span>
-          <span className="mt-2 block text-xs text-white/60">{u.l}</span>
+          <span className="mt-2 block text-xs text-white/80">{u.l}</span>
         </div>
       ))}
     </div>

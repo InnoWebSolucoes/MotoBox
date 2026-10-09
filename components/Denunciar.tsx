@@ -12,7 +12,7 @@ import { comBase } from "@/lib/base";
  */
 export function Denunciar({
   tipo, alvoId, rotulo = "Denunciar",
-  classeBotao = "inline-flex items-center gap-1.5 text-xs text-ink-500 transition-colors hover:text-white",
+  classeBotao = "inline-flex items-center gap-1.5 text-xs text-ink-300 transition-colors hover:text-white",
   icone = true,
 }: {
   tipo: "marketplace" | "forum";
@@ -79,7 +79,7 @@ export function Denunciar({
           <div role="dialog" aria-modal="true" aria-labelledby="denunciar-titulo"
             className="relative w-full max-w-md rounded-[6px] bg-near-black p-6 shadow-2xl ring-1 ring-white/10">
             <button type="button" onClick={() => setAberto(false)} aria-label="Fechar"
-              className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-ink-400 transition-colors hover:bg-white/8 hover:text-white">
+              className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-ink-300 transition-colors hover:bg-white/8 hover:text-white">
               <Icon name="close" className="size-4" />
             </button>
 
@@ -89,7 +89,7 @@ export function Denunciar({
                   <Icon name="check" className="size-6" />
                 </span>
                 <h2 id="denunciar-titulo" className="mt-4 font-display text-xl uppercase text-white">Obrigado</h2>
-                <p className="mt-2 text-sm text-ink-400">
+                <p className="mt-2 text-sm text-ink-300">
                   A equipa de moderação vai rever este conteúdo. Não precisa de fazer mais nada.
                 </p>
                 <button type="button" onClick={() => setAberto(false)}
@@ -100,10 +100,10 @@ export function Denunciar({
             ) : (
               <form onSubmit={enviar}>
                 <h2 id="denunciar-titulo" className="pr-10 font-display text-xl uppercase text-white">Denunciar</h2>
-                <p className="mt-1 text-sm text-ink-400">Diga-nos o que se passa. A denúncia é anónima para quem publicou.</p>
+                <p className="mt-1 text-sm text-ink-300">Diga-nos o que se passa. A denúncia é anónima para quem publicou.</p>
 
                 <fieldset className="mt-5">
-                  <legend className="eyebrow mb-2.5 text-ink-500">Motivo</legend>
+                  <legend className="eyebrow mb-2.5 text-ink-300">Motivo</legend>
                   <div className="flex flex-wrap gap-2">
                     {MOTIVOS_DENUNCIA.map((m, i) => (
                       <button key={m} ref={i === 0 ? primeiro : undefined} type="button"
@@ -115,12 +115,12 @@ export function Denunciar({
                 </fieldset>
 
                 <label className="mt-5 block">
-                  <span className="eyebrow mb-2 block text-ink-500">
+                  <span className="eyebrow mb-2 block text-ink-300">
                     Detalhes {motivo === "Outro motivo" ? "" : "(opcional)"}
                   </span>
                   <textarea value={detalhe} onChange={(e) => setDetalhe(e.target.value)} rows={3} maxLength={1000}
                     placeholder="O que viu de errado?"
-                    className="w-full bg-ink-950 px-4 py-3 text-sm text-white ring-1 ring-inset ring-white/10 outline-none placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red" />
+                    className="w-full bg-ink-950 px-4 py-3 text-sm text-white ring-1 ring-inset ring-white/10 outline-none placeholder:text-ink-300 focus:ring-2 focus:ring-mb-red" />
                 </label>
 
                 {/* Armadilha para robôs: invisível para pessoas. */}

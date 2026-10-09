@@ -50,7 +50,7 @@ export default function AdminMedia() {
             <ChipIcone>{d.icone}</ChipIcone>
             <div className="min-w-0">
               <p className="text-[15px] font-semibold leading-tight">{d.titulo}</p>
-              <p className="mt-1 text-[13px] leading-relaxed text-white/60">{d.texto}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-white/80">{d.texto}</p>
             </div>
           </li>
         ))}

@@ -154,7 +154,7 @@ function JanelaContacto({
           type="button"
           onClick={aoFechar}
           aria-label="Fechar"
-          className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-ink-400 transition-colors hover:bg-white/8 hover:text-white"
+          className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-ink-300 transition-colors hover:bg-white/8 hover:text-white"
         >
           <Icon name="close" className="size-4" />
         </button>
@@ -167,7 +167,7 @@ function JanelaContacto({
             <h2 id="contactar-titulo" className="mt-4 text-xl font-semibold text-white">
               Mensagem enviada
             </h2>
-            <p className="mt-2 text-sm text-ink-400 leading-relaxed">
+            <p className="mt-2 text-sm text-ink-300 leading-relaxed">
               {estado === "email"
                 ? `${vendedorNome} recebeu a sua mensagem por email. Quando responder, a resposta chega a ${email}.`
                 : `A equipa Motobox vai fazer chegar a sua mensagem ao vendedor. A resposta chega ao seu email, ${email}.`}
@@ -187,11 +187,11 @@ function JanelaContacto({
             <h2 id="contactar-titulo" className="pr-10 text-xl font-semibold text-white">
               Contactar vendedor
             </h2>
-            <p className="mt-1.5 pr-6 text-sm text-ink-400 line-clamp-2">{titulo}</p>
+            <p className="mt-1.5 pr-6 text-sm text-ink-300 line-clamp-2">{titulo}</p>
             <p className="mt-1 text-lg font-semibold leading-none text-white tabular-nums">{formatKz(preco)}</p>
 
             <label className="mt-5 block">
-              <span className="mb-2 block text-sm text-white/60">Mensagem para {vendedorNome}</span>
+              <span className="mb-2 block text-sm text-white/80">Mensagem para {vendedorNome}</span>
               <textarea
                 ref={campo}
                 value={mensagem}
@@ -199,10 +199,10 @@ function JanelaContacto({
                 rows={5}
                 maxLength={MAXIMO}
                 required
-                className="w-full resize-y bg-ink-950 px-4 py-3 text-sm text-white ring-1 ring-inset ring-white/10 outline-none placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red"
+                className="w-full resize-y bg-ink-950 px-4 py-3 text-sm text-white ring-1 ring-inset ring-white/10 outline-none placeholder:text-ink-300 focus:ring-2 focus:ring-mb-red"
               />
             </label>
-            <div className="mt-2 flex items-start justify-between gap-4 text-xs text-ink-500">
+            <div className="mt-2 flex items-start justify-between gap-4 text-xs text-ink-300">
               <p>
                 A resposta chega ao seu email
                 {email && <>, <span className="text-ink-300 break-all">{email}</span></>}.

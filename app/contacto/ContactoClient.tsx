@@ -138,7 +138,7 @@ export function ContactoClient({ assunto: pedido, textos: x }: { assunto?: strin
               />
               <span className="min-w-0">
                 <span className="block text-[15px] font-medium">{a.nome}</span>
-                <span className={`mt-0.5 block text-xs ${assunto === a.id ? "text-white/85" : "text-white/55"}`}>{a.texto}</span>
+                <span className={`mt-0.5 block text-xs ${assunto === a.id ? "text-white/85" : "text-white/75"}`}>{a.texto}</span>
               </span>
             </label>
           ))}
@@ -157,11 +157,11 @@ export function ContactoClient({ assunto: pedido, textos: x }: { assunto?: strin
           {erro("email")}
         </label>
         <label className="block">
-          <span className={rotulo}>{x.telefone} <span className="text-white/40">{x.opcional}</span></span>
+          <span className={rotulo}>{x.telefone} <span className="text-white/70">{x.opcional}</span></span>
           <input type="tel" value={form.telefone} onChange={mudar("telefone")} className="campo" autoComplete="tel" placeholder={x.telefoneExemplo} />
         </label>
         <label className="block">
-          <span className={rotulo}>{x.organizacao} <span className="text-white/40">{x.opcional}</span></span>
+          <span className={rotulo}>{x.organizacao} <span className="text-white/70">{x.opcional}</span></span>
           <input value={form.organizacao} onChange={mudar("organizacao")} className="campo" autoComplete="organization" />
         </label>
         <label className="block sm:col-span-2">

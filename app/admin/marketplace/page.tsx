@@ -152,7 +152,7 @@ function ListaAnuncios({ abas }: { abas: ReactNode }) {
                 <Miniatura valor={a.imagens[0]} className="h-11 w-14" />
                 <div className="min-w-0">
                   <p className="max-w-[20rem] truncate font-medium text-white">{a.titulo || "Sem título"}</p>
-                  <p className="truncate text-xs text-white/50">
+                  <p className="truncate text-xs text-white/75">
                     {a.categoria} · {[a.marca, a.modelo].filter(Boolean).join(" ") || "Sem marca"}
                   </p>
                 </div>
@@ -164,7 +164,7 @@ function ListaAnuncios({ abas }: { abas: ReactNode }) {
             celula: (a) => (
               <span className="whitespace-nowrap tabular-nums text-white">
                 {formatKz(a.preco)}
-                {a.negociavel && <span className="block text-xs text-white/45">Negociável</span>}
+                {a.negociavel && <span className="block text-xs text-white/70">Negociável</span>}
               </span>
             ),
           },
@@ -182,7 +182,7 @@ function ListaAnuncios({ abas }: { abas: ReactNode }) {
             celula: (a) => (
               <span className="whitespace-nowrap tabular-nums text-white/70">
                 {dataCurta(a.publicado)}
-                <span className="block text-xs text-white/45">{numero(a.visualizacoes)} vistas</span>
+                <span className="block text-xs text-white/70">{numero(a.visualizacoes)} vistas</span>
               </span>
             ),
           },
@@ -321,7 +321,7 @@ function FormularioAnuncio({
           descricao="Dá o selo verde de verificado, na lista e ao lado do nome. Só depois de a equipa confirmar a identidade e o contacto."
           onChange={(x) => vendedor({ verificado: x })} />
         {v.authId && (
-          <p className="text-xs leading-relaxed text-white/50">
+          <p className="text-xs leading-relaxed text-white/75">
             Publicado por um membro na sua conta do site: as mensagens de «Contactar vendedor» seguem para o email dessa conta.
           </p>
         )}
@@ -337,7 +337,7 @@ function FormularioAnuncio({
           </Campo>
         </div>
         {novo ? (
-          <p className="text-xs leading-relaxed text-white/50">O anúncio aparece no Marketplace assim que o guardar.</p>
+          <p className="text-xs leading-relaxed text-white/75">O anúncio aparece no Marketplace assim que o guardar.</p>
         ) : (
           <Interruptor activo={visivel} etiqueta="Visível no site"
             descricao="Desligado, o anúncio sai do Marketplace mas fica guardado aqui. Muda logo, sem precisar de guardar."

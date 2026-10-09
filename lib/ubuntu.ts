@@ -3,7 +3,8 @@
    A Africa Ubuntu Breakfast Run: no último domingo de Janeiro,
    motards de todo o continente saem à estrada à mesma hora e
    tomam o pequeno-almoço juntos. Em Luanda, a volta vai do
-   Kilamba à Ilha. A entrada do site tem a contagem decrescente.
+   Kilamba à Ilha. É o que está "Em foco" no painel Explorar por
+   omissão, com a contagem decrescente (lib/conteudo/grupos/site.ts).
    ============================================================ */
 
 export const UBUNTU = {

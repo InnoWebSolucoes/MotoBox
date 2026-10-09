@@ -211,14 +211,14 @@ export default function PainelAdmin() {
             return (
               <li key={n.nome} className="border-b border-r border-white/[0.06]">
                 <Link href={n.href} className="group flex h-full flex-col p-4 transition-colors hover:bg-white/[0.05] md:p-5">
-                  <span className="flex items-center justify-between gap-2 text-sm text-white/65">
+                  <span className="flex items-center justify-between gap-2 text-sm text-white/80">
                     {n.nome}
-                    <Ic className="size-4 shrink-0 text-white/40 transition-colors group-hover:text-mb-red-light" aria-hidden />
+                    <Ic className="size-4 shrink-0 text-white/70 transition-colors group-hover:text-mb-red-light" aria-hidden />
                   </span>
                   <span className="mt-3 text-[1.85rem] font-semibold leading-none tabular-nums tracking-tight">
                     {pronto || typeof n.valor === "string" ? (typeof n.valor === "number" ? numero(n.valor) : n.valor) : "…"}
                   </span>
-                  <span className="mt-2 truncate text-xs text-white/45">{n.nota}</span>
+                  <span className="mt-2 truncate text-xs text-white/70">{n.nota}</span>
                 </Link>
               </li>
             );
@@ -263,7 +263,7 @@ export default function PainelAdmin() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm text-white">{p.titulo}</span>
-                        <span className="block truncate text-xs text-white/50">{p.tipo} · {p.detalhe} · {agora ? haQuanto(p.quando, agora) : dataCurta(p.quando)}</span>
+                        <span className="block truncate text-xs text-white/75">{p.tipo} · {p.detalhe} · {agora ? haQuanto(p.quando, agora) : dataCurta(p.quando)}</span>
                       </span>
                     </Link>
                   </li>
@@ -287,10 +287,10 @@ export default function PainelAdmin() {
               {estado.atividade.slice(0, 7).map((a) => (
                 <li key={a.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 py-2.5 text-sm">
                   <span className="text-white">{a.utilizador}</span>
-                  <span className="text-white/60">{a.accao.toLowerCase()}</span>
+                  <span className="text-white/80">{a.accao.toLowerCase()}</span>
                   <Etiqueta>{a.entidade}</Etiqueta>
                   <span className="min-w-0 flex-1 basis-40 truncate text-white/75">{a.detalhe}</span>
-                  <span className="shrink-0 text-xs tabular-nums text-white/40" suppressHydrationWarning>{dataHora(a.quando)}</span>
+                  <span className="shrink-0 text-xs tabular-nums text-white/70" suppressHydrationWarning>{dataHora(a.quando)}</span>
                 </li>
               ))}
             </ol>
@@ -300,7 +300,7 @@ export default function PainelAdmin() {
         {/* ---------- Textos do site ---------- */}
         <Painel titulo="Textos do site" descricao="Páginas e guias que já foram mudados no painel." icone={<Newspaper />}>
           {!textos ? (
-            erroIndice ? <p className="text-sm text-white/55">Não foi possível ler o estado dos textos.</p> : <Carregando />
+            erroIndice ? <p className="text-sm text-white/75">Não foi possível ler o estado dos textos.</p> : <Carregando />
           ) : (
             <div className="space-y-4">
               <Medidor rotulo="Páginas e blocos" editados={textos.editados} total={textos.total} />
@@ -311,13 +311,13 @@ export default function PainelAdmin() {
                     <li key={d.chave}>
                       <Link href={ondeEditar(d.chave)} className="flex items-baseline justify-between gap-3 rounded-[4px] px-1 py-1 text-sm hover:bg-white/[0.06]">
                         <span className="truncate text-white/85">{d.titulo}</span>
-                        <span className="shrink-0 text-xs text-white/45">{d.atualizado ? dataCurta(d.atualizado) : "Editado"}</span>
+                        <span className="shrink-0 text-xs text-white/70">{d.atualizado ? dataCurta(d.atualizado) : "Editado"}</span>
                       </Link>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="border-t border-white/[0.07] pt-3 text-sm text-white/55">
+                <p className="border-t border-white/[0.07] pt-3 text-sm text-white/75">
                   Tudo como no lançamento: nenhum texto foi mudado no painel.
                 </p>
               )}
@@ -336,14 +336,14 @@ export default function PainelAdmin() {
             if (itens.length === 0) return null;
             return (
               <div key={g.grupo} className="painel painel-escuro p-4">
-                <p className="mb-2 text-xs text-white/45">{g.grupo}</p>
+                <p className="mb-2 text-xs text-white/70">{g.grupo}</p>
                 <ul className="space-y-0.5">
                   {itens.map((i) => {
                     const Ic = i.icone;
                     return (
                       <li key={i.href}>
                         <Link href={i.href} className="flex items-center gap-3 rounded-[var(--raio)] px-2 py-1.5 text-sm text-white/80 transition-colors hover:bg-white/[0.08] hover:text-white">
-                          <Ic className="size-4 shrink-0 text-white/50" strokeWidth={1.8} aria-hidden />
+                          <Ic className="size-4 shrink-0 text-white/75" strokeWidth={1.8} aria-hidden />
                           {i.nome}
                         </Link>
                       </li>
@@ -375,9 +375,9 @@ function Alerta({ n, pronto, href, icone: Ic, um, varios, zero }: {
         {activo ? (
           <span className="chip-mb !size-8 [&_svg]:!size-4"><Ic aria-hidden /></span>
         ) : (
-          <Ic className="size-5 text-white/40" aria-hidden />
+          <Ic className="size-5 text-white/70" aria-hidden />
         )}
-        <ArrowUpRight className="size-4 text-white/40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white" aria-hidden />
+        <ArrowUpRight className="size-4 text-white/70 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white" aria-hidden />
       </span>
       {activo ? (
         <span className="mt-auto pt-4">
@@ -385,7 +385,7 @@ function Alerta({ n, pronto, href, icone: Ic, um, varios, zero }: {
           <span className="mt-1.5 block text-sm leading-snug text-white/80">{n === 1 ? um : varios}</span>
         </span>
       ) : (
-        <span className="mt-auto pt-4 text-sm leading-snug text-white/60">{pronto ? zero : "A verificar…"}</span>
+        <span className="mt-auto pt-4 text-sm leading-snug text-white/80">{pronto ? zero : "A verificar…"}</span>
       )}
     </Link>
   );
@@ -400,7 +400,7 @@ function ProximaRonda({ evento: e, agora }: { evento: Evento; agora: number | nu
       <div className="min-w-0 flex-1 basis-56">
         <p className="text-xs text-mb-red-light">Próxima ronda do campeonato · Ronda {e.ronda}</p>
         <p className="mt-0.5 truncate text-lg font-semibold">{e.titulo}</p>
-        <p className="truncate text-sm text-white/60">
+        <p className="truncate text-sm text-white/80">
           {dataCurta(e.dataInicio, true)} · {[e.circuito, e.localidade || e.provincia].filter(Boolean).join(", ")}
         </p>
       </div>
@@ -427,11 +427,11 @@ function LinhaEvento({ e }: { e: Evento }) {
       <Link href={comunidade ? "/admin/eventos" : "/admin/provas"} className="group flex items-center gap-4 py-2.5">
         <span className="grid w-12 shrink-0 place-items-center rounded-[4px] bg-white/[0.07] py-1.5 text-center leading-none">
           <span className="text-lg font-semibold tabular-nums">{d.getDate()}</span>
-          <span className="mt-0.5 text-[11px] text-white/55">{meses[d.getMonth()]}</span>
+          <span className="mt-0.5 text-[11px] text-white/75">{meses[d.getMonth()]}</span>
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[15px] text-white group-hover:text-mb-red-light">{e.titulo}</span>
-          <span className="block truncate text-xs text-white/50">
+          <span className="block truncate text-xs text-white/75">
             {comunidade ? e.disciplina : `Prova · ${e.disciplina}${e.ronda ? ` · Ronda ${e.ronda}` : ""}`} · {[e.localidade, e.provincia].filter(Boolean).join(", ")}
           </span>
         </span>
@@ -447,14 +447,14 @@ function Medidor({ rotulo, editados, total }: { rotulo: string; editados: number
     <div>
       <div className="mb-1.5 flex items-baseline justify-between gap-3 text-sm">
         <span className="text-white/75">{rotulo}</span>
-        <span className="shrink-0 tabular-nums text-white/55">
+        <span className="shrink-0 tabular-nums text-white/75">
           <span className="text-white">{editados}</span> de {total} editados
         </span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-white/10" role="meter" aria-valuemin={0} aria-valuemax={total} aria-valuenow={editados} aria-label={rotulo}>
         <div className="h-full rounded-full bg-mb-red" style={{ width: `${pct}%` }} />
       </div>
-      <p className="mt-1 text-xs text-white/45">{total - editados} ainda com o texto original</p>
+      <p className="mt-1 text-xs text-white/70">{total - editados} ainda com o texto original</p>
     </div>
   );
 }

@@ -132,7 +132,7 @@ export function JuntarClube({
         {erro("email")}
       </label>
       <label className="block sm:col-span-2">
-        <span className={rotulo}>Sobre o clube <span className="text-white/40">(opcional)</span></span>
+        <span className={rotulo}>Sobre o clube <span className="text-white/70">(opcional)</span></span>
         <textarea
           value={form.mensagem}
           onChange={mudar("mensagem")}
@@ -157,7 +157,7 @@ export function JuntarClube({
             <path fill="currentColor" d="M0 11.6 9.6 2H1V0h12v12h-2V3.4L1.4 13z" />
           </svg>
         </button>
-        {nota && <p className="text-xs text-white/50">{nota}</p>}
+        {nota && <p className="text-xs text-white/75">{nota}</p>}
       </div>
       {erros.geral && <p className="text-sm text-mb-red-light sm:col-span-2" role="alert">{erros.geral}</p>}
     </form>

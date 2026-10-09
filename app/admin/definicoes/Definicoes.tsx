@@ -2,30 +2,34 @@
 
 /* ============================================================
    MOTOBOX ADMIN — Definições
-   Três separadores, todos abertos ao mesmo tempo (nada se perde
+   Quatro separadores, todos abertos ao mesmo tempo (nada se perde
    ao trocar antes de gravar):
    - Geral: a linha única `definicoes` (identidade, contactos,
      redes, bilheteira, comunidade, site);
    - Emails: remetente, para onde vai cada mensagem, o texto de
      cada email, o email de teste e os últimos emails enviados;
    - Contas: os textos de Entrar e da nova palavra-passe, e as
-     contas que ainda não confirmaram o email.
+     contas que ainda não confirmaram o email;
+   - Área de membro: os textos fixos de /conta, os níveis e os
+     pontos de cada acção (documento "site.conta").
    ============================================================ */
 
 import { useState } from "react";
-import { Mail, Settings, UserRound } from "lucide-react";
+import { LayoutDashboard, Mail, Settings, UserRound } from "lucide-react";
 import { CabecalhoPagina } from "@/components/admin/kit";
 import { AbasEmLinhas } from "../paginas/_editor/partes";
 import { DefinicoesGerais } from "./Gerais";
 import { DefinicoesEmails } from "./Emails";
 import { DefinicoesContas } from "./Contas";
+import { DefinicoesMembro } from "./Membro";
 
-export type AbaDefinicoes = "geral" | "emails" | "contas";
+export type AbaDefinicoes = "geral" | "emails" | "contas" | "membro";
 
 const ABAS: { chave: AbaDefinicoes; nome: string }[] = [
   { chave: "geral", nome: "Geral" },
   { chave: "emails", nome: "Emails" },
   { chave: "contas", nome: "Contas" },
+  { chave: "membro", nome: "Área de membro" },
 ];
 
 const CABECALHOS: Record<AbaDefinicoes, { icone: React.ReactNode; descricao: string }> = {
@@ -40,6 +44,10 @@ const CABECALHOS: Record<AbaDefinicoes, { icone: React.ReactNode; descricao: str
   contas: {
     icone: <UserRound />,
     descricao: "Os textos das páginas de entrar, criar conta e nova palavra-passe, e as contas que ainda não confirmaram o email.",
+  },
+  membro: {
+    icone: <LayoutDashboard />,
+    descricao: "A área de cada membro (A minha conta): os textos do resumo e dos separadores, os níveis e os pontos que cada acção vale.",
   },
 };
 
@@ -69,6 +77,7 @@ export function Definicoes({ abaInicial }: { abaInicial: AbaDefinicoes }) {
       <div hidden={aba !== "geral"}><DefinicoesGerais irPara={mudarAba} /></div>
       <div hidden={aba !== "emails"}><DefinicoesEmails activa={aba === "emails"} /></div>
       <div hidden={aba !== "contas"}><DefinicoesContas activa={aba === "contas"} irPara={mudarAba} /></div>
+      <div hidden={aba !== "membro"}><DefinicoesMembro /></div>
     </>
   );
 }

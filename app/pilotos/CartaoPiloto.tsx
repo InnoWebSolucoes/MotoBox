@@ -52,7 +52,7 @@ export function CartaoPiloto({
             {posicao}.º
           </span>
         ) : null}
-        <span aria-hidden className="absolute right-2 top-1.5 hidden text-5xl font-semibold leading-none tabular-nums text-white/35 sm:right-3 sm:block">
+        <span aria-hidden className="absolute right-2 top-1.5 hidden text-5xl font-semibold leading-none tabular-nums text-white/70 sm:right-3 sm:block">
           {p.numero}
         </span>
         {p.campeonatos > 0 && (
@@ -66,13 +66,13 @@ export function CartaoPiloto({
       <div className="flex min-w-0 flex-1 flex-col p-2 pl-2.5 sm:p-4 sm:pt-5">
         <p className="text-[0.8125rem] text-mb-red-light">
           {p.categoria}
-          <span aria-hidden className="text-white/45 sm:hidden"> · #{p.numero}</span>
+          <span aria-hidden className="text-white/70 sm:hidden"> · #{p.numero}</span>
         </p>
         <h3 className="mt-1 text-lg font-semibold leading-snug tracking-tight sm:text-xl">
           <span className="sr-only">#{p.numero} </span>
           {p.nome}
         </h3>
-        <p className="mt-1 flex min-w-0 items-center gap-2 text-sm text-white/60">
+        <p className="mt-1 flex min-w-0 items-center gap-2 text-sm text-white/80">
           {cor && <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: cor }} />}
           <span className="truncate">{p.equipa}</span>
         </p>
@@ -93,7 +93,7 @@ export function CartaoPiloto({
               ] as const
             ).map(([id, k, v]) => (
               <div key={id} className="flex flex-col-reverse">
-                <dt className="mt-1 text-xs text-white/50">{k}</dt>
+                <dt className="mt-1 text-xs text-white/75">{k}</dt>
                 <dd className="text-xl font-semibold leading-none tabular-nums">{v}</dd>
               </div>
             ))}

@@ -32,13 +32,13 @@ export interface FotoInstagram {
 
 /** Vídeo de fundo do site (ENTRADA_PADRAO em lib/conteudo/grupos/site.ts). */
 export const VIDEO_INSTAGRAM = {
-  ficheiro: "videos/instagram-DeOelO6uUlE-fundo.mp4",
-  poster: "videos/instagram-DeOelO6uUlE-fundo.jpg",
+  ficheiro: "videos/instagram-DdwTCnFOtxr-fundo-calmo.mp4",
+  poster: "videos/instagram-DdwTCnFOtxr-fundo-calmo.jpg",
   conta: "@motobox_angola",
-  publicacao: "https://www.instagram.com/p/DeOelO6uUlE/",
-  data: "2026-10-08",
+  publicacao: "https://www.instagram.com/p/DdwTCnFOtxr/",
+  data: "2026-09-26",
   descricao:
-    "Resumo da 8.ª prova do Campeonato de Motocross, cortado a 21 s em 1280×720: sem som, sem o título «8.ª prova», sem os clarões de transição, sem o cartão final e sem os planos com caras; escurecido para o texto da entrada se ler por cima. Tem a pequena marca do fotógrafo no canto. A imagem de espera é a primeira do vídeo.",
+    "7.ª prova do Campeonato de Motocross nas dunas: quatro planos longos e abertos, a metade da velocidade, com transições suaves e sem cortes bruscos, clarões nem caras; sem a marca do fotógrafo. Vídeo calmo para o fundo do site (substitui o resumo da 8.ª prova, que tinha movimento a mais).",
 };
 
 export const FOTOS_INSTAGRAM: FotoInstagram[] = [

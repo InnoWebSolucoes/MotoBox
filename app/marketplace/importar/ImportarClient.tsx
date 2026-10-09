@@ -62,15 +62,15 @@ export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
           <ol className="mt-10 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
             {PASSOS.map((p, i) => (
               <li key={i} className="border-t-2 border-white/10 pt-5 first:border-mb-red!">
-                <span className="font-display text-5xl leading-none text-mb-red tabular-nums">{i + 1}</span>
+                <span className="font-display text-5xl leading-none text-mb-red-light tabular-nums">{i + 1}</span>
                 <h3 className="mt-3 font-display text-xl uppercase leading-tight text-white">{x(p.titulo)}</h3>
-                <p className="mt-2 text-sm text-ink-400 leading-relaxed">{x(p.texto)}</p>
+                <p className="mt-2 text-sm text-ink-300 leading-relaxed">{x(p.texto)}</p>
               </li>
             ))}
           </ol>
 
           <div className="mt-10 flex items-start gap-4 rounded-[var(--raio)] bg-mb-red/15 p-5 sm:p-6">
-            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-mb-red/15 text-mb-red">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-mb-red/15 text-mb-red-light">
               <Icon name="flag" className="size-4.5" />
             </span>
             <div>
@@ -87,11 +87,11 @@ export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
             {CATEGORIAS.map((c, i) => (
               <div key={i} className="border-b border-white/6 py-5">
                 <h3 className="font-display text-xl uppercase text-white">{x(c.nome)}</h3>
-                <p className="mt-1.5 text-sm text-ink-400 leading-relaxed">{x(c.texto)}</p>
+                <p className="mt-1.5 text-sm text-ink-300 leading-relaxed">{x(c.texto)}</p>
                 {c.ligacao?.href && (
                   <Link
                     href={c.ligacao.href}
-                    className="mt-2 inline-flex items-center gap-1.5 font-ui text-sm text-mb-red transition-colors hover:text-mb-red-light"
+                    className="mt-2 inline-flex items-center gap-1.5 font-ui text-sm text-mb-red-light transition-colors hover:text-mb-red-light"
                   >
                     {x(c.ligacao.texto)}
                     <Icon name="arrow" className="size-3.5" />
@@ -106,21 +106,21 @@ export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
         <section id="regras" aria-labelledby="regras-titulo" className="scroll-mt-24 border-t border-white/6 py-16">
           <div className="max-w-3xl">
             <h2 id="regras-titulo" className="titulo-3">{x(TEXTO.regrasTitulo)}</h2>
-            <p className="mt-3 text-sm text-ink-400 leading-relaxed">{x(TEXTO.regrasSub)}</p>
+            <p className="mt-3 text-sm text-ink-300 leading-relaxed">{x(TEXTO.regrasSub)}</p>
           </div>
           <ol className="mt-8 grid gap-x-10 md:grid-cols-2">
             {REGRAS.map((r, i) => (
               <li key={i} className="flex gap-4 border-b border-white/6 py-5">
-                <span className="w-6 shrink-0 font-display text-2xl leading-none text-mb-red tabular-nums">{i + 1}</span>
+                <span className="w-6 shrink-0 font-display text-2xl leading-none text-mb-red-light tabular-nums">{i + 1}</span>
                 <div>
                   <h3 className="font-display text-lg uppercase leading-tight text-white">{x(r.titulo)}</h3>
-                  <p className="mt-1.5 text-sm text-ink-400 leading-relaxed">
+                  <p className="mt-1.5 text-sm text-ink-300 leading-relaxed">
                     {x(r.texto)}
                     {r.fonte?.map((n) => (
                       <a
                         key={n}
                         href={`#fonte-${n}`}
-                        className="ml-1 align-super text-[10px] text-mb-red hover:underline"
+                        className="ml-1 align-super text-[10px] text-mb-red-light hover:underline"
                         aria-label={`${x(TEXTO.fontesTitulo)} ${n}`}
                       >
                         [{n}]
@@ -132,7 +132,7 @@ export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
             ))}
           </ol>
           <p className="mt-8 flex items-start gap-3 text-sm text-white leading-relaxed">
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-mb-red/12 text-mb-red">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-mb-red/12 text-mb-red-light">
               <Icon name="shield" className="size-4" />
             </span>
             <span className="pt-1.5">{x(TEXTO.despachante)}</span>
@@ -143,15 +143,15 @@ export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
         <section id="onde-procurar" aria-labelledby="onde-titulo" className="scroll-mt-24 border-t border-white/6 py-16">
           <div className="max-w-3xl">
             <h2 id="onde-titulo" className="titulo-3">{x(TEXTO.ondeTitulo)}</h2>
-            <p className="mt-3 text-sm text-ink-400 leading-relaxed">{x(TEXTO.ondeSub)}</p>
+            <p className="mt-3 text-sm text-ink-300 leading-relaxed">{x(TEXTO.ondeSub)}</p>
           </div>
 
           <div className="mt-10 space-y-12">
             {ONDE_PROCURAR.map((g, i) => (
               <div key={i}>
-                <h3 className="eyebrow text-mb-red">{x(g.grupo)}</h3>
+                <h3 className="eyebrow text-mb-red-light">{x(g.grupo)}</h3>
                 {g.classificados && (
-                  <p className="mt-2 max-w-3xl text-xs text-ink-500 leading-relaxed">{x(TEXTO.classificadosAviso)}</p>
+                  <p className="mt-2 max-w-3xl text-xs text-ink-300 leading-relaxed">{x(TEXTO.classificadosAviso)}</p>
                 )}
                 <ul className="mt-4 grid gap-x-10 md:grid-cols-2">
                   {g.sitios.map((s, j) => (
@@ -164,13 +164,13 @@ export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
                       >
                         <span className="min-w-0 flex-1">
                           <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                            <span className="font-display text-xl uppercase text-white transition-colors group-hover:text-mb-red">
+                            <span className="font-display text-xl uppercase text-white transition-colors group-hover:text-mb-red-light">
                               {s.nome}
                             </span>
-                            <span className="text-xs text-ink-500">{x(s.pais)}</span>
+                            <span className="text-xs text-ink-300">{x(s.pais)}</span>
                           </span>
-                          <span className="mt-1 block text-sm text-ink-400 leading-relaxed">{x(s.texto)}</span>
-                          <span className="mt-1.5 block text-xs text-ink-600">{dominio(s.url)}</span>
+                          <span className="mt-1 block text-sm text-ink-300 leading-relaxed">{x(s.texto)}</span>
+                          <span className="mt-1.5 block text-xs text-ink-300">{dominio(s.url)}</span>
                         </span>
                         <span
                           aria-hidden
@@ -194,17 +194,17 @@ export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
           <div className="mt-8 grid gap-x-10 gap-y-8 md:grid-cols-2">
             <div className="border-t-2 border-mb-red! pt-5">
               <h3 className="font-display text-xl uppercase text-white">{x(TEXTO.emKwanzas)}</h3>
-              <p className="mt-2 text-sm text-ink-400 leading-relaxed">{x(TEXTO.emKwanzasTexto)}</p>
+              <p className="mt-2 text-sm text-ink-300 leading-relaxed">{x(TEXTO.emKwanzasTexto)}</p>
             </div>
             <div className="border-t-2 border-white/10 pt-5">
               <div className="flex flex-wrap items-center gap-3">
                 <h3 className="font-display text-xl uppercase text-white">{x(TEXTO.carteiras)}</h3>
                 <Tag tone="neutral">{x(TEXTO.emEstudo)}</Tag>
               </div>
-              <p className="mt-2 text-sm text-ink-400 leading-relaxed">
+              <p className="mt-2 text-sm text-ink-300 leading-relaxed">
                 {x(TEXTO.carteirasTexto)}
                 {(TEXTO.carteirasFontes ?? []).map((n) => (
-                  <a key={n} href={`#fonte-${n}`} className="ml-1 align-super text-[10px] text-mb-red hover:underline" aria-label={`${x(TEXTO.fontesTitulo)} ${n}`}>
+                  <a key={n} href={`#fonte-${n}`} className="ml-1 align-super text-[10px] text-mb-red-light hover:underline" aria-label={`${x(TEXTO.fontesTitulo)} ${n}`}>
                     [{n}]
                   </a>
                 ))}
@@ -218,13 +218,13 @@ export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
       <section id="pedido" aria-labelledby="pedido-titulo" className="scroll-mt-6 coluna">
         <div className="painel painel-escuro grid gap-10 p-6 py-12 md:p-10 lg:grid-cols-[1fr_1.35fr] lg:gap-14">
           <div>
-            <p className="eyebrow text-mb-red">{x(TEXTO.titulo)}</p>
+            <p className="eyebrow text-mb-red-light">{x(TEXTO.titulo)}</p>
             <h2 id="pedido-titulo" className="titulo-2 mt-2">{x(TEXTO.formTitulo)}</h2>
             <p className="mt-4 text-base text-ink-300 leading-relaxed">{x(TEXTO.formSub)}</p>
             <ul className="mt-8">
               {TEXTO.formDicas.map((d, i) => (
                 <li key={i} className="flex gap-3 border-b border-white/6 py-3.5 last:border-0">
-                  <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-mb-red/15 text-mb-red">
+                  <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-mb-red/15 text-mb-red-light">
                     <Icon name="check" className="size-3.5" />
                   </span>
                   <span className="text-sm text-ink-300 leading-relaxed">{x(d)}</span>
@@ -242,7 +242,7 @@ export function ImportarClient({ dados }: { dados: ConteudoImportar }) {
         <ol className="grid gap-x-10 text-xs sm:grid-cols-2">
           {FONTES.map((f, i) => (
             <li key={`${f.n}-${i}`} id={`fonte-${f.n}`} className="flex scroll-mt-24 gap-3 border-b border-white/6 py-2.5">
-              <span className="w-5 shrink-0 text-right text-ink-600 tabular-nums">{f.n}</span>
+              <span className="w-5 shrink-0 text-right text-ink-300 tabular-nums">{f.n}</span>
               <a
                 href={f.url}
                 target="_blank"

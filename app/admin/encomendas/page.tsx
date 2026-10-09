@@ -137,7 +137,7 @@ export default function AdminEncomendas() {
 
         {/* Telemóvel (por exemplo, à entrada do evento): um cartão por encomenda. */}
         <ul className="space-y-[var(--intervalo)] md:hidden">
-          {fatia.length === 0 && <li className="py-10 text-center text-sm text-white/50">Nenhuma encomenda corresponde aos filtros.</li>}
+          {fatia.length === 0 && <li className="py-10 text-center text-sm text-white/75">Nenhuma encomenda corresponde aos filtros.</li>}
           {fatia.map((e) => (
             <li key={e.id} className="rounded-[var(--raio)] border border-white/[0.08] bg-black/[0.15] p-3.5">
               <button type="button" onClick={() => setAbertaId(e.id)} className="block w-full text-left">
@@ -145,7 +145,7 @@ export default function AdminEncomendas() {
                   <span className="min-w-0">
                     <span className="block font-medium tabular-nums text-white">{e.referencia}</span>
                     <span className="block truncate text-sm text-white/75">{e.comprador.nome}</span>
-                    <span className="block truncate text-xs text-white/45">{e.eventoTitulo} · {e.quantidade} × {e.tipoBilheteNome}</span>
+                    <span className="block truncate text-xs text-white/70">{e.eventoTitulo} · {e.quantidade} × {e.tipoBilheteNome}</span>
                   </span>
                   <span className="shrink-0 text-right">
                     <span className="block tabular-nums text-white">{formatKz(e.total)}</span>
@@ -170,15 +170,15 @@ export default function AdminEncomendas() {
             <Linha key={e.id} onClick={() => setAbertaId(e.id)}>
               <Cel>
                 <p className="font-medium tabular-nums text-white">{e.referencia}</p>
-                <p className="text-xs text-white/45">{dataCurta(e.criado)}</p>
+                <p className="text-xs text-white/70">{dataCurta(e.criado)}</p>
               </Cel>
               <Cel>
                 <p className="max-w-60 truncate text-white/85">{e.eventoTitulo}</p>
-                <p className="truncate text-xs text-white/45">{e.tipoBilheteNome}</p>
+                <p className="truncate text-xs text-white/70">{e.tipoBilheteNome}</p>
               </Cel>
               <Cel>
                 <p className="max-w-48 truncate text-white/85">{e.comprador.nome}</p>
-                <p className="truncate text-xs text-white/45">{e.metodo}</p>
+                <p className="truncate text-xs text-white/70">{e.metodo}</p>
               </Cel>
               <Cel className="tabular-nums text-white/70">{e.quantidade}</Cel>
               <Cel className="whitespace-nowrap tabular-nums text-white">{formatKz(e.total)}</Cel>
@@ -224,12 +224,12 @@ export default function AdminEncomendas() {
           <div className="space-y-5">
             <div className="flex items-center justify-between gap-3 rounded-[var(--raio)] border border-white/10 bg-black/[0.18] p-4">
               <div>
-                <p className="text-xs text-white/50">Estado</p>
+                <p className="text-xs text-white/75">Estado</p>
                 <div className="mt-1"><Estado valor={aberta.estado} rotulo={nomeEstado(aberta.estado)} /></div>
-                <p className="mt-1.5 text-xs text-white/50">{ESTADOS.find((s) => s.valor === aberta.estado)?.descricao}</p>
+                <p className="mt-1.5 text-xs text-white/75">{ESTADOS.find((s) => s.valor === aberta.estado)?.descricao}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-white/50">Total</p>
+                <p className="text-xs text-white/75">Total</p>
                 <p className="text-2xl font-semibold tabular-nums">{formatKz(aberta.total)}</p>
               </div>
             </div>

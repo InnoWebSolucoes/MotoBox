@@ -18,7 +18,8 @@ export interface Destino {
 
 export const DESTINOS: Record<string, Destino> = {
   "site.entrada": { href: "/admin/site?aba=entrada", onde: "Entrada e painel", resumo: "A frase da página inicial e o vídeo de fundo de todo o site." },
-  "site.contagem": { href: "/admin/site?aba=contagem", onde: "Entrada e painel", resumo: "A contagem decrescente do painel Explorar." },
+  "site.contagem": { href: "/admin/site?aba=contagem", onde: "Entrada e painel", resumo: "O mosaico «Em foco» do painel Explorar: um evento, prova, artigo, rota, anúncio, clube, modalidade ou tema de segurança, com contagem decrescente opcional." },
+  "site.abertura": { href: "/admin/site?aba=abertura", onde: "Entrada e painel", resumo: "A abertura com as luzes de partida («Pronto?») e os capacetes." },
   "site.painel": { href: "/admin/site?aba=painel", onde: "Entrada e painel", resumo: "Os textos e as fotografias fixos dos mosaicos do painel Explorar." },
   "paginas.sobre": { href: "/admin/paginas?doc=paginas.sobre", onde: "Páginas", resumo: "História, números, equipa e o que o site oferece." },
   "paginas.contacto": { href: "/admin/paginas?doc=paginas.contacto", onde: "Páginas", resumo: "O texto da página e os textos do formulário de contacto." },
@@ -35,6 +36,7 @@ export const DESTINOS: Record<string, Destino> = {
   "desporto.equipas": { href: "/admin/equipas", onde: "Equipas", resumo: "As fotografias de capa das equipas." },
   "site.geral": { href: "/admin/site?aba=geral", onde: "Entrada e painel", resumo: "Rodapé, botão de acção, página 404, aviso de cookies, manutenção e newsletter." },
   "site.emails": { href: "/admin/definicoes?aba=emails", onde: "Definições", resumo: "Para onde vão os emails do site, o remetente e o texto de cada email." },
+  "site.conta": { href: "/admin/definicoes?aba=membro", onde: "Definições", resumo: "Os textos da área de membro (/conta), os níveis e os pontos." },
   "site.contas": { href: "/admin/definicoes?aba=contas", onde: "Definições", resumo: "Os textos de entrar, criar conta e recuperar a palavra-passe." },
   "campeonato.calendario": { href: "/admin/provas?aba=paginas&doc=calendario", onde: "Provas", resumo: "Os textos fixos do calendário e da página de cada prova." },
   "campeonato.resultados": { href: "/admin/provas?aba=paginas&doc=resultados", onde: "Provas", resumo: "Os textos fixos dos resultados." },

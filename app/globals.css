@@ -18,7 +18,7 @@
   /* Marca */
   --color-mb-red: #e10600;
   --color-mb-red-dark: #b30500;
-  --color-mb-red-light: #ff2b1f;
+  --color-mb-red-light: #ff7a70; /* texto vermelho sobre carvão: contraste ≥ 4.5:1 */
 
   /* Neutros do painel */
   --color-near-black: #2c2c33;
@@ -210,7 +210,7 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    color: rgb(255 255 255 / 0.5);
+    color: rgb(255 255 255 / 0.78);
   }
   .prosa p:first-child::first-letter {
     float: left;
@@ -250,13 +250,13 @@
     position: relative;
     overflow: hidden;
     border-radius: var(--raio);
-    background: rgb(58 58 66 / 0.42);
+    background: rgb(58 58 66 / 0.58);
     isolation: isolate;
   }
 
   /* Painel liso, mais escuro em baixo (as fichas pequenas do painel). */
   .painel-escuro {
-    background: linear-gradient(to top, rgb(50 50 58 / 0.92), rgb(50 50 58 / 0.5));
+    background: linear-gradient(to top, rgb(50 50 58 / 0.95), rgb(50 50 58 / 0.7));
   }
 
   /* Corte no canto superior esquerdo, onde assenta o quadrado do logótipo. */
@@ -618,6 +618,14 @@
   font-weight: 600;
   letter-spacing: -0.01em;
   text-transform: none;
+}
+
+/* ---------- Texto sobre o vermelho ----------
+   O vermelho da marca só aguenta branco inteiro (4,98:1); a 90% já
+   fica abaixo de 4,5:1. Fora de camadas, para ganhar às utilidades. */
+.bg-mb-red[class*="text-white/"],
+.bg-mb-red [class*="text-white/"] {
+  color: #fff;
 }
 
 /* ---------- Barras de deslocação ---------- */

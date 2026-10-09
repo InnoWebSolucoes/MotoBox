@@ -64,7 +64,7 @@ export function Posicao({ n, pequena = false }: { n: number; pequena?: boolean }
     <span
       className={`grid shrink-0 place-items-center rounded-[4px] font-semibold tabular-nums ${
         pequena ? "size-7 text-xs" : "size-9 text-sm"
-      } ${n === 0 ? "bg-white/[0.06] text-white/50" : cor}`}
+      } ${n === 0 ? "bg-white/[0.06] text-white/75" : cor}`}
     >
       {n === 0 ? "NC" : n}
     </span>
@@ -96,7 +96,7 @@ export function TituloBloco({
     <div className={`flex flex-wrap items-end justify-between gap-x-6 gap-y-4 ${className}`}>
       <div className="max-w-2xl">
         {icone && <Chip grande className="mb-8">{icone}</Chip>}
-        {sobretitulo && <p className="text-sm text-white/60">{sobretitulo}</p>}
+        {sobretitulo && <p className="text-sm text-white/80">{sobretitulo}</p>}
         <h2 className={`${grande ? "titulo-2" : "titulo-3"} text-balance ${sobretitulo ? "mt-2" : ""}`}>{titulo}</h2>
         {texto && <div className="mt-4 max-w-[52ch] text-[15px] leading-relaxed text-white/75">{texto}</div>}
       </div>
@@ -115,7 +115,7 @@ export function Vazio({ titulo, texto }: { titulo: string; texto: string }) {
   return (
     <div className="painel painel-escuro p-6 md:p-8">
       <p className="text-lg font-semibold">{titulo}</p>
-      <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-white/65">{texto}</p>
+      <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-white/80">{texto}</p>
     </div>
   );
 }
@@ -173,7 +173,7 @@ export function HeroModalidade({
           />
         )}
         {children}
-        {notaFoto && <p className="mt-6 text-xs text-white/45">{notaFoto}</p>}
+        {notaFoto && <p className="mt-6 text-xs text-white/70">{notaFoto}</p>}
       </Seccao>
     </>
   );
@@ -239,7 +239,7 @@ export function UltimosResultados({ corridas }: { corridas: Corrida[] }) {
         <div key={c.slug} className="painel painel-escuro p-5 md:p-6">
           <Link href={`/resultados/${c.slug}`} className="group flex items-start justify-between gap-4">
             <span className="min-w-0">
-              <span className="block text-[0.8125rem] text-white/60">
+              <span className="block text-[0.8125rem] text-white/80">
                 <span className="text-mb-red-light">{c.categoria}</span> ·{" "}
                 {formatData(c.data, { day: "2-digit", month: "short" })}
               </span>
@@ -256,7 +256,7 @@ export function UltimosResultados({ corridas }: { corridas: Corrida[] }) {
                 <Link href={`/pilotos/${r.pilotoSlug}`} className="min-w-0 flex-1 truncate text-[15px] text-white/90 hover:text-white">
                   {r.piloto}
                 </Link>
-                <span className="shrink-0 text-sm text-white/60 tabular-nums">{r.estado ?? r.tempo}</span>
+                <span className="shrink-0 text-sm text-white/80 tabular-nums">{r.estado ?? r.tempo}</span>
               </li>
             ))}
           </ol>
@@ -293,7 +293,7 @@ export function FilaPilotos({ pilotos, cores }: { pilotos: (Piloto & { posicao?:
               </div>
               <div className="p-3 pb-2">
                 <p className="text-[15px] font-semibold leading-snug transition-colors group-hover:text-mb-red-light">{p.nome}</p>
-                <p className="mt-1 flex items-center gap-2 text-xs text-white/60">
+                <p className="mt-1 flex items-center gap-2 text-xs text-white/80">
                   <span className="h-3 w-1 shrink-0 rounded-full" style={{ background: cores.get(p.equipaSlug) ?? "#3d3d47" }} aria-hidden />
                   <span className="truncate">{p.equipa}</span>
                 </p>
@@ -349,15 +349,15 @@ export function ArquivoCorridas({ corridas }: { corridas: Corrida[] }) {
                     <p className="mt-2 text-sm text-white/80">
                       {c.circuito}, {c.provincia}
                     </p>
-                    <p className="mt-0.5 text-sm text-white/60">{formatData(c.data)}</p>
+                    <p className="mt-0.5 text-sm text-white/80">{formatData(c.data)}</p>
                     <div className="mt-4 border-t border-white/15 pt-4">
-                      <p className="text-xs text-white/60">Vencedor</p>
+                      <p className="text-xs text-white/80">Vencedor</p>
                       <p className="mt-1 text-lg font-semibold text-mb-red-light">{c.vencedor}</p>
                     </div>
                   </div>
 
                   <div className="p-2 md:p-4">
-                    <div className="hidden grid-cols-[2.25rem_minmax(0,1fr)_9rem_6.5rem_3rem] items-center gap-4 px-2 pb-3 text-xs text-white/50 sm:grid">
+                    <div className="hidden grid-cols-[2.25rem_minmax(0,1fr)_9rem_6.5rem_3rem] items-center gap-4 px-2 pb-3 text-xs text-white/75 sm:grid">
                       {["Pos", "Piloto", "Equipa", "Tempo", "Pts"].map((h) => (
                         <span key={h} className={h === "Pts" ? "text-right" : ""}>
                           {h}
@@ -376,11 +376,11 @@ export function ArquivoCorridas({ corridas }: { corridas: Corrida[] }) {
                             <Posicao n={r.posicao} />
                             <span className="min-w-0">
                               <span className="block truncate text-[15px] transition-colors group-hover:text-mb-red-light">{r.piloto}</span>
-                              <span className="block truncate text-xs text-white/50 sm:hidden">
+                              <span className="block truncate text-xs text-white/75 sm:hidden">
                                 {r.equipa} · <span className="tabular-nums">{r.estado ?? r.tempo}</span>
                               </span>
                             </span>
-                            <span className="hidden truncate text-sm text-white/60 sm:block">{r.equipa}</span>
+                            <span className="hidden truncate text-sm text-white/80 sm:block">{r.equipa}</span>
                             <span className="hidden text-sm text-white/75 tabular-nums sm:block">{r.estado ?? r.tempo}</span>
                             <span className="text-right text-[15px] font-semibold tabular-nums">{r.pontos}</span>
                           </Link>
@@ -416,7 +416,7 @@ export function NotaMotobox({
         <p className="text-sm text-mb-red-light">{textos.titulo}</p>
         <p className="mt-3 flex items-baseline gap-2">
           <span className="text-4xl font-semibold leading-none tabular-nums">{provas}</span>
-          <span className="text-sm text-white/65">{provas === 1 ? "prova" : "provas"}</span>
+          <span className="text-sm text-white/80">{provas === 1 ? "prova" : "provas"}</span>
         </p>
         <p className="mt-3 text-sm leading-relaxed text-white/70">
           {textos.comProvasTexto}

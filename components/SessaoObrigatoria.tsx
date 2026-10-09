@@ -90,7 +90,7 @@ function JanelaSessao({ pedido, aoFechar }: { pedido: Pedido; aoFechar: () => vo
       <div role="dialog" aria-modal="true" aria-label="Entrar na Motobox"
         className="relative my-auto w-full max-w-md rounded-[6px] bg-near-black p-6 shadow-2xl ring-1 ring-white/10 sm:p-8">
         <button type="button" onClick={aoFechar} aria-label="Fechar"
-          className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-ink-400 transition-colors hover:bg-white/8 hover:text-white">
+          className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-ink-300 transition-colors hover:bg-white/8 hover:text-white">
           <Icon name="close" className="size-4" />
         </button>
         <FormularioSessao compacto destino={destino} motivo={pedido.motivo} modoInicial={pedido.modo} />

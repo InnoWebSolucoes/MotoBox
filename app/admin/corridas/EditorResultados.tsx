@@ -103,7 +103,7 @@ export function EditorResultados({
           <Trophy className="size-4 text-mb-red-light" aria-hidden /> Pódio, como aparece no site
         </p>
         {ordenadas.length === 0 ? (
-          <p className="text-sm text-white/50">Junte os pilotos à tabela para ver o pódio.</p>
+          <p className="text-sm text-white/75">Junte os pilotos à tabela para ver o pódio.</p>
         ) : (
           <ol className="grid grid-cols-3 items-end gap-[var(--intervalo)]">
             {podio.map((r, k) => {
@@ -127,7 +127,7 @@ export function EditorResultados({
         <Botao variante="primario" tamanho="sm" onClick={juntar}><Plus className="size-3.5" aria-hidden /> Juntar piloto</Botao>
         <Botao tamanho="sm" onClick={renumerar} disabled={linhas.length === 0}><ListOrdered className="size-3.5" aria-hidden /> Renumerar pela ordem</Botao>
         <Botao tamanho="sm" onClick={pontosAutomaticos} disabled={linhas.length === 0}>Pontos do Mundial (25, 22, 20…)</Botao>
-        <span className="text-xs text-white/45">{linhas.length} {linhas.length === 1 ? "piloto" : "pilotos"}</span>
+        <span className="text-xs text-white/70">{linhas.length} {linhas.length === 1 ? "piloto" : "pilotos"}</span>
       </div>
       {(repetidos.size > 0 || posRepetidas.size > 0) && (
         <p role="status" className="rounded-[var(--raio)] border border-gold/40 bg-gold/10 px-3 py-2 text-sm text-white/85">
@@ -138,7 +138,7 @@ export function EditorResultados({
 
       {/* ---------- Linhas ---------- */}
       {linhas.length === 0 ? (
-        <p className="rounded-[var(--raio)] border border-dashed border-white/15 px-4 py-8 text-center text-sm text-white/55">
+        <p className="rounded-[var(--raio)] border border-dashed border-white/15 px-4 py-8 text-center text-sm text-white/75">
           Sem pilotos. Use &quot;Juntar piloto&quot; para começar pela 1.ª posição.
         </p>
       ) : (
@@ -184,22 +184,22 @@ export function EditorResultados({
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-[5rem_minmax(0,1fr)_5rem_minmax(0,1.2fr)_auto]">
                   <label className="block min-w-0">
-                    <span className="mb-1 block text-[11px] text-white/50">Voltas</span>
+                    <span className="mb-1 block text-[11px] text-white/75">Voltas</span>
                     <input type="number" min={0} inputMode="numeric" value={r.voltas ?? 0}
                       onChange={(e) => alterar(i, { voltas: Number(e.target.value) || 0 })} className={`${CLASSE_CAMPO} py-1.5 tabular-nums`} />
                   </label>
                   <label className="block min-w-0">
-                    <span className="mb-1 block text-[11px] text-white/50">{r.posicao === 1 ? "Tempo total" : "Tempo ou diferença"}</span>
+                    <span className="mb-1 block text-[11px] text-white/75">{r.posicao === 1 ? "Tempo total" : "Tempo ou diferença"}</span>
                     <input value={r.tempo} placeholder={r.posicao === 1 ? "31:24.118" : "+4.882"}
                       onChange={(e) => alterar(i, { tempo: e.target.value })} className={`${CLASSE_CAMPO} py-1.5 tabular-nums`} />
                   </label>
                   <label className="block min-w-0">
-                    <span className="mb-1 block text-[11px] text-white/50">Pontos</span>
+                    <span className="mb-1 block text-[11px] text-white/75">Pontos</span>
                     <input type="number" min={0} inputMode="numeric" value={r.pontos ?? 0}
                       onChange={(e) => alterar(i, { pontos: Number(e.target.value) || 0 })} className={`${CLASSE_CAMPO} py-1.5 tabular-nums`} />
                   </label>
                   <label className="block min-w-0">
-                    <span className="mb-1 block text-[11px] text-white/50">Resultado</span>
+                    <span className="mb-1 block text-[11px] text-white/75">Resultado</span>
                     <select value={r.estado ?? ""} aria-label="Terminou ou não"
                       onChange={(e) => {
                         const est = e.target.value as ResultadoCorrida["estado"] | "";

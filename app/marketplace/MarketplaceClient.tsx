@@ -89,7 +89,7 @@ export function MarketplaceClient({
           </select>
           <label className="relative block">
             <span className="sr-only">Procurar no marketplace</span>
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-white/45" aria-hidden />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-white/70" aria-hidden />
             <input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
@@ -100,7 +100,7 @@ export function MarketplaceClient({
         </div>
       </div>
 
-      <p className="mt-6 text-sm text-white/55" aria-live="polite">
+      <p className="mt-6 text-sm text-white/75" aria-live="polite">
         {filtrados.length} {filtrados.length === 1 ? t.umAnuncio : t.variosAnuncios}
       </p>
 
@@ -123,11 +123,11 @@ export function MarketplaceClient({
               </div>
               <div className="flex flex-1 flex-col p-4 pt-5">
                 <p className="text-2xl font-semibold tabular-nums tracking-tight">{formatKz(a.preco)}</p>
-                <p className="mt-1 text-xs text-white/55">
+                <p className="mt-1 text-xs text-white/75">
                   {a.negociavel ? t.negociavel : t.precoFixo} · {dataCurta(a.publicado)}
                 </p>
                 <h2 className="mt-3 line-clamp-2 text-[15px] font-medium leading-snug">{a.titulo}</h2>
-                <div className="mt-auto flex items-center justify-between gap-3 pt-5 text-xs text-white/55">
+                <div className="mt-auto flex items-center justify-between gap-3 pt-5 text-xs text-white/75">
                   <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="inline-flex items-center gap-1">
                       <MapPin className="size-3" aria-hidden />
@@ -145,7 +145,7 @@ export function MarketplaceClient({
       ) : (
         <div className="painel painel-escuro mt-4 p-10">
           <p className="text-lg font-semibold">{t.vazioTitulo}</p>
-          <p className="mt-2 text-sm text-white/60">{t.vazioTexto}</p>
+          <p className="mt-2 text-sm text-white/80">{t.vazioTexto}</p>
         </div>
       )}
     </>

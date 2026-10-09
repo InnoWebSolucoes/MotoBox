@@ -65,7 +65,7 @@ export function PaginasCampeonato({ docInicial }: { docInicial?: string }) {
                   }`}
                 >
                   <span className="text-[14px] font-medium">{d.nome}</span>
-                  <span className={`text-xs ${d.id === actual.id ? "text-white/80" : "text-white/45"}`}>{d.pagina}</span>
+                  <span className={`text-xs ${d.id === actual.id ? "text-white/80" : "text-white/70"}`}>{d.pagina}</span>
                 </button>
               </li>
             ))}
@@ -73,7 +73,7 @@ export function PaginasCampeonato({ docInicial }: { docInicial?: string }) {
         </nav>
 
         <div className="min-w-0">
-          <p className="mb-3 text-sm text-white/60">{actual.descricao}</p>
+          <p className="mb-3 text-sm text-white/80">{actual.descricao}</p>
           {DOCS_CAMPEONATO.map((d) => (
             <div key={d.id} hidden={d.id !== actual.id}>
               <EditorPartes chave={d.chave} pagina={d.pagina} partes={d.partes} icone={<FileText />} />

@@ -113,7 +113,7 @@ export function Pilotos({ editar }: { editar?: string }) {
           tipo: "personalizado", chave: "_contar", etiqueta: "Contar",
           render: () => (
             <div className="flex flex-wrap items-center gap-3 rounded-[var(--raio)] bg-black/20 px-4 py-3">
-              <p className="min-w-0 flex-1 text-[13px] leading-relaxed text-white/60">
+              <p className="min-w-0 flex-1 text-[13px] leading-relaxed text-white/80">
                 Pode somar os pontos, vitórias, pódios e corridas das tabelas de Resultados de {temporada}. Revê antes de gravar.
               </p>
               <Botao tamanho="sm" onClick={() => {
@@ -183,9 +183,9 @@ export function Pilotos({ editar }: { editar?: string }) {
               <MiniRetrato p={p} cor={corDe(p.equipaSlug)} />
               <span className="min-w-0">
                 <span className="block max-w-[16rem] truncate font-medium text-white">
-                  <span className="mr-1.5 tabular-nums text-white/45">#{p.numero}</span>{p.nome}
+                  <span className="mr-1.5 tabular-nums text-white/70">#{p.numero}</span>{p.nome}
                 </span>
-                <span className="block max-w-[16rem] truncate text-xs text-white/50">{p.equipa || "Sem equipa"}</span>
+                <span className="block max-w-[16rem] truncate text-xs text-white/75">{p.equipa || "Sem equipa"}</span>
               </span>
             </div>
           ),
@@ -246,8 +246,8 @@ export function Pilotos({ editar }: { editar?: string }) {
           <div className="flex items-center gap-4">
             <MiniRetrato p={r} cor={corDe(r.equipaSlug)} tamanho="size-20" />
             <div className="min-w-0">
-              <p className="text-lg font-semibold leading-tight"><span className="mr-2 tabular-nums text-white/45">{r.numero}</span>{r.nome || "Nome do piloto"}</p>
-              <p className="mt-1 text-sm text-white/60">{[r.equipa || "Sem equipa", r.categoria].filter(Boolean).join(" · ")}</p>
+              <p className="text-lg font-semibold leading-tight"><span className="mr-2 tabular-nums text-white/70">{r.numero}</span>{r.nome || "Nome do piloto"}</p>
+              <p className="mt-1 text-sm text-white/80">{[r.equipa || "Sem equipa", r.categoria].filter(Boolean).join(" · ")}</p>
               {(r.campeonatos ?? 0) > 0 && <p className="mt-1 text-xs text-mb-red-light">{r.campeonatos}× campeão nacional</p>}
             </div>
           </div>

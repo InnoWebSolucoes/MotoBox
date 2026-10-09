@@ -58,17 +58,17 @@ function TabelaMeses({ valor, mudar }: { valor: unknown; mudar: (v: unknown) => 
   return (
     <div className="min-w-0">
       <span className="mb-1.5 block text-[13px] font-medium text-white/75">Mês a mês</span>
-      <span className="-mt-0.5 mb-2 block text-xs leading-relaxed text-white/50">
+      <span className="-mt-0.5 mb-2 block text-xs leading-relaxed text-white/75">
         Temperatura máxima e mínima médias (°C) e chuva (mm). Os meses com 50 mm ou mais ficam a vermelho na página.
       </span>
       <div className="grid grid-cols-[2.75rem_repeat(3,minmax(0,1fr))] items-center gap-1.5 text-sm">
         <span />
-        <span className="text-center text-xs text-white/55">Máx. °C</span>
-        <span className="text-center text-xs text-white/55">Mín. °C</span>
-        <span className="text-center text-xs text-white/55">Chuva mm</span>
+        <span className="text-center text-xs text-white/75">Máx. °C</span>
+        <span className="text-center text-xs text-white/75">Mín. °C</span>
+        <span className="text-center text-xs text-white/75">Chuva mm</span>
         {meses.map((m, i) => (
           <div key={i} className="contents">
-            <span className="text-xs text-white/60">{MESES_CURTOS[i]}</span>
+            <span className="text-xs text-white/80">{MESES_CURTOS[i]}</span>
             {(["max", "min", "chuva"] as const).map((c) => (
               <input
                 key={c} type="number" step="any" inputMode="decimal" aria-label={`${MESES_CURTOS[i]}: ${c === "max" ? "máxima" : c === "min" ? "mínima" : "chuva"}`}
@@ -136,7 +136,7 @@ export function PaginaRotas({ aoGravar }: { aoGravar?: (d: ConteudoPaginaRotas) 
         <div className="space-y-5">
           <AbasPartes abas={PARTES.map(({ chave, nome }) => ({ chave, nome }))} activa={parte} onChange={setParte} rotulo="Partes da página" />
           <div className="painel painel-escuro space-y-5 p-5 md:p-6">
-            <p className="text-[13px] leading-relaxed text-white/55">{info.descricao}</p>
+            <p className="text-[13px] leading-relaxed text-white/75">{info.descricao}</p>
             {parte === "clima" ? (
               <EditorClima dados={dados} mudar={(d) => mudar(d as ConteudoPaginaRotas & Valor)} />
             ) : (

@@ -158,21 +158,21 @@ function PainelEstado({ e, erro, aLer, recarregar }: {
       {e && (
         <div className="space-y-4">
           <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-[auto_1fr]">
-            <dt className="text-white/55">Serviço de email</dt>
+            <dt className="text-white/75">Serviço de email</dt>
             <dd className="flex flex-wrap items-center gap-2">
               {e.configurado ? <Etiqueta tom="ok">Ligado</Etiqueta> : (
-                <><Etiqueta tom="vermelho">Desligado</Etiqueta><span className="text-xs text-white/60">falta a chave RESEND_API_KEY no servidor</span></>
+                <><Etiqueta tom="vermelho">Desligado</Etiqueta><span className="text-xs text-white/80">falta a chave RESEND_API_KEY no servidor</span></>
               )}
             </dd>
-            <dt className="text-white/55">Remetente</dt>
-            <dd className="break-all text-white">{e.remetente}{e.remetenteDoAmbiente && <span className="ml-2 text-xs text-white/50">(endereço da variável RESEND_FROM)</span>}</dd>
-            <dt className="text-white/55">Domínio de envio</dt>
+            <dt className="text-white/75">Remetente</dt>
+            <dd className="break-all text-white">{e.remetente}{e.remetenteDoAmbiente && <span className="ml-2 text-xs text-white/75">(endereço da variável RESEND_FROM)</span>}</dd>
+            <dt className="text-white/75">Domínio de envio</dt>
             <dd className="flex flex-wrap items-center gap-2">
               <span className="text-white">{e.dominio?.nome ?? e.enderecoEnvio.split("@")[1]}</span>
               {dominio && <Etiqueta tom={dominio.tom}>{dominio.texto}</Etiqueta>}
-              {e.dominioErro && <span className="text-xs text-white/55">{e.dominioErro}</span>}
+              {e.dominioErro && <span className="text-xs text-white/75">{e.dominioErro}</span>}
             </dd>
-            <dt className="text-white/55">Respostas vão para</dt>
+            <dt className="text-white/75">Respostas vão para</dt>
             <dd className="break-all text-white">{e.responderPara.join(", ") || <span className="text-mb-red-light">ninguém (falta o email da MotoBox)</span>}</dd>
           </dl>
 
@@ -194,7 +194,7 @@ function PainelEstado({ e, erro, aLer, recarregar }: {
 
           <div className="rounded-[var(--raio)] bg-black/20 p-4">
             <p className="text-[15px] font-medium text-white">Enviar email de teste</p>
-            <p className="mt-0.5 text-[13px] text-white/55">Segue com o remetente e os textos gravados. Use um endereço fora da equipa (um Gmail, por exemplo) para ter a certeza de que chega a qualquer pessoa.</p>
+            <p className="mt-0.5 text-[13px] text-white/75">Segue com o remetente e os textos gravados. Use um endereço fora da equipa (um Gmail, por exemplo) para ter a certeza de que chega a qualquer pessoa.</p>
             <form className="mt-3 flex flex-col gap-2 sm:flex-row" onSubmit={(ev) => { ev.preventDefault(); void enviarTeste(); }}>
               <label className="min-w-0 flex-1">
                 <span className="sr-only">Endereço para o email de teste</span>
@@ -279,7 +279,7 @@ function EditorModelos({ modelos, mudar, site }: {
       <nav aria-label="Emails do site" className="hidden lg:block">
         {grupos.map((g) => (
           <div key={g} className="mb-3">
-            <p className="mb-1 px-2 text-xs text-white/45">{g}</p>
+            <p className="mb-1 px-2 text-xs text-white/70">{g}</p>
             <ul className="grid gap-0.5">
               {MODELOS.filter((x) => x.grupo === g).map((x) => (
                 <li key={x.chave}>
@@ -303,8 +303,8 @@ function EditorModelos({ modelos, mudar, site }: {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[17px] font-semibold text-white">{info.nome}</p>
-            <p className="mt-0.5 text-[13px] text-white/60"><span className="text-white/80">Para:</span> {info.para}</p>
-            <p className="text-[13px] text-white/60"><span className="text-white/80">Quando:</span> {info.quando}</p>
+            <p className="mt-0.5 text-[13px] text-white/80"><span className="text-white/80">Para:</span> {info.para}</p>
+            <p className="text-[13px] text-white/80"><span className="text-white/80">Quando:</span> {info.quando}</p>
           </div>
           {alterado(escolhido) && (
             <Botao tamanho="sm" variante="fantasma" onClick={() => mudar({ ...modelos, [escolhido]: { ...MODELOS_PADRAO[escolhido] } })}>
@@ -329,13 +329,13 @@ function EditorModelos({ modelos, mudar, site }: {
             {!m.assunto.trim() && <p className="text-xs text-mb-red-light">Sem assunto, o email segue com o nome do site como assunto.</p>}
             <div className="rounded-[var(--raio)] bg-black/20 px-4 py-3">
               <p className="text-[13px] font-medium text-white/80">Palavras que se trocam sozinhas</p>
-              <ul className="mt-1.5 grid gap-1 text-[13px] text-white/60">
+              <ul className="mt-1.5 grid gap-1 text-[13px] text-white/80">
                 {Object.entries(info.variaveis).map(([k, d]) => (
                   <li key={k}><code className="rounded bg-white/10 px-1.5 py-0.5 text-white">{`{${k}}`}</code> {d}</li>
                 ))}
               </ul>
               {["contactoEquipa", "clubeEquipa", "importacaoEquipa", "denuncia", "vendedor", "marketplaceEquipa", "bilhetesEquipa", "bilhetesComprador"].includes(escolhido) && (
-                <p className="mt-2 text-xs text-white/50">A mensagem de quem escreveu e os dados (nome, email, referência…) juntam-se sozinhos por baixo do texto.</p>
+                <p className="mt-2 text-xs text-white/75">A mensagem de quem escreveu e os dados (nome, email, referência…) juntam-se sozinhos por baixo do texto.</p>
               )}
             </div>
           </div>
@@ -408,7 +408,7 @@ function FormularioEmails({ dados, mudar, estado }: {
             );
           })}
         </div>
-        <p className="mt-4 text-xs leading-relaxed text-white/50">
+        <p className="mt-4 text-xs leading-relaxed text-white/75">
           Estes endereços ficam guardados com o conteúdo do site, que é de leitura pública: use endereços da equipa, não pessoais.
         </p>
         <div className="mt-4">
@@ -443,17 +443,17 @@ function UltimosEmails({ e, aLer, recarregar }: { e: EstadoEnvio | null; aLer: b
       ) : e.emailsErro ? (
         <Aviso tom="atencao" titulo="Não foi possível ler a lista">{e.emailsErro}</Aviso>
       ) : e.emails.length === 0 ? (
-        <p className="py-6 text-center text-sm text-white/55">Ainda não saiu nenhum email.</p>
+        <p className="py-6 text-center text-sm text-white/75">Ainda não saiu nenhum email.</p>
       ) : (
         <ul className="divide-y divide-white/[0.07]">
           {e.emails.map((m) => {
             const est = ENTREGA[m.estado] ?? { texto: m.estado, tom: "neutro" as const };
             return (
               <li key={m.id} className="grid gap-1 py-3 sm:grid-cols-[8.5rem_minmax(0,1fr)_auto] sm:items-center sm:gap-4">
-                <span className="text-[13px] tabular-nums text-white/55">{quando(m.criado)}</span>
+                <span className="text-[13px] tabular-nums text-white/75">{quando(m.criado)}</span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm text-white">{m.assunto || "(sem assunto)"}</span>
-                  <span className="block truncate text-[13px] text-white/55">para {m.para.join(", ")}</span>
+                  <span className="block truncate text-[13px] text-white/75">para {m.para.join(", ")}</span>
                 </span>
                 <span><Etiqueta tom={est.tom}>{est.texto}</Etiqueta></span>
               </li>

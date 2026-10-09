@@ -5,14 +5,21 @@
    Abas: Tópicos (fixar, fechar, resolvido, visível, e tudo o que
    a página do tópico mostra), Respostas dos membros (esconder ou
    apagar), Categorias (nome, descrição, ícone, cor) e Página
-   Fórum (os textos fixos de /forum e da página de cada tópico).
+   Fórum (os textos fixos de /forum, de cada tópico e de
+   /forum/novo, os níveis e as regras dos tópicos dos membros).
+
+   Tópicos abertos pelos membros: a conta de quem o abriu e a
+   mensagem completa ficam na "mensagem de abertura", a linha
+   "op-<tópico>" das respostas (ver app/forum/_servidor/forum.ts).
+   Os votos vivem no conteúdo editável ("forum-votos"). Ambos se
+   lêem e se mexem em /admin/forum/extra.
    ============================================================ */
 
 import { Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  CheckCircle2, ExternalLink, Eye, EyeOff, Lock, LockOpen, MessagesSquare, Pin, Trash2,
+  ArrowBigUp, CheckCircle2, ExternalLink, Eye, EyeOff, Lock, LockOpen, MessagesSquare, Pin, Trash2, UserRound,
 } from "lucide-react";
 import { PaginaRecurso, useAbaUrl } from "@/components/admin/Recurso";
 import {
@@ -87,12 +94,54 @@ function AdminForum() {
   return <Topicos abas={abas} />;
 }
 
+/* ---------------- Autores e votos (/admin/forum/extra) ---------------- */
+
+interface AutorMembro { nome: string; email?: string; utilizadorId?: string }
+interface ExtraForum { votos: Record<string, number>; membros: Record<string, AutorMembro>; local?: boolean }
+
+function useExtraForum() {
+  const [extra, setExtra] = useState<ExtraForum>({ votos: {}, membros: {} });
+  useEffect(() => {
+    let vivo = true;
+    fetch(comBase("/admin/forum/extra"), { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (vivo && j) setExtra({ votos: j.votos ?? {}, membros: j.membros ?? {}, local: j.local }); })
+      .catch(() => { /* sem ligação: sem autores nem votos */ });
+    return () => { vivo = false; };
+  }, []);
+
+  /** Tira todos os votos de um tópico ou resposta. Devolve null quando correu bem. */
+  const repor = useCallback(async (alvo: string): Promise<string | null> => {
+    try {
+      const r = await fetch(comBase(`/admin/forum/extra?alvo=${encodeURIComponent(alvo)}`), { method: "DELETE" });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) return String(j.erro ?? `Erro ${r.status}`);
+      setExtra((e) => {
+        const votos = { ...e.votos };
+        delete votos[alvo];
+        return { ...e, votos };
+      });
+      return null;
+    } catch {
+      return "Sem ligação ao servidor.";
+    }
+  }, []);
+  return { extra, repor };
+}
+
 /* ---------------- Tópicos ---------------- */
 
 function Topicos({ abas }: { abas: ReactNode }) {
-  const { estado, atualizar, guardarDefinicoes } = useAdmin();
+  const { estado, atualizar, guardarDefinicoes, registar } = useAdmin();
   const { mostrar, elemento } = useAviso();
   const vis = useVisibilidade();
+  const { extra, repor } = useExtraForum();
+
+  const tirarVotos = async (t: TopicoForum) => {
+    const falha = await repor(t.id);
+    if (!falha) registar("apagou", "Votos do fórum", `«${t.titulo}»`);
+    mostrar(falha ?? "Os votos do tópico foram retirados.", falha ? "erro" : "ok");
+  };
 
   const categorias = useMemo(
     () => estado.categoriasForum.map((c) => ({ valor: c.slug, nome: c.nome })),
@@ -154,6 +203,11 @@ function Topicos({ abas }: { abas: ReactNode }) {
                 </span>
               </Aviso>
             </div>
+            <Aviso titulo="Tópicos abertos pelos membros">
+              Os membros com sessão abrem tópicos em /forum/novo; aparecem aqui com a marca «Membro». Em
+              Página Fórum › Tópicos dos membros pode pedir que fiquem escondidos até os rever: nesse caso
+              chegam com o estado «Escondido» e aparecem no Fórum quando carregar no olho.
+            </Aviso>
           </>
         }
         procuraEm={(t) => `${t.titulo} ${t.autor} ${t.excerto} ${t.categoria}`}
@@ -163,6 +217,8 @@ function Topicos({ abas }: { abas: ReactNode }) {
           { chave: "fechados", nome: "Fechados", teste: (t) => Boolean(t.bloqueado) },
           { chave: "resolvidos", nome: "Resolvidos", teste: (t) => Boolean(t.resolvido) },
           { chave: "escondidos", nome: "Escondidos", teste: (t) => !vis.visivel("topicos", t.id) },
+          { chave: "membros", nome: "Dos membros", teste: (t) => Boolean(extra.membros[t.id]) },
+          { chave: "votados", nome: "Com votos", teste: (t) => (extra.votos[t.id] ?? 0) > 0 },
         ]}
         filtros={[{ chave: "categoriaSlug", etiqueta: "Todas as categorias", opcoes: categorias }]}
         colunas={[
@@ -173,8 +229,9 @@ function Topicos({ abas }: { abas: ReactNode }) {
                 <Avatar cor={t.avatarCor} texto={t.autorAvatar} nome={t.autor} />
                 <div className="min-w-0">
                   <p className="max-w-[20rem] truncate font-medium text-white">{t.titulo || "Sem título"}</p>
-                  <p className="flex flex-wrap items-center gap-x-2 text-xs text-white/50">
+                  <p className="flex flex-wrap items-center gap-x-2 text-xs text-white/75">
                     <span>{t.autor} · {dataCurta(t.criado)}</span>
+                    {extra.membros[t.id] && <span className="inline-flex items-center gap-1 text-white/80"><UserRound className="size-3" aria-hidden />Membro</span>}
                     {t.fixado && <span className="inline-flex items-center gap-1 text-mb-red-light"><Pin className="size-3" aria-hidden />Fixado</span>}
                     {t.bloqueado && <span className="inline-flex items-center gap-1"><Lock className="size-3" aria-hidden />Fechado</span>}
                     {t.resolvido && <span className="inline-flex items-center gap-1 text-[#4ade80]"><CheckCircle2 className="size-3" aria-hidden />Resolvido</span>}
@@ -189,7 +246,12 @@ function Topicos({ abas }: { abas: ReactNode }) {
             celula: (t) => (
               <span className="whitespace-nowrap tabular-nums text-white/70">
                 {numero(t.respostas)}
-                <span className="block text-xs text-white/45">{numero(t.visualizacoes)} vistas</span>
+                <span className="block text-xs text-white/70">{numero(t.visualizacoes)} vistas</span>
+                {(extra.votos[t.id] ?? 0) > 0 && (
+                  <span className="flex items-center gap-0.5 text-xs text-white/80">
+                    <ArrowBigUp className="size-3.5" aria-hidden />{numero(extra.votos[t.id])} votos
+                  </span>
+                )}
               </span>
             ),
           },
@@ -247,10 +309,45 @@ function Topicos({ abas }: { abas: ReactNode }) {
                 <Seleccao valor={r.categoriaSlug} opcoes={[{ valor: "", nome: "Sem categoria" }, ...categorias]}
                   onChange={(v) => definir({ categoriaSlug: v })} />
               </Campo>
-              <Campo etiqueta="Mensagem de abertura" ajuda="O texto do autor no topo da página do tópico. Também é o resumo que o Google mostra.">
+              <Campo
+                etiqueta={extra.membros[r.id] ? "Resumo" : "Mensagem de abertura"}
+                ajuda={extra.membros[r.id]
+                  ? "O resumo da lista do Fórum e do Google. A mensagem completa do membro está na aba Respostas, como «Mensagem de abertura»."
+                  : "O texto do autor no topo da página do tópico. Também é o resumo que o Google mostra."}
+              >
                 <Area rows={6} value={r.excerto} onChange={(e) => definir({ excerto: e.target.value })} />
               </Campo>
             </Grupo>
+
+            {!novo && (
+              <Grupo
+                titulo="Autor e votos"
+                descricao={extra.membros[r.id]
+                  ? "Aberto por um membro com sessão, em /forum/novo."
+                  : "Aberto pela equipa, aqui no painel."}
+              >
+                <Ficha linhas={[
+                  ...(extra.membros[r.id] ? [
+                    ["Conta", extra.membros[r.id].nome || "—"] as [string, ReactNode],
+                    ["Email", extra.membros[r.id].email || "—"] as [string, ReactNode],
+                  ] : []),
+                  ["Votos", numero(extra.votos[r.id] ?? 0)],
+                ]} />
+                <div className="flex flex-wrap gap-2">
+                  {extra.membros[r.id] && (
+                    <Link href={`/admin/forum?aba=respostas&topico=${encodeURIComponent(r.id)}`}
+                      className="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white">
+                      <span className="sublinhado">Ver a mensagem de abertura e as respostas</span>
+                    </Link>
+                  )}
+                  {(extra.votos[r.id] ?? 0) > 0 && (
+                    <Botao tamanho="sm" onClick={() => void tirarVotos(r)}>
+                      <ArrowBigUp className="size-4" aria-hidden />Tirar os votos
+                    </Botao>
+                  )}
+                </div>
+              </Grupo>
+            )}
 
             <Grupo titulo="Quem abriu o tópico">
               <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
@@ -319,6 +416,8 @@ function Topicos({ abas }: { abas: ReactNode }) {
 
 interface Resposta {
   id: string; topicoId: string; autorNome: string; autorCor: string; corpo: string; criadoEm: string; publicado: boolean;
+  /** A mensagem de abertura de um tópico aberto por um membro (linha "op-<tópico>"). */
+  abertura?: boolean;
 }
 
 type Leitura = { estado: "a-ler" } | { estado: "sem-base" } | { estado: "erro"; erro: string }
@@ -339,6 +438,7 @@ async function lerRespostas(): Promise<Leitura> {
 function Respostas() {
   const { estado, registar } = useAdmin();
   const { mostrar, elemento } = useAviso();
+  const { extra, repor } = useExtraForum();
   // "Ver as respostas a este tópico" chega com ?topico=<id>.
   const topicoInicial = useSearchParams().get("topico") ?? "";
   const [leitura, setLeitura] = useState<Leitura>({ estado: "a-ler" });
@@ -399,8 +499,8 @@ function Respostas() {
       const j = await resp.json().catch(() => ({}));
       if (!resp.ok) throw new Error(String(j.erro ?? `Erro ${resp.status}`));
       mudarLocal(r.id, () => null);
-      registar("apagou", "Resposta do fórum", `${r.autorNome} em «${tituloDe(r.topicoId)}»`);
-      mostrar("Resposta apagada.");
+      registar("apagou", r.abertura ? "Mensagem de abertura do fórum" : "Resposta do fórum", `${r.autorNome} em «${tituloDe(r.topicoId)}»`);
+      mostrar(r.abertura ? "Mensagem de abertura apagada: o tópico fica com o resumo." : "Resposta apagada.");
     } catch (e) {
       mostrar(e instanceof Error ? e.message : "Falha de rede.", "erro");
     }
@@ -452,10 +552,16 @@ function Respostas() {
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
                       <span className="font-medium text-white">{r.autorNome}</span>
-                      <span className="text-white/45">{haQuanto(r.criadoEm)}</span>
+                      <span className="text-white/70">{haQuanto(r.criadoEm)}</span>
+                      {r.abertura && <Etiqueta>Mensagem de abertura</Etiqueta>}
                       {!r.publicado && <Estado valor="suspenso" rotulo="Escondida" />}
+                      {(extra.votos[r.id] ?? 0) > 0 && (
+                        <span className="inline-flex items-center gap-0.5 text-xs text-white/70">
+                          <ArrowBigUp className="size-3.5" aria-hidden />{numero(extra.votos[r.id])}
+                        </span>
+                      )}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-white/55">
+                    <p className="mt-0.5 truncate text-xs text-white/75">
                       em <span className="text-white/75">{tituloDe(r.topicoId)}</span>
                     </p>
                     <p className="mt-2 line-clamp-4 whitespace-pre-line text-[15px] leading-relaxed text-white/85 [overflow-wrap:anywhere]">{r.corpo}</p>
@@ -463,9 +569,19 @@ function Respostas() {
                   <div className="flex shrink-0 gap-1.5">
                     <a href={comBase(`/forum/${encodeURIComponent(r.topicoId)}`)} target="_blank" rel="noopener noreferrer"
                       title="Ver o tópico no site" aria-label="Ver o tópico no site"
-                      className="inline-flex size-8 items-center justify-center rounded-[var(--raio)] bg-white/[0.06] text-white/60 transition-colors hover:bg-white/10 hover:text-white">
+                      className="inline-flex size-8 items-center justify-center rounded-[var(--raio)] bg-white/[0.06] text-white/80 transition-colors hover:bg-white/10 hover:text-white">
                       <ExternalLink className="size-3.5" aria-hidden />
                     </a>
+                    {(extra.votos[r.id] ?? 0) > 0 && (
+                      <AccaoIcone titulo="Tirar os votos" onClick={() => {
+                        void repor(r.id).then((falha) => {
+                          if (!falha) registar("apagou", "Votos do fórum", `${r.autorNome} em «${tituloDe(r.topicoId)}»`);
+                          mostrar(falha ?? "Os votos da resposta foram retirados.", falha ? "erro" : "ok");
+                        });
+                      }}>
+                        <ArrowBigUp className="size-3.5" aria-hidden />
+                      </AccaoIcone>
+                    )}
                     <AccaoIcone titulo={r.publicado ? "Esconder do tópico" : "Mostrar no tópico"} onClick={() => void alternar(r)}>
                       {r.publicado ? <Eye className="size-3.5" aria-hidden /> : <EyeOff className="size-3.5 text-gold" aria-hidden />}
                     </AccaoIcone>
@@ -485,8 +601,10 @@ function Respostas() {
         aberta={aApagar !== null}
         aoFechar={() => setAApagar(null)}
         aoConfirmar={() => { if (aApagar) void apagar(aApagar); }}
-        titulo="Apagar a resposta"
-        mensagem="A resposta sai do tópico de vez e não se pode recuperar. Para a tirar só por agora, esconda-a."
+        titulo={aApagar?.abertura ? "Apagar a mensagem de abertura" : "Apagar a resposta"}
+        mensagem={aApagar?.abertura
+          ? "A mensagem completa do membro sai de vez e o tópico fica só com o resumo, sem a ligação à conta de quem o abriu. Para a tirar só por agora, esconda-a."
+          : "A resposta sai do tópico de vez e não se pode recuperar. Para a tirar só por agora, esconda-a."}
         textoConfirmar="Apagar"
         perigo
       />
@@ -523,7 +641,7 @@ function Categorias({ abas }: { abas: ReactNode }) {
               </span>
               <div className="min-w-0">
                 <p className="truncate font-medium text-white">{c.nome}</p>
-                <p className="max-w-[28rem] truncate text-xs text-white/50">{c.descricao}</p>
+                <p className="max-w-[28rem] truncate text-xs text-white/75">{c.descricao}</p>
               </div>
             </div>
           ),
@@ -532,7 +650,7 @@ function Categorias({ abas }: { abas: ReactNode }) {
         {
           cabecalho: "Cor",
           celula: (c) => (
-            <span className="inline-flex items-center gap-2 text-xs text-white/55">
+            <span className="inline-flex items-center gap-2 text-xs text-white/75">
               <span className="size-4 rounded-[3px]" style={{ background: c.cor }} aria-hidden />{c.cor}
             </span>
           ),
@@ -559,14 +677,14 @@ function Categorias({ abas }: { abas: ReactNode }) {
             ajuda="O quadradinho na lista «Categorias»."
           />
           <CampoCor etiqueta="Cor" valor={r.cor} onChange={(v) => definir({ cor: v })}
-            ajuda="Fica guardada com a categoria. Hoje as páginas do Fórum mostram as categorias todas com o mesmo desenho." />
+            ajuda="O quadradinho da categoria nos cartões dos tópicos, na lista «Categorias» e ao criar um tópico. O ícone fica branco, ou escuro numa cor muito clara." />
           {novo ? (
             <Campo etiqueta="Endereço" ajuda="Preenche-se sozinho a partir do nome. Fica no endereço do filtro: /forum?categoria=…">
               <Input value={r.slug} placeholder={slugify(r.nome) || "gerado-a-partir-do-nome"}
                 onChange={(e) => definir({ slug: slugify(e.target.value) })} />
             </Campo>
           ) : (
-            <p className="text-xs leading-relaxed text-white/50">
+            <p className="text-xs leading-relaxed text-white/75">
               Endereço do filtro: <span className="text-white/75">/forum?categoria={r.slug}</span>. Não se muda depois de criada,
               para os tópicos não perderem a categoria.
             </p>
@@ -582,37 +700,119 @@ function Categorias({ abas }: { abas: ReactNode }) {
 const ESQUEMA_PAGINA: CampoEsquema[] = [
   {
     tipo: "objecto", chave: "abertura", etiqueta: "Abertura",
-    ajuda: "A fotografia grande no topo de /forum, com o título e o botão vermelho.",
+    ajuda: "A fotografia no topo de /forum, com o título, o texto e o botão vermelho.",
     campos: [
       { tipo: "texto", chave: "sobretitulo", etiqueta: "Texto pequeno por cima do título", largura: "meia" },
       { tipo: "texto", chave: "titulo", etiqueta: "Título", largura: "meia", obrigatorio: true },
       { tipo: "area", chave: "texto", etiqueta: "Texto de apresentação", linhas: 3 },
       { tipo: "imagem", chave: "foto", etiqueta: "Fotografia de fundo", formato: "aspect-[21/9]" },
       { tipo: "texto", chave: "botao", etiqueta: "Texto do botão", largura: "meia", ajuda: "Vazio, o botão não aparece." },
-      { tipo: "texto", chave: "botaoLigacao", etiqueta: "Para onde leva o botão", largura: "meia", ajuda: "Uma página do site, ex.: /conta" },
+      { tipo: "texto", chave: "botaoLigacao", etiqueta: "Para onde leva o botão", largura: "meia", ajuda: "Por omissão /forum/novo (criar tópico)." },
+    ],
+  },
+  {
+    tipo: "objecto", chave: "numeros", etiqueta: "Números do fórum",
+    ajuda: "Ao lado do botão da abertura e no quadro «Sobre o fórum»: tópicos, respostas e membros activos.",
+    campos: [
+      { tipo: "booleano", chave: "mostrar", etiqueta: "Mostrar os números" },
+      { tipo: "texto", chave: "topicos", etiqueta: "Depois do número de tópicos", largura: "meia" },
+      { tipo: "texto", chave: "respostas", etiqueta: "Depois do número de respostas", largura: "meia" },
+      { tipo: "texto", chave: "membros", etiqueta: "Depois do número de membros", largura: "meia" },
     ],
   },
   {
     tipo: "objecto", chave: "lista", etiqueta: "Lista de tópicos",
-    ajuda: "A pílula de todas as categorias, as marcas de cada tópico e a mensagem quando uma categoria está vazia.",
+    ajuda: "O convite para criar, a ordem, a procura, as pílulas, os cartões dos tópicos e as mensagens das listas vazias.",
     campos: [
-      { tipo: "texto", chave: "todas", etiqueta: "Pílula de todas as categorias", largura: "meia" },
-      { tipo: "texto", chave: "fixado", etiqueta: "Marca de tópico fixado", largura: "meia" },
-      { tipo: "texto", chave: "resolvido", etiqueta: "Marca de tópico resolvido", largura: "meia" },
-      { tipo: "texto", chave: "fechado", etiqueta: "Marca de tópico fechado", largura: "meia" },
-      { tipo: "texto", chave: "vazioTitulo", etiqueta: "Categoria vazia: título", largura: "meia" },
-      { tipo: "texto", chave: "vazioTexto", etiqueta: "Categoria vazia: texto", largura: "meia" },
+      { tipo: "secao", titulo: "Convite e ordem", campos: [
+        { tipo: "texto", chave: "convite", etiqueta: "Convite por cima da lista", ajuda: "A caixa que leva a criar um tópico." },
+        { tipo: "texto", chave: "criar", etiqueta: "Botão de criar tópico", largura: "meia" },
+        { tipo: "texto", chave: "ordenar", etiqueta: "Nome da barra de ordem (leitores de ecrã)", largura: "meia" },
+        { tipo: "texto", chave: "emAlta", etiqueta: "Ordem: em alta", largura: "meia", ajuda: "Votos e respostas recentes." },
+        { tipo: "texto", chave: "novos", etiqueta: "Ordem: novos", largura: "meia" },
+        { tipo: "texto", chave: "maisVotados", etiqueta: "Ordem: mais votados", largura: "meia" },
+        { tipo: "texto", chave: "semResposta", etiqueta: "Ordem: sem resposta", largura: "meia" },
+      ] },
+      { tipo: "secao", titulo: "Procura e categorias", campos: [
+        { tipo: "texto", chave: "procurar", etiqueta: "Caixa de procura vazia", largura: "meia" },
+        { tipo: "texto", chave: "procurarBotao", etiqueta: "Botão de procurar (leitores de ecrã)", largura: "meia" },
+        { tipo: "texto", chave: "resultadosPara", etiqueta: "Antes do que se procurou", largura: "meia", ajuda: "Ex.: Resultados para «capacete»" },
+        { tipo: "texto", chave: "limpar", etiqueta: "Limpar a procura", largura: "meia" },
+        { tipo: "texto", chave: "todas", etiqueta: "Pílula de todas as categorias", largura: "meia" },
+        { tipo: "texto", chave: "destaques", etiqueta: "Título dos tópicos fixados", largura: "meia" },
+      ] },
+      { tipo: "secao", titulo: "Cartões dos tópicos", campos: [
+        { tipo: "texto", chave: "fixado", etiqueta: "Marca de tópico fixado", largura: "meia" },
+        { tipo: "texto", chave: "resolvido", etiqueta: "Marca de tópico resolvido", largura: "meia" },
+        { tipo: "texto", chave: "fechado", etiqueta: "Marca de tópico fechado", largura: "meia" },
+        { tipo: "texto", chave: "primeiroResponder", etiqueta: "Convite nos tópicos sem resposta", largura: "meia" },
+        { tipo: "texto", chave: "votar", etiqueta: "Botão de voto num tópico (leitores de ecrã)", largura: "meia" },
+        { tipo: "texto", chave: "votarResposta", etiqueta: "Botão de voto numa resposta (leitores de ecrã)", largura: "meia" },
+        { tipo: "texto", chave: "retirarVoto", etiqueta: "Botão para retirar o voto", largura: "meia" },
+        { tipo: "texto", chave: "votos", etiqueta: "Depois do número de votos", largura: "meia" },
+        { tipo: "texto", chave: "verMais", etiqueta: "Botão no fim da lista", largura: "meia" },
+      ] },
+      { tipo: "secao", titulo: "Listas vazias", campos: [
+        { tipo: "texto", chave: "vazioTitulo", etiqueta: "Categoria vazia: título", largura: "meia" },
+        { tipo: "texto", chave: "vazioBotao", etiqueta: "Categoria vazia: botão", largura: "meia" },
+        { tipo: "area", chave: "vazioTexto", etiqueta: "Categoria vazia: texto", linhas: 2 },
+        { tipo: "texto", chave: "semRespostaVazioTitulo", etiqueta: "Nada sem resposta: título", largura: "meia" },
+        { tipo: "texto", chave: "semRespostaVazioTexto", etiqueta: "Nada sem resposta: texto", largura: "meia" },
+        { tipo: "texto", chave: "procuraVaziaTitulo", etiqueta: "Procura sem resultados: título", largura: "meia" },
+        { tipo: "texto", chave: "procuraVaziaTexto", etiqueta: "Procura sem resultados: texto", largura: "meia" },
+      ] },
     ],
   },
   {
     tipo: "objecto", chave: "lateral", etiqueta: "Coluna ao lado dos tópicos",
-    ajuda: "O quadro das categorias e as regras da casa.",
+    ajuda: "Sobre o fórum, os meus tópicos, os mais activos do mês, as categorias, as regras e as ligações.",
     campos: [
+      { tipo: "texto", chave: "sobreTitulo", etiqueta: "Sobre o fórum: título", largura: "meia" },
+      { tipo: "texto", chave: "criar", etiqueta: "Botão de criar tópico", largura: "meia" },
+      { tipo: "area", chave: "sobreTexto", etiqueta: "Sobre o fórum: texto", linhas: 3 },
+      { tipo: "texto", chave: "meusTitulo", etiqueta: "Os meus tópicos: título", largura: "meia", ajuda: "Só aparece a quem tem sessão." },
+      { tipo: "texto", chave: "meusVazio", etiqueta: "Os meus tópicos: ainda nenhum", largura: "meia" },
+      { tipo: "texto", chave: "meusAguarda", etiqueta: "Marca de tópico à espera de aprovação", largura: "meia" },
+      { tipo: "texto", chave: "contribuidoresTitulo", etiqueta: "Mais activos: título", largura: "meia" },
+      { tipo: "texto", chave: "contribuidoresTexto", etiqueta: "Mais activos: texto pequeno", largura: "meia" },
+      { tipo: "texto", chave: "contribuicoes", etiqueta: "Depois do número de contribuições", largura: "meia" },
+      { tipo: "area", chave: "contribuidoresVazio", etiqueta: "Mais activos: ainda ninguém este mês", linhas: 2 },
       { tipo: "texto", chave: "categorias", etiqueta: "Título do quadro das categorias", largura: "meia" },
       { tipo: "texto", chave: "regrasTitulo", etiqueta: "Título das regras", largura: "meia" },
-      { tipo: "lista-texto", chave: "regras", etiqueta: "Regras da casa", placeholder: "Nova regra", ajuda: "Numeradas pela ordem da lista." },
+      { tipo: "lista-texto", chave: "regras", etiqueta: "Regras da casa", placeholder: "Nova regra", ajuda: "Numeradas pela ordem da lista. Aparecem também em cada tópico e ao criar um." },
       { tipo: "texto", chave: "regulamento", etiqueta: "Ligação ao regulamento", largura: "meia", ajuda: "Vazio, a ligação não aparece." },
       { tipo: "texto", chave: "regulamentoLigacao", etiqueta: "Para onde leva", largura: "meia", ajuda: "Ex.: /regulamento" },
+      { tipo: "texto", chave: "ligacoesTitulo", etiqueta: "Ligações: título", ajuda: "O quadro que leva a outras partes da comunidade (clubes, eventos…)." },
+      {
+        tipo: "lista", chave: "ligacoes", etiqueta: "Ligações", nomeItem: "ligação",
+        resumo: (l) => String(l.texto ?? ""), novo: () => ({ texto: "", ligacao: "/" }),
+        campos: [
+          { tipo: "texto", chave: "texto", etiqueta: "Texto", largura: "meia" },
+          { tipo: "texto", chave: "ligacao", etiqueta: "Para onde leva", largura: "meia", ajuda: "Ex.: /clubes, /eventos" },
+        ],
+      },
+    ],
+  },
+  {
+    tipo: "objecto", chave: "niveis", etiqueta: "Níveis dos membros",
+    ajuda: "A marca ao lado do nome de quem escreve. Cada resposta vale 1 ponto, cada tópico 3 e cada voto recebido 1.",
+    campos: [
+      { tipo: "booleano", chave: "mostrar", etiqueta: "Mostrar os níveis", descricao: "Desligado, não aparece nenhuma marca de nível nem o quadro dos níveis." },
+      { tipo: "texto", chave: "titulo", etiqueta: "Título do quadro dos níveis", largura: "meia" },
+      { tipo: "texto", chave: "pontos", etiqueta: "Depois do número de pontos", largura: "meia" },
+      { tipo: "area", chave: "texto", etiqueta: "Como se sobe de nível", linhas: 2 },
+      {
+        tipo: "lista", chave: "lista", etiqueta: "Níveis", nomeItem: "nível",
+        resumo: (n) => `${String(n.nome ?? "")} · desde ${Number(n.minimo) || 0} pontos`,
+        novo: () => ({ nome: "", minimo: 0 }),
+        campos: [
+          { tipo: "texto", chave: "nome", etiqueta: "Nome", largura: "meia" },
+          { tipo: "numero", chave: "minimo", etiqueta: "A partir de quantos pontos", largura: "meia", min: 0 },
+        ],
+      },
+      { tipo: "texto", chave: "equipa", etiqueta: "Marca da equipa", largura: "meia", ajuda: "No lugar do nível, para quem fala pela MotoBox." },
+      { tipo: "texto", chave: "autor", etiqueta: "Marca do autor do tópico nas respostas", largura: "meia" },
+      { tipo: "lista-texto", chave: "nomesEquipa", etiqueta: "Nomes da equipa", placeholder: "Ex.: Equipa MotoBox", ajuda: "Quem escreve com um destes nomes leva a marca da equipa e não entra nos mais activos." },
     ],
   },
   {
@@ -623,13 +823,26 @@ const ESQUEMA_PAGINA: CampoEsquema[] = [
       { tipo: "texto", chave: "autorDoTopico", etiqueta: "Por baixo do nome do autor", largura: "meia" },
       { tipo: "texto", chave: "visualizacoes", etiqueta: "Depois do número de visualizações", largura: "meia" },
       { tipo: "texto", chave: "reportar", etiqueta: "Botão para denunciar", largura: "meia" },
+      { tipo: "texto", chave: "responder", etiqueta: "Botão de responder", largura: "meia" },
+      { tipo: "texto", chave: "partilhar", etiqueta: "Botão de partilhar", largura: "meia" },
       { tipo: "texto", chave: "respostaSingular", etiqueta: "Contagem: uma resposta", largura: "meia", ajuda: "Ex.: 1 resposta" },
       { tipo: "texto", chave: "respostaPlural", etiqueta: "Contagem: várias respostas", largura: "meia", ajuda: "Ex.: 4 respostas" },
-      { tipo: "texto", chave: "semRespostas", etiqueta: "Quando ainda ninguém respondeu" },
+      { tipo: "texto", chave: "resolvidoTitulo", etiqueta: "Tópico resolvido: título", largura: "meia" },
+      { tipo: "texto", chave: "resolvidoTexto", etiqueta: "Tópico resolvido: texto", largura: "meia" },
+      { tipo: "texto", chave: "primeiroTitulo", etiqueta: "Sem respostas: título do convite", largura: "meia" },
+      { tipo: "texto", chave: "primeiroBotao", etiqueta: "Sem respostas: botão", largura: "meia" },
+      { tipo: "area", chave: "primeiroTexto", etiqueta: "Sem respostas: texto do convite", linhas: 2 },
+      { tipo: "texto", chave: "semRespostas", etiqueta: "Sem respostas num tópico fechado" },
       { tipo: "texto", chave: "fechadoTitulo", etiqueta: "Tópico fechado: título", largura: "meia" },
       { tipo: "texto", chave: "fechadoTexto", etiqueta: "Tópico fechado: texto", largura: "meia" },
       { tipo: "texto", chave: "forumFechadoTitulo", etiqueta: "Fórum fechado: título", largura: "meia" },
       { tipo: "texto", chave: "forumFechadoTexto", etiqueta: "Fórum fechado: texto", largura: "meia" },
+      { tipo: "texto", chave: "sobreTitulo", etiqueta: "Quadro ao lado: título", largura: "meia" },
+      { tipo: "texto", chave: "participantes", etiqueta: "Depois do número de participantes", largura: "meia" },
+      { tipo: "texto", chave: "criado", etiqueta: "Data de abertura", largura: "meia" },
+      { tipo: "texto", chave: "ultimaActividade", etiqueta: "Última actividade", largura: "meia" },
+      { tipo: "texto", chave: "criarTitulo", etiqueta: "Criar outro tópico: título", largura: "meia" },
+      { tipo: "texto", chave: "criarTexto", etiqueta: "Criar outro tópico: texto", largura: "meia" },
       { tipo: "texto", chave: "relacionados", etiqueta: "Título dos tópicos relacionados" },
     ],
   },
@@ -644,6 +857,47 @@ const ESQUEMA_PAGINA: CampoEsquema[] = [
       { tipo: "texto", chave: "publicada", etiqueta: "Depois de publicar", largura: "meia" },
       { tipo: "texto", chave: "aResponderComo", etiqueta: "Antes do nome de quem responde", largura: "meia" },
       { tipo: "texto", chave: "semSessao", etiqueta: "Para quem ainda não entrou" },
+    ],
+  },
+  {
+    tipo: "objecto", chave: "novo", etiqueta: "Criar tópico (/forum/novo)",
+    ajuda: "A página onde os membros abrem um tópico: título, categoria e mensagem.",
+    campos: [
+      { tipo: "texto", chave: "sobretitulo", etiqueta: "Texto pequeno por cima do título", largura: "meia" },
+      { tipo: "texto", chave: "titulo", etiqueta: "Título da página", largura: "meia" },
+      { tipo: "area", chave: "texto", etiqueta: "Texto de apresentação", linhas: 2 },
+      { tipo: "texto", chave: "campoTitulo", etiqueta: "Campo do título", largura: "meia" },
+      { tipo: "texto", chave: "tituloAjuda", etiqueta: "Ajuda do campo do título", largura: "meia" },
+      { tipo: "texto", chave: "tituloPlaceholder", etiqueta: "Exemplo dentro do campo do título" },
+      { tipo: "texto", chave: "campoCategoria", etiqueta: "Campo da categoria", largura: "meia" },
+      { tipo: "texto", chave: "campoCorpo", etiqueta: "Campo da mensagem", largura: "meia" },
+      { tipo: "texto", chave: "corpoPlaceholder", etiqueta: "Exemplo dentro do campo da mensagem", largura: "meia" },
+      { tipo: "texto", chave: "corpoAjuda", etiqueta: "Ajuda do campo da mensagem", largura: "meia" },
+      { tipo: "texto", chave: "publicar", etiqueta: "Botão de publicar", largura: "meia" },
+      { tipo: "texto", chave: "aPublicar", etiqueta: "Botão enquanto publica", largura: "meia" },
+      { tipo: "texto", chave: "aPublicarComo", etiqueta: "Antes do nome de quem publica", largura: "meia" },
+      { tipo: "texto", chave: "semSessao", etiqueta: "Para quem ainda não entrou", largura: "meia" },
+      { tipo: "texto", chave: "aguardaTitulo", etiqueta: "À espera de aprovação: título", largura: "meia" },
+      { tipo: "texto", chave: "aguardaTexto", etiqueta: "À espera de aprovação: texto", largura: "meia" },
+      { tipo: "texto", chave: "dicasTitulo", etiqueta: "Título das dicas", largura: "meia" },
+      { tipo: "texto", chave: "seoTitulo", etiqueta: "Título no separador do navegador", largura: "meia" },
+      { tipo: "lista-texto", chave: "dicas", etiqueta: "Dicas ao lado do formulário", placeholder: "Nova dica" },
+      { tipo: "texto", chave: "fechadoTitulo", etiqueta: "Fórum fechado: título", largura: "meia" },
+      { tipo: "texto", chave: "fechadoTexto", etiqueta: "Fórum fechado: texto", largura: "meia" },
+    ],
+  },
+  {
+    tipo: "objecto", chave: "moderacao", etiqueta: "Tópicos dos membros",
+    ajuda: "Como funcionam os tópicos abertos pelos membros. Fechar o fórum inteiro faz-se no interruptor «Fórum aberto a respostas», na aba Tópicos.",
+    campos: [
+      {
+        tipo: "booleano", chave: "aprovarTopicos", etiqueta: "Rever os tópicos antes de aparecerem",
+        descricao: "Ligado, cada tópico novo chega escondido à aba Tópicos e só aparece no Fórum quando o mostrar (no olho).",
+      },
+      {
+        tipo: "numero", chave: "topicosPorHora", etiqueta: "Máximo de tópicos por membro numa hora", min: 1, max: 50,
+        ajuda: "Trava quem abre tópicos em série. As respostas têm o seu próprio travão (8 em 10 minutos).",
+      },
     ],
   },
   {

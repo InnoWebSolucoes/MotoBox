@@ -28,7 +28,7 @@ export function SelectorIdioma({ compacto = false }: { compacto?: boolean }) {
             aria-pressed={activo}
             title={NOME_IDIOMA[i]}
             className={`h-full rounded-full px-2.5 font-ui text-[13px] uppercase transition-colors ${
-              activo ? "bg-white text-ink-950" : "text-ink-400 hover:text-white"
+              activo ? "bg-white text-ink-950" : "text-ink-300 hover:text-white"
             }`}
           >
             {CODIGO_IDIOMA[i]}

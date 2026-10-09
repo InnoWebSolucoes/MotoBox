@@ -82,9 +82,9 @@ export default async function ResultadosPage() {
                     <p className="mt-1.5 text-sm text-white/75">
                       {c.circuito}, {c.provincia}
                     </p>
-                    <p className="text-sm text-white/60">{intervaloDatas(c.data)}</p>
+                    <p className="text-sm text-white/80">{intervaloDatas(c.data)}</p>
                     <div className="mt-4 border-t border-white/15 pt-4">
-                      <p className="text-xs text-white/60">{t.vencedor}</p>
+                      <p className="text-xs text-white/80">{t.vencedor}</p>
                       <p className="mt-0.5 text-lg font-semibold">{c.vencedor}</p>
                     </div>
                   </div>

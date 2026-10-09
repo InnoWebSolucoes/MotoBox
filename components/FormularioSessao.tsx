@@ -93,7 +93,7 @@ export function FormularioSessao({
 
   const campo =
     "h-12 w-full rounded-[0.625rem] bg-ink-900 px-4 text-sm text-white ring-1 ring-inset ring-white/10 " +
-    "placeholder:text-ink-600 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
+    "placeholder:text-ink-300 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
   const etiqueta =
     "mb-1.5 block text-sm text-white/70";
 
@@ -105,11 +105,11 @@ export function FormularioSessao({
   return (
     <div>
       <div className={compacto ? "mb-5 pr-10" : "mb-8"}>
-        {!compacto && <p className="eyebrow mb-2 text-mb-red">Motobox Angola</p>}
+        {!compacto && <p className="eyebrow mb-2 text-mb-red-light">Motobox Angola</p>}
         <h1 className={`title-xl text-white ${compacto ? "text-2xl" : "text-3xl sm:text-4xl"}`}>
           {compacto && modo === "entrar" ? t("auth.entrarParaContinuar") : titulo}
         </h1>
-        <p className="mt-2 text-sm text-ink-400">
+        <p className="mt-2 text-sm text-ink-300">
           {compacto && motivo && modo === "entrar" ? motivo
            : modo === "entrar" ? t("auth.entrarSub")
            : modo === "registar" ? t("auth.registarSub")
@@ -167,11 +167,11 @@ export function FormularioSessao({
         )}
 
         {modo === "registar" && (
-          <p className="text-xs text-ink-500">
+          <p className="text-xs text-ink-300">
             {t("auth.aoRegistarAceita")}{" "}
-            <Link href="/termos" className="text-mb-red hover:underline">{t("rodape.termos")}</Link>
+            <Link href="/termos" className="text-mb-red-light hover:underline">{t("rodape.termos")}</Link>
             {" "}{t("auth.eA")}{" "}
-            <Link href="/privacidade" className="text-mb-red hover:underline">{t("rodape.privacidade")}</Link>.
+            <Link href="/privacidade" className="text-mb-red-light hover:underline">{t("rodape.privacidade")}</Link>.
           </p>
         )}
 
@@ -185,7 +185,7 @@ export function FormularioSessao({
         <>
           <div className="my-6 flex items-center gap-3">
             <span className="h-px flex-1 bg-white/10" />
-            <span className="text-[11px] uppercase tracking-widest text-ink-500">{t("auth.ou")}</span>
+            <span className="text-[11px] uppercase tracking-widest text-ink-300">{t("auth.ou")}</span>
             <span className="h-px flex-1 bg-white/10" />
           </div>
 
@@ -205,22 +205,22 @@ export function FormularioSessao({
       <div className="mt-6 space-y-2 text-center text-sm">
         {modo === "entrar" && (
           <>
-            <p className="text-ink-400">
+            <p className="text-ink-300">
               {t("auth.semConta")}{" "}
               <button type="button" onClick={() => mudar("registar")}
-                className="text-mb-red hover:underline">{t("auth.criarConta")}</button>
+                className="text-mb-red-light hover:underline">{t("auth.criarConta")}</button>
             </p>
             <p>
               <button type="button" onClick={() => mudar("recuperar")}
-                className="text-xs text-ink-500 hover:text-white">{t("auth.esqueceuPalavra")}</button>
+                className="text-xs text-ink-300 hover:text-white">{t("auth.esqueceuPalavra")}</button>
             </p>
           </>
         )}
         {modo !== "entrar" && (
-          <p className="text-ink-400">
+          <p className="text-ink-300">
             {t("auth.jaTemConta")}{" "}
             <button type="button" onClick={() => mudar("entrar")}
-              className="text-mb-red hover:underline">{t("auth.entrar")}</button>
+              className="text-mb-red-light hover:underline">{t("auth.entrar")}</button>
           </p>
         )}
       </div>

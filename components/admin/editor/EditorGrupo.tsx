@@ -245,23 +245,23 @@ export function EditorGrupo<T extends Valor = Valor>({
                 <button type="button" onClick={() => abrir(d)} aria-current={sel ? "true" : undefined}
                   className="min-w-0 flex-1 px-3 py-2.5 text-left">
                   <span className="block truncate text-sm font-medium text-white">{r.titulo || d.chave}</span>
-                  <span className="mt-0.5 flex items-center gap-2 text-xs text-white/50">
+                  <span className="mt-0.5 flex items-center gap-2 text-xs text-white/75">
                     <span className="truncate">{r.subtitulo ?? d.chave}</span>
                     {d.origem === "base" && <span aria-label="editado" className="size-1.5 shrink-0 rounded-full bg-[#4ade80]" />}
                   </span>
                 </button>
                 {!q && (
                   <span className="flex shrink-0 flex-col">
-                    <button type="button" aria-label={`Subir ${r.titulo}`} onClick={() => mover(d.chave, -1)} className="rounded p-0.5 text-white/40 hover:text-white"><Seta para="cima" /></button>
-                    <button type="button" aria-label={`Descer ${r.titulo}`} onClick={() => mover(d.chave, 1)} className="rounded p-0.5 text-white/40 hover:text-white"><Seta para="baixo" /></button>
+                    <button type="button" aria-label={`Subir ${r.titulo}`} onClick={() => mover(d.chave, -1)} className="rounded p-0.5 text-white/70 hover:text-white"><Seta para="cima" /></button>
+                    <button type="button" aria-label={`Descer ${r.titulo}`} onClick={() => mover(d.chave, 1)} className="rounded p-0.5 text-white/70 hover:text-white"><Seta para="baixo" /></button>
                   </span>
                 )}
               </li>
             );
           })}
         </ol>
-        {visiveis.length === 0 && <p className="px-2 py-6 text-center text-sm text-white/50">Nada encontrado.</p>}
-        <p className="mt-3 px-1 text-xs text-white/40">
+        {visiveis.length === 0 && <p className="px-2 py-6 text-center text-sm text-white/75">Nada encontrado.</p>}
+        <p className="mt-3 px-1 text-xs text-white/70">
           {itens.length} {itens.length === 1 ? nomeItem : `${nomeItem}s`} · as setas mudam a ordem no site
         </p>
       </aside>
@@ -315,7 +315,7 @@ export function EditorGrupo<T extends Valor = Valor>({
                   <label className="block">
                     <span className="mb-1.5 block text-[13px] font-medium text-white/75">Endereço</span>
                     <span className="flex items-center rounded-[var(--raio)] border border-white/10 bg-black/25 focus-within:border-mb-red">
-                      {prefixoPagina && <span className="shrink-0 pl-3 text-[15px] text-white/40">{prefixoPagina}/</span>}
+                      {prefixoPagina && <span className="shrink-0 pl-3 text-[15px] text-white/70">{prefixoPagina}/</span>}
                       <input value={chaveRascunho} onChange={(e) => setChaveRascunho(slugify(e.target.value))}
                         className="min-w-0 flex-1 bg-transparent px-2 py-2.5 text-[15px] text-white outline-none" />
                     </span>

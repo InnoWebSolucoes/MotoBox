@@ -17,7 +17,7 @@ export const TOM_EXIGENCIA: Record<Exigencia, string> = {
 export function LinksFontes({ fontes, className = "" }: { fontes: FonteRota[]; className?: string }) {
   if (!fontes.length) return null;
   return (
-    <p className={`text-xs leading-relaxed text-white/45 ${className}`}>
+    <p className={`text-xs leading-relaxed text-white/70 ${className}`}>
       {fontes.length > 1 ? "Fontes:" : "Fonte:"}{" "}
       {fontes.map((f, i) => (
         <span key={f.url + i}>
@@ -107,7 +107,7 @@ export function ListaLugares({ itens }: { itens: Lugar[] }) {
       {itens.map((l) => (
         <li key={l.nome + l.onde} className="border-b border-white/8 py-3.5 first:pt-0 last:border-0 last:pb-0">
           <p className="text-[15px] font-medium leading-snug text-white">{l.nome}</p>
-          <p className="mt-0.5 text-[0.8125rem] text-white/55">{l.onde}</p>
+          <p className="mt-0.5 text-[0.8125rem] text-white/75">{l.onde}</p>
           {l.nota && <p className="mt-1.5 text-sm leading-relaxed text-white/75">{l.nota}</p>}
           <LinksFontes fontes={l.fontes} className="mt-1.5" />
         </li>

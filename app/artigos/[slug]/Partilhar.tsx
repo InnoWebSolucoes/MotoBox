@@ -18,7 +18,7 @@ export function Partilhar({
 }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-[0.2em] text-white/50">{rotulo}</p>
+      <p className="text-xs uppercase tracking-[0.2em] text-white/75">{rotulo}</p>
       <MenuPartilhar
         titulo={titulo}
         rotulo={botao}

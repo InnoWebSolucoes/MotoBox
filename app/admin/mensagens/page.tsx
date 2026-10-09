@@ -153,11 +153,11 @@ export default function AdminMensagens() {
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-baseline gap-x-2">
                       <span className={`truncate ${m.lida ? "text-white/75" : "font-semibold text-white"}`}>{m.nome}</span>
-                      <span className="truncate text-xs text-white/45">{m.email}</span>
-                      <span className="ml-auto shrink-0 text-xs text-white/45">{haQuanto(m.recebido)}</span>
+                      <span className="truncate text-xs text-white/70">{m.email}</span>
+                      <span className="ml-auto shrink-0 text-xs text-white/70">{haQuanto(m.recebido)}</span>
                     </span>
-                    <span className={`mt-0.5 block truncate text-sm ${m.lida ? "text-white/65" : "text-white"}`}>{m.assunto || "Sem assunto"}</span>
-                    <span className="mt-0.5 block truncate text-xs text-white/45">{m.mensagem}</span>
+                    <span className={`mt-0.5 block truncate text-sm ${m.lida ? "text-white/80" : "text-white"}`}>{m.assunto || "Sem assunto"}</span>
+                    <span className="mt-0.5 block truncate text-xs text-white/70">{m.mensagem}</span>
                     <span className="mt-1.5 flex flex-wrap gap-1.5">
                       {m.respondidaEm
                         ? <Etiqueta tom="ok">Respondida a {dataCurta(m.respondidaEm)}</Etiqueta>

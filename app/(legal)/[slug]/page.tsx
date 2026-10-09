@@ -46,11 +46,11 @@ export default async function PaginaLegalPublica(
   return (
     <PaginaInterior icone={<FileText />}>
       <PageHero eyebrow={x.sobretitulo} titulo={pagina.titulo} descricao={pagina.descricao}>
-        <p className="text-xs text-white/50">{x.actualizacao}: {formatData(pagina.atualizado)}</p>
+        <p className="text-xs text-white/75">{x.actualizacao}: {formatData(pagina.atualizado)}</p>
       </PageHero>
 
       <div className="coluna max-w-6xl py-10">
-        <nav className="mb-6 text-xs text-ink-500">
+        <nav className="mb-6 text-xs text-ink-300">
           <Link href="/" className="hover:text-white">{x.inicio}</Link>
           <span className="mx-2">/</span>
           <span className="text-ink-300">{pagina.titulo}</span>
@@ -73,22 +73,22 @@ export default async function PaginaLegalPublica(
           </article>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <p className="eyebrow mb-3 text-ink-500">{x.nestaPagina}</p>
+            <p className="eyebrow mb-3 text-ink-300">{x.nestaPagina}</p>
             <ul className="mb-8 space-y-1.5 border-l-2 border-white/8 pl-3.5">
               {pagina.seccoes.map((s, i) => (
                 <li key={i}>
-                  <a href={`#s-${i + 1}`} className="text-xs text-ink-400 transition-colors hover:text-white">
+                  <a href={`#s-${i + 1}`} className="text-xs text-ink-300 transition-colors hover:text-white">
                     {s.titulo}
                   </a>
                 </li>
               ))}
             </ul>
 
-            <p className="eyebrow mb-3 text-ink-500">{x.outros}</p>
+            <p className="eyebrow mb-3 text-ink-300">{x.outros}</p>
             <ul className="space-y-1.5">
               {outras.map((p) => (
                 <li key={p.slug}>
-                  <Link href={`/${p.slug}`} className="text-xs text-ink-400 transition-colors hover:text-white">
+                  <Link href={`/${p.slug}`} className="text-xs text-ink-300 transition-colors hover:text-white">
                     {p.titulo}
                   </Link>
                 </li>

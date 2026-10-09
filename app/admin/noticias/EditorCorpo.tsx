@@ -119,7 +119,7 @@ export function EditorCorpo({
   return (
     <div className="min-w-0">
       {blocos.length === 0 && (
-        <p className="rounded-[var(--raio)] border border-dashed border-white/15 px-4 py-6 text-center text-sm text-white/55">
+        <p className="rounded-[var(--raio)] border border-dashed border-white/15 px-4 py-6 text-center text-sm text-white/75">
           Ainda sem texto. Junte o primeiro parágrafo, ou cole o texto inteiro de uma vez.
         </p>
       )}
@@ -140,7 +140,7 @@ export function EditorCorpo({
                         key={t} type="button" role="radio" aria-checked={b.tipo === t}
                         onClick={() => mudarBloco(i, { tipo: t })}
                         className={`rounded-[4px] px-2 py-1 text-xs transition-colors ${
-                          b.tipo === t ? "bg-white/15 text-white" : "text-white/50 hover:bg-white/[0.07] hover:text-white"
+                          b.tipo === t ? "bg-white/15 text-white" : "text-white/75 hover:bg-white/[0.07] hover:text-white"
                         }`}
                       >
                         {NOMES[t]}
@@ -204,7 +204,7 @@ export function EditorCorpo({
       </ol>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="text-[13px] text-white/55">Juntar:</span>
+        <span className="text-[13px] text-white/75">Juntar:</span>
         {tipos.map((t) => {
           const Icone = ICONES[t];
           return (

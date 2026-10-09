@@ -45,7 +45,7 @@ function Refs({ n }: { n: number[] }) {
     <sup className="ml-0.5 whitespace-nowrap text-[11px] font-medium leading-none">
       {n.map((i, k) => (
         <span key={i}>
-          {k > 0 && <span className="text-white/35">,</span>}
+          {k > 0 && <span className="text-white/70">,</span>}
           <a
             href={`#fonte-${i}`}
             aria-label={`Fonte ${i}`}
@@ -75,7 +75,7 @@ const CORPO = "text-[17px] leading-[1.75] text-white/80";
 function TituloSeccao({ id, n, sobretitulo, children }: { id: string; n: number; sobretitulo: string; children: ReactNode }) {
   return (
     <header id={id} className="scroll-mt-28">
-      <p className="flex items-center gap-3 text-sm text-white/60">
+      <p className="flex items-center gap-3 text-sm text-white/80">
         <span aria-hidden className="grid size-8 place-items-center rounded-[4px] bg-mb-red text-xs font-semibold text-white">
           {String(n).padStart(2, "0")}
         </span>
@@ -120,7 +120,7 @@ function TabelaClasses({ tb }: { tb: Tabela }) {
           <thead>
             <tr>
               {tb.colunas.map((c, i) => (
-                <th key={`${i}-${c}`} scope="col" className="px-4 py-3.5 text-xs font-normal text-white/50 first:pl-5">
+                <th key={`${i}-${c}`} scope="col" className="px-4 py-3.5 text-xs font-normal text-white/75 first:pl-5">
                   <C>{c}</C>
                 </th>
               ))}
@@ -145,7 +145,7 @@ function TabelaClasses({ tb }: { tb: Tabela }) {
           </tbody>
         </table>
       </div>
-      {tb.nota && <Paragrafo x={tb.nota} className="mt-3 text-xs leading-relaxed text-white/50" />}
+      {tb.nota && <Paragrafo x={tb.nota} className="mt-3 text-xs leading-relaxed text-white/75" />}
     </figure>
   );
 }
@@ -192,7 +192,7 @@ export function GuiaModalidade({
                 <dl className="mt-4">
                   {c.factos.map((f, i) => (
                     <div key={`${i}-${f.rotulo}`} className="border-b border-white/10 py-3 first:pt-0 last:border-0 last:pb-0">
-                      <dt className="text-xs text-white/55">
+                      <dt className="text-xs text-white/75">
                         <C>{f.rotulo}</C>
                       </dt>
                       <dd className="mt-1 text-sm leading-snug text-white">
@@ -209,13 +209,13 @@ export function GuiaModalidade({
 
           {/* O índice acompanha a leitura no computador (o painel rola por dentro). */}
           <nav aria-label={textos.nestaPagina} className="mt-10 hidden lg:sticky lg:top-28 lg:block">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/50">{textos.nestaPagina}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-white/75">{textos.nestaPagina}</p>
             <ul className="mt-4">
               {indice.map((s) => (
                 <li key={s.id}>
                   <a
                     href={`#${s.id}`}
-                    className="block border-l-2 border-white/10 py-1.5 pl-4 text-[15px] text-white/65 transition-colors hover:border-mb-red hover:text-white"
+                    className="block border-l-2 border-white/10 py-1.5 pl-4 text-[15px] text-white/80 transition-colors hover:border-mb-red hover:text-white"
                   >
                     {s.nome}
                   </a>
@@ -397,7 +397,7 @@ export function GuiaModalidade({
               <ol className="mt-8 space-y-2.5">
                 {c.fontes.map((f, i) => (
                   <li key={`${i}-${f.url}`} id={`fonte-${i + 1}`} className="flex scroll-mt-28 gap-3 text-sm">
-                    <span className="w-6 shrink-0 text-right text-white/40 tabular-nums">{i + 1}</span>
+                    <span className="w-6 shrink-0 text-right text-white/70 tabular-nums">{i + 1}</span>
                     <a
                       href={f.url}
                       target="_blank"
@@ -410,7 +410,7 @@ export function GuiaModalidade({
                 ))}
               </ol>
               {textos.verificacao.trim() && (
-                <p className="mt-8 rounded-[var(--raio)] bg-white/5 p-5 text-sm leading-relaxed text-white/65">
+                <p className="mt-8 rounded-[var(--raio)] bg-white/5 p-5 text-sm leading-relaxed text-white/80">
                   {preencher(textos.verificacao, { data: verificadoEm })}
                 </p>
               )}
@@ -429,12 +429,12 @@ export function GuiaModalidade({
 export function IndicePagina({ indice, rotulo = "Nesta página" }: { indice: { id: string; nome: string }[]; rotulo?: string }) {
   return (
     <nav aria-label={rotulo} className="mt-10">
-      <p className="text-xs uppercase tracking-[0.2em] text-white/50">{rotulo}</p>
+      <p className="text-xs uppercase tracking-[0.2em] text-white/75">{rotulo}</p>
       <ul className="mt-4 flex flex-wrap gap-2">
         {indice.map((s, i) => (
           <li key={s.id}>
             <a href={`#${s.id}`} className="pilula">
-              <span className="text-white/40 tabular-nums">{String(i + 1).padStart(2, "0")}</span> {s.nome}
+              <span className="text-white/70 tabular-nums">{String(i + 1).padStart(2, "0")}</span> {s.nome}
             </a>
           </li>
         ))}

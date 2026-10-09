@@ -109,7 +109,7 @@ function DesenhoTracado({ rota }: { rota: Rota }) {
   }, [rota.tracado]);
   const todos = [...linha, ...ps.map((p) => [p.lat, p.lng] as [number, number])];
   if (todos.length < 2) {
-    return <p className="grid h-full place-items-center p-6 text-center text-sm text-white/45">Sem traçado calculado.</p>;
+    return <p className="grid h-full place-items-center p-6 text-center text-sm text-white/70">Sem traçado calculado.</p>;
   }
   const lats = todos.map((p) => p[0]);
   const lngs = todos.map((p) => p[1]);
@@ -149,7 +149,7 @@ function MapaGoogle({ paragens }: { paragens: { lat: number; lng: number }[] }) 
     return () => clearTimeout(t);
   }, [alvo, src]);
   if (!src) {
-    return <p className="grid h-full place-items-center p-6 text-center text-sm text-white/45">Junte pelo menos duas paragens com coordenadas para ver o mapa.</p>;
+    return <p className="grid h-full place-items-center p-6 text-center text-sm text-white/70">Junte pelo menos duas paragens com coordenadas para ver o mapa.</p>;
   }
   return <iframe src={src} title="Mapa da rota no Google Maps" loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="absolute inset-0 size-full border-0" />;
 }
@@ -193,11 +193,11 @@ export function PainelMapa({
         {estado === "certo" && <Etiqueta tom="ok">Traçado em dia com as paragens</Etiqueta>}
         {estado === "desactualizado" && <Etiqueta tom="ouro">As paragens mudaram: recalcule o traçado</Etiqueta>}
         {estado === "sem" && <Etiqueta tom="ouro">Ainda sem traçado: o GPX só leva as paragens</Etiqueta>}
-        <span className="text-white/55 tabular-nums">
+        <span className="text-white/75 tabular-nums">
           {kmTotal} km · {duracao(minTotal)} a rodar de mota · {validas.length} paragens
         </span>
       </div>
-      <p className="text-xs leading-relaxed text-white/50">
+      <p className="text-xs leading-relaxed text-white/75">
         O cálculo usa o OSRM (caminho de carro sobre o OpenStreetMap) e as altitudes do SRTM. Demora alguns segundos e
         actualiza as altitudes das paragens, os quilómetros e minutos de cada troço, as altitudes da rota e o traçado.
       </p>
@@ -262,11 +262,11 @@ export function EditorParagens({ rota, mudar }: { rota: Rota; mudar: (r: Rota) =
     <div className="min-w-0">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
         <span className="text-[13px] font-medium text-white/75">
-          Paragens <span className="ml-1 text-white/40">{ps.length}</span>
+          Paragens <span className="ml-1 text-white/70">{ps.length}</span>
         </span>
-        <span className="text-xs text-white/45">A primeira é a partida, a última a chegada.</span>
+        <span className="text-xs text-white/70">A primeira é a partida, a última a chegada.</span>
       </div>
-      <p className="-mt-1 mb-3 text-xs leading-relaxed text-white/50">
+      <p className="-mt-1 mb-3 text-xs leading-relaxed text-white/75">
         O caminho passa pelas paragens por esta ordem. Ao juntar uma paragem, junta-se também o troço que lá chega.
         Mudar a ordem ou apagar uma paragem leva os troços atrás.
       </p>
@@ -282,11 +282,11 @@ export function EditorParagens({ rota, mudar }: { rota: Rota; mudar: (r: Rota) =
                   className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
                   <span className={`grid size-6 shrink-0 place-items-center rounded-[4px] text-xs font-semibold tabular-nums ${i === 0 ? "bg-mb-red text-white" : "bg-white/10 text-white/80"}`}>{i + 1}</span>
                   <span className="truncate text-sm text-white">{p.nome || "Paragem sem nome"}</span>
-                  {tipo && <span className="hidden shrink-0 text-xs text-white/45 sm:inline">{tipo}</span>}
+                  {tipo && <span className="hidden shrink-0 text-xs text-white/70 sm:inline">{tipo}</span>}
                   {!valida && <Etiqueta tom="vermelho">Sem coordenadas</Etiqueta>}
-                  {valida && <span className="ml-auto hidden shrink-0 text-xs tabular-nums text-white/45 sm:inline">{Math.round(n(p.alt))} m</span>}
+                  {valida && <span className="ml-auto hidden shrink-0 text-xs tabular-nums text-white/70 sm:inline">{Math.round(n(p.alt))} m</span>}
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden
-                    className={`size-4 shrink-0 text-white/50 transition-transform ${valida ? "" : "ml-auto"} ${aberto ? "rotate-180" : ""}`}>
+                    className={`size-4 shrink-0 text-white/75 transition-transform ${valida ? "" : "ml-auto"} ${aberto ? "rotate-180" : ""}`}>
                     <path d="m6 9 6 6 6-6" />
                   </svg>
                 </button>

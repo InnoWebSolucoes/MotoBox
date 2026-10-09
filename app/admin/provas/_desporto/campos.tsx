@@ -183,7 +183,7 @@ export function EscolherVarios({
           </button>
         </div>
       )}
-      {ajuda && <p className="mt-1.5 text-xs leading-relaxed text-white/50">{ajuda}</p>}
+      {ajuda && <p className="mt-1.5 text-xs leading-relaxed text-white/75">{ajuda}</p>}
     </div>
   );
 }
@@ -194,7 +194,7 @@ export function PilulaRemovivel({ children, aoTirar, rotulo }: { children: React
     <span className="inline-flex max-w-full items-center gap-1 rounded-[var(--raio)] bg-white/[0.08] py-1 pl-2.5 pr-1 text-[13px] text-white/85">
       <span className="min-w-0 truncate">{children}</span>
       <button type="button" onClick={aoTirar} aria-label={rotulo} title={rotulo}
-        className="grid size-6 shrink-0 place-items-center rounded-[4px] text-white/55 hover:bg-mb-red hover:text-white">
+        className="grid size-6 shrink-0 place-items-center rounded-[4px] text-white/75 hover:bg-mb-red hover:text-white">
         <X className="size-3.5" aria-hidden />
       </button>
     </span>

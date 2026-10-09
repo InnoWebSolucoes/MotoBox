@@ -173,7 +173,7 @@ export function BibliotecaMedia({
                   )}
                 </div>
                 <div className="flex items-center justify-between gap-2 p-2">
-                  <span className="truncate text-xs text-white/60" title={f.nome}>{f.nome.replace(/^\d+-/, "")}</span>
+                  <span className="truncate text-xs text-white/80" title={f.nome}>{f.nome.replace(/^\d+-/, "")}</span>
                   <span className="flex shrink-0 gap-1">
                     {aoEscolher && <Botao tamanho="sm" variante="primario" onClick={() => aoEscolher(f.url)}>Usar</Botao>}
                     {gerir && (
@@ -212,7 +212,7 @@ export function BibliotecaMedia({
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={fotoSrc(chave, { w: 300 }) ?? ""} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover transition-transform group-hover:scale-105" />
-                      <span className="block truncate px-2 py-1.5 text-[11px] text-white/55">{chave}</span>
+                      <span className="block truncate px-2 py-1.5 text-[11px] text-white/75">{chave}</span>
                     </button>
                   </li>
                 ))}
@@ -306,7 +306,7 @@ export function CampoImagem({
                 <img src={url} alt="" className="absolute inset-0 size-full object-cover" />
               )
             ) : (
-              <span className="absolute inset-0 grid place-items-center text-sm text-white/40">
+              <span className="absolute inset-0 grid place-items-center text-sm text-white/70">
                 {tipo === "video" ? "Sem vídeo" : "Sem imagem"}
               </span>
             )}

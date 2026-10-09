@@ -183,7 +183,7 @@ export function Resultados({ prova, editar, nova }: { prova?: string; editar?: s
           celula: (c) => (
             <div className="min-w-0">
               <p className="max-w-[18rem] truncate font-medium text-white">{c.nome}</p>
-              <p className="max-w-[18rem] truncate text-xs text-white/50">{[c.circuito, c.provincia].filter(Boolean).join(", ")}</p>
+              <p className="max-w-[18rem] truncate text-xs text-white/75">{[c.circuito, c.provincia].filter(Boolean).join(", ")}</p>
             </div>
           ),
         },
@@ -201,7 +201,7 @@ export function Resultados({ prova, editar, nova }: { prova?: string; editar?: s
           },
         },
         { cabecalho: "Data", celula: (c) => <span className="whitespace-nowrap tabular-nums text-white/75">{dataCurta(c.data)}</span> },
-        { cabecalho: "Ronda", celula: (c) => (c.ronda > 0 ? <span className="tabular-nums">{c.ronda}</span> : <span className="text-xs text-white/45">Fora</span>) },
+        { cabecalho: "Ronda", celula: (c) => (c.ronda > 0 ? <span className="tabular-nums">{c.ronda}</span> : <span className="text-xs text-white/70">Fora</span>) },
         { cabecalho: "Vencedor", celula: (c) => <span className="text-white">{c.vencedor || "—"}</span> },
         { cabecalho: "Pilotos", celula: (c) => <span className="tabular-nums text-white/70">{c.resultados.length}</span> },
       ]}
@@ -224,7 +224,7 @@ export function Resultados({ prova, editar, nova }: { prova?: string; editar?: s
       }}
       esquema={esquema}
       extraFicha={(r, ctx) => (!ctx.novo && r.resultados.length === 0 ? (
-        <p className="text-sm text-white/55">Esta tabela ainda não tem pilotos: o site mostra-a sem classificação.</p>
+        <p className="text-sm text-white/75">Esta tabela ainda não tem pilotos: o site mostra-a sem classificação.</p>
       ) : null)}
       vazio={{ titulo: "Ainda não há resultados", texto: "Quando uma prova terminar, junte aqui a classificação de cada categoria." }}
     />

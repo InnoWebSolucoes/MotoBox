@@ -55,15 +55,15 @@ export function ListaImagens({
     <div className="min-w-0">
       <div className="mb-1.5 flex items-baseline justify-between gap-2">
         <span className="text-[13px] font-medium text-white/75">
-          {etiqueta} <span className="ml-1 text-white/40">{valores.length}</span>
+          {etiqueta} <span className="ml-1 text-white/70">{valores.length}</span>
         </span>
       </div>
-      {ajuda && <p className="mb-3 text-xs leading-relaxed text-white/50">{ajuda}</p>}
+      {ajuda && <p className="mb-3 text-xs leading-relaxed text-white/75">{ajuda}</p>}
       <ol className="grid gap-3 md:grid-cols-2">
         {valores.map((v, i) => (
           <li key={i} className="min-w-0 rounded-[var(--raio)] border border-white/10 bg-black/[0.18] p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="text-xs text-white/60">
+              <span className="text-xs text-white/80">
                 {i === 0 ? "Capa" : `Fotografia ${i + 1}`}
               </span>
               <span className="flex gap-1">
@@ -115,7 +115,7 @@ export function EscolhaIcone({
           </button>
         ))}
       </div>
-      <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+      <p className="mt-1.5 text-xs leading-relaxed text-white/75">
         {opcoes.find((o) => o.valor === valor)?.nome ?? "Nenhum escolhido"}
         {ajuda ? <> · {ajuda}</> : null}
       </p>
@@ -129,7 +129,7 @@ export function Ficha({ linhas }: { linhas: [string, ReactNode][] }) {
     <dl className="divide-y divide-white/[0.07] overflow-hidden rounded-[var(--raio)] border border-white/10 bg-black/[0.15]">
       {linhas.map(([k, v]) => (
         <div key={k} className="flex flex-wrap justify-between gap-x-4 gap-y-0.5 px-4 py-2.5 text-sm">
-          <dt className="text-white/55">{k}</dt>
+          <dt className="text-white/75">{k}</dt>
           <dd className="min-w-0 text-right text-white [overflow-wrap:anywhere]">{v}</dd>
         </div>
       ))}

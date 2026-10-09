@@ -98,7 +98,7 @@ export function DefinicoesGerais({ irPara }: { irPara: (aba: "emails" | "contas"
           {sujo ? (
             <Etiqueta tom="ouro">{mudados.length === 1 ? "1 alteração por gravar" : `${mudados.length} alterações por gravar`}</Etiqueta>
           ) : (
-            <span className="text-white/55">Tudo gravado</span>
+            <span className="text-white/75">Tudo gravado</span>
           )}
           {comErros && <Etiqueta tom="vermelho">Há campos por corrigir</Etiqueta>}
         </div>
@@ -183,7 +183,7 @@ export function DefinicoesGerais({ irPara }: { irPara: (aba: "emails" | "contas"
         <Painel titulo="Comunidade" icone={<Users />}>
           <div className="grid gap-2">
             {interruptor("registosAbertos", "Criar conta", "Desligado, ninguém consegue criar uma conta nova no site. Quem já tem conta continua a entrar.")}
-            <p className="px-1 text-[13px] text-white/55">Os textos de Entrar e as contas por confirmar estão em {ligacaoAba("contas", "Contas")}.</p>
+            <p className="px-1 text-[13px] text-white/75">Os textos de Entrar e as contas por confirmar estão em {ligacaoAba("contas", "Contas")}.</p>
             {interruptor("marketplaceAberto", "Marketplace aberto", "Desligado, ninguém consegue publicar anúncios novos. Os anúncios publicados continuam à vista.")}
             {interruptor("forumAberto", "Fórum aberto", "Desligado, ninguém consegue responder aos tópicos do fórum. Os tópicos continuam à vista.")}
             {interruptor("newsletterAutomatica", "Newsletter automática", "Ligada, o resumo da semana segue sozinho por email para os subscritores.")}

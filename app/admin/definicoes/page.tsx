@@ -1,8 +1,8 @@
 import { Definicoes, type AbaDefinicoes } from "./Definicoes";
 
-/* MOTOBOX ADMIN — Definições (?aba=geral | emails | contas). */
+/* MOTOBOX ADMIN — Definições (?aba=geral | emails | contas | membro). */
 
-const ABAS: AbaDefinicoes[] = ["geral", "emails", "contas"];
+const ABAS: AbaDefinicoes[] = ["geral", "emails", "contas", "membro"];
 
 export default async function AdminDefinicoes({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
   const { aba } = await searchParams;

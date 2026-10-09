@@ -125,7 +125,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                 tamanhos="64px"
               />
               <div>
-                <p className="text-sm text-white/60">{t.perfil}</p>
+                <p className="text-sm text-white/80">{t.perfil}</p>
                 <h2 className="titulo-4 mt-1">{piloto.nome}</h2>
               </div>
             </div>
@@ -143,7 +143,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                 ] as const
               ).map(([id, k, v]) => (
                 <div key={id} className="flex flex-col-reverse rounded-[var(--raio)] bg-white/5 p-4">
-                  <dt className="mt-1 text-xs text-white/55">{k}</dt>
+                  <dt className="mt-1 text-xs text-white/75">{k}</dt>
                   <dd className="text-[15px] font-medium leading-snug">{v}</dd>
                 </div>
               ))}
@@ -156,7 +156,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                   {t.historico.titulo}
                   <History className="size-6 text-mb-red-light" aria-hidden />
                 </h2>
-                <div aria-hidden className="mt-8 hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/50 sm:grid sm:grid-cols-[minmax(0,1fr)_4.5rem_5.5rem_2.5rem_3rem]">
+                <div aria-hidden className="mt-8 hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/75 sm:grid sm:grid-cols-[minmax(0,1fr)_4.5rem_5.5rem_2.5rem_3rem]">
                   <span>{t.historico.prova}</span>
                   <span>{t.historico.data}</span>
                   <span>{t.historico.categoria}</span>
@@ -174,7 +174,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                         >
                           <span className="min-w-0">
                             <span className="block truncate font-medium transition-colors group-hover:text-mb-red-light">{corrida.nome}</span>
-                            <span className="block truncate text-xs text-white/55">
+                            <span className="block truncate text-xs text-white/75">
                               {corrida.circuito}
                               <span className="sm:hidden">
                                 {" "}
@@ -209,10 +209,10 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                 <Posicao posicao={posicao} className="size-14 text-2xl" />
                 <div className="min-w-0 flex-1">
                   <p className="text-2xl font-semibold tabular-nums">
-                    {piloto.estatisticas.pontos} <span className="text-sm font-normal text-white/55">{t.campeonato.pts}</span>
+                    {piloto.estatisticas.pontos} <span className="text-sm font-normal text-white/75">{t.campeonato.pts}</span>
                   </p>
                   {lider && posicao > 1 && (
-                    <p className="text-sm text-white/55">
+                    <p className="text-sm text-white/75">
                       {comValores(t.campeonato.doLider, {
                         n: <span className="tabular-nums">{lider.estatisticas.pontos - piloto.estatisticas.pontos}</span>,
                       })}
@@ -256,14 +256,14 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                   <EmblemaEquipa logo={equipa.logo} cor={equipa.cor} className="size-12 text-sm" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium transition-colors group-hover:text-mb-red-light">{equipa.nome}</span>
-                    <span className="block truncate text-sm text-white/55">{equipa.base}</span>
+                    <span className="block truncate text-sm text-white/75">{equipa.base}</span>
                   </span>
                   <Seta className="size-3.5" />
                 </Link>
 
                 {colegas.length > 0 && (
                   <>
-                    <p className="mb-3 mt-6 text-sm text-white/55">{t.equipa.colegas}</p>
+                    <p className="mb-3 mt-6 text-sm text-white/75">{t.equipa.colegas}</p>
                     <ul className="space-y-[var(--intervalo)]">
                       {colegas.map((c) => (
                         <li key={c.slug}>
@@ -277,7 +277,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                               tamanhos="36px"
                             />
                             <span className="min-w-0 flex-1 truncate text-sm">{c.nome}</span>
-                            <span className="text-sm tabular-nums text-white/55">{c.estatisticas.pontos} {t.equipa.pts}</span>
+                            <span className="text-sm tabular-nums text-white/75">{c.estatisticas.pontos} {t.equipa.pts}</span>
                           </Link>
                         </li>
                       ))}

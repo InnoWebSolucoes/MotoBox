@@ -38,7 +38,7 @@ export default async function Eventos({ searchParams }: { searchParams: Promise<
       <Seccao>
         <div className="flex flex-wrap items-end justify-between gap-6">
           <h2 className="titulo-2">{t.proximos}</h2>
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-white/80">
             {futuros.length} {futuros.length === 1 ? "evento" : "eventos"}
             {activo ? ` · ${activo}` : ""}
           </p>

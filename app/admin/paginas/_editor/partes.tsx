@@ -100,7 +100,7 @@ export function AbasEmLinhas<K extends string>({ abas, activa, onChange, rotulo 
           className="pilula aria-selected:bg-mb-red aria-selected:text-white"
         >
           {a.nome}
-          {a.contador !== undefined && <span className="tabular-nums text-white/60">{a.contador}</span>}
+          {a.contador !== undefined && <span className="tabular-nums text-white/80">{a.contador}</span>}
         </button>
       ))}
     </div>

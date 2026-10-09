@@ -143,7 +143,7 @@ function EditorFontes({ perfil, onChange }: { perfil: Perfil; onChange: (p: Perf
   return (
     <div className="space-y-[var(--intervalo)]">
       {fontes.length === 0 && (
-        <p className="rounded-[var(--raio)] border border-dashed border-white/15 px-4 py-5 text-center text-sm text-white/55">
+        <p className="rounded-[var(--raio)] border border-dashed border-white/15 px-4 py-5 text-center text-sm text-white/75">
           Sem fontes. Sem elas, a página não mostra a lista de fontes nem as ligações ao lado dos factos.
         </p>
       )}
@@ -160,7 +160,7 @@ function EditorFontes({ perfil, onChange }: { perfil: Perfil; onChange: (p: Perf
                 <span className="flex gap-1">
                   {/^https?:\/\//.test(f.url) && (
                     <a href={f.url} target="_blank" rel="noopener noreferrer" title="Abrir a fonte" aria-label="Abrir a fonte"
-                      className="inline-flex size-8 items-center justify-center rounded-[var(--raio)] bg-white/[0.06] text-white/60 transition-colors hover:bg-white/10 hover:text-white">
+                      className="inline-flex size-8 items-center justify-center rounded-[var(--raio)] bg-white/[0.06] text-white/80 transition-colors hover:bg-white/10 hover:text-white">
                       <ExternalLink className="size-4" aria-hidden />
                     </a>
                   )}
@@ -187,7 +187,7 @@ function EditorFontes({ perfil, onChange }: { perfil: Perfil; onChange: (p: Perf
       <Botao onClick={() => onChange({ ...perfil, fontes: [...fontes, { nome: "", url: "" }] })}>
         <Plus className="size-4" aria-hidden /> Juntar fonte
       </Botao>
-      <p className="text-xs leading-relaxed text-white/45">
+      <p className="text-xs leading-relaxed text-white/70">
         O texto antes dos dois pontos («Bikers of Africa», «Instagram») é o que aparece ao lado dos factos. O nome inteiro aparece na lista de fontes, no fim da página.
       </p>
     </div>

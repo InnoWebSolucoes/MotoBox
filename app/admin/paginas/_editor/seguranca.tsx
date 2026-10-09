@@ -9,7 +9,7 @@
 
 import { Formulario } from "@/components/admin/editor/Formulario";
 import type { CampoEsquema, Valor } from "@/components/admin/editor/esquema";
-import { caixa, em, type AbaEsquema } from "./partes";
+import { caixa, em, numerosFontes, type AbaEsquema } from "./partes";
 
 const pt = (v: unknown) => (typeof v === "string" ? v : typeof v === "object" && v ? String((v as Valor).pt ?? "") : "");
 
@@ -46,6 +46,25 @@ const listaBi = (chave: string, etiqueta: string, nomeItem = "conselho", ajuda?:
   ({ tipo: "lista-bi", chave, etiqueta, area: true, nomeItem, ajuda });
 
 const tituloLead = [bi("titulo", "Título"), bi("lead", "Texto de abertura", true)];
+
+const fontesDe = (ajuda?: string) => numerosFontes("fontes", "Fontes citadas", ajuda);
+
+/** As partes do desenho do capacete (cada uma tem o seu ponto no desenho). */
+const PARTES_CAPACETE = [
+  { valor: "calota", nome: "Calota (por fora, em cima)" },
+  { valor: "espuma", nome: "Espuma de absorção (no corte, atrás)" },
+  { valor: "forro", nome: "Forro de conforto (no corte, por dentro)" },
+  { valor: "viseira", nome: "Viseira (à frente)" },
+  { valor: "correia", nome: "Correia e fivela (em baixo)" },
+  { valor: "etiqueta", nome: "Etiqueta (na correia)" },
+];
+
+const ZONAS_CORPO = [
+  { valor: "casaco", nome: "Tronco e braços (casaco)" },
+  { valor: "luvas", nome: "Mãos (luvas)" },
+  { valor: "calcas", nome: "Pernas (calças)" },
+  { valor: "botas", nome: "Pés (botas)" },
+];
 
 const lei = [
   bi("lei", "Citação da lei", true, "Aparece em destaque, com uma barra vermelha à esquerda."),
@@ -84,9 +103,13 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
         ],
       },
       caixa("Navegação \"Nesta página\"", [
-        em("UI", [bi("nestaPagina", "Título da navegação")]),
+        em("UI", [
+          bi("nestaPagina", "Título da navegação"),
+          bi("capitulos", "Botão da lista de capítulos", false, "Na barra que aparece em cima no telemóvel, ao percorrer a página."),
+          bi("capituloDe", "Capítulo, lido em voz alta", false, "{n} é o número do capítulo e {total} quantos há. Ex.: \"Capítulo {n} de {total}\"."),
+        ]),
         NOMES_SECCOES,
-      ], "Os nomes aparecem nos botões da navegação e por cima de cada secção numerada."),
+      ], "Os nomes aparecem nos botões da navegação, no trilho lateral e por cima de cada capítulo."),
       {
         tipo: "objecto", chave: "SEO", etiqueta: "Nas pesquisas e no separador do navegador",
         campos: [
@@ -105,14 +128,38 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
         foto("capacete", "Fotografia do capacete"),
         em("CAPACETE", [bi("fotoLegenda", "Legenda da fotografia", true)]),
       ]),
-      em("CAPACETE", [
-        {
-          tipo: "lista", chave: "grupos", etiqueta: "Caixas de conselhos", nomeItem: "caixa",
-          ajuda: "Três lado a lado nos ecrãs largos (hoje: Escolher, Usar, Trocar).",
-          resumo: (g) => pt(g.titulo),
-          novo: () => ({ titulo: { pt: "", en: "" }, itens: [] }),
-          campos: [bi("titulo", "Título"), listaBi("itens", "Conselhos")],
-        },
+      caixa("Desenho do capacete", [
+        em("CAPACETE", [
+          bi("anatomiaTitulo", "Título"),
+          bi("anatomiaTexto", "Texto por baixo do título", true),
+          bi("anatomiaDescricao", "Descrição do desenho", true, "Lida em voz alta a quem não vê o desenho."),
+          bi("anatomiaAnterior", "Botão \"parte anterior\" (lido em voz alta)"),
+          bi("anatomiaSeguinte", "Botão \"parte seguinte\""),
+          {
+            tipo: "lista", chave: "anatomia", etiqueta: "Partes (pontos no desenho)", nomeItem: "parte",
+            ajuda: "Cada parte é um ponto numerado no desenho, pela ordem da lista. Use cada parte do desenho uma só vez.",
+            resumo: (p) => pt(p.nome),
+            novo: () => ({ id: "calota", nome: { pt: "", en: "" }, texto: { pt: "", en: "" }, fontes: [] }),
+            campos: [
+              { tipo: "seleccao", chave: "id", etiqueta: "Ponto do desenho", opcoes: PARTES_CAPACETE },
+              bi("nome", "Nome"),
+              bi("texto", "O que faz", true),
+              fontesDe(),
+            ],
+          },
+        ]),
+      ], "Um capacete visto de lado, com um corte que mostra as camadas. Tocar num ponto mostra o texto dessa parte."),
+      // Numa caixa: dois em("CAPACETE") seguidos teriam a mesma chave no formulário.
+      caixa("Conselhos por baixo do desenho", [
+        em("CAPACETE", [
+          {
+            tipo: "lista", chave: "grupos", etiqueta: "Separadores de conselhos", nomeItem: "separador",
+            ajuda: "Um separador por caixa (hoje: Escolher, Usar, Trocar).",
+            resumo: (g) => pt(g.titulo),
+            novo: () => ({ titulo: { pt: "", en: "" }, itens: [] }),
+            campos: [bi("titulo", "Título"), listaBi("itens", "Conselhos")],
+          },
+        ]),
       ]),
     ],
   },
@@ -134,6 +181,33 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
           campos: [bi("titulo", "Título"), bi("texto", "Texto", true)],
         },
       ]),
+      caixa("Comparação seco / molhado", [
+        em("CHUVA", [
+          em("travagem", [
+            bi("titulo", "Título"),
+            bi("texto", "Texto por baixo"),
+            bi("velocidade", "Nome do grupo de botões das velocidades (lido em voz alta)"),
+            bi("seco", "Barra do piso seco"),
+            bi("molhado", "Barra do piso molhado"),
+            bi("reaccao", "Parte da barra \"a reagir\""),
+            bi("travar", "Parte da barra \"a travar\""),
+            bi("noMinimo", "Palavra antes dos metros com chuva", false, "Ex.: \"pelo menos\"."),
+            {
+              tipo: "lista", chave: "velocidades", etiqueta: "Velocidades", nomeItem: "velocidade",
+              ajuda: "Metros da tabela de distâncias típicas do Highway Code (regra 126). Com chuva, a página mostra o dobro do total (o mínimo da regra 227).",
+              resumo: (v) => `${String(v.rotulo ?? "")}: ${Number(v.reaccao ?? 0) + Number(v.travagem ?? 0)} m`,
+              novo: () => ({ rotulo: "", reaccao: 0, travagem: 0 }),
+              campos: [
+                { tipo: "texto", chave: "rotulo", etiqueta: "Botão", largura: "meia", placeholder: "Ex.: 80 km/h" },
+                { tipo: "numero", chave: "reaccao", etiqueta: "Metros a reagir", largura: "meia", min: 0 },
+                { tipo: "numero", chave: "travagem", etiqueta: "Metros a travar", largura: "meia", min: 0 },
+              ],
+            },
+            bi("nota", "Nota sobre os números", true),
+            fontesDe(),
+          ]),
+        ]),
+      ], "Escolhe-se uma velocidade e as barras mostram a distância de paragem com o piso seco e com o piso molhado."),
     ],
   },
   {
@@ -141,7 +215,24 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
     nome: "03 Ver e ser visto",
     esquema: [
       em("VISIBILIDADE", [...tituloLead, listaBi("dicas", "Conselhos")]),
-      foto("visibilidade", "Fotografia ao lado"),
+      caixa("Cena: o que vê quem vem atrás", [
+        em("VISIBILIDADE", [
+          em("cena", [
+            bi("titulo", "Título"),
+            bi("dia", "Botão \"Dia\""),
+            bi("noite", "Botão \"Noite\""),
+            bi("escuro", "Botão da roupa escura"),
+            bi("visivel", "Botão da roupa visível"),
+            bi("diaEscuro", "Legenda: dia, roupa escura", true),
+            bi("diaVisivel", "Legenda: dia, roupa visível", true),
+            bi("noiteEscuro", "Legenda: noite, roupa escura", true),
+            bi("noiteVisivel", "Legenda: noite, roupa visível", true),
+            bi("nota", "Nota por baixo", true),
+            bi("descricao", "Descrição do desenho", true, "Lida em voz alta, antes da legenda."),
+            fontesDe(),
+          ]),
+        ]),
+      ], "Um desenho de uma estrada vista de dentro de um carro. Muda-se a hora e a roupa do motociclista e a legenda acompanha."),
     ],
   },
   {
@@ -150,9 +241,18 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
     esquema: [
       em("EQUIPAMENTO", [
         ...tituloLead,
-        bi("estudo", "Fonte dos números", false, "Aparece por baixo de cada número."),
+        caixa("O motard (desenho)", [
+          bi("figuraTitulo", "Título"),
+          bi("figuraTexto", "Texto por baixo"),
+          bi("figuraDescricao", "Descrição do desenho", true, "Lida em voz alta a quem não vê o desenho."),
+          bi("normaRotulo", "Texto antes da norma", false, "Ex.: \"Norma a procurar\"."),
+        ]),
+        bi("numerosTitulo", "Título dos números"),
+        bi("estudo", "Fonte dos números", false, "Aparece por baixo dos números, como \"Fonte: …\"."),
+        fontesDe(),
         {
           tipo: "lista", chave: "numeros", etiqueta: "Números", nomeItem: "número",
+          ajuda: "A barra de cada número enche até à percentagem (\"−59%\" enche 59%).",
           resumo: (n) => `${String(n.valor ?? "")} ${pt(n.texto)}`.trim(),
           novo: () => ({ valor: "", texto: { pt: "", en: "" } }),
           campos: [{ tipo: "texto", chave: "valor", etiqueta: "Número", largura: "meia" }, bi("texto", "Legenda")],
@@ -160,8 +260,14 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
         {
           tipo: "lista", chave: "pecas", etiqueta: "Peças de equipamento", nomeItem: "peça",
           resumo: (p) => pt(p.nome),
-          novo: () => ({ nome: { pt: "", en: "" }, texto: { pt: "", en: "" } }),
-          campos: [bi("nome", "Nome"), bi("texto", "Texto", true)],
+          ajuda: "Cada peça acende a sua zona do desenho.",
+          novo: () => ({ nome: { pt: "", en: "" }, zona: "casaco", norma: "", texto: { pt: "", en: "" } }),
+          campos: [
+            bi("nome", "Nome"),
+            { tipo: "seleccao", chave: "zona", etiqueta: "Zona do desenho", largura: "meia", opcoes: ZONAS_CORPO },
+            { tipo: "texto", chave: "norma", etiqueta: "Norma (opcional)", largura: "meia", placeholder: "Ex.: EN 13594" },
+            bi("texto", "Texto", true),
+          ],
         },
         bi("etiquetas", "Nota sobre as etiquetas e normas", true),
       ]),
@@ -170,7 +276,20 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
   {
     chave: "passageiros",
     nome: "05 Passageiros",
-    esquema: [em("PASSAGEIROS", [...tituloLead, ...lei, listaBi("dicas", "Conselhos")])],
+    esquema: [
+      em("PASSAGEIROS", [
+        ...tituloLead,
+        ...lei,
+        caixa("Caixa vermelha", [
+          em("destaque", [
+            { tipo: "texto", chave: "valor", etiqueta: "Número grande", largura: "meia", placeholder: "7", ajuda: "Vazio, a caixa não aparece." },
+            bi("unidade", "Palavra ao lado do número"),
+            bi("texto", "Texto", true),
+          ]),
+        ]),
+        listaBi("dicas", "Conselhos"),
+      ]),
+    ],
   },
   {
     chave: "cabeca",
@@ -216,6 +335,14 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
             bi("texto", "Texto", true),
           ],
         },
+        caixa("Lista para marcar", [
+          bi("progresso", "Progresso", false, "{feitos} e {total} trocam-se pelos números. Ex.: \"{feitos} de {total} verificados\"."),
+          bi("falta", "Texto enquanto falta marcar"),
+          bi("pronto", "Título quando está tudo marcado"),
+          bi("prontoTexto", "Texto quando está tudo marcado"),
+          bi("recomecar", "Botão para limpar as marcas"),
+          bi("memoria", "Nota sobre onde ficam as marcas", true),
+        ], "Cada verificação marca-se com um toque; um anel enche até estar tudo verificado."),
       ]),
     ],
   },
@@ -232,7 +359,16 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
           bi("diagramaLider", "Nome da primeira mota"),
           bi("diagramaFecho", "Nome da última mota"),
           bi("diagramaSentido", "Seta do sentido de marcha"),
-          bi("diagramaDescricao", "Descrição do esquema", true, "Lida em voz alta a quem não vê o desenho."),
+          bi("modoRecta", "Botão da recta"),
+          bi("modoCurva", "Botão das curvas"),
+          bi("legendaRecta", "Legenda em recta", true),
+          bi("legendaCurva", "Legenda em curvas", true),
+          bi("umSegundo", "Distância em recta", false, "Ex.: \"1 s\"."),
+          bi("doisSegundos", "Distância em curvas", false, "Ex.: \"2 s\"."),
+          bi("diagramaDescricao", "Descrição do esquema em recta", true, "Lida em voz alta a quem não vê o desenho."),
+          bi("diagramaDescricaoCurva", "Descrição do esquema em curvas", true, "Lida em voz alta a quem não vê o desenho."),
+          bi("diagramaFonte", "Fonte, por baixo do esquema"),
+          fontesDe(),
         ]),
       ]),
     ],
@@ -245,6 +381,7 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
         ...tituloLead,
         caixa("Número de emergência", [
           { tipo: "texto", chave: "numero", etiqueta: "Número", largura: "meia", placeholder: "111", ajuda: "No telemóvel, carregar na caixa liga para este número." },
+          bi("ligar", "Botão branco", false, "Ex.: \"Ligar\"."),
           bi("numeroTexto", "Texto", true),
           bi("numeroDica", "Dica pequena", true),
         ]),
@@ -254,7 +391,13 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
           novo: () => ({ nome: { pt: "", en: "" }, itens: [] }),
           campos: [bi("nome", "Nome do passo"), listaBi("itens", "O que fazer", "conselho")],
         },
+        caixa("Botões dos passos", [
+          bi("passoDe", "Passo", false, "{n} e {total} trocam-se pelos números. Ex.: \"Passo {n} de {total}\"."),
+          bi("anterior", "Botão do passo anterior"),
+          bi("seguinte", "Botão do passo seguinte"),
+        ]),
         bi("extra", "Nota final", true),
+        fontesDe("Aparecem no fim da nota final."),
       ]),
     ],
   },
@@ -276,6 +419,8 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
           novo: () => ({ titulo: { pt: "", en: "" }, texto: { pt: "", en: "" }, licao: { pt: "", en: "" } }),
           campos: [bi("titulo", "Título"), bi("texto", "História", true), bi("licao", "A lição", true)],
         },
+        bi("anterior", "Botão da história anterior (lido em voz alta)"),
+        bi("seguinte", "Botão da história seguinte (lido em voz alta)"),
       ]),
       em("UI", [bi("licao", "Palavra antes da lição", false, "Aparece a vermelho: \"A lição: …\".")]),
       caixa("Convite em vermelho", [
@@ -289,6 +434,44 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
     ],
   },
   {
+    chave: "teste",
+    nome: "Teste rápido",
+    descricao: "\"Sabe o que fazer?\": perguntas sobre a página, uma de cada vez, com a resposta logo a seguir. Fica depois das histórias.",
+    esquema: [
+      em("QUIZ", [
+        bi("titulo", "Título"),
+        bi("texto", "Texto por baixo", true),
+        {
+          tipo: "lista", chave: "perguntas", etiqueta: "Perguntas", nomeItem: "pergunta",
+          resumo: (p) => pt(p.pergunta),
+          novo: () => ({ pergunta: { pt: "", en: "" }, opcoes: [], certa: 1, explicacao: { pt: "", en: "" }, seccao: "" }),
+          campos: [
+            bi("pergunta", "Pergunta", true),
+            listaBi("opcoes", "Respostas possíveis", "resposta", "Duas a quatro. Aparecem como A, B, C…"),
+            { tipo: "numero", chave: "certa", etiqueta: "Resposta certa", largura: "meia", min: 1, max: 6, ajuda: "O número da resposta na lista: 1 é a primeira." },
+            {
+              tipo: "seleccao", chave: "seccao", etiqueta: "Capítulo para rever", largura: "meia", vazio: "Nenhum",
+              opcoes: SECCOES_FIXAS.map(([valor, nome]) => ({ valor, nome })),
+            },
+            bi("explicacao", "Explicação (aparece depois de responder)", true),
+          ],
+        },
+        caixa("Textos do teste", [
+          bi("perguntaDe", "Pergunta", false, "{n} e {total} trocam-se pelos números."),
+          bi("certo", "Quando acerta"),
+          bi("errado", "Quando falha"),
+          bi("seguinte", "Botão da pergunta seguinte"),
+          bi("verResultado", "Botão na última pergunta"),
+          bi("resultado", "Resultado", false, "{certas} e {total} trocam-se pelos números."),
+          bi("resultadoTudo", "Texto quando acerta tudo", true),
+          bi("resultadoParte", "Texto quando falha alguma", true),
+          bi("rever", "Palavra antes do capítulo a rever", false, "Ex.: \"Rever\" dá \"Rever: Capacete\"."),
+          bi("recomecar", "Botão para responder de novo"),
+        ]),
+      ]),
+    ],
+  },
+  {
     chave: "fontes",
     nome: "Fontes e aviso",
     esquema: [
@@ -296,15 +479,17 @@ export const ABAS_SEGURANCA: AbaEsquema[] = [
         bi("fontesTitulo", "Título das fontes"),
         bi("fontesSub", "Texto por baixo", true),
         bi("fonte", "Palavra \"Fonte\"", false, "Usada nos números: \"Fonte: OMS\"."),
+        bi("verFonte", "Ligação para uma fonte, lida em voz alta", false, "{n} é o número da fonte. Os números aparecem como [4] no texto."),
+        bi("abreNovaJanela", "Aviso de que a fonte abre noutra janela (lido em voz alta)"),
       ]),
       {
         tipo: "lista", chave: "FONTES", etiqueta: "Fontes", nomeItem: "fonte",
-        ajuda: "Numeradas pela ordem da lista.",
+        ajuda: "Numeradas pela ordem da lista. O texto da página cita-as pelo número (\"Fontes citadas\"): se mudar a ordem, confira esses números.",
         resumo: (f) => pt(f.nome),
         novo: () => ({ nome: { pt: "", en: "" }, url: "" }),
         campos: [bi("nome", "Nome", true), { tipo: "url", chave: "url", etiqueta: "Endereço", placeholder: "https://…" }],
       },
-      em("UI", [bi("aviso", "Aviso no fim da página", true)]),
+      caixa("Aviso no fim da página", [em("UI", [bi("aviso", "Texto do aviso", true)])]),
     ],
   },
 ];

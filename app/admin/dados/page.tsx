@@ -230,14 +230,14 @@ export default function AdminDados() {
       <div className="grid gap-[var(--intervalo)] lg:grid-cols-2">
         <Painel titulo="Cópia dos registos" icone={<Download />}
           descricao="Artigos, eventos, provas, clubes, pilotos, anúncios, fórum, contas, encomendas e definições, num ficheiro.">
-          <p className="mb-4 text-sm leading-relaxed text-white/60">
+          <p className="mb-4 text-sm leading-relaxed text-white/80">
             Faça uma cópia antes de mudanças grandes, para poder voltar atrás.
           </p>
           <Botao variante="primario" onClick={descarregarRegistos}><Download className="size-4" aria-hidden />Descarregar cópia</Botao>
         </Painel>
 
         <Painel titulo="Importar registos" icone={<Upload />} descricao="Substitui os registos actuais pelos de uma cópia.">
-          <p className="mb-4 text-sm leading-relaxed text-white/60">
+          <p className="mb-4 text-sm leading-relaxed text-white/80">
             A importação troca o que está no painel pelo que está na cópia. Descarregue primeiro uma cópia do que existe agora.
           </p>
           <input ref={ficheiro} type="file" accept="application/json" className="hidden"
@@ -253,7 +253,7 @@ export default function AdminDados() {
         <Painel titulo="Cópia dos textos do site" icone={<FileText />} className="lg:col-span-2"
           descricao="Os textos e guias mudados no painel: entrada, páginas das secções, rotas, perfis dos clubes, modalidades…">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="max-w-2xl text-sm leading-relaxed text-white/60">
+            <p className="max-w-2xl text-sm leading-relaxed text-white/80">
               Leva só o que foi editado (o resto é o texto original do site). Ao importar, os textos da cópia são gravados
               por cima dos actuais; os que não estão na cópia ficam como estão.
             </p>
@@ -275,7 +275,7 @@ export default function AdminDados() {
             {COLECCOES.map((c) => (
               <li key={c.chave} className="rounded-[var(--raio)] bg-black/[0.18] p-3.5">
                 <p className="text-xl font-semibold tabular-nums">{(estado[c.chave] as unknown[]).length}</p>
-                <p className="mt-0.5 text-xs text-white/55">{c.nome}</p>
+                <p className="mt-0.5 text-xs text-white/75">{c.nome}</p>
               </li>
             ))}
           </ul>
@@ -283,7 +283,7 @@ export default function AdminDados() {
 
         <Painel titulo="Repor os dados de demonstração" icone={<RotateCcw />} className="lg:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="max-w-2xl text-sm leading-relaxed text-white/60">
+            <p className="max-w-2xl text-sm leading-relaxed text-white/80">
               Deita fora as mudanças guardadas neste navegador e volta ao conteúdo de demonstração.
               Não mexe na base de dados nem nos textos do site. Não se pode desfazer.
             </p>

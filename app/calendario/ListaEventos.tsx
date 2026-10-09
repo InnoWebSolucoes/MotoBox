@@ -89,21 +89,21 @@ export function LinhaEvento({
 
         {/* Informação */}
         <div className="flex min-w-0 flex-col justify-center px-2 pt-2 sm:px-4 sm:py-3">
-          <p className="text-[0.8125rem] text-white/60">
+          <p className="text-[0.8125rem] text-white/80">
             {e.ronda && !comunidade ? <span className="text-mb-red-light">{preencher(textos.ronda, { ronda: e.ronda })} · </span> : null}
             {e.disciplina}
           </p>
           <h3 className="mt-1 text-lg font-semibold leading-snug text-balance md:text-xl">{e.titulo}</h3>
-          <p className="mt-1 text-sm text-white/60">
+          <p className="mt-1 text-sm text-white/80">
             <span className="tabular-nums">{datasCurtas(e, ate ?? textos.ate)}</span>
             {local && <> · {local}</>}
           </p>
-          {e.organizador && <p className="mt-0.5 truncate text-xs text-white/45">{e.organizador}</p>}
+          {e.organizador && <p className="mt-0.5 truncate text-xs text-white/70">{e.organizador}</p>}
           <div className="mt-3 flex flex-wrap gap-1.5">
             <EstadoEvento e={e} venda={venda} textos={textos.estados} />
             {entrada && !passado && <Etiqueta>{entrada}</Etiqueta>}
           </div>
-          {e.resumo && <p className="mt-3 hidden max-w-2xl text-sm leading-relaxed text-white/60 line-clamp-2 md:block">{e.resumo}</p>}
+          {e.resumo && <p className="mt-3 hidden max-w-2xl text-sm leading-relaxed text-white/80 line-clamp-2 md:block">{e.resumo}</p>}
         </div>
 
         {/* Acção: preço e bilhetes só com venda aberta; esgotado fica na etiqueta */}
@@ -111,7 +111,7 @@ export function LinhaEvento({
           {venda === "a-venda" ? (
             <>
               <span>
-                <span className="block text-xs text-white/50">{textos.desde}</span>
+                <span className="block text-xs text-white/75">{textos.desde}</span>
                 <span className="block text-lg font-semibold tabular-nums">{formatKz(precoMinimo(e))}</span>
               </span>
               <span className="inline-flex items-center gap-2 text-sm text-white sm:mt-2">
@@ -162,12 +162,12 @@ export function CartaoEvento({
         </div>
       </div>
       <div className="flex flex-1 flex-col p-4 pt-5 md:p-5">
-        <p className="text-[0.8125rem] text-white/60">
+        <p className="text-[0.8125rem] text-white/80">
           {e.ronda && !comunidade ? <span className="text-mb-red-light">{preencher(textos.ronda, { ronda: e.ronda })} · </span> : null}
           {e.disciplina}
         </p>
         <h3 className="mt-2 text-xl font-semibold leading-snug tracking-tight text-balance line-clamp-2">{e.titulo}</h3>
-        <p className="mt-2 text-sm text-white/60">
+        <p className="mt-2 text-sm text-white/80">
           {e.circuito ? `${e.circuito}, ` : ""}
           {e.provincia}
         </p>
@@ -179,11 +179,11 @@ export function CartaoEvento({
         <div className="mt-auto flex items-end justify-between gap-3 pt-6 text-sm">
           {venda === "a-venda" ? (
             <span>
-              <span className="block text-xs text-white/50">{textos.desde}</span>
+              <span className="block text-xs text-white/75">{textos.desde}</span>
               <span className="font-semibold tabular-nums">{formatKz(precoMinimo(e))}</span>
             </span>
           ) : (
-            <span className="text-white/55">{passado ? (comunidade ? textos.verEvento : textos.resultados) : textos.detalhes}</span>
+            <span className="text-white/75">{passado ? (comunidade ? textos.verEvento : textos.resultados) : textos.detalhes}</span>
           )}
           <Seta className="mb-1 size-3.5" />
         </div>
@@ -218,7 +218,7 @@ export function LinhaEventoCompacta({
             ) : null}
           </div>
           <h3 className="mt-2 font-semibold leading-snug line-clamp-2">{e.titulo}</h3>
-          <p className="mt-0.5 text-xs text-white/55">
+          <p className="mt-0.5 text-xs text-white/75">
             {e.localidade ? `${e.localidade}, ` : ""}
             {e.provincia}
           </p>

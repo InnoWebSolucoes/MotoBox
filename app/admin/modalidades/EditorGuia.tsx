@@ -53,10 +53,10 @@ function EscolherFontes({ valor, mudar }: { valor: unknown; mudar: (v: number[])
           })}
         </ul>
       ) : (
-        <p className="mb-2 text-xs text-white/45">Sem fontes. Números, nomes e datas levam sempre fonte.</p>
+        <p className="mb-2 text-xs text-white/70">Sem fontes. Números, nomes e datas levam sempre fonte.</p>
       )}
       {fontes.length === 0 ? (
-        <p className="text-xs text-white/45">Este guia ainda não tem fontes: junte-as no separador Fontes.</p>
+        <p className="text-xs text-white/70">Este guia ainda não tem fontes: junte-as no separador Fontes.</p>
       ) : livres.length > 0 && (
         <Seleccao
           valor="" aria-label="Juntar fonte"
@@ -185,8 +185,8 @@ function EditorTabelas({ valor, mudar }: { valor: Valor[]; mudar: (v: Valor[]) =
   };
   return (
     <div className="min-w-0">
-      <p className="mb-1 text-[13px] font-medium text-white/75">Tabelas de classes <span className="ml-1 text-white/40">{tabelas.length}</span></p>
-      <p className="mb-2 text-xs leading-relaxed text-white/50">A primeira coluna é o nome da classe, em destaque. Uma tabela por campeonato.</p>
+      <p className="mb-1 text-[13px] font-medium text-white/75">Tabelas de classes <span className="ml-1 text-white/70">{tabelas.length}</span></p>
+      <p className="mb-2 text-xs leading-relaxed text-white/75">A primeira coluna é o nome da classe, em destaque. Uma tabela por campeonato.</p>
       <ol className="space-y-[var(--intervalo)]">
         {tabelas.map((t, i) => (
           <li key={i} className="rounded-[var(--raio)] border border-white/10 bg-black/[0.18]">
@@ -195,7 +195,7 @@ function EditorTabelas({ valor, mudar }: { valor: Valor[]; mudar: (v: Valor[]) =
                 className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
                 <span className="grid size-6 shrink-0 place-items-center rounded-[4px] bg-white/10 text-xs tabular-nums text-white/70">{i + 1}</span>
                 <span className="truncate text-sm text-white">{t.titulo || "Tabela sem título"}</span>
-                <span className="shrink-0 text-xs text-white/45">{t.linhas.length} linhas</span>
+                <span className="shrink-0 text-xs text-white/70">{t.linhas.length} linhas</span>
               </button>
               <span className="flex shrink-0 gap-1">
                 <AccaoIcone titulo="Subir" onClick={() => mover(i, -1)}><ArrowUp className="size-3.5" aria-hidden /></AccaoIcone>
@@ -258,7 +258,7 @@ function EditorTabela({ t, mudar }: { t: TabelaGuia; mudar: (t: TabelaGuia) => v
                 className={`${CLASSE_CAMPO} py-1.5 text-xs font-semibold text-white/80`} />
               {t.colunas.length > 1 && (
                 <button type="button" onClick={() => tirarColuna(k)} aria-label={`Tirar a coluna ${c || k + 1}`} title="Tirar a coluna"
-                  className="grid w-7 shrink-0 place-items-center rounded-[4px] text-white/45 hover:bg-mb-red hover:text-white">
+                  className="grid w-7 shrink-0 place-items-center rounded-[4px] text-white/70 hover:bg-mb-red hover:text-white">
                   <Trash2 className="size-3.5" aria-hidden />
                 </button>
               )}
@@ -366,7 +366,7 @@ function EditorFontes({ guia, mudar }: { guia: Valor; mudar: (g: Valor) => void 
         A lista numerada do fim da página. Os textos citam as fontes pelo nome, e o site mostra o número. Ao mudar a ordem
         ou apagar uma fonte, os números em todo o guia acertam-se sozinhos (apagar tira-a dos textos que a citavam).
       </Aviso>
-      {fontes.length === 0 && <p className="text-sm text-white/55">Ainda sem fontes.</p>}
+      {fontes.length === 0 && <p className="text-sm text-white/75">Ainda sem fontes.</p>}
       <ol className="space-y-[var(--intervalo)]">
         {fontes.map((f, i) => {
           const n = citacoes.get(i + 1) ?? 0;
@@ -382,12 +382,12 @@ function EditorFontes({ guia, mudar }: { guia: Valor; mudar: (g: Valor) => void 
                       onChange={(e) => mudarFonte(i, { ...f, url: e.target.value })} className={`${CLASSE_CAMPO} py-1.5 text-sm text-white/75`} />
                     {f.url && (
                       <a href={f.url} target="_blank" rel="noopener noreferrer" title="Abrir a fonte" aria-label={`Abrir ${f.nome}`}
-                        className="grid w-9 shrink-0 place-items-center rounded-[var(--raio)] bg-white/[0.06] text-white/60 hover:text-white">
+                        className="grid w-9 shrink-0 place-items-center rounded-[var(--raio)] bg-white/[0.06] text-white/80 hover:text-white">
                         <ExternalLink className="size-3.5" aria-hidden />
                       </a>
                     )}
                   </div>
-                  <p className={`text-xs ${n ? "text-white/45" : "text-gold"}`}>
+                  <p className={`text-xs ${n ? "text-white/70" : "text-gold"}`}>
                     {n ? `Citada ${n} ${n === 1 ? "vez" : "vezes"} no guia.` : "Não é citada em nenhum texto (aparece na lista na mesma)."}
                   </p>
                 </div>
@@ -519,7 +519,7 @@ export function EditorModalidade({ dados, mudar }: { dados: Valor; mudar: (d: Va
           onChange={setSep}
         />
         {sep !== "ficha" && sep !== "fontes" && (
-          <p className="text-[13px] leading-relaxed text-white/55">
+          <p className="text-[13px] leading-relaxed text-white/75">
             Partes vazias não aparecem na página. As fontes de cada texto escolhem-se pelo nome; a lista edita-se em Fontes.
           </p>
         )}

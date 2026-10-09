@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { src as fotoSrc, otimizavel } from "@/lib/imagens";
 import { comBase } from "@/lib/base";
+import { tintaSobre } from "@/lib/cor";
 
 /* ============================================================
    MOTOBOX — Peças do painel
@@ -181,11 +182,12 @@ export function Monograma({ nome, cor = "#e10600", className = "size-12 text-bas
     .map((p) => p[0])
     .join("")
     .toUpperCase() || nome.slice(0, 2).toUpperCase();
+  const tinta = tintaSobre(cor);
   return (
     <span
       aria-hidden
-      className={`grid shrink-0 place-items-center rounded-[4px] font-semibold text-white ${className}`}
-      style={{ background: cor }}
+      className={`grid shrink-0 place-items-center rounded-[4px] font-semibold ${className}`}
+      style={{ background: tinta.fundo, color: tinta.texto }}
     >
       {iniciais}
     </span>

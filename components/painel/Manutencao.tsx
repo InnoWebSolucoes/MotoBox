@@ -26,7 +26,7 @@ export function Manutencao({ email }: { email?: string }) {
         <h1 className="titulo-1 mt-4 max-w-[14ch]">{m.titulo}</h1>
         {m.texto && <p className="texto-lead mt-6 max-w-[46ch] text-white/80">{m.texto}</p>}
         {nota && (
-          <p className="mt-10 text-sm text-white/55">
+          <p className="mt-10 text-sm text-white/75">
             {comValores(nota, {
               email: (
                 <a href={`mailto:${email}`} className="sublinhado text-white">

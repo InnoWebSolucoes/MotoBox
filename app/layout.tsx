@@ -14,7 +14,10 @@ import { SessaoObrigatoriaProvider } from "@/components/SessaoObrigatoria";
 import { IntroCapacete } from "@/components/IntroCapacete";
 import { Cenario } from "@/components/painel/Cenario";
 import { lerDoc } from "@/lib/conteudo";
-import { ENTRADA_PADRAO, type ConteudoEntrada } from "@/lib/conteudo/grupos/site";
+import {
+  ABERTURA_PADRAO, ENTRADA_PADRAO, fundir, numeroEntre, type ConteudoAbertura, type ConteudoEntrada,
+} from "@/lib/conteudo/grupos/site";
+import { AjustesFundo } from "@/components/painel/Fundo";
 import { src as fotoSrc, urlLocal } from "@/lib/imagens";
 
 const letra = Instrument_Sans({
@@ -66,11 +69,13 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // O vídeo de fundo de todo o site (Gestão › Entrada e painel), já em endereços prontos a usar.
+  // O vídeo de fundo de todo o site (Gestão › Entrada e painel), já em endereços prontos a usar,
+  // com a velocidade e o véu da entrada; e a abertura com as luzes de partida ("site.abertura").
   // Os textos gerais (rodapé, botão de acção, cookies, manutenção…) vêm de Entrada e painel › Geral;
   // o modo de manutenção, o aviso de cookies e a medição de audiências, das Definições.
-  const [entrada, geral, definicoes] = await Promise.all([
+  const [entrada, abertura, geral, definicoes] = await Promise.all([
     lerDoc<ConteudoEntrada>("site.entrada").catch(() => ENTRADA_PADRAO),
+    lerDoc<ConteudoAbertura>("site.abertura").then((d) => fundir(ABERTURA_PADRAO, d)).catch(() => ABERTURA_PADRAO),
     lerTextosGerais().catch(() => GERAL_PADRAO()),
     lerDefinicoesSite().catch(() => definicoesSeed),
   ]);
@@ -79,6 +84,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     video: video.startsWith("/") ? urlLocal(video) : video,
     poster: fotoSrc([entrada?.poster, ENTRADA_PADRAO.poster], { w: 1920 }) ?? urlLocal(ENTRADA_PADRAO.poster),
   };
+  const velocidade = numeroEntre(entrada?.velocidade, 0.25, 2, ENTRADA_PADRAO.velocidade);
+  const escurecer = numeroEntre(entrada?.escurecer, 0, 80, ENTRADA_PADRAO.escurecer);
 
   return (
     <html lang="pt-AO" className={`${letra.variable} ${logo.variable}`}>
@@ -93,14 +100,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <AuthProvider>
             <TextosGeraisProvider textos={geral}>
               <SessaoObrigatoriaProvider>
-                <Cenario
-                  fundo={fundo}
-                  manutencao={{ activa: definicoes.manutencao === true, email: definicoes.emailContacto }}
-                >
-                  {children}
-                </Cenario>
+                <AjustesFundo velocidade={velocidade} escurecer={escurecer}>
+                  <Cenario
+                    fundo={fundo}
+                    manutencao={{ activa: definicoes.manutencao === true, email: definicoes.emailContacto }}
+                  >
+                    {children}
+                  </Cenario>
+                </AjustesFundo>
                 <CookieBanner activo={definicoes.cookieBanner !== false} />
-                <IntroCapacete />
+                <IntroCapacete textos={abertura} />
               </SessaoObrigatoriaProvider>
               <Analitica codigo={definicoes.analytics} />
             </TextosGeraisProvider>

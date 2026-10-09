@@ -64,7 +64,7 @@ export default async function BilhetesPage() {
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           <h2 className="titulo-2">{t.aVenda}</h2>
           {eventos.length > 0 && (
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-white/80">
               {contar(eventos.length, t.contadorUm, t.contadorVarios)}
             </p>
           )}
@@ -105,7 +105,7 @@ export default async function BilhetesPage() {
                 {/* Conteúdo */}
                 <div className="flex flex-col p-4 md:p-6">
                   <h3 className="titulo-4 text-balance">{e.titulo}</h3>
-                  <p className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-white/65">
+                  <p className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-white/80">
                     <span className="inline-flex items-center gap-1.5">
                       <CalendarDays className="size-4 text-mb-red-light" aria-hidden />
                       {intervaloDatas(e.dataInicio, e.dataFim)}
@@ -130,7 +130,7 @@ export default async function BilhetesPage() {
                         </div>
                         <p className="mt-1 text-lg font-semibold tabular-nums">{formatKz(b.preco)}</p>
                         {!esgotado && (
-                          <p className="mt-0.5 text-xs text-white/50">
+                          <p className="mt-0.5 text-xs text-white/75">
                             {comValores(t.cartao.disponiveis, {
                               n: <span className="tabular-nums">{b.disponiveis.toLocaleString("pt-PT")}</span>,
                             })}
@@ -142,10 +142,10 @@ export default async function BilhetesPage() {
 
                   <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-t border-white/8 pt-5">
                     <div>
-                      <p className="text-xs text-white/50">{t.cartao.aPartirDe}</p>
+                      <p className="text-xs text-white/75">{t.cartao.aPartirDe}</p>
                       <p className="text-2xl font-semibold tabular-nums">{formatKz(minimo)}</p>
                       {!esgotado && (
-                        <p className="text-xs text-white/50">
+                        <p className="text-xs text-white/75">
                           {comValores(t.cartao.totalDisponiveis, {
                             n: <span className="tabular-nums">{total.toLocaleString("pt-PT")}</span>,
                           })}
@@ -208,7 +208,7 @@ export default async function BilhetesPage() {
                 <BotaoMB href={t.organizadores.ligacao || "/contacto#parcerias"}>{t.organizadores.botao}</BotaoMB>
               </span>
             )}
-            {t.organizadores.nota && <span className="mt-3 block text-xs text-white/50">{t.organizadores.nota}</span>}
+            {t.organizadores.nota && <span className="mt-3 block text-xs text-white/75">{t.organizadores.nota}</span>}
           </CartaoNumerado>
         </Seccao>
       )}

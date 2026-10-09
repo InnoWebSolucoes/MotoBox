@@ -21,7 +21,7 @@ export default async function NaoEncontrada() {
           )}
         </div>
         {(t.nota || t.notaLigacao.texto) && (
-          <p className="mt-10 text-sm text-white/55">
+          <p className="mt-10 text-sm text-white/75">
             {t.nota}
             {t.nota && t.notaLigacao.texto ? " " : null}
             {t.notaLigacao.texto && t.notaLigacao.href && (

@@ -26,11 +26,11 @@ function EscolhaRotas({ valor, mudar, rotas }: { valor: unknown; mudar: (v: unkn
   return (
     <div className="min-w-0">
       <span className="mb-1.5 block text-[13px] font-medium text-white/75">Rotas mostradas</span>
-      <span className="mb-2 block text-xs leading-relaxed text-white/50">
+      <span className="mb-2 block text-xs leading-relaxed text-white/75">
         Toque nas rotas para as escolher, pela ordem em que devem aparecer. Sem nenhuma escolhida, aparecem as três primeiras da lista de Rotas.
       </span>
       {rotas.length === 0 ? (
-        <p className="text-sm text-white/50">A carregar as rotas…</p>
+        <p className="text-sm text-white/75">A carregar as rotas…</p>
       ) : (
         <div className="flex flex-wrap gap-[var(--intervalo)]">
           {rotas.map((r) => {
@@ -51,10 +51,10 @@ function EscolhaRotas({ valor, mudar, rotas }: { valor: unknown; mudar: (v: unkn
         <ol className="mt-3 space-y-1">
           {escolhidas.map((s, i) => (
             <li key={s} className="flex items-center justify-between gap-2 rounded-[var(--raio)] bg-black/20 px-3 py-1.5 text-sm">
-              <span className="truncate"><span className="text-white/50">{i + 1}.</span> {nome(s)}</span>
+              <span className="truncate"><span className="text-white/75">{i + 1}.</span> {nome(s)}</span>
               <span className="flex shrink-0 gap-1">
-                <button type="button" aria-label={`Subir ${nome(s)}`} onClick={() => mover(i, -1)} className="rounded p-1 text-white/50 hover:text-white"><Seta para="cima" /></button>
-                <button type="button" aria-label={`Descer ${nome(s)}`} onClick={() => mover(i, 1)} className="rounded p-1 text-white/50 hover:text-white"><Seta para="baixo" /></button>
+                <button type="button" aria-label={`Subir ${nome(s)}`} onClick={() => mover(i, -1)} className="rounded p-1 text-white/75 hover:text-white"><Seta para="cima" /></button>
+                <button type="button" aria-label={`Descer ${nome(s)}`} onClick={() => mover(i, 1)} className="rounded p-1 text-white/75 hover:text-white"><Seta para="baixo" /></button>
               </span>
             </li>
           ))}

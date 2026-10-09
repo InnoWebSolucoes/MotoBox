@@ -9,6 +9,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Seta } from "@/components/painel/kit";
+import { tintaSobre } from "@/lib/cor";
 import { TABELA_RESULTADOS_PADRAO } from "@/lib/conteudo/grupos/geral";
 
 type Tom = "neutro" | "vermelho" | "contorno" | "vidro" | "directo";
@@ -50,7 +51,7 @@ export function Posicao({
 }: { posicao: number; className?: string; naoClassificado?: string }) {
   if (!posicao || posicao <= 0) {
     return (
-      <span className={`grid shrink-0 place-items-center rounded-[4px] bg-white/5 text-[0.7rem] text-white/50 ${className}`}>
+      <span className={`grid shrink-0 place-items-center rounded-[4px] bg-white/5 text-[0.7rem] text-white/75 ${className}`}>
         <span aria-hidden>NC</span>
         <span className="sr-only">{naoClassificado}</span>
       </span>
@@ -100,7 +101,7 @@ export function Ficha({
         <dl className="mt-4 divide-y divide-white/8">
           {visiveis.map(([k, v]) => (
             <div key={k} className="flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
-              <dt className="shrink-0 text-sm text-white/55">{k}</dt>
+              <dt className="shrink-0 text-sm text-white/75">{k}</dt>
               <dd className="min-w-0 text-right text-sm text-white">{v}</dd>
             </div>
           ))}
@@ -126,7 +127,7 @@ export function TituloSeccao({
   return (
     <div className={`flex flex-wrap items-end justify-between gap-x-6 gap-y-3 ${className}`}>
       <h2 className="titulo-3 text-balance">{titulo}</h2>
-      {nota && <p className="text-sm text-white/60">{nota}</p>}
+      {nota && <p className="text-sm text-white/80">{nota}</p>}
       {accao && <LigacaoSeta href={accao.href}>{accao.texto}</LigacaoSeta>}
     </div>
   );
@@ -163,7 +164,7 @@ export function Aviso({
       )}
       <div>
         <p className="text-lg font-semibold">{titulo}</p>
-        {children && <div className="mt-2 max-w-[60ch] text-sm leading-relaxed text-white/65">{children}</div>}
+        {children && <div className="mt-2 max-w-[60ch] text-sm leading-relaxed text-white/80">{children}</div>}
       </div>
     </div>
   );
@@ -176,7 +177,7 @@ export function LegendaResultados({
   const visiveis = itens.filter((i) => i.trim());
   if (visiveis.length === 0) return null;
   return (
-    <p className={`flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-white/50 ${className}`}>
+    <p className={`flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-white/75 ${className}`}>
       {visiveis.map((i, n) => <span key={n}>{i}</span>)}
     </p>
   );
@@ -201,11 +202,12 @@ export function EmblemaEquipa({
   cor: string;
   className?: string;
 }) {
+  const tinta = tintaSobre(cor);
   return (
     <span
       aria-hidden
-      className={`grid shrink-0 place-items-center rounded-[4px] font-semibold tracking-wide text-white ${className}`}
-      style={{ background: cor }}
+      className={`grid shrink-0 place-items-center rounded-[4px] font-semibold tracking-wide ${className}`}
+      style={{ background: tinta.fundo, color: tinta.texto }}
     >
       {logo}
     </span>

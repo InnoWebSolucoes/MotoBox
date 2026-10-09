@@ -279,7 +279,7 @@ export function PaginaRecurso<T extends object>({
 
             {/* Telemóvel: um cartão por registo, sem tabela a deslizar de lado. */}
             {fatia.length === 0 ? (
-              <p className="py-10 text-center text-sm text-white/50 md:hidden">Nenhum registo corresponde aos filtros.</p>
+              <p className="py-10 text-center text-sm text-white/75 md:hidden">Nenhum registo corresponde aos filtros.</p>
             ) : (
               <ul className="space-y-[var(--intervalo)] md:hidden">
                 {fatia.map((it) => (
@@ -291,7 +291,7 @@ export function PaginaRecurso<T extends object>({
                       <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2.5 text-sm">
                         {colunas.slice(1).map((c, i) => (
                           <div key={i} className="min-w-0">
-                            <dt className="text-[11px] text-white/45">{c.cabecalho}</dt>
+                            <dt className="text-[11px] text-white/70">{c.cabecalho}</dt>
                             <dd className="mt-0.5 min-w-0 truncate">{c.celula(it)}</dd>
                           </div>
                         ))}

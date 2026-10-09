@@ -79,7 +79,7 @@ export default async function AnuncioPagina({ params }: { params: Promise<{ id: 
               <dl className="mt-3 grid gap-x-10 sm:grid-cols-2">
                 {ficha.map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-4 border-b border-white/8 py-3">
-                    <dt className="text-sm text-white/55">{k}</dt>
+                    <dt className="text-sm text-white/75">{k}</dt>
                     <dd className="text-right text-sm">{v}</dd>
                   </div>
                 ))}
@@ -91,9 +91,9 @@ export default async function AnuncioPagina({ params }: { params: Promise<{ id: 
             <div className="painel painel-escuro p-6">
               <h1 className="text-xl font-semibold leading-snug md:text-2xl">{anuncio.titulo}</h1>
               <p className="mt-5 text-4xl font-semibold tabular-nums tracking-tight">{formatKz(anuncio.preco)}</p>
-              <p className="mt-1 text-xs text-white/55">{anuncio.negociavel ? t.precoNegociavel : t.precoFixo}</p>
+              <p className="mt-1 text-xs text-white/75">{anuncio.negociavel ? t.precoNegociavel : t.precoFixo}</p>
 
-              <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-white/8 pt-4 text-xs text-white/55">
+              <p className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-white/8 pt-4 text-xs text-white/75">
                 <span className="inline-flex items-center gap-1.5">
                   <MapPin className="size-3.5" aria-hidden /> {anuncio.provincia}
                 </span>
@@ -116,7 +116,7 @@ export default async function AnuncioPagina({ params }: { params: Promise<{ id: 
             </div>
 
             <div className="painel painel-escuro p-6">
-              <p className="text-sm text-white/55">{t.vendedor}</p>
+              <p className="text-sm text-white/75">{t.vendedor}</p>
               <div className="mt-3 flex items-center gap-3">
                 <Monograma nome={anuncio.vendedor.nome} cor="#2a2a2a" className="size-12 text-sm" />
                 <div className="min-w-0">
@@ -124,26 +124,26 @@ export default async function AnuncioPagina({ params }: { params: Promise<{ id: 
                     <span className="truncate">{anuncio.vendedor.nome}</span>
                     {anuncio.vendedor.verificado && <SeloVerificado tamanho={16} />}
                   </p>
-                  <p className="text-xs text-white/55">{`${t.membroDesde} `}{anuncio.vendedor.desde}</p>
+                  <p className="text-xs text-white/75">{`${t.membroDesde} `}{anuncio.vendedor.desde}</p>
                 </div>
               </div>
               <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-white/8 pt-4">
                 <div>
                   <dd className="text-lg font-semibold">{anuncio.vendedor.anuncios}</dd>
-                  <dt className="text-xs text-white/55">{t.anuncios}</dt>
+                  <dt className="text-xs text-white/75">{t.anuncios}</dt>
                 </div>
                 <div>
                   <dd className="flex items-center gap-1.5 text-lg font-semibold">
                     {anuncio.vendedor.avaliacao ? anuncio.vendedor.avaliacao.toFixed(1) : t.semAvaliacoes}
                     {anuncio.vendedor.avaliacao > 0 && <Star className="size-4 fill-gold text-gold" aria-hidden />}
                   </dd>
-                  <dt className="text-xs text-white/55">{t.avaliacao}</dt>
+                  <dt className="text-xs text-white/75">{t.avaliacao}</dt>
                 </div>
               </dl>
             </div>
 
             <div className="painel painel-escuro p-5">
-              <p className="flex gap-2.5 text-xs leading-relaxed text-white/60">
+              <p className="flex gap-2.5 text-xs leading-relaxed text-white/80">
                 <ShieldCheck className="size-4 shrink-0 text-mb-red-light" aria-hidden />
                 {t.aviso}
               </p>

@@ -1,103 +1,162 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
-import { TABELA, listaDaBase } from "@/lib/supabase/mapeamento";
+import Anthropic from "@anthropic-ai/sdk";
 import {
-  organizar, organizadorConfigurado, ErroOrganizador,
-  type ColeccaoIA, type Contexto, type Ficheiro,
+  MODELO, SEM_CHAVE, ErroOrganizador, aCometer, chaveConfigurada, contextoDoPedido, correrAgente, criarContexto,
+  ferramentaEscrita, planearComFerramenta, podeEscrever, prepararAnexos, propostaDe, quemPede,
+  resolverDecisoes, traduzirErro, usosDe, validarEntrada, validarHistorico,
+  type Decisao, type EstadoOrganizador, type EventoOrganizador, type MensagemHistorico, type PedidoOrganizador,
 } from "@/lib/admin/organizador";
-import { TEMPORADA } from "@/lib/data";
-import { lerTemporada } from "@/lib/conteudo/ler-geral";
-import type { Corrida, Equipa, Evento, Noticia, Patrocinador, Piloto, Video } from "@/lib/types";
 
 /* ============================================================
    MOTOBOX — API do Organizador IA
-   Recebe texto e ficheiros, junta o que já existe na base de
-   dados (para o Claude ligar, alterar e não duplicar) e devolve
-   as propostas. Não grava nada.
+   GET   o estado: se a chave existe e o que quem pede pode fazer.
+   POST  { accao: "conversar", historico, texto?, anexos?, decisoes? }
+         responde em streaming (NDJSON, um evento por linha):
+         texto, notas de progresso, ferramentas em uso, propostas,
+         resultados das decisões e, no fim, as mensagens novas para
+         o navegador juntar ao histórico.
+   POST  { accao: "rever", id, ferramenta, entrada }
+         volta a montar uma proposta editada no painel (nada grava).
+
+   O acesso à rota é verificado no proxy (só a equipa); aqui
+   lê-se o papel para saber se pode fazer mudanças. As decisões
+   aprovadas executam antes de abrir o streaming.
    ============================================================ */
 
 export const dynamic = "force-dynamic";
-// Uma análise com PDF e imagens pode demorar mais de um minuto.
+// Um pedido pode ter várias voltas de ferramentas.
 export const maxDuration = 300;
 
-/** Limite de ficheiros por pedido, em bytes já codificados em base64. */
-const LIMITE_FICHEIROS = 4_000_000;
-
-/** O que fazer quando falta a chave: é a única configuração necessária. */
-const SEM_CHAVE =
-  "O Organizador IA ainda não está ligado: falta a chave da API do Claude. " +
-  "Para o ligar: 1) crie uma chave em console.anthropic.com, em Settings → API Keys; " +
-  "2) no Vercel, abra o projecto em Settings → Environment Variables e acrescente ANTHROPIC_API_KEY com essa chave, " +
-  "para Production e Preview; 3) em Deployments, faça Redeploy do último deployment para a chave passar a valer. " +
-  "Em desenvolvimento, acrescente a mesma linha ao .env.local e reinicie o servidor.";
+/** Pára um pouco antes do limite do Vercel, para fechar com uma mensagem clara. */
+const TEMPO_MAXIMO_MS = 285_000;
+const LIMITE_CORPO = 9_000_000;
 
 function erro(mensagem: string, codigo = 400) {
   return NextResponse.json({ erro: mensagem }, { status: codigo });
 }
 
-async function lerContexto(): Promise<Contexto> {
-  const vazio: Contexto = {
-    temporada: TEMPORADA, eventos: [], pilotos: [], equipas: [], corridas: [],
-    noticias: [], patrocinadores: [], videos: [],
-  };
-  const db = supabaseAdmin();
-  if (!db) return vazio;
-
-  // Registos completos: o Claude precisa dos valores actuais para
-  // encontrar o registo certo e propor alterações.
-  const ler = (c: ColeccaoIA) => db.from(TABELA[c]).select("*");
-  const r = await Promise.all([
-    ler("eventos"), ler("pilotos"), ler("equipas"), ler("corridas"),
-    ler("noticias"), ler("patrocinadores"), ler("videos"),
-  ]);
-  // Sem os registos existentes o Claude duplicaria tudo: é melhor parar.
-  const falha = r.find((x) => x.error)?.error;
-  if (falha) throw new ErroOrganizador(`Não foi possível ler os registos existentes: ${falha.message}`, 502);
-  const [eventos, pilotos, equipas, corridas, noticias, patrocinadores, videos] = r;
-
-  return {
-    temporada: await lerTemporada(),
-    eventos: listaDaBase<Evento>("eventos", eventos.data),
-    pilotos: listaDaBase<Piloto>("pilotos", pilotos.data),
-    equipas: listaDaBase<Equipa>("equipas", equipas.data),
-    corridas: listaDaBase<Corrida>("corridas", corridas.data),
-    noticias: listaDaBase<Noticia>("noticias", noticias.data),
-    patrocinadores: listaDaBase<Patrocinador>("patrocinadores", patrocinadores.data),
-    videos: listaDaBase<Video>("videos", videos.data),
-  };
-}
-
-/** Diz ao painel se o Organizador está ligado, para mostrar os passos antes de o usar. */
 export async function GET() {
-  return NextResponse.json({ configurado: organizadorConfigurado, instrucoes: organizadorConfigurado ? null : SEM_CHAVE });
+  const quem = await quemPede();
+  if (!quem) return erro("Sem permissão para esta área.", 403);
+  const ctx = await criarContexto(quem);
+  const estado: EstadoOrganizador = {
+    configurado: chaveConfigurada(),
+    papel: quem.papel,
+    podeEscrever: podeEscrever(quem),
+    baseDados: ctx.repo.modo === "supabase",
+    modelo: MODELO,
+  };
+  return NextResponse.json(estado);
 }
 
 export async function POST(req: NextRequest) {
-  if (!organizadorConfigurado) return erro(SEM_CHAVE, 503);
-
-  let corpo: { texto?: unknown; ficheiros?: unknown };
-  try { corpo = await req.json(); } catch { return erro("Corpo inválido."); }
-
-  const texto = typeof corpo.texto === "string" ? corpo.texto.trim() : "";
-  const ficheiros = Array.isArray(corpo.ficheiros)
-    ? (corpo.ficheiros as Ficheiro[]).filter(
-        (f) => f && typeof f.dados === "string" && typeof f.tipo === "string",
-      )
-    : [];
-
-  if (!texto && ficheiros.length === 0) {
-    return erro("Cole algum texto ou anexe um ficheiro para organizar.");
-  }
-  if (ficheiros.reduce((s, f) => s + f.dados.length, 0) > LIMITE_FICHEIROS) {
-    return erro("Os ficheiros são demasiado grandes. Envie no máximo cerca de 3 MB de cada vez.", 413);
+  const quem = await quemPede();
+  if (!quem) return erro("Sem permissão para esta área.", 403);
+  if (!chaveConfigurada()) return erro(SEM_CHAVE, 503);
+  if (Number(req.headers.get("content-length") ?? 0) > LIMITE_CORPO) {
+    return erro("O pedido é demasiado grande. Envie anexos mais pequenos ou comece uma nova conversa.", 413);
   }
 
-  try {
-    const resultado = await organizar(texto, ficheiros, await lerContexto());
-    return NextResponse.json(resultado);
-  } catch (e) {
-    if (e instanceof ErroOrganizador) return erro(e.message, e.codigo);
-    console.error("[organizador]", e);
-    return erro("Falha inesperada ao organizar. Tente de novo.", 500);
+  let corpo: PedidoOrganizador;
+  try { corpo = await req.json(); } catch { return erro("Pedido inválido."); }
+
+  const ctx = await criarContexto(quem);
+  const escrita = podeEscrever(quem);
+
+  /* ---------- Rever uma proposta editada ---------- */
+  if (corpo.accao === "rever") {
+    if (!escrita) return erro("Este papel só pode consultar.", 403);
+    if (!ferramentaEscrita(corpo.ferramenta)) return erro("Ferramenta desconhecida.");
+    const v = validarEntrada(corpo.ferramenta, corpo.entrada);
+    if (!v.ok) return erro(v.erro, 422);
+    try {
+      const plano = await planearComFerramenta(corpo.ferramenta, v.dados, ctx, String(corpo.id));
+      return NextResponse.json({ proposta: propostaDe(String(corpo.id), corpo.ferramenta, v.dados, plano) });
+    } catch (e) {
+      return erro(e instanceof Error ? e.message : "Não foi possível rever a proposta.", 422);
+    }
   }
+
+  if (corpo.accao !== "conversar") return erro("Acção desconhecida.");
+
+  /* ---------- Conversar ---------- */
+  let historico: MensagemHistorico[];
+  try { historico = validarHistorico(corpo.historico); } catch (e) {
+    const x = traduzirErro(e);
+    return erro(x.message, x.codigo);
+  }
+  const texto = typeof corpo.texto === "string" ? corpo.texto.trim().slice(0, 20_000) : "";
+  const cliente = new Anthropic();
+
+  // Anexos primeiro: se falharem, ainda nada foi executado.
+  let anexos: Anthropic.Beta.BetaContentBlockParam[];
+  try { anexos = await prepararAnexos(cliente, corpo.anexos); } catch (e) {
+    const x = traduzirErro(e);
+    return erro(x.message, x.codigo);
+  }
+
+  const ultimo = historico.at(-1);
+  const pendentes = usosDe(ultimo).length > 0;
+  if (!pendentes && !texto && anexos.length === 0) return erro("Escreva o que precisa.");
+
+  // Decisões sobre as propostas pendentes: executam já, antes do streaming.
+  const iniciais: EventoOrganizador[] = [];
+  const novas: MensagemHistorico[] = [];
+  let obrigatorias = 0;
+  const pedido: Anthropic.Beta.BetaContentBlockParam[] = [
+    ...anexos,
+    ...(texto ? [{ type: "text" as const, text: texto }] : []),
+  ];
+  if (pendentes && ultimo) {
+    const decisoes = Array.isArray(corpo.decisoes) ? (corpo.decisoes as Decisao[]) : [];
+    const r = await resolverDecisoes(ultimo, decisoes, ctx, escrita);
+    iniciais.push(...r.eventos);
+    novas.push({ role: "user", content: [...r.resultados, ...pedido] });
+    obrigatorias = 1;
+  } else {
+    novas.push({ role: "user", content: pedido });
+    // Contexto do pedido (hoje, temporada, papel) como mensagem de sistema,
+    // depois do pedido: o prompt de sistema fica igual e em cache.
+    novas.push({
+      role: "system",
+      content: contextoDoPedido({ agora: new Date(), temporada: ctx.temporada, quem, podeEscrever: escrita, baseDados: ctx.repo.modo }),
+    });
+  }
+
+  const sinal = AbortSignal.any([req.signal, AbortSignal.timeout(TEMPO_MAXIMO_MS)]);
+  const codificador = new TextEncoder();
+
+  const corpoResposta = new ReadableStream<Uint8Array>({
+    async start(controlador) {
+      let aberto = true;
+      const emitir = (e: EventoOrganizador) => {
+        if (!aberto) return;
+        try { controlador.enqueue(codificador.encode(`${JSON.stringify(e)}\n`)); } catch { aberto = false; }
+      };
+      for (const e of iniciais) emitir(e);
+      try {
+        const fim = await correrAgente({ cliente, ctx, podeEscrever: escrita, historico, novas, emitir, sinal });
+        emitir({ tipo: "historico", mensagens: aCometer(fim.delta, fim.motivo, obrigatorias) });
+        if (fim.erro) emitir({ tipo: "erro", mensagem: fim.erro.message });
+        emitir({ tipo: "fim", motivo: fim.motivo });
+      } catch (e) {
+        const x = e instanceof ErroOrganizador ? e : traduzirErro(e);
+        emitir({ tipo: "historico", mensagens: aCometer(novas, "erro", obrigatorias) });
+        emitir({ tipo: "erro", mensagem: x.message });
+        emitir({ tipo: "fim", motivo: "erro" });
+      } finally {
+        aberto = false;
+        try { controlador.close(); } catch { /* já fechado */ }
+      }
+    },
+  });
+
+  return new Response(corpoResposta, {
+    headers: {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-store, no-transform",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
+

@@ -269,7 +269,7 @@ function ListaClubes({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[15px] font-semibold text-white">{c.nome || "Sem nome"}</span>
-                    <span className="mt-0.5 block truncate text-[13px] text-white/55">
+                    <span className="mt-0.5 block truncate text-[13px] text-white/75">
                       <span className="text-mb-red-light">{nomeTipo(c.tipo)}</span> · {localClube(c)}
                       {c.fundacao ? ` · desde ${c.fundacao}` : ""}
                     </span>

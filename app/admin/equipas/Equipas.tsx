@@ -86,7 +86,7 @@ export function Equipas({ editar }: { editar?: string }) {
           render: () => (
             <div className="flex items-center gap-3 rounded-[var(--raio)] bg-black/20 px-4 py-3">
               <Emblema e={r} tamanho="size-14 text-base" />
-              <p className="text-[13px] text-white/60">Assim aparece o emblema no site.</p>
+              <p className="text-[13px] text-white/80">Assim aparece o emblema no site.</p>
             </div>
           ),
         },
@@ -189,7 +189,7 @@ export function Equipas({ editar }: { editar?: string }) {
               <Emblema e={e} />
               <span className="min-w-0">
                 <span className="block max-w-[16rem] truncate font-medium text-white">{e.nome}</span>
-                <span className="block max-w-[16rem] truncate text-xs text-white/50">{e.base}</span>
+                <span className="block max-w-[16rem] truncate text-xs text-white/75">{e.base}</span>
               </span>
             </div>
           ),
@@ -271,14 +271,14 @@ function Plantel({
   const disponiveis = pilotos.filter((p) => !valor.includes(p.slug)).sort((a, b) => a.nome.localeCompare(b.nome));
   return (
     <div className="space-y-3">
-      <p className="text-[13px] font-medium text-white/75">Pilotos <span className="ml-1 text-white/40">{valor.length}</span></p>
+      <p className="text-[13px] font-medium text-white/75">Pilotos <span className="ml-1 text-white/70">{valor.length}</span></p>
       {foraDaLista.length > 0 && (
         <Aviso tom="atencao" accoes={<Botao tamanho="sm" onClick={() => mudar([...valor, ...foraDaLista])}>Juntar ao plantel</Botao>}>
           {foraDaLista.map((s) => porSlug.get(s)?.nome ?? s).join(", ")} {foraDaLista.length === 1 ? "tem" : "têm"} esta equipa na ficha mas não {foraDaLista.length === 1 ? "está" : "estão"} no plantel.
         </Aviso>
       )}
       {valor.length === 0 ? (
-        <p className="text-sm text-white/55">Sem pilotos no plantel.</p>
+        <p className="text-sm text-white/75">Sem pilotos no plantel.</p>
       ) : (
         <ul className="flex flex-wrap gap-1.5">
           {valor.map((s) => {
@@ -290,7 +290,7 @@ function Plantel({
                     {p && <MiniRetrato p={p} cor={equipa.cor} tamanho="size-6" />}
                     {p ? (
                       <Link href={`/admin/pilotos?editar=${encodeURIComponent(p.slug)}`} className="hover:underline">
-                        <span className="tabular-nums text-white/45">#{p.numero}</span> {p.nome}
+                        <span className="tabular-nums text-white/70">#{p.numero}</span> {p.nome}
                       </Link>
                     ) : `${s} (ficha apagada)`}
                     {p && p.equipaSlug && p.equipaSlug !== equipa.slug && (

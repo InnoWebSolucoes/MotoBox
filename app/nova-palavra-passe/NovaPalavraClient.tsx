@@ -34,7 +34,7 @@ export function NovaPalavraClient({ textos }: { textos: ConteudoContas["novaPala
 
   const campo =
     "h-12 w-full rounded-[0.625rem] bg-ink-900 px-4 text-sm text-white ring-1 ring-inset ring-white/10 " +
-    "placeholder:text-ink-600 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
+    "placeholder:text-ink-300 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
   const etiqueta = "mb-1.5 block text-sm text-white/70";
 
   const submeter = async (e: React.FormEvent) => {
@@ -60,7 +60,7 @@ export function NovaPalavraClient({ textos }: { textos: ConteudoContas["novaPala
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16">
       <h1 className="title-xl text-3xl text-white">{textos.titulo || t("auth.novaPalavra")}</h1>
-      {textos.texto && !semSessao && !feito && <p className="mt-2 text-sm text-ink-400">{textos.texto}</p>}
+      {textos.texto && !semSessao && !feito && <p className="mt-2 text-sm text-ink-300">{textos.texto}</p>}
 
       <div className="mt-6">
         {feito ? (

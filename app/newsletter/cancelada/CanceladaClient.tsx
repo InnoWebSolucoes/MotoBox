@@ -47,7 +47,7 @@ export function CanceladaClient({
       <div className="relative mx-auto flex min-h-[60vh] max-w-lg flex-col justify-center px-4 py-16 text-center">
         <div
           className={`mx-auto mb-6 grid size-16 place-items-center rounded-full ${
-            estado === "ok" ? "bg-white/8 text-white" : "bg-mb-red/12 text-mb-red"
+            estado === "ok" ? "bg-white/8 text-white" : "bg-mb-red/12 text-mb-red-light"
           }`}
           aria-hidden
         >
@@ -63,9 +63,9 @@ export function CanceladaClient({
           )}
         </div>
 
-        {t.sobretitulo && <p className="eyebrow text-mb-red">{t.sobretitulo}</p>}
+        {t.sobretitulo && <p className="eyebrow text-mb-red-light">{t.sobretitulo}</p>}
         <h1 className="title-xl mt-3 text-3xl text-white sm:text-4xl">{titulo}</h1>
-        <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-ink-400">{texto}</p>
+        <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-ink-300">{texto}</p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <ButtonLink href="/" variant="outline">{t.inicio}</ButtonLink>
@@ -96,7 +96,7 @@ export function CanceladaClient({
               </p>
             ) : (
               <>
-                <p className="text-sm text-ink-400">{t.canceladaEngano}</p>
+                <p className="text-sm text-ink-300">{t.canceladaEngano}</p>
                 <Button
                   type="button"
                   variant="dark"

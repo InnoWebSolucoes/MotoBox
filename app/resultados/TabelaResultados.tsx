@@ -23,7 +23,7 @@ export function TabelaResultados({
 }) {
   return (
     <div className={className}>
-      <div aria-hidden className={`hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/50 md:grid ${COLUNAS}`}>
+      <div aria-hidden className={`hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/75 md:grid ${COLUNAS}`}>
         <span>{t.pos}</span>
         <span>{t.piloto}</span>
         <span>{t.equipa}</span>
@@ -46,7 +46,7 @@ export function TabelaResultados({
                   <span className="truncate font-medium transition-colors group-hover:text-mb-red-light">{r.piloto}</span>
                   {r.melhorVolta && <MelhorVolta rotulo={t.melhorVolta} />}
                 </span>
-                <span className="mt-0.5 block truncate text-xs text-white/55 md:hidden">
+                <span className="mt-0.5 block truncate text-xs text-white/75 md:hidden">
                   {r.equipa} · <span className="tabular-nums">{r.voltas}</span> {r.voltas === 1 ? t.voltaUm : t.voltaVarias}
                 </span>
               </span>
@@ -61,7 +61,7 @@ export function TabelaResultados({
                   <span className="sr-only">{t.tempo}: </span>
                   {r.estado ?? r.tempo}
                 </span>
-                <span className="text-right text-xs tabular-nums text-white/60 md:text-[15px] md:font-semibold md:text-white">
+                <span className="text-right text-xs tabular-nums text-white/80 md:text-[15px] md:font-semibold md:text-white">
                   {r.pontos}
                   <span className="md:sr-only"> {t.ptsCurto}</span>
                 </span>

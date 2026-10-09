@@ -125,8 +125,8 @@ function LinhaParagem({ paragem, tipo, continua }: { paragem: Paragem; tipo: "pa
         ) : (
           <span className="text-lg font-semibold leading-snug">{paragem.nome}</span>
         )}
-        <span className="text-[0.8125rem] text-white/50 tabular-nums">{metros(paragem.alt)}</span>
-        {paragem.nota && <span className="mt-1 basis-full text-sm leading-relaxed text-white/60">{paragem.nota}</span>}
+        <span className="text-[0.8125rem] text-white/75 tabular-nums">{metros(paragem.alt)}</span>
+        {paragem.nota && <span className="mt-1 basis-full text-sm leading-relaxed text-white/80">{paragem.nota}</span>}
       </p>
     </>
   );
@@ -148,10 +148,10 @@ function CartaoTroco({ troco, peloCaminho }: { troco: Troco; peloCaminho: string
           </span>
           <span className="rounded-[4px] bg-white/8 px-2 py-1 text-xs text-white/75">{NOME_PISO[troco.piso]}</span>
         </p>
-        {troco.estrada && <p className="mt-3 text-sm leading-relaxed text-white/65">{troco.estrada}</p>}
+        {troco.estrada && <p className="mt-3 text-sm leading-relaxed text-white/80">{troco.estrada}</p>}
         {troco.ver && (
           <p className="mt-3 text-[15px] leading-relaxed text-white/85">
-            <span className="mr-2 text-xs uppercase tracking-[0.15em] text-white/45">{peloCaminho}</span>
+            <span className="mr-2 text-xs uppercase tracking-[0.15em] text-white/70">{peloCaminho}</span>
             {troco.ver}
           </p>
         )}
@@ -238,7 +238,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
           )}
         </div>
         {capa && (
-          <p className="mt-6 max-w-[60ch] text-xs leading-relaxed text-white/60">
+          <p className="mt-6 max-w-[60ch] text-xs leading-relaxed text-white/80">
             {capa.local && <>{capa.local}. </>}
             <CreditoFoto foto={capa} />
           </p>
@@ -314,7 +314,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                   .filter(([, v]) => v)
                   .map(([k, v]) => (
                     <div key={k} className="flex justify-between gap-4 border-b border-white/8 py-2.5 first:pt-0">
-                      <dt className="shrink-0 text-sm text-white/55">{k}</dt>
+                      <dt className="shrink-0 text-sm text-white/75">{k}</dt>
                       <dd className="text-right text-sm">{v}</dd>
                     </div>
                   ))}
@@ -353,7 +353,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                         <Monograma nome={c.nome} cor={c.cor} className="size-10 text-xs" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[15px] transition-colors group-hover:text-mb-red-light">{c.nome}</span>
-                          <span className="block text-[0.8125rem] text-white/50">{localClube(c)}</span>
+                          <span className="block text-[0.8125rem] text-white/75">{localClube(c)}</span>
                         </span>
                         <Seta className="size-3" />
                       </Link>
@@ -410,7 +410,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
               )}
             </div>
           </div>
-          {tx.mapa.nota && <p className="mt-4 max-w-[90ch] text-xs leading-relaxed text-white/45">{tx.mapa.nota}</p>}
+          {tx.mapa.nota && <p className="mt-4 max-w-[90ch] text-xs leading-relaxed text-white/70">{tx.mapa.nota}</p>}
 
           <Numeros
             className="mt-10"
@@ -424,7 +424,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
               { valor: metros(rota.altimetria.min), texto: tx.mapa.minima },
             ]}
           />
-          {tx.mapa.metodo && <p className="mt-4 max-w-[90ch] text-xs leading-relaxed text-white/45">{tx.mapa.metodo}</p>}
+          {tx.mapa.metodo && <p className="mt-4 max-w-[90ch] text-xs leading-relaxed text-white/70">{tx.mapa.metodo}</p>}
         </Seccao>
       )}
 
@@ -481,7 +481,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                         {tx.itinerario.dia} {d}
                       </h3>
                       {titulo && <span className="text-[15px] text-white/75">{titulo}</span>}
-                      <span className="text-sm text-white/50 tabular-nums">
+                      <span className="text-sm text-white/75 tabular-nums">
                         {kmDia} km · {duracao(minDia)}
                       </span>
                     </div>
@@ -507,7 +507,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
             <details className="painel painel-escuro group/coord mt-8 max-w-4xl p-5 md:p-6">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-medium [&::-webkit-details-marker]:hidden">
                 {tx.itinerario.coordenadas}
-                <span aria-hidden className="text-xl leading-none text-white/60 transition-transform group-open/coord:rotate-45">
+                <span aria-hidden className="text-xl leading-none text-white/80 transition-transform group-open/coord:rotate-45">
                   +
                 </span>
               </summary>
@@ -515,7 +515,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                 {noMapa.map((p, i) => (
                   <li key={p.nome + i} className="border-b border-white/8 py-2.5 text-[0.8125rem] last:border-0">
                     <span className="block text-white/85">{p.nome}</span>
-                    <span className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-white/50">
+                    <span className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-white/75">
                       <span className="font-mono tabular-nums">
                         {p.lat.toFixed(5)}, {p.lng.toFixed(5)}
                       </span>
@@ -524,7 +524,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                           href={p.fonte.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-white/45 underline decoration-white/15 underline-offset-2 hover:text-white"
+                          className="text-xs text-white/70 underline decoration-white/15 underline-offset-2 hover:text-white"
                         >
                           {p.fonte.nome}
                         </a>
@@ -545,20 +545,20 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
             <Cabecalho icone={<Clock />} titulo={tx.horario.titulo} texto={tx.horario.texto || undefined} />
             {clima && (
               <div className="painel painel-escuro mt-8 p-6">
-                <p className="text-sm text-white/60">
+                <p className="text-sm text-white/80">
                   {tx.horario.luz} · {clima.cidade}
                 </p>
                 <dl className="mt-4 grid grid-cols-2 gap-4">
                   {[sol[5], sol[11]].map((s) => (
                     <div key={s.mes}>
-                      <dt className="text-sm text-white/55">{s.mes}</dt>
+                      <dt className="text-sm text-white/75">{s.mes}</dt>
                       <dd className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">
                         {s.nascer} – {s.por}
                       </dd>
                     </div>
                   ))}
                 </dl>
-                <p className="mt-4 text-xs text-white/45">
+                <p className="mt-4 text-xs text-white/70">
                   {tx.horario.nota}{" "}
                   <a href="#clima" className="underline decoration-white/15 underline-offset-2 hover:text-white">
                     {tx.menu.clima}
@@ -617,7 +617,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                   <a href={`tel:${n.numero}`} className="text-3xl font-semibold tabular-nums tracking-tight hover:text-mb-red-light">
                     {n.numero}
                   </a>
-                  <p className="mt-1 text-xs leading-snug text-white/65">{n.servico}</p>
+                  <p className="mt-1 text-xs leading-snug text-white/80">{n.servico}</p>
                 </li>
               ))}
             </ul>
@@ -695,7 +695,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                         <span className="sr-only">Mês</span>
                       </th>
                       {sol.map((s) => (
-                        <th key={s.mes} scope="col" className="py-2.5 text-center text-xs font-normal uppercase tracking-[0.12em] text-white/55">
+                        <th key={s.mes} scope="col" className="py-2.5 text-center text-xs font-normal uppercase tracking-[0.12em] text-white/75">
                           {s.mes}
                         </th>
                       ))}
@@ -712,7 +712,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                       ] as [string, (i: number) => number | string | null | undefined, boolean][]
                     ).map(([rotulo, valor, eChuva], linha) => (
                       <tr key={`${linha}-${rotulo}`} className="border-b border-white/8 last:border-0">
-                        <th scope="row" className="whitespace-nowrap py-3 pr-4 text-left text-xs font-normal text-white/60">
+                        <th scope="row" className="whitespace-nowrap py-3 pr-4 text-left text-xs font-normal text-white/80">
                           {rotulo}
                         </th>
                         {sol.map((s, i) => {
@@ -730,7 +730,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                 </table>
               </div>
               <LinksFontes fontes={[clima.fonte, FONTE_SOL].filter((f) => f?.url)} className="mt-4" />
-              <p className="mt-1 max-w-[90ch] text-xs leading-relaxed text-white/45">
+              <p className="mt-1 max-w-[90ch] text-xs leading-relaxed text-white/70">
                 {[clima.nota, tx.clima.nota].filter(Boolean).join(" ")}
               </p>
             </>
@@ -749,7 +749,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                         href={urlPonto(p)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 font-mono text-xs text-white/50 underline decoration-white/15 underline-offset-2 hover:text-white"
+                        className="inline-flex items-center gap-1 font-mono text-xs text-white/75 underline decoration-white/15 underline-offset-2 hover:text-white"
                       >
                         <MapPin className="size-3" aria-hidden />
                         {p.lat.toFixed(4)}, {p.lng.toFixed(4)}
@@ -814,7 +814,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                 <QuadroRota foto={f} className="aspect-[4/3]" tamanhos="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                 <figcaption className="p-3 pt-4">
                   {f.local && <p className="text-[15px] leading-snug">{f.local}</p>}
-                  <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/75">
                     <CreditoFoto foto={f} />
                   </p>
                 </figcaption>
@@ -857,7 +857,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                         href={d.fonte.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-0.5 inline-block text-xs text-white/45 underline decoration-white/15 underline-offset-2 hover:text-white"
+                        className="mt-0.5 inline-block text-xs text-white/70 underline decoration-white/15 underline-offset-2 hover:text-white"
                       >
                         {d.fonte.nome}
                       </a>
@@ -865,7 +865,7 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
                   </li>
                 ))}
               </ul>
-              {tx.dicas.distanciasNota && <p className="mt-3 text-xs text-white/45">{tx.dicas.distanciasNota}</p>}
+              {tx.dicas.distanciasNota && <p className="mt-3 text-xs text-white/70">{tx.dicas.distanciasNota}</p>}
             </div>
           )}
           <div className="painel painel-escuro flex flex-col p-6">
@@ -883,17 +883,17 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
       {/* ============ FONTES ============ */}
       <Seccao id="fontes" className="!pt-0">
         <h2 className="titulo-4">{tx.fontes.titulo}</h2>
-        <ol className="mt-5 grid gap-x-10 gap-y-2 text-sm text-white/65 md:grid-cols-2">
+        <ol className="mt-5 grid gap-x-10 gap-y-2 text-sm text-white/80 md:grid-cols-2">
           {fontes.map((f, i) => (
             <li key={f.url} className="break-words">
-              <span className="text-white/40">[{i + 1}]</span>{" "}
+              <span className="text-white/70">[{i + 1}]</span>{" "}
               <a href={f.url} target="_blank" rel="noopener noreferrer" className="hover:text-white">
                 {f.nome}
               </a>
             </li>
           ))}
         </ol>
-        {tx.fontes.nota && <p className="mt-6 max-w-[90ch] text-xs leading-relaxed text-white/45">{tx.fontes.nota}</p>}
+        {tx.fontes.nota && <p className="mt-6 max-w-[90ch] text-xs leading-relaxed text-white/70">{tx.fontes.nota}</p>}
       </Seccao>
 
       {/* ============ OUTRAS ROTAS ============ */}
@@ -924,9 +924,9 @@ function CartaoOutraRota({ rota }: { rota: Rota }) {
       <QuadroRota foto={rota.fotos[0]} className="aspect-[4/3]" tamanhos="(max-width: 768px) 100vw, 33vw" />
       <div className="flex flex-1 items-end justify-between gap-4 p-4 md:p-5">
         <div>
-          <p className="text-[0.8125rem] text-white/60">{rota.regiao}</p>
+          <p className="text-[0.8125rem] text-white/80">{rota.regiao}</p>
           <h3 className="mt-1 text-lg font-semibold leading-snug">{rota.nome}</h3>
-          <p className="mt-2 text-[0.8125rem] text-white/55 tabular-nums">
+          <p className="mt-2 text-[0.8125rem] text-white/75 tabular-nums">
             {t.km} km · {duracao(t.minMota)} · <span className="text-mb-red-light">{rota.exigencia}</span>
           </p>
         </div>

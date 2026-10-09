@@ -91,7 +91,7 @@ export default function AdminUtilizadores() {
                     <span className="max-w-60 truncate">{u.nome}</span>
                     {u.verificado && <BadgeCheck className="size-4 shrink-0 text-[#4ade80]" aria-label="Verificada" />}
                   </p>
-                  <p className="max-w-64 truncate text-xs text-white/50">{u.email}</p>
+                  <p className="max-w-64 truncate text-xs text-white/75">{u.email}</p>
                 </div>
               </div>
             ),
@@ -99,17 +99,17 @@ export default function AdminUtilizadores() {
           {
             cabecalho: "Papel",
             celula: (u) => (
-              <span className={u.papel === "leitor" ? "text-white/55" : "text-white"}>
+              <span className={u.papel === "leitor" ? "text-white/75" : "text-white"}>
                 {u.papel === "leitor" ? "Membro" : PAPEIS.find((p) => p.valor === u.papel)?.nome ?? u.papel}
               </span>
             ),
           },
           { cabecalho: "Estado", celula: (u) => <Estado valor={u.estado} rotulo={nomeEstado(u.estado)} /> },
-          { cabecalho: "Província", celula: (u) => <span className="text-white/60">{u.provincia ?? ""}</span> },
-          { cabecalho: "Registo", celula: (u) => <span className="whitespace-nowrap tabular-nums text-white/60">{dataCurta(u.registado, true)}</span> },
+          { cabecalho: "Província", celula: (u) => <span className="text-white/80">{u.provincia ?? ""}</span> },
+          { cabecalho: "Registo", celula: (u) => <span className="whitespace-nowrap tabular-nums text-white/80">{dataCurta(u.registado, true)}</span> },
           {
             cabecalho: "Último acesso",
-            celula: (u) => <span className="whitespace-nowrap tabular-nums text-white/50">{u.ultimoAcesso ? dataCurta(u.ultimoAcesso) : "Nunca"}</span>,
+            celula: (u) => <span className="whitespace-nowrap tabular-nums text-white/75">{u.ultimoAcesso ? dataCurta(u.ultimoAcesso) : "Nunca"}</span>,
           },
         ]}
         accoesLinha={(u) => u.estado === "pendente" ? (
@@ -171,7 +171,7 @@ export default function AdminUtilizadores() {
                 </div>
                 <div className="rounded-[var(--raio)] bg-black/20 px-4 py-3.5">
                   <p className="text-sm text-white">{r.papel === "leitor" ? "Membro" : papel?.nome}</p>
-                  <p className="mt-0.5 text-[13px] text-white/55">{r.papel === "leitor" ? "Conta do site público: sem acesso ao painel de gestão." : papel?.descricao}</p>
+                  <p className="mt-0.5 text-[13px] text-white/75">{r.papel === "leitor" ? "Conta do site público: sem acesso ao painel de gestão." : papel?.descricao}</p>
                   {PERMISSOES_POR_PAPEL[r.papel].length > 0 && (
                     <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
                       {PERMISSOES_POR_PAPEL[r.papel].map((p) => (

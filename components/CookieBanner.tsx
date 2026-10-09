@@ -134,13 +134,13 @@ export default function CookieBanner({ activo = true }: { activo?: boolean }) {
                 <p className="text-sm text-white">{t.essenciais}</p>
                 <span className="text-[10px] uppercase tracking-widest text-ok">{t.sempreActivo}</span>
               </div>
-              <p className="mt-1 text-xs text-ink-500">{t.essenciaisDesc}</p>
+              <p className="mt-1 text-xs text-ink-300">{t.essenciaisDesc}</p>
             </div>
 
             <label className="flex cursor-pointer items-start justify-between gap-2 rounded-[6px] bg-white/5 p-4 transition-colors hover:bg-white/8">
               <span>
                 <span className="block text-sm text-white">{t.analiticos}</span>
-                <span className="mt-1 block text-xs text-ink-500">{t.analiticosDesc}</span>
+                <span className="mt-1 block text-xs text-ink-300">{t.analiticosDesc}</span>
               </span>
               <input type="checkbox" checked={analiticos} onChange={(e) => setAnaliticos(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[#e10600]" />
             </label>
@@ -148,7 +148,7 @@ export default function CookieBanner({ activo = true }: { activo?: boolean }) {
             <label className="flex cursor-pointer items-start justify-between gap-2 rounded-[6px] bg-white/5 p-4 transition-colors hover:bg-white/8">
               <span>
                 <span className="block text-sm text-white">{t.marketing}</span>
-                <span className="mt-1 block text-xs text-ink-500">{t.marketingDesc}</span>
+                <span className="mt-1 block text-xs text-ink-300">{t.marketingDesc}</span>
               </span>
               <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[#e10600]" />
             </label>

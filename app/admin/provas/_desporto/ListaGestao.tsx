@@ -277,7 +277,7 @@ export function ListaGestao<T extends { slug: string }>({
         descricao={
           <span className="flex flex-wrap items-center gap-2">
             {eNovo ? <Etiqueta tom="ouro">Por gravar</Etiqueta> : sujo ? <Etiqueta tom="ouro">Alterações por gravar</Etiqueta> : <Etiqueta>Gravado</Etiqueta>}
-            {prefixoPagina && rascunho?.slug && !eNovo && <span className="text-white/45">{prefixoPagina}/{rascunho.slug}</span>}
+            {prefixoPagina && rascunho?.slug && !eNovo && <span className="text-white/70">{prefixoPagina}/{rascunho.slug}</span>}
           </span>
         }
         rodape={

@@ -1,13 +1,18 @@
 "use client";
 
 import {
-  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
-  useSyncExternalStore, useTransition, type ReactNode,
+  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useTransition,
+  type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Icon } from "@/components/ui";
+import { CornerDownRight, MessageSquarePlus } from "lucide-react";
+import { Icon } from "@/components/ui";
 import { Denunciar } from "@/components/Denunciar";
 import { useExigirSessao } from "@/components/SessaoObrigatoria";
+import { AvatarForum, MarcaNivel } from "@/components/forum/Autor";
+import { Tempo } from "@/components/forum/Tempo";
+import { BotaoVoto } from "@/components/forum/Votos";
+import type { RespostaForum } from "@/components/forum/tipos";
 import { useAuth } from "@/lib/auth/contexto";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { interfaceEn } from "@/lib/i18n/interface-en";
@@ -17,6 +22,9 @@ import { FORUM_PADRAO, type ConteudoForum } from "@/lib/conteudo/grupos/comunida
 
 /* ============================================================
    MOTOBOX — Respostas dos membros e caixa de resposta
+   Cada resposta é um cartão: quem escreveu (com o nível e a marca
+   de autor do tópico), quando, o texto, o voto, "Responder" (que
+   leva à caixa com o @nome já escrito) e "Reportar".
    A caixa pede sessão só quando se carrega em publicar: sem ela,
    abre-se a janela de entrar/criar conta e o texto fica onde
    estava. O rascunho também fica guardado neste navegador, para
@@ -25,21 +33,56 @@ import { FORUM_PADRAO, type ConteudoForum } from "@/lib/conteudo/grupos/comunida
    servidor com ela, a cópia local deixa de ser mostrada.
    ============================================================ */
 
-/* ---------- Respostas acabadas de publicar ---------- */
+/** Textos das acções de cada resposta (de "paginas.forum"). */
+export interface RotulosResposta {
+  reportar: string;
+  responder: string;
+  votar: string;
+  retirarVoto: string;
+  autor: string;
+}
+
+const ROTULOS_PADRAO: RotulosResposta = {
+  reportar: FORUM_PADRAO.topico.reportar,
+  responder: FORUM_PADRAO.topico.responder,
+  votar: "Votar nesta resposta",
+  retirarVoto: FORUM_PADRAO.lista.retirarVoto,
+  autor: FORUM_PADRAO.niveis.autor,
+};
+
+/* ---------- A discussão: respostas acabadas de publicar e a caixa ---------- */
 
 interface Discussao {
   novas: RespostaPublica[];
   adicionar: (r: RespostaPublica) => void;
+  /** A caixa de resposta regista aqui o seu campo. */
+  registarCampo: (el: HTMLTextAreaElement | null) => void;
+  /** Leva à caixa de resposta; com um nome, começa a resposta por "@nome ". */
+  irParaCaixa: (nome?: string) => void;
 }
 
 const Ctx = createContext<Discussao | null>(null);
 
 export function DiscussaoProvider({ children }: { children: ReactNode }) {
   const [novas, setNovas] = useState<RespostaPublica[]>([]);
+  const campo = useRef<HTMLTextAreaElement | null>(null);
+  const registarCampo = useCallback((el: HTMLTextAreaElement | null) => { campo.current = el; }, []);
   const adicionar = useCallback((r: RespostaPublica) => {
     setNovas((l) => (l.some((x) => x.id === r.id) ? l : [...l, r]));
   }, []);
-  const valor = useMemo(() => ({ novas, adicionar }), [novas, adicionar]);
+  const irParaCaixa = useCallback((nome?: string) => {
+    const el = campo.current;
+    if (!el) return;
+    if (nome) {
+      const mencao = `@${nome.replace(/\s+/g, "_")} `;
+      if (!el.value.startsWith(mencao)) el.value = `${mencao}${el.value}`;
+    }
+    const reduzir = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ block: "center", behavior: reduzir ? "auto" : "smooth" });
+    el.focus({ preventScroll: true });
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, []);
+  const valor = useMemo(() => ({ novas, adicionar, registarCampo, irParaCaixa }), [novas, adicionar, registarCampo, irParaCaixa]);
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }
 
@@ -49,94 +92,68 @@ function useDiscussao(): Discussao {
   return ctx;
 }
 
+/** Botão que leva à caixa de resposta (o convite "Seja o primeiro a responder", "Responder"). */
+export function BotaoIrResponder({ children, className, nome }: { children: ReactNode; className: string; nome?: string }) {
+  const { irParaCaixa } = useDiscussao();
+  return (
+    <button type="button" onClick={() => irParaCaixa(nome)} className={className}>
+      {children}
+    </button>
+  );
+}
+
 /** As que o servidor ainda não trouxe (o `router.refresh()` demora um instante). */
 export function RespostasNovas({
-  idsServidor, topicoId, reportar,
-}: { idsServidor: string[]; topicoId: string; reportar?: string }) {
+  idsServidor, topicoId, rotulos,
+}: { idsServidor: string[]; topicoId: string; rotulos?: RotulosResposta }) {
   const { novas } = useDiscussao();
   const porMostrar = novas.filter((r) => !idsServidor.includes(r.id));
   if (porMostrar.length === 0) return null;
   return (
-    <ol>
-      {porMostrar.map((r) => <ItemResposta key={r.id} resposta={r} topicoId={topicoId} reportar={reportar} />)}
+    <ol className="grid gap-[var(--intervalo)]">
+      {porMostrar.map((r) => (
+        <ItemResposta key={r.id} resposta={{ ...r, votos: 0 }} topicoId={topicoId} rotulos={rotulos} />
+      ))}
     </ol>
   );
 }
 
 /* ---------- Uma resposta ---------- */
 
-/** Mesmo desenho das respostas de exemplo: avatar com a cor da pessoa, nome, quando, texto. */
 export function ItemResposta({
-  resposta: r, topicoId, reportar = FORUM_PADRAO.topico.reportar,
-}: { resposta: RespostaPublica; topicoId: string; reportar?: string }) {
+  resposta: r, topicoId, rotulos = ROTULOS_PADRAO,
+}: { resposta: RespostaForum; topicoId: string; rotulos?: RotulosResposta }) {
+  const accao = "inline-flex h-9 items-center gap-1.5 rounded-[4px] px-2.5 text-sm font-medium text-white transition-colors hover:bg-white/12";
   return (
-    <li className="border-b border-white/6 py-8">
-      <div className="flex items-center gap-3 sm:gap-5">
-        <span
-          className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full font-display text-xs text-white sm:size-12 sm:text-sm"
-          style={{ background: r.autorCor }}
-          aria-hidden
-        >
-          {r.autorAvatar ? (
-            // A imagem já vem reduzida do envio (máx. 512 px); a cor fica por trás de um PNG transparente.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={r.autorAvatar} alt="" className="size-full object-cover" loading="lazy" decoding="async" />
-          ) : (
-            (r.autorNome.trim()[0] ?? "?").toUpperCase()
-          )}
-        </span>
-        <p className="flex min-w-0 flex-wrap items-baseline gap-x-2.5">
-          <span className="truncate font-ui text-lg leading-tight text-white">{r.autorNome}</span>
-          <TempoRelativo iso={r.criadoEm} className="text-sm text-ink-500" />
-        </p>
+    <li id={`resposta-${r.id}`} className="painel painel-escuro scroll-mt-24 p-4 sm:p-5">
+      <div className="flex items-center gap-3">
+        <AvatarForum nome={r.autorNome} cor={r.autorCor} avatar={r.autorAvatar} className="size-10 text-sm" />
+        <div className="min-w-0">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="truncate text-[16px] font-semibold leading-tight text-white">{r.autorNome}</span>
+            {r.eAutor && <MarcaNivel texto={rotulos.autor} tom="autor" />}
+            <MarcaNivel texto={r.nivel} tom={r.equipa ? "equipa" : "nivel"} />
+          </p>
+          <Tempo iso={r.criadoEm} className="mt-0.5 block text-[13px] text-white/80" />
+        </div>
       </div>
 
-      <div className="mt-4 sm:pl-[4.25rem]">
-        {/* O texto vem tal como foi escrito: as mudanças de linha contam, nada é HTML. */}
-        <p className="whitespace-pre-line text-base leading-relaxed text-ink-200 [overflow-wrap:anywhere] sm:text-[17px]">
-          {r.corpo}
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
-          {/* A denúncia aponta ao tópico: a moderação vê a discussão inteira. */}
-          <Denunciar tipo="forum" alvoId={topicoId} rotulo={reportar} icone={false}
-            classeBotao="font-ui text-sm text-ink-500 transition-colors hover:text-white" />
-        </div>
+      {/* O texto vem tal como foi escrito: as mudanças de linha contam, nada é HTML. */}
+      <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-white/95 [overflow-wrap:anywhere] sm:pl-[3.25rem] sm:text-[17px]">
+        {r.corpo}
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:pl-[3.25rem]">
+        <BotaoVoto id={r.id} total={r.votos} rotulo={rotulos.votar} rotuloRetirar={rotulos.retirarVoto} forma="linha" />
+        <BotaoIrResponder nome={r.autorNome} className={accao}>
+          <CornerDownRight className="size-4" aria-hidden />
+          <span>{rotulos.responder}</span>
+        </BotaoIrResponder>
+        {/* A denúncia aponta ao tópico: a moderação vê a discussão inteira. */}
+        <Denunciar tipo="forum" alvoId={topicoId} rotulo={rotulos.reportar} icone={false} classeBotao={accao} />
       </div>
     </li>
   );
-}
-
-/* ---------- "há 5 minutos" ---------- */
-
-// O servidor não sabe a que horas a página vai ser vista (fica em cache), por
-// isso desenha a data e o navegador troca-a pelo tempo relativo, minuto a minuto.
-const subscreverMinuto = (aviso: () => void) => {
-  const id = window.setInterval(aviso, 30_000);
-  return () => window.clearInterval(id);
-};
-const minutoActual = () => Math.floor(Date.now() / 60_000);
-const semMinuto = () => null;
-
-function relativo(data: Date, agora: number, locale: string): string | null {
-  const segundos = Math.max(0, Math.round((agora - data.getTime()) / 1000));
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
-  if (segundos < 60) return rtf.format(0, "second");
-  if (segundos < 3600) return rtf.format(-Math.floor(segundos / 60), "minute");
-  if (segundos < 86_400) return rtf.format(-Math.floor(segundos / 3600), "hour");
-  if (segundos < 7 * 86_400) return rtf.format(-Math.floor(segundos / 86_400), "day");
-  return null;
-}
-
-function TempoRelativo({ iso, className }: { iso: string; className?: string }) {
-  const { locale } = useIdioma();
-  const minuto = useSyncExternalStore(subscreverMinuto, minutoActual, semMinuto);
-  const data = new Date(iso);
-  if (Number.isNaN(data.getTime())) return null;
-  const absoluto = data.toLocaleDateString(locale, {
-    day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Luanda",
-  });
-  const texto = (minuto !== null && relativo(data, minuto * 60_000, locale)) || absoluto;
-  return <time dateTime={iso} title={absoluto} className={className}>{texto}</time>;
 }
 
 /* ---------- Caixa de resposta ---------- */
@@ -153,10 +170,10 @@ export function CaixaResposta({
   const exigirSessao = useExigirSessao();
   const { utilizador, perfil } = useAuth();
   const { idioma } = useIdioma();
-  const { adicionar } = useDiscussao();
+  const { adicionar, registarCampo } = useDiscussao();
+  const campo = useRef<HTMLTextAreaElement | null>(null);
   const router = useRouter();
   const [, iniciarTransicao] = useTransition();
-  const campo = useRef<HTMLTextAreaElement>(null);
   const [aEnviar, setAEnviar] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [publicada, setPublicada] = useState(false);
@@ -231,10 +248,13 @@ export function CaixaResposta({
   const nome = perfil?.nome || (typeof nomeMeta === "string" ? nomeMeta : "") || utilizador?.email || "";
 
   return (
-    <form onSubmit={publicar} noValidate>
-      <h2 id="responder" className="font-display text-xl uppercase text-white">{t.titulo}</h2>
+    <form onSubmit={publicar} noValidate className="painel painel-escuro p-4 sm:p-5">
+      <h2 id="responder" className="flex items-center gap-2.5 text-lg font-semibold text-white">
+        <MessageSquarePlus className="size-5" aria-hidden />
+        <span>{t.titulo}</span>
+      </h2>
       <textarea
-        ref={campo}
+        ref={(el) => { campo.current = el; registarCampo(el); }}
         rows={5}
         maxLength={RESPOSTA_MAX}
         aria-labelledby="responder"
@@ -242,33 +262,37 @@ export function CaixaResposta({
         aria-describedby={erro ? "responder-erro" : undefined}
         placeholder={tr(t.placeholder)}
         onInput={() => { guardarRascunho(); if (erro) setErro(null); setPublicada(false); }}
-        className="mt-4 w-full resize-y bg-ink-900 p-4 text-base text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 outline-none focus:ring-2 focus:ring-mb-red"
+        className="campo mt-3 resize-y text-base placeholder:text-white/70"
       />
 
       {erro && (
-        <p id="responder-erro" role="alert" className="mt-2 text-sm text-mb-red-light">{erro}</p>
+        <p id="responder-erro" role="alert" className="mt-2 text-sm font-medium text-[#ff8a80]">{erro}</p>
       )}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-ink-500" aria-live="polite">
+        <p className="text-sm text-white/85" aria-live="polite">
           {publicada ? (
-            <span className="inline-flex items-center gap-1.5 text-ink-200">
+            <span className="inline-flex items-center gap-1.5 font-medium text-[#bbf7d0]">
               <Icon name="check" className="size-4" />
               <span>{t.publicada}</span>
             </span>
           ) : utilizador ? (
             <>
               <span>{t.aResponderComo}</span>{" "}
-              <span className="text-white">{nome}</span>
+              <span className="font-semibold text-white">{nome}</span>
             </>
           ) : (
             <span>{t.semSessao}</span>
           )}
         </p>
-        <Button type="submit" disabled={aEnviar}>
+        <button
+          type="submit"
+          disabled={aEnviar}
+          className="inline-flex h-11 items-center gap-2 rounded-[var(--raio)] bg-mb-red px-5 text-[15px] font-semibold text-white transition-colors hover:bg-mb-red-dark disabled:opacity-70"
+        >
           {aEnviar ? (
             <>
-              <span className="size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden />
+              <span className="size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white motion-reduce:animate-none" aria-hidden />
               <span>{t.aPublicar}</span>
             </>
           ) : (
@@ -277,7 +301,7 @@ export function CaixaResposta({
               <Icon name="arrow" className="size-4" />
             </>
           )}
-        </Button>
+        </button>
       </div>
     </form>
   );

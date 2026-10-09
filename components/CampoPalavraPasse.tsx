@@ -22,7 +22,7 @@ export function CampoPalavraPasse({ className = "", ...rest }: Omit<InputHTMLAtt
         aria-label={rotulo}
         aria-pressed={visivel}
         title={rotulo}
-        className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full text-ink-400 transition-colors hover:bg-white/8 hover:text-white"
+        className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full text-ink-300 transition-colors hover:bg-white/8 hover:text-white"
       >
         <Icon name={visivel ? "eye" : "eyeOff"} className="size-4.5" />
       </button>

@@ -146,7 +146,7 @@ export function Numeros({
           <dd>
             <span className="block text-[2.5rem] leading-none tracking-tight lg:text-5xl">{n.valor}</span>
             <span className="mt-2 block text-sm leading-snug text-white/85">{n.texto}</span>
-            {n.nota && <span className="mt-1 block text-xs text-white/45">{n.nota}</span>}
+            {n.nota && <span className="mt-1 block text-xs text-white/70">{n.nota}</span>}
           </dd>
         </div>
       ))}
@@ -178,7 +178,7 @@ export function CartaoNumerado({
         {numero}
       </span>
       <div className="mt-auto pt-16">
-        {sobretitulo && <p className="text-sm text-white/60">{sobretitulo}</p>}
+        {sobretitulo && <p className="text-sm text-white/80">{sobretitulo}</p>}
         <h3 className="titulo-4 mt-3">{titulo}</h3>
         <div className="mt-4 max-w-[52ch] text-[15px] leading-relaxed text-white/85">{children}</div>
         {href && (

@@ -232,7 +232,7 @@ export function Provas({ editar }: { editar?: string }) {
                 </span>
                 <span className="min-w-0">
                   <span className="block max-w-[22rem] truncate font-medium text-white">{e.titulo}</span>
-                  <span className="block max-w-[22rem] truncate text-xs text-white/50">{[e.circuito, e.provincia].filter(Boolean).join(", ")}</span>
+                  <span className="block max-w-[22rem] truncate text-xs text-white/75">{[e.circuito, e.provincia].filter(Boolean).join(", ")}</span>
                 </span>
               </div>
             );
@@ -240,7 +240,7 @@ export function Provas({ editar }: { editar?: string }) {
         },
         { cabecalho: "Modalidade", celula: (e) => <span className="text-white/75">{modalidadeDe(e.disciplina) ?? nomeDisciplina(e.disciplina)}</span> },
         { cabecalho: "Data", celula: (e) => <span className="whitespace-nowrap tabular-nums text-white/75">{dataCurta(e.dataInicio)}</span> },
-        { cabecalho: "Ronda", celula: (e) => (e.ronda ? <span className="tabular-nums">{e.ronda}</span> : <span className="text-xs text-white/45">Fora</span>) },
+        { cabecalho: "Ronda", celula: (e) => (e.ronda ? <span className="tabular-nums">{e.ronda}</span> : <span className="text-xs text-white/70">Fora</span>) },
         { cabecalho: "Estado", celula: (e) => <Estado valor={e.estado} rotulo={nomeEstadoProva(e.estado)} /> },
         {
           cabecalho: "Resultados",
@@ -318,9 +318,9 @@ function ResultadosDaProva({ prova, novo, corridas }: { prova: Evento; novo: boo
       ) : undefined}
     >
       {novo ? (
-        <p className="text-sm text-white/55">Grave a prova primeiro; depois pode juntar-lhe os resultados.</p>
+        <p className="text-sm text-white/75">Grave a prova primeiro; depois pode juntar-lhe os resultados.</p>
       ) : corridas.length === 0 ? (
-        <p className="text-sm text-white/55">Ainda sem resultados.</p>
+        <p className="text-sm text-white/75">Ainda sem resultados.</p>
       ) : (
         <ul className="space-y-1.5">
           {corridas.map((c) => (
@@ -331,7 +331,7 @@ function ResultadosDaProva({ prova, novo, corridas }: { prova: Evento; novo: boo
                   <Etiqueta tom="vermelho">{c.categoria || "Sem categoria"}</Etiqueta>
                   <span className="truncate text-white">{c.nome}</span>
                 </span>
-                <span className="shrink-0 text-xs text-white/55">
+                <span className="shrink-0 text-xs text-white/75">
                   {c.resultados.length} classificados{c.vencedor ? ` · ${c.vencedor}` : ""}
                 </span>
               </Link>

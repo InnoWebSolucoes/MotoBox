@@ -294,13 +294,13 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
             <li key={p.n} className={`flex items-center gap-2 md:gap-3 ${i < passos.length - 1 ? "flex-1" : ""}`}>
               <span
                 className={`grid size-9 shrink-0 place-items-center rounded-[4px] text-sm font-semibold tabular-nums transition-colors ${
-                  feito ? "bg-white text-black" : activo ? "bg-mb-red text-white" : "bg-white/8 text-white/50"
+                  feito ? "bg-white text-black" : activo ? "bg-mb-red text-white" : "bg-white/8 text-white/75"
                 }`}
                 aria-current={activo ? "step" : undefined}
               >
                 {feito ? <Check className="size-4" aria-label={tx.passos.concluido} /> : p.n}
               </span>
-              <span className={`sr-only sm:not-sr-only sm:text-sm ${activo ? "text-white" : feito ? "text-white/75" : "text-white/45"}`}>
+              <span className={`sr-only sm:not-sr-only sm:text-sm ${activo ? "text-white" : feito ? "text-white/75" : "text-white/70"}`}>
                 {p.label}
               </span>
               {i < passos.length - 1 && (
@@ -341,7 +341,7 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
                               </li>
                             ))}
                           </ul>
-                          <p className="mt-3 text-xs text-white/45">
+                          <p className="mt-3 text-xs text-white/70">
                             {comValores(tx.escolha.disponiveis, {
                               n: <span className="tabular-nums">{t.disponiveis.toLocaleString("pt-PT")}</span>,
                             })}
@@ -421,16 +421,16 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
                 ))}
 
                 {emailConta && (
-                  <p className="flex gap-2.5 text-sm leading-relaxed text-white/60">
-                    <UserRound className="size-4 shrink-0 translate-y-0.5 text-white/45" aria-hidden />
+                  <p className="flex gap-2.5 text-sm leading-relaxed text-white/80">
+                    <UserRound className="size-4 shrink-0 translate-y-0.5 text-white/70" aria-hidden />
                     <span>
                       <span>{tx.dados.sessao}</span> <span className="text-white">{emailConta}</span>
                     </span>
                   </p>
                 )}
 
-                <p className="flex gap-2.5 border-t border-white/8 pt-5 text-sm leading-relaxed text-white/60">
-                  <Lock className="size-4 shrink-0 translate-y-0.5 text-white/45" aria-hidden />
+                <p className="flex gap-2.5 border-t border-white/8 pt-5 text-sm leading-relaxed text-white/80">
+                  <Lock className="size-4 shrink-0 translate-y-0.5 text-white/70" aria-hidden />
                   {tx.dados.privacidade}
                 </p>
               </div>
@@ -467,7 +467,7 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
                           </span>
                           <span className="min-w-0">
                             <span className="block font-semibold">{m.nome}</span>
-                            {m.descricao && <span className="mt-0.5 block text-sm text-white/60">{m.descricao}</span>}
+                            {m.descricao && <span className="mt-0.5 block text-sm text-white/80">{m.descricao}</span>}
                           </span>
                         </label>
                       );
@@ -539,7 +539,7 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
                           ["codigo", tx.emitidos.codigo, b.codigo],
                         ].map(([id, k, v]) => (
                           <div key={id} className="min-w-0">
-                            <dt className="text-xs text-white/50">{k}</dt>
+                            <dt className="text-xs text-white/75">{k}</dt>
                             <dd className={`mt-0.5 break-words text-sm ${id === "codigo" ? "font-mono" : ""}`}>{v}</dd>
                           </div>
                         ))}
@@ -551,7 +551,7 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
                       className="flex flex-col items-center justify-center gap-3 border-t border-dashed border-white/20 p-6 sm:border-l sm:border-t-0"
                     >
                       <QRCode valor={b.codigo} size={150} className="!rounded-[4px]" />
-                      <p className="font-mono text-[11px] text-white/55">{b.codigo}</p>
+                      <p className="font-mono text-[11px] text-white/75">{b.codigo}</p>
                     </div>
                   </article>
                 ))}
@@ -577,8 +577,8 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
                 )}
               </div>
 
-              <p className="mt-6 flex gap-2.5 text-sm leading-relaxed text-white/60">
-                <QrCode className="size-4 shrink-0 translate-y-0.5 text-white/45" aria-hidden />
+              <p className="mt-6 flex gap-2.5 text-sm leading-relaxed text-white/80">
+                <QrCode className="size-4 shrink-0 translate-y-0.5 text-white/70" aria-hidden />
                 {tx.emitidos.entrada}
               </p>
             </section>
@@ -592,7 +592,7 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
               <h2 className="text-lg font-semibold">{tx.resumo.titulo}</h2>
 
               {linhas.length === 0 ? (
-                <p className="py-6 text-sm text-white/50">{tx.resumo.vazio}</p>
+                <p className="py-6 text-sm text-white/75">{tx.resumo.vazio}</p>
               ) : (
                 <>
                   <ul className="mt-4 space-y-3">
@@ -600,7 +600,7 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
                       <li key={l.tipo.id} className="flex justify-between gap-3 text-sm">
                         <span className="min-w-0">
                           <span className="block truncate">{l.tipo.nome}</span>
-                          <span className="text-xs tabular-nums text-white/50">
+                          <span className="text-xs tabular-nums text-white/75">
                             {l.qtd} × {formatKz(l.tipo.preco)}
                           </span>
                         </span>
@@ -611,13 +611,13 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
 
                   <dl className="mt-5 space-y-2.5 border-t border-white/8 pt-4 text-sm">
                     <div className="flex justify-between gap-3">
-                      <dt className="text-white/55">{tx.resumo.subtotal}</dt>
+                      <dt className="text-white/75">{tx.resumo.subtotal}</dt>
                       <dd className="tabular-nums text-white/85">{formatKz(subtotal)}</dd>
                     </div>
                     <div className="flex justify-between gap-3">
-                      <dt className="text-white/55">
+                      <dt className="text-white/75">
                         {tx.resumo.taxa}
-                        <span className="ml-1 text-xs text-white/40">({(TAXA_MOTOBOX * 100).toFixed(0)}%)</span>
+                        <span className="ml-1 text-xs text-white/70">({(TAXA_MOTOBOX * 100).toFixed(0)}%)</span>
                       </dt>
                       <dd className="tabular-nums text-white/85">{formatKz(taxa)}</dd>
                     </div>
@@ -627,7 +627,7 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
                     </div>
                   </dl>
 
-                  {tx.resumo.notaTaxa && <p className="mt-3 text-xs leading-relaxed text-white/45">{tx.resumo.notaTaxa}</p>}
+                  {tx.resumo.notaTaxa && <p className="mt-3 text-xs leading-relaxed text-white/70">{tx.resumo.notaTaxa}</p>}
                 </>
               )}
 
@@ -673,7 +673,7 @@ function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: 
               </div>
 
               {tx.resumo.seguro && (
-                <p className="mt-4 flex items-center justify-center gap-2 text-xs text-white/45">
+                <p className="mt-4 flex items-center justify-center gap-2 text-xs text-white/70">
                   <Lock className="size-3.5" aria-hidden />
                   {tx.resumo.seguro}
                 </p>
@@ -704,13 +704,13 @@ function DetalheMetodo({ metodo: m, telefone, referencia }: { metodo: MetodoPaga
         <dl className={`divide-y divide-white/8 text-sm ${m.detalheTexto ? "mt-4" : ""}`}>
           {m.linhas.map((l, i) => (
             <div key={i} className="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
-              <dt className="shrink-0 text-white/55">{l.rotulo}</dt>
+              <dt className="shrink-0 text-white/75">{l.rotulo}</dt>
               <dd className="min-w-0 break-words text-right font-mono text-white">{preencher(l.valor, { referencia })}</dd>
             </div>
           ))}
         </dl>
       )}
-      {m.nota && <p className={`${m.detalheTexto || m.linhas.length > 0 ? "mt-4" : ""} text-xs text-white/50`}>{m.nota}</p>}
+      {m.nota && <p className={`${m.detalheTexto || m.linhas.length > 0 ? "mt-4" : ""} text-xs text-white/75`}>{m.nota}</p>}
     </div>
   );
 }

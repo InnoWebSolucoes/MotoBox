@@ -65,7 +65,7 @@ export function EditorFotografias({ rota, mudar }: { rota: Rota; mudar: (r: Rota
 
   return (
     <div className="space-y-4">
-      <p className="text-[13px] leading-relaxed text-white/55">
+      <p className="text-[13px] leading-relaxed text-white/75">
         A <strong className="text-white/80">primeira fotografia é a capa</strong>: fica na abertura da página e nos cartões das
         rotas. As outras formam a galeria. Pode carregar fotografias do computador, escolher da biblioteca ou colar o
         endereço de uma imagem (por exemplo, do Wikimedia Commons). Diga sempre quem a tirou e com que licença.
@@ -87,7 +87,7 @@ export function EditorFotografias({ rota, mudar }: { rota: Rota; mudar: (r: Rota
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate text-sm text-white">{f.local || "Fotografia sem legenda"}</span>
-                    <span className="block truncate text-xs text-white/45">
+                    <span className="block truncate text-xs text-white/70">
                       {[f.autor, f.licenca, origemFoto(f)].filter(Boolean).join(" · ") || "Sem crédito"}
                     </span>
                   </span>

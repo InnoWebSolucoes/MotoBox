@@ -37,12 +37,12 @@ export function CartaoArtigo({ artigo, grande = false }: { artigo: Noticia; gran
     <Link href={`/artigos/${artigo.slug}`} className="painel painel-escuro group flex flex-col p-[var(--intervalo)]">
       <Foto nome={fotoDe(artigo.slug, artigo.imagem)} className="aspect-[16/10]" largura={800} tamanhos="(max-width: 768px) 100vw, 33vw" />
       <div className="flex flex-1 flex-col p-4 pt-5 md:p-5">
-        <p className="text-[0.8125rem] text-white/60">
+        <p className="text-[0.8125rem] text-white/80">
           <span className="text-mb-red-light">{artigo.categoria}</span> · {dataArtigo(artigo.data)}
         </p>
         <h3 className="mt-2 text-xl font-semibold leading-snug tracking-tight text-balance">{artigo.titulo}</h3>
         <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-white/70">{artigo.resumo}</p>
-        <div className="mt-auto flex items-center justify-between pt-6 text-[0.8125rem] text-white/55">
+        <div className="mt-auto flex items-center justify-between pt-6 text-[0.8125rem] text-white/75">
           <span>{artigo.leitura} min de leitura</span>
           <Seta className="size-3.5 text-white" />
         </div>
@@ -60,7 +60,7 @@ export function CartaoClube({ clube }: { clube: Clube }) {
         <Monograma nome={clube.nome} cor={clube.cor} className="absolute bottom-3 left-3 size-12 text-sm shadow-lg" />
       </div>
       <div className="flex flex-1 flex-col p-4 pt-5 md:p-5">
-        <p className="text-[0.8125rem] text-white/60">
+        <p className="text-[0.8125rem] text-white/80">
           <span className="text-mb-red-light">{tipo}</span> · {localClube(clube)}
           {clube.fundacao ? ` · desde ${clube.fundacao}` : ""}
         </p>
@@ -91,11 +91,11 @@ export function CartaoEvento({ evento }: { evento: Evento }) {
         <span className="mt-1 text-sm uppercase tracking-[0.15em]">{mes}</span>
       </div>
       <div className="flex flex-col justify-center px-3 py-3 md:px-5">
-        <p className="text-[0.8125rem] text-white/60">
+        <p className="text-[0.8125rem] text-white/80">
           <span className="text-mb-red-light">{tipoEvento(evento)}</span> · {evento.localidade}, {evento.provincia}
         </p>
         <h3 className="mt-1.5 text-lg font-semibold leading-snug md:text-xl">{evento.titulo}</h3>
-        <p className="mt-1 text-sm text-white/60">{intervaloDatas(evento.dataInicio, evento.dataFim)}</p>
+        <p className="mt-1 text-sm text-white/80">{intervaloDatas(evento.dataInicio, evento.dataFim)}</p>
       </div>
       <Foto nome={fotoDe(evento.slug, evento.imagem)} className="hidden md:block" largura={600} tamanhos="14rem" />
     </Link>

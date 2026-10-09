@@ -53,7 +53,7 @@ function LigacaoFonte({ fonte, prefixo }: { fonte?: FonteClube; prefixo: string 
       target="_blank"
       rel="noopener noreferrer"
       title={fonte.nome}
-      className="text-xs text-white/50 underline decoration-white/25 underline-offset-2 transition-colors hover:text-white"
+      className="text-xs text-white/75 underline decoration-white/25 underline-offset-2 transition-colors hover:text-white"
     >
       {`${prefixo} `}{fonte.nome.split(":")[0]}
       <span className="sr-only"> (abre numa nova janela)</span>
@@ -173,7 +173,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
             <div className="flex items-center gap-4">
               <Monograma nome={clube.nome} cor={clube.cor} className="size-16 text-xl" />
               <div className="min-w-0">
-                <p className="text-sm text-white/60">{tp(textos.fichaSobre)}</p>
+                <p className="text-sm text-white/80">{tp(textos.fichaSobre)}</p>
                 <h2 className={perfil ? "titulo-3 mt-1" : "titulo-4 mt-1"}>{perfil ? t(textos.fichaHistoria) : clube.nome}</h2>
               </div>
             </div>
@@ -247,7 +247,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
       {perfil && perfil.destaques.length > 0 && (
         <Seccao className="!pt-0">
           <h2 className="titulo-3">{tp(textos.fichaPercurso)}</h2>
-          <p className="mt-4 max-w-[56ch] text-[15px] leading-relaxed text-white/65">
+          <p className="mt-4 max-w-[56ch] text-[15px] leading-relaxed text-white/80">
             {cronologiaComFontes ? t(textos.fichaPercursoComFontes) : t(textos.fichaPercursoSemFontes)}
           </p>
           <ol className="mt-8 grid gap-[var(--intervalo)] md:grid-cols-2 xl:grid-cols-3">
@@ -293,7 +293,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">{viagens.titulo}</caption>
                 <thead>
-                  <tr className="text-xs text-white/50">
+                  <tr className="text-xs text-white/75">
                     <th scope="col" className="px-3 py-3 font-normal">{t(textos.fichaViagensAno)}</th>
                     <th scope="col" className="px-3 py-3 font-normal">{t(textos.fichaViagensNome)}</th>
                     <th scope="col" className="px-3 py-3 text-right font-normal">{t(textos.fichaViagensKm)}</th>
@@ -309,7 +309,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                       </td>
                       <th scope="row" className="px-3 py-3.5 font-normal">
                         <span className="block text-[15px] font-semibold leading-snug text-white">{v.nome}</span>
-                        <span className="mt-1 block leading-snug text-white/60">{v.percurso}</span>
+                        <span className="mt-1 block leading-snug text-white/80">{v.percurso}</span>
                       </th>
                       <td className="px-3 py-3.5 text-right tabular-nums text-white/85">{v.km ?? "—"}</td>
                     </tr>
@@ -381,7 +381,7 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
               <TituloPainel id="fontes" icone={<BookOpen />}>
                 {t(textos.fichaFontes)}
               </TituloPainel>
-              <p className="mt-4 max-w-[40ch] text-sm leading-relaxed text-white/65">{tp(textos.fichaFontesNota)}</p>
+              <p className="mt-4 max-w-[40ch] text-sm leading-relaxed text-white/80">{tp(textos.fichaFontesNota)}</p>
               <Link
                 href={`/contacto?assunto=${encodeURIComponent(`Correcção ao ${termo} ${clube.nome}`)}`}
                 className="group mt-5 inline-flex items-center gap-2 text-sm"
@@ -399,12 +399,12 @@ export default async function ClubePagina({ params }: { params: Promise<{ slug: 
                     rel="noopener noreferrer"
                     className="group grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-start gap-3 py-3 text-sm"
                   >
-                    <span className="tabular-nums text-white/40">{i + 1}</span>
+                    <span className="tabular-nums text-white/70">{i + 1}</span>
                     <span className="leading-relaxed text-white/80 transition-colors [overflow-wrap:anywhere] group-hover:text-white">
                       {f.nome}
                       <span className="sr-only"> (abre numa nova janela)</span>
                     </span>
-                    <Seta className="mt-1 size-3 text-white/50" />
+                    <Seta className="mt-1 size-3 text-white/75" />
                   </a>
                 </li>
               ))}

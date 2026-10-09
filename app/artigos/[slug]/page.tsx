@@ -13,6 +13,7 @@ import { CartaoArtigo } from "@/components/painel/cartoes";
 import { NewsletterPainel } from "@/components/painel/Newsletter";
 import { Seta } from "@/components/painel/kit";
 import { Partilhar } from "./Partilhar";
+import { GuardarNaConta } from "./GuardarNaConta";
 import { CorpoArtigo } from "./CorpoArtigo";
 
 // O Next exige um literal aqui, não aceita constante importada.
@@ -83,7 +84,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             <CorpoArtigo corpo={artigo.corpo} />
 
             {artigo.fonte && (
-              <p className="!mt-10 border-l-2 border-mb-red pl-4 !text-sm !text-white/60">
+              <p className="!mt-10 border-l-2 border-mb-red pl-4 !text-sm !text-white/80">
                 {t.artigoFonte}{" "}
                 {artigo.fonteUrl ? (
                   <a href={artigo.fonteUrl} target="_blank" rel="noopener noreferrer" className="sublinhado text-white/80">
@@ -99,7 +100,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
           <aside className="flex flex-col gap-8 lg:sticky lg:top-8 lg:self-start">
             {artigo.tags.length > 0 && (
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white/50">{t.artigoEtiquetas}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-white/75">{t.artigoEtiquetas}</p>
                 <ul className="mt-3 flex flex-wrap gap-1.5">
                   {artigo.tags.map((t) => (
                     <li key={t} className="rounded-[4px] bg-white/7 px-2.5 py-1 text-xs text-white/80">
@@ -110,6 +111,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
               </div>
             )}
             <Partilhar titulo={artigo.titulo} rotulo={t.artigoPartilhar} botao={t.artigoPartilharBotao} copiadoTexto={t.artigoCopiado} />
+            <GuardarNaConta slug={artigo.slug} rotulo={t.artigoGuardar} botao={t.artigoGuardarBotao} guardadoTexto={t.artigoGuardado} />
             <Link href="/artigos" className="group inline-flex items-center gap-2 text-sm">
               <span className="sublinhado">{t.artigoTodos}</span>
               <Seta className="size-3" />

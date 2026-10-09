@@ -134,14 +134,14 @@ function ContasPorConfirmar({ activa }: { activa: boolean }) {
       {contas === null ? <Carregando /> : erro ? (
         <Aviso tom="erro" titulo="Não foi possível ler as contas">{erro}</Aviso>
       ) : contas.length === 0 ? (
-        <p className="py-6 text-center text-sm text-white/55">Não há contas por confirmar.</p>
+        <p className="py-6 text-center text-sm text-white/75">Não há contas por confirmar.</p>
       ) : (
         <ul className="divide-y divide-white/[0.07]">
           {contas.map((c) => (
             <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div className="min-w-0">
-                <p className="truncate text-sm text-white">{c.nome || c.email.split("@")[0]} <span className="text-white/55">· {c.email}</span></p>
-                <p className="text-[13px] text-white/50">Criada a {data(c.criado)} · último email {data(c.enviado)}</p>
+                <p className="truncate text-sm text-white">{c.nome || c.email.split("@")[0]} <span className="text-white/75">· {c.email}</span></p>
+                <p className="text-[13px] text-white/75">Criada a {data(c.criado)} · último email {data(c.enviado)}</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Etiqueta tom="ouro">Por confirmar</Etiqueta>

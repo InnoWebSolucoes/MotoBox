@@ -67,6 +67,9 @@ const ESQUEMA_PAGINA: CampoEsquema[] = [
       { tipo: "texto", chave: "artigoPartilhar", etiqueta: "Título de partilhar", largura: "meia" },
       { tipo: "texto", chave: "artigoPartilharBotao", etiqueta: "Botão de partilhar", largura: "meia" },
       { tipo: "texto", chave: "artigoCopiado", etiqueta: "Aviso de ligação copiada", ajuda: "Aparece no botão quando o telemóvel não tem partilha e a ligação é copiada.", largura: "meia" },
+      { tipo: "texto", chave: "artigoGuardar", etiqueta: "Título de guardar", largura: "meia" },
+      { tipo: "texto", chave: "artigoGuardarBotao", etiqueta: "Botão de guardar", ajuda: "Guarda o artigo em A minha conta → Guardados. Sem sessão, leva a entrar.", largura: "meia" },
+      { tipo: "texto", chave: "artigoGuardado", etiqueta: "Botão depois de guardar", largura: "meia" },
       { tipo: "texto", chave: "artigoFonte", etiqueta: "Antes do nome da fonte", ajuda: "Nos artigos com fonte, ex.: «Fonte: MXGP».", largura: "meia" },
       { tipo: "texto", chave: "artigoTodos", etiqueta: "Ligação para a lista", ajuda: "Leva de volta a todos os artigos.", largura: "meia" },
       { tipo: "texto", chave: "artigoContinuar", etiqueta: "Título dos artigos relacionados", ajuda: "Por cima dos três artigos sugeridos no fim.", largura: "meia" },
@@ -264,11 +267,11 @@ function LinhaArtigo({ artigo: a, aoAbrir }: { artigo: Artigo; aoAbrir: () => vo
         )}
       </span>
       <span className="min-w-0">
-        <span className="block text-[13px] text-white/55">
+        <span className="block text-[13px] text-white/75">
           <span className="text-mb-red-light">{a.categoria}</span> · {dataLonga(a.data)} · {a.leitura} min
         </span>
         <span className="mt-0.5 line-clamp-2 block text-[15px] font-semibold leading-snug text-white">{a.titulo || "Sem título"}</span>
-        <span className="mt-0.5 line-clamp-1 hidden text-[13px] text-white/55 sm:block">{a.resumo}</span>
+        <span className="mt-0.5 line-clamp-1 hidden text-[13px] text-white/75 sm:block">{a.resumo}</span>
         <span className="mt-1.5 flex flex-wrap gap-1.5 sm:hidden">
           <EstadoArtigo artigo={a} />
         </span>
@@ -538,7 +541,7 @@ function PreviaArtigo({ artigo: a }: { artigo: Artigo }) {
   const foto = fotoSrc(fotoDe(a.slug, a.imagem), { w: 1200 });
   return (
     <div className="painel overflow-hidden" aria-label="Pré-visualização do artigo">
-      <p className="flex items-center justify-between gap-2 bg-black/30 px-4 py-2 text-xs text-white/55">
+      <p className="flex items-center justify-between gap-2 bg-black/30 px-4 py-2 text-xs text-white/75">
         <span>Assim fica no site</span>
         <span>/artigos/{a.slug || "…"}</span>
       </p>
@@ -567,13 +570,13 @@ function PreviaArtigo({ artigo: a }: { artigo: Artigo }) {
           <div className="prosa max-w-[68ch]">
             <CorpoArtigo corpo={a.corpo} />
             {a.fonte && (
-              <p className="!mt-10 border-l-2 border-mb-red pl-4 !text-sm !text-white/60">
+              <p className="!mt-10 border-l-2 border-mb-red pl-4 !text-sm !text-white/80">
                 Fonte: <span className={a.fonteUrl ? "sublinhado text-white/80" : ""}>{a.fonte}</span>
               </p>
             )}
           </div>
         ) : (
-          <p className="text-sm text-white/50">O texto aparece aqui à medida que o escreve.</p>
+          <p className="text-sm text-white/75">O texto aparece aqui à medida que o escreve.</p>
         )}
         {a.tags.length > 0 && (
           <ul className="mt-8 flex flex-wrap gap-1.5 border-t border-white/10 pt-5">

@@ -95,13 +95,13 @@ export function Campeonato({
                           <span className="block truncate text-[15px] font-semibold transition-colors group-hover:text-mb-red-light sm:text-base">
                             {p.nome}
                           </span>
-                          <span className="block truncate text-xs text-white/55">
+                          <span className="block truncate text-xs text-white/75">
                             {p.equipa} · {p.categoria}
                           </span>
                         </span>
                         <span className="shrink-0 text-right">
                           <span className="text-xl font-semibold tabular-nums">{p.estatisticas.pontos}</span>
-                          <span className="ml-1 text-xs text-white/50">pts</span>
+                          <span className="ml-1 text-xs text-white/75">pts</span>
                         </span>
                       </Link>
                     </li>
@@ -163,21 +163,21 @@ export function Campeonato({
             {topEquipas.map((e) => (
               <li key={e.slug}>
                 <Link href={`/equipas/${e.slug}`} className="painel painel-escuro group flex h-full items-center gap-4 p-4 pr-5">
-                  <span className="w-5 shrink-0 text-center text-sm font-semibold text-white/50 tabular-nums">{e.posicao}</span>
+                  <span className="w-5 shrink-0 text-center text-sm font-semibold text-white/75 tabular-nums">{e.posicao}</span>
                   <Monograma nome={e.nome} cor={e.cor} className="size-11 text-sm" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[15px] font-semibold transition-colors group-hover:text-mb-red-light">
                       {e.nome}
                     </span>
-                    <span className="block truncate text-xs text-white/55">
+                    <span className="block truncate text-xs text-white/75">
                       {e.base}, {e.provincia}
                     </span>
                   </span>
                   <span className="shrink-0 text-right">
                     <span className="text-lg font-semibold tabular-nums">{e.estatisticas.pontos}</span>
-                    <span className="ml-1 text-xs text-white/50">pts</span>
+                    <span className="ml-1 text-xs text-white/75">pts</span>
                   </span>
-                  <Seta className="size-3 text-white/60" />
+                  <Seta className="size-3 text-white/80" />
                 </Link>
               </li>
             ))}

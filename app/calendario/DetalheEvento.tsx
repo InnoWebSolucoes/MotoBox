@@ -150,7 +150,7 @@ export function DetalheEvento({
                 <div className="mt-6 space-y-8">
                   {dias.map((dia) => (
                     <div key={dia}>
-                      <h3 className="text-sm text-white/60">{dia}</h3>
+                      <h3 className="text-sm text-white/80">{dia}</h3>
                       <ol className="mt-3 grid gap-[var(--intervalo)]">
                         {evento.horarios
                           .filter((h) => h.dia === dia)
@@ -175,7 +175,7 @@ export function DetalheEvento({
             {/* Ficha do circuito, ou do local no caso de um evento da comunidade */}
             <Ficha titulo={comunidade ? t.ficha.tituloEvento : t.ficha.tituloProva} icone={<MapPin />} linhas={ficha}>
               {!comunidade && evento.organizador && (
-                <p className="mt-4 border-t border-white/8 pt-4 text-sm text-white/55">
+                <p className="mt-4 border-t border-white/8 pt-4 text-sm text-white/75">
                   {t.ficha.organizacao} <span className="text-white">{evento.organizador}</span>
                 </p>
               )}
@@ -185,7 +185,7 @@ export function DetalheEvento({
                   <div>
                     <p className="text-sm text-white/70">{t.ficha.recorde}</p>
                     <p className="mt-0.5 text-2xl font-semibold leading-none tabular-nums">{evento.recordeVolta.tempo}</p>
-                    <p className="mt-1.5 text-xs text-white/60">
+                    <p className="mt-1.5 text-xs text-white/80">
                       {evento.recordeVolta.piloto} · {evento.recordeVolta.ano}
                     </p>
                   </div>
@@ -202,7 +202,7 @@ export function DetalheEvento({
                       <span className="min-w-0">
                         <span className="block truncate text-sm">{b.nome}</span>
                         {venda === "a-venda" && (
-                          <span className="block text-xs text-white/50">
+                          <span className="block text-xs text-white/75">
                             {comValores(t.bilhetes.disponiveis, {
                               n: <span className="tabular-nums">{b.disponiveis.toLocaleString("pt-PT")}</span>,
                             })}
@@ -235,7 +235,7 @@ export function DetalheEvento({
                 )}
                 {evento.organizador && (
                   <div className="mt-4 flex justify-between gap-4 border-t border-white/8 pt-3.5">
-                    <span className="text-sm text-white/55">{t.participacao.organizador}</span>
+                    <span className="text-sm text-white/75">{t.participacao.organizador}</span>
                     <span className="text-right text-sm">{evento.organizador}</span>
                   </div>
                 )}

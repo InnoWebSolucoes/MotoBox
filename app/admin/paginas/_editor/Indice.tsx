@@ -102,7 +102,7 @@ export function IndicePaginas() {
         </div>
       )}
 
-      <p className="mb-4 text-sm text-white/60">
+      <p className="mb-4 text-sm text-white/80">
         {docs.length} documentos · {editados === 0 ? "nenhum editado ainda" : `${editados} ${editados === 1 ? "editado" : "editados"}`}
       </p>
 
@@ -138,7 +138,7 @@ export function IndicePaginas() {
                 const corpo = (
                   <>
                     <span className="block text-[15px] font-medium text-white">{g.titulo}</span>
-                    <span className="mt-1 block text-[13px] text-white/55">
+                    <span className="mt-1 block text-[13px] text-white/75">
                       {g.total} {g.total === 1 ? "item" : "itens"} · {g.editados} {g.editados === 1 ? "editado" : "editados"}
                     </span>
                     {d && <span className="mt-3 inline-flex items-center gap-1 text-[13px] text-white/75">Em {d.onde} <ChevronRight className="size-3.5" aria-hidden /></span>}
@@ -176,7 +176,7 @@ function Grupo({ titulo, descricao, icone, docs }: {
             <li key={d.chave} className="flex flex-wrap items-center gap-x-4 gap-y-3 py-3.5 first:pt-0 last:pb-0">
               <div className="min-w-0 flex-1 basis-64">
                 <Link href={destino.href} className="text-[15px] font-medium text-white hover:underline">{d.titulo}</Link>
-                {destino.resumo && <p className="mt-0.5 text-[13px] leading-relaxed text-white/55">{destino.resumo}</p>}
+                {destino.resumo && <p className="mt-0.5 text-[13px] leading-relaxed text-white/75">{destino.resumo}</p>}
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <EtiquetaOrigem origem={d.origem} atualizado={d.atualizado} />
                   {!aqui && <Etiqueta>Edita-se em {destino.onde}</Etiqueta>}

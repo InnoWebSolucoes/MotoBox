@@ -35,6 +35,7 @@ export const SEGURANCA_PADRAO = {
   ACIDENTE: Seguranca.ACIDENTE,
   SEGURO: Seguranca.SEGURO,
   HISTORIAS: Seguranca.HISTORIAS,
+  QUIZ: Seguranca.QUIZ,
   FONTES: Seguranca.FONTES,
 };
 

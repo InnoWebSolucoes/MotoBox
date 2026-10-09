@@ -434,11 +434,501 @@ export function preencherModelo(texto: string, valores: Record<string, string | 
   });
 }
 
+/* ---------------- Área de membro (/conta) ---------------- */
+// Documento "site.conta": os textos fixos da área de membro (resumo,
+// anúncios, guardados, garagem, preferências, notificações e
+// segurança), os níveis e os pontos de cada acção. Edita-se em
+// Definições → Área de membro. As palavras entre chavetas trocam-se
+// pelos valores do momento (ver preencherModelo).
+
+/** Um nível da área de membro: chega-se a ele com `pontos` pontos. */
+export interface NivelMembro {
+  nome: string;
+  pontos: number;
+}
+
+/** O que dá pontos na área de membro. */
+export type AccaoPontos =
+  | "foto" | "provincia" | "telefone" | "clube" | "interesse"
+  | "anuncio" | "resposta" | "topico" | "mota" | "verificado";
+
+export const ACCOES_PONTOS: AccaoPontos[] = [
+  "foto", "provincia", "telefone", "clube", "interesse", "anuncio", "resposta", "topico", "mota", "verificado",
+];
+
+export type AbaConta = "resumo" | "anuncios" | "guardados" | "garagem" | "preferencias" | "notificacoes" | "seguranca";
+
+export interface ConteudoConta {
+  seo: { titulo: string; descricao: string };
+  /** Quem abre /conta sem sessão. */
+  semSessao: {
+    sobretitulo: string;
+    titulo: string;
+    texto: string;
+    entrar: string;
+    criar: string;
+    vantagens: string[];
+  };
+  abas: Record<AbaConta, string>;
+  cabecalho: {
+    bomDia: string;
+    boaTarde: string;
+    boaNoite: string;
+    membroDesde: string;
+    verificado: string;
+    semProvincia: string;
+    alterarFoto: string;
+    nivel: string;
+    pontos: string;
+    proximoNivel: string;
+    nivelMaximo: string;
+    comoGanhar: string;
+    sair: string;
+    aSair: string;
+  };
+  accoes: {
+    publicar: string;
+    topico: string;
+    topicoLigacao: string;
+    eventos: string;
+    eventosLigacao: string;
+    perfil: string;
+  };
+  niveis: NivelMembro[];
+  pontos: {
+    titulo: string;
+    texto: string;
+    valores: Record<AccaoPontos, number>;
+    nomes: Record<AccaoPontos, string>;
+  };
+  numeros: {
+    anuncios: string;
+    anunciosNota: string;
+    anunciosZero: string;
+    guardados: string;
+    guardadosNota: string;
+    guardadosZero: string;
+    forum: string;
+    forumNota: string;
+    forumZero: string;
+    eventos: string;
+    eventosNota: string;
+    eventosHoje: string;
+    eventosAmanha: string;
+    eventosNenhum: string;
+  };
+  perfil: {
+    titulo: string;
+    texto: string;
+    progresso: string;
+    foto: string;
+    provincia: string;
+    telefone: string;
+    clube: string;
+    garagem: string;
+    interesses: string;
+  };
+  paraSi: {
+    titulo: string;
+    proximo: string;
+    dias: string;
+    horas: string;
+    minutos: string;
+    segundos: string;
+    aDecorrer: string;
+    verEvento: string;
+    agenda: string;
+    prova: string;
+    evento: string;
+    semEventos: string;
+    semEventosBotao: string;
+    rota: string;
+    rotaTexto: string;
+    rotaPerto: string;
+    verRota: string;
+    clube: string;
+    verClube: string;
+    mudarClube: string;
+    semClube: string;
+    semClubeTexto: string;
+    escolherClube: string;
+    semClubeOpcao: string;
+    conhecerClubes: string;
+    artigos: string;
+    artigosInteresses: string;
+    artigosRecentes: string;
+    guardarArtigo: string;
+    artigoGuardado: string;
+    verArtigos: string;
+    forum: string;
+    forumResposta: string;
+    forumTopico: string;
+    forumVazio: string;
+    forumBotao: string;
+    bilhetes: string;
+    bilhetesPendente: string;
+    bilhetesPago: string;
+    bilhetesUsado: string;
+    bilhetesCancelado: string;
+  };
+  anuncios: {
+    titulo: string;
+    texto: string;
+    publicar: string;
+    activo: string;
+    oculto: string;
+    ocultoNota: string;
+    visualizacoes: string;
+    publicado: string;
+    editar: string;
+    partilhar: string;
+    terminar: string;
+    verTodos: string;
+    vazioTitulo: string;
+    vazioTexto: string;
+    verificado: string;
+  };
+  guardados: {
+    titulo: string;
+    texto: string;
+    anuncios: string;
+    anunciosVazio: string;
+    anunciosBotao: string;
+    artigos: string;
+    artigosVazio: string;
+    artigosBotao: string;
+    remover: string;
+    verTodos: string;
+  };
+  garagem: {
+    titulo: string;
+    texto: string;
+    juntar: string;
+    vazioTitulo: string;
+    vazioTexto: string;
+    editar: string;
+    remover: string;
+    formNova: string;
+    formEditar: string;
+    marca: string;
+    modelo: string;
+    ano: string;
+    apelido: string;
+    apelidoAjuda: string;
+    foto: string;
+    fotoAjuda: string;
+    maximo: string;
+    confirmarRemover: string;
+  };
+  preferencias: {
+    texto: string;
+    meuClube: string;
+    meuClubeTexto: string;
+    clubes: string;
+    clubesTexto: string;
+    marcas: string;
+    marcasTexto: string;
+  };
+  notificacoes: {
+    titulo: string;
+    texto: string;
+    calendario: string;
+    calendarioTexto: string;
+    bilhetes: string;
+    bilhetesTexto: string;
+    marketplace: string;
+    marketplaceTexto: string;
+    forum: string;
+    forumTexto: string;
+    newsletter: string;
+    newsletterTexto: string;
+    canais: string;
+    email: string;
+    push: string;
+    whatsapp: string;
+    brevemente: string;
+    enviadasPara: string;
+    automatico: string;
+  };
+  seguranca: {
+    palavraTitulo: string;
+    palavraTexto: string;
+    actual: string;
+    nova: string;
+    confirmar: string;
+    guardar: string;
+    sucesso: string;
+    naoCoincide: string;
+    curta: string;
+    actualErrada: string;
+    google: string;
+    sessoesTitulo: string;
+    sessoesTexto: string;
+    ultimaEntrada: string;
+    outras: string;
+    outrasFeito: string;
+    todas: string;
+    emailTitulo: string;
+    emailTexto: string;
+  };
+}
+
+export const CONTA_PADRAO: ConteudoConta = {
+  seo: {
+    titulo: "A minha conta",
+    descricao: "A sua área de membro MotoBox: o próximo evento, a rota da semana, os seus anúncios, a sua garagem e as suas preferências.",
+  },
+  semSessao: {
+    sobretitulo: "Área de membro",
+    titulo: "A sua garagem, os seus eventos, a sua comunidade",
+    texto: "Entre na sua conta para ver o próximo evento, a rota da semana, os anúncios que publicou e o que guardou.",
+    entrar: "Entrar",
+    criar: "Criar conta grátis",
+    vantagens: [
+      "Contagem decrescente para o próximo passeio ou prova",
+      "Publicar e gerir anúncios no marketplace",
+      "Guardar anúncios e artigos para mais tarde",
+      "Mostrar as suas motas na garagem",
+    ],
+  },
+  abas: {
+    resumo: "Resumo",
+    anuncios: "Anúncios",
+    guardados: "Guardados",
+    garagem: "Garagem",
+    preferencias: "Clubes e marcas",
+    notificacoes: "Notificações",
+    seguranca: "Segurança",
+  },
+  cabecalho: {
+    bomDia: "Bom dia",
+    boaTarde: "Boa tarde",
+    boaNoite: "Boa noite",
+    membroDesde: "Membro desde {data}",
+    verificado: "Conta verificada",
+    semProvincia: "Província por indicar",
+    alterarFoto: "Alterar fotografia e cor",
+    nivel: "Nível",
+    pontos: "{pontos} pontos",
+    proximoNivel: "Faltam {faltam} pontos para {nivel}",
+    nivelMaximo: "Chegou ao nível mais alto. Respeito.",
+    comoGanhar: "Como ganhar pontos",
+    sair: "Sair",
+    aSair: "A sair…",
+  },
+  accoes: {
+    publicar: "Publicar anúncio",
+    topico: "Criar tópico no fórum",
+    topicoLigacao: "/forum/novo",
+    eventos: "Ver eventos",
+    eventosLigacao: "/eventos",
+    perfil: "Editar perfil",
+  },
+  niveis: [
+    { nome: "Recruta", pontos: 0 },
+    { nome: "Motard", pontos: 15 },
+    { nome: "Estradeiro", pontos: 40 },
+    { nome: "Veterano", pontos: 80 },
+    { nome: "Lenda da estrada", pontos: 150 },
+  ],
+  pontos: {
+    titulo: "Como ganhar pontos",
+    texto: "Os pontos sobem consigo à medida que participa na comunidade. Não se trocam por nada: são só o seu quilómetro na MotoBox.",
+    valores: {
+      foto: 5, provincia: 3, telefone: 2, clube: 5, interesse: 1,
+      anuncio: 5, resposta: 3, topico: 5, mota: 4, verificado: 10,
+    },
+    nomes: {
+      foto: "Fotografia ou logótipo no perfil",
+      provincia: "Província indicada",
+      telefone: "Telefone indicado",
+      clube: "Dizer de que clube é",
+      interesse: "Cada clube ou marca que segue (até 10)",
+      anuncio: "Cada anúncio publicado",
+      resposta: "Cada resposta no fórum",
+      topico: "Cada tópico no fórum",
+      mota: "Cada mota na garagem",
+      verificado: "Conta verificada pela equipa",
+    },
+  },
+  numeros: {
+    anuncios: "Anúncios",
+    anunciosNota: "{n} visualizações",
+    anunciosZero: "Publique o primeiro",
+    guardados: "Guardados",
+    guardadosNota: "{anuncios} anúncios · {artigos} artigos",
+    guardadosZero: "Guarde o que lhe interessa",
+    forum: "No fórum",
+    forumNota: "{respostas} respostas · {topicos} tópicos",
+    forumZero: "Faça a primeira pergunta",
+    eventos: "Eventos a chegar",
+    eventosNota: "O próximo é daqui a {dias} dias",
+    eventosHoje: "O próximo é hoje",
+    eventosAmanha: "O próximo é amanhã",
+    eventosNenhum: "Sem datas marcadas",
+  },
+  perfil: {
+    titulo: "Complete o seu perfil",
+    texto: "Um perfil completo dá confiança a quem compra e vende consigo, e ajuda-nos a mostrar-lhe o que interessa.",
+    progresso: "{feitos} de {total}",
+    foto: "Pôr uma fotografia ou logótipo",
+    provincia: "Indicar a sua província",
+    telefone: "Juntar um telefone",
+    clube: "Dizer de que clube é",
+    garagem: "Mostrar a sua mota na garagem",
+    interesses: "Seguir clubes ou marcas",
+  },
+  paraSi: {
+    titulo: "Para si",
+    proximo: "Próximo na estrada",
+    dias: "dias",
+    horas: "horas",
+    minutos: "min",
+    segundos: "seg",
+    aDecorrer: "A decorrer agora",
+    verEvento: "Ver evento",
+    agenda: "Também a chegar",
+    prova: "Prova",
+    evento: "Evento",
+    semEventos: "Ainda não há datas marcadas. Veja o que já aconteceu ou proponha um passeio à equipa.",
+    semEventosBotao: "Ver eventos",
+    rota: "Rota da semana",
+    rotaTexto: "Uma sugestão nova todas as semanas, para o próximo fim-de-semana.",
+    rotaPerto: "Perto de si, em {provincia}.",
+    verRota: "Ver a rota",
+    clube: "O seu clube",
+    verClube: "Ver o clube",
+    mudarClube: "Mudar",
+    semClube: "Pertence a um clube?",
+    semClubeTexto: "Escolha-o e acompanhe daqui os passeios e os encontros do seu clube.",
+    escolherClube: "Escolha o seu clube",
+    semClubeOpcao: "Ainda não tenho clube",
+    conhecerClubes: "Conhecer os clubes",
+    artigos: "Artigos para si",
+    artigosInteresses: "Com base nos clubes, nas marcas e nas motas que segue.",
+    artigosRecentes: "Os mais recentes. Siga clubes e marcas para personalizar.",
+    guardarArtigo: "Guardar para ler mais tarde",
+    artigoGuardado: "Guardado",
+    verArtigos: "Ver todos os artigos",
+    forum: "No fórum",
+    forumResposta: "Respondeu em",
+    forumTopico: "Abriu o tópico",
+    forumVazio: "Ainda não participou no fórum. Há sempre alguém com uma dúvida que sabe responder.",
+    forumBotao: "Ir para o fórum",
+    bilhetes: "Os meus bilhetes",
+    bilhetesPendente: "A aguardar pagamento",
+    bilhetesPago: "Pago",
+    bilhetesUsado: "Usado",
+    bilhetesCancelado: "Cancelado",
+  },
+  anuncios: {
+    titulo: "Os meus anúncios",
+    texto: "Gira o que tem à venda no marketplace: edite, partilhe ou termine cada anúncio.",
+    publicar: "Publicar anúncio",
+    activo: "Activo",
+    oculto: "Em revisão",
+    ocultoNota: "A equipa tirou este anúncio do marketplace. Escreva-nos pela página Contacto se tiver dúvidas.",
+    visualizacoes: "{n} visualizações",
+    publicado: "Publicado a {data}",
+    editar: "Editar",
+    partilhar: "Partilhar",
+    terminar: "Terminar",
+    verTodos: "Ver todos ({n})",
+    vazioTitulo: "Tem alguma coisa para vender?",
+    vazioTexto: "Uma mota, um capacete, peças paradas na garagem: publique em dois minutos e chegue a motards de todo o país.",
+    verificado: "Conta verificada. Os seus anúncios aparecem com o selo de vendedor verificado.",
+  },
+  guardados: {
+    titulo: "Guardados",
+    texto: "Os anúncios e os artigos que guardou para ver mais tarde.",
+    anuncios: "Anúncios guardados",
+    anunciosVazio: "Carregue em Guardar num anúncio do marketplace para o encontrar aqui.",
+    anunciosBotao: "Ver o marketplace",
+    artigos: "Artigos guardados",
+    artigosVazio: "Guarde artigos em «Para si», no Resumo, para os ler com calma.",
+    artigosBotao: "Ver artigos",
+    remover: "Remover",
+    verTodos: "Ver tudo",
+  },
+  garagem: {
+    titulo: "A minha garagem",
+    texto: "As motas que tem. Usamos as marcas para lhe mostrar artigos e anúncios que interessam.",
+    juntar: "Juntar mota",
+    vazioTitulo: "A garagem está vazia",
+    vazioTexto: "Mostre a sua mota à comunidade: marca, modelo, ano e uma fotografia.",
+    editar: "Editar",
+    remover: "Remover",
+    formNova: "Juntar mota à garagem",
+    formEditar: "Editar mota",
+    marca: "Marca",
+    modelo: "Modelo",
+    ano: "Ano",
+    apelido: "Nome da mota (opcional)",
+    apelidoAjuda: "Ex.: «A Branquinha»",
+    foto: "Fotografia",
+    fotoAjuda: "JPG, PNG ou WebP. Fica reduzida para carregar depressa.",
+    maximo: "Pode ter até {n} motas na garagem.",
+    confirmarRemover: "Tirar {mota} da garagem? A fotografia também é apagada.",
+  },
+  preferencias: {
+    texto: "Escolha o que quer seguir. Usamos estas preferências para personalizar o resumo, a newsletter e as notificações que recebe.",
+    meuClube: "O meu clube",
+    meuClubeTexto: "O clube a que pertence. Aparece no seu resumo, com os encontros do clube.",
+    clubes: "Clubes que segue",
+    clubesTexto: "Artigos, passeios e encontros dos clubes que segue, primeiro.",
+    marcas: "Marcas de interesse",
+    marcasTexto: "Avisamos quando surgirem anúncios ou artigos destas marcas.",
+  },
+  notificacoes: {
+    titulo: "O que quer receber",
+    texto: "Notificações personalizadas com base nas suas preferências.",
+    calendario: "Eventos",
+    calendarioTexto: "Novos passeios, encontros e raides no calendário.",
+    bilhetes: "Bilhetes",
+    bilhetesTexto: "Quando abrem os bilhetes de um evento.",
+    marketplace: "Marketplace",
+    marketplaceTexto: "Novos anúncios das marcas que segue.",
+    forum: "Fórum",
+    forumTexto: "Respostas novas nos tópicos em que participou.",
+    newsletter: "Newsletter semanal",
+    newsletterTexto: "Os artigos da semana, às segundas-feiras.",
+    canais: "Como quer receber",
+    email: "Email",
+    push: "Notificação no telemóvel",
+    whatsapp: "WhatsApp",
+    brevemente: "Brevemente",
+    enviadasPara: "As notificações por email são enviadas para {email}.",
+    automatico: "As alterações guardam-se automaticamente.",
+  },
+  seguranca: {
+    palavraTitulo: "Palavra-passe",
+    palavraTexto: "Use pelo menos 8 caracteres. Uma frase curta é mais fácil de lembrar e mais difícil de adivinhar.",
+    actual: "Palavra-passe actual",
+    nova: "Nova palavra-passe",
+    confirmar: "Repita a nova palavra-passe",
+    guardar: "Mudar a palavra-passe",
+    sucesso: "Palavra-passe alterada.",
+    naoCoincide: "As duas palavras-passe novas não são iguais.",
+    curta: "A nova palavra-passe tem de ter pelo menos 8 caracteres.",
+    actualErrada: "A palavra-passe actual não está certa.",
+    google: "Entrou com o Google. Pode definir uma palavra-passe para entrar também com o email.",
+    sessoesTitulo: "Sessões",
+    sessoesTexto: "Perdeu o telemóvel ou entrou num computador que não é seu? Termine as sessões abertas noutros sítios.",
+    ultimaEntrada: "Última entrada: {data}",
+    outras: "Terminar as outras sessões",
+    outrasFeito: "As outras sessões foram terminadas. Esta continua aberta.",
+    todas: "Sair em todos os dispositivos",
+    emailTitulo: "Email da conta",
+    emailTexto: "Para mudar o email da conta, escreva-nos pela página Contacto.",
+  },
+};
+
 /* ---------------- Registo ---------------- */
 
 export const DOCS: DefDoc[] = [
   { chave: "site.emails", titulo: "Emails do site", padrao: () => EMAILS_PADRAO },
   { chave: "site.contas", titulo: "Contas (entrar e registar)", pagina: "/entrar", padrao: () => CONTAS_PADRAO },
+  { chave: "site.conta", titulo: "Área de membro (a minha conta)", pagina: "/conta", padrao: () => CONTA_PADRAO },
 ];
 
 export const GRUPOS: DefGrupo[] = [];

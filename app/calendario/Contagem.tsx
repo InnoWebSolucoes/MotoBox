@@ -56,7 +56,7 @@ export function Contagem({
           <span className="block text-3xl font-semibold leading-none tabular-nums lg:text-[2.5rem]">
             {noNavegador ? String(u.v).padStart(2, "0") : "--"}
           </span>
-          <span className="mt-1.5 block text-xs text-white/60">{u.l}</span>
+          <span className="mt-1.5 block text-xs text-white/80">{u.l}</span>
         </div>
       ))}
     </div>

@@ -113,7 +113,7 @@ export default async function Clubes({
       <Seccao id="lista" className="!pt-4">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <h2 className="titulo-2">{t.listaTitulo}</h2>
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-white/80">
             {lista.length} {lista.length === 1 ? "clube" : "clubes"}
             {tipoActivo ? ` · ${tipoActivo.nome}` : ""}
             {provinciaActiva ? ` · ${provinciaActiva}` : ""}
@@ -155,7 +155,7 @@ export default async function Clubes({
             </Link>
           </div>
         )}
-        {t.listaNota && <p className="mt-4 text-xs text-white/45">{t.listaNota}</p>}
+        {t.listaNota && <p className="mt-4 text-xs text-white/70">{t.listaNota}</p>}
       </Seccao>
 
       {/* ---------- Movimentos ---------- */}
@@ -163,7 +163,7 @@ export default async function Clubes({
         <Seccao id="movimentos" className="!pt-4">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <h2 className="titulo-2">{t.movimentosTitulo}</h2>
-            <p className="max-w-[52ch] text-sm text-white/60">{t.movimentosTexto}</p>
+            <p className="max-w-[52ch] text-sm text-white/80">{t.movimentosTexto}</p>
           </div>
           {/* O movimento em destaque tem o cartão grande; os outros, em cartões. */}
           {movimentos.some((c) => c.slug === destaque) && (
@@ -225,9 +225,9 @@ export default async function Clubes({
                 <Foto nome={fotoDe(r.slug, r.imagem)} className="aspect-[4/3]" largura={700} tamanhos="(max-width: 768px) 100vw, 33vw" />
                 <div className="flex items-end justify-between gap-4 p-4 md:p-5">
                   <div>
-                    <p className="text-[0.8125rem] text-white/60">{r.regiao}</p>
+                    <p className="text-[0.8125rem] text-white/80">{r.regiao}</p>
                     <h3 className="mt-1 text-lg font-semibold leading-snug">{r.nome}</h3>
-                    <p className="mt-1 text-[0.8125rem] text-white/60">{r.piso} · {r.exigencia}</p>
+                    <p className="mt-1 text-[0.8125rem] text-white/80">{r.piso} · {r.exigencia}</p>
                   </div>
                   <Seta className="mb-1 size-3.5" />
                 </div>

@@ -1,7 +1,8 @@
 /* ============================================================
-   Conteúdo editável — Site: a entrada, o painel Explorar e a
-   contagem decrescente. O texto de partida é o que o site
-   mostrava antes de passar a ser editável no painel de gestão.
+   Conteúdo editável — Site: a entrada (com o vídeo de fundo),
+   a abertura com as luzes de partida, o painel Explorar e o
+   mosaico "Em foco". O texto de partida é o que o site mostrava
+   antes de passar a ser editável no painel de gestão.
    ============================================================ */
 
 import { UBUNTU } from "@/lib/ubuntu";
@@ -34,6 +35,12 @@ export function preencher(texto: string, valores: Record<string, string | number
   return texto.replace(/\{(\w+)\}/g, (todo, k: string) => (k in valores ? String(valores[k]) : todo));
 }
 
+/** Um número gravado (ou escrito como texto) dentro de limites; senão, o de partida. */
+export function numeroEntre(v: unknown, min: number, max: number, padrao: number): number {
+  const n = typeof v === "number" ? v : typeof v === "string" && v.trim() ? Number(v.replace(",", ".")) : NaN;
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : padrao;
+}
+
 /* ---------------- Entrada ---------------- */
 
 /** Entrada do site (/): a frase da casa por cima do vídeo. */
@@ -45,6 +52,10 @@ export interface ConteudoEntrada {
   video: string;
   /** Imagem mostrada enquanto o vídeo carrega (e com movimento reduzido). */
   poster: string;
+  /** Velocidade do vídeo de fundo: 1 = a do ficheiro; 0,5 = a metade (mais calmo). */
+  velocidade: number;
+  /** Quanto se escurece o vídeo na página de entrada, em % (0 a 80), para o texto branco se ler. */
+  escurecer: number;
   /** Mostra a ligação para o artigo mais recente por baixo do texto. */
   mostrarArtigo: boolean;
   /** Etiqueta vermelha dessa ligação. */
@@ -56,43 +67,142 @@ export const ENTRADA_PADRAO: ConteudoEntrada = {
   titulo: "A paixão anda sobre duas rodas",
   texto:
     "Histórias, clubes, passeios e segurança para quem anda de mota em Angola. Da scooter de todos os dias à moto de viagem, a comunidade motard num só lugar.",
-  // Vídeo da MotoBox no Instagram (8.ª prova do Campeonato de Motocross,
-  // instagram.com/p/DeOelO6uUlE), cortado a 21 s: sem som, caras, títulos
-  // nem clarões, e escurecido para o texto da entrada se ler por cima (ver
-  // lib/imagens-instagram.ts). O de demonstração continua em /videos/fundo.mp4.
-  video: "https://sluahnkxfnibximsqcht.supabase.co/storage/v1/object/public/media/videos/instagram-DeOelO6uUlE-fundo.mp4",
-  poster: "https://sluahnkxfnibximsqcht.supabase.co/storage/v1/object/public/media/videos/instagram-DeOelO6uUlE-fundo.jpg",
+  // Vídeo da MotoBox no Instagram (prova de motocross nas dunas,
+  // instagram.com/p/DdwTCnFOtxr): quatro planos largos e longos, a metade da
+  // velocidade, esbatidos uns nos outros e em ciclo, sem cortes rápidos nem
+  // clarões, sem som, sem caras de perto e sem a marca do fotógrafo; um pouco
+  // escurecido. O anterior (cortes rápidos) está em
+  // media/videos/instagram-DeOelO6uUlE-fundo.mp4 e o de demonstração em /videos/fundo.mp4.
+  video: "https://sluahnkxfnibximsqcht.supabase.co/storage/v1/object/public/media/videos/instagram-DdwTCnFOtxr-fundo-calmo.mp4",
+  poster: "https://sluahnkxfnibximsqcht.supabase.co/storage/v1/object/public/media/videos/instagram-DdwTCnFOtxr-fundo-calmo.jpg",
+  velocidade: 1,
+  escurecer: 45,
   mostrarArtigo: true,
   rotuloArtigo: "Novo artigo",
 };
 
-/* ---------------- Contagem decrescente ---------------- */
+/* ---------------- Abertura (luzes de partida) ---------------- */
 
-/** Contagem decrescente no painel Explorar (hoje: Ubuntu 2027). */
-export interface ConteudoContagem {
-  /** Desligada, o painel fica com o evento mas sem os números a contar. */
+/**
+ * Abertura do site: uma vez por sessão do navegador, cinco pares de luzes
+ * vermelhas acendem-se uma a uma, como na partida de uma corrida, e apagam-se
+ * todas de uma vez; depois a cortina sobe e aparece o site.
+ */
+export interface ConteudoAbertura {
+  /** Desligada, o site abre directamente. */
   activa: boolean;
+  /** "todas": na primeira página que a pessoa abre na visita; "entrada": só quando entra pela página inicial. */
+  onde: "todas" | "entrada";
+  /** Linha pequena por cima da pergunta. */
   sobretitulo: string;
+  /** A pergunta grande. */
   titulo: string;
-  subtitulo: string;
-  /** Data e hora do arranque, ISO com fuso (ex.: 2027-01-31T08:00:00+01:00). */
-  data: string;
-  /** Para onde leva o painel (ex.: /eventos/ubuntu-2027). */
-  ligacao: string;
-  /** Texto da ligação, em baixo. */
-  textoLigacao: string;
-  foto: string;
+  texto: string;
+  /** Botão vermelho: apaga as luzes e arranca já. */
+  botao: string;
+  /** Botão discreto para saltar a abertura. */
+  saltar: string;
+  /** O que se lê quando as luzes se apagam. */
+  partida: string;
+  /** Dica no computador, por baixo dos botões. */
+  dica: string;
 }
 
-export const CONTAGEM_PADRAO: ConteudoContagem = {
+export const ABERTURA_PADRAO: ConteudoAbertura = {
+  activa: true,
+  onde: "todas",
+  sobretitulo: "Grelha de partida",
+  titulo: "Pronto?",
+  texto: "Cinco luzes vermelhas. Quando se apagarem todas, arrancamos.",
+  botao: "Arrancar",
+  saltar: "Saltar",
+  partida: "Luzes apagadas. Bora!",
+  dica: "A tecla Esc também salta a abertura.",
+};
+
+/* ---------------- Em foco (painel Explorar) ---------------- */
+
+/** O que pode estar em foco no mosaico do painel Explorar. */
+export const TIPOS_FOCO = [
+  "evento", "prova", "artigo", "rota", "anuncio", "clube", "modalidade", "seguranca", "personalizado",
+] as const;
+
+export type TipoFoco = (typeof TIPOS_FOCO)[number];
+
+export const NOMES_FOCO: Record<TipoFoco, string> = {
+  evento: "Evento",
+  prova: "Prova",
+  artigo: "Artigo",
+  rota: "Rota",
+  anuncio: "Anúncio do marketplace",
+  clube: "Clube",
+  modalidade: "Modalidade",
+  seguranca: "Secção de segurança",
+  personalizado: "Personalizado",
+};
+
+/** Tipos com data, onde a contagem decrescente faz sentido. */
+export const FOCO_COM_DATA: readonly TipoFoco[] = ["evento", "prova", "personalizado"];
+
+/**
+ * Mosaico "Em foco" do painel Explorar. O documento continua a chamar-se
+ * "site.contagem" porque nasceu como a contagem decrescente do Ubuntu 2027
+ * (assim, o que já estava gravado continua a valer).
+ *
+ * Escolhe-se um tipo e um item; o mosaico vai buscar a fotografia, o título,
+ * uma linha e a ligação ao próprio item. Os textos e a fotografia aqui
+ * escritos, quando preenchidos, mandam sobre os do item.
+ */
+export interface ConteudoEmFoco {
+  tipo: TipoFoco;
+  /** Slug do evento, da prova, do artigo, da rota, do clube ou da modalidade; id do anúncio; id da secção de segurança. */
+  item: string;
+  /** Mostra a contagem decrescente até à data (eventos, provas e personalizado com data). */
+  activa: boolean;
+  /** Linha de cima (em branco: a do tipo, em `automaticos`). */
+  sobretitulo: string;
+  /** Em branco: o título do item. */
+  titulo: string;
+  /** A linha por baixo do título (em branco: a do item). */
+  subtitulo: string;
+  /** Em branco: a fotografia do item. */
+  foto: string;
+  /** Texto da ligação, em baixo (em branco: o do tipo). */
+  textoLigacao: string;
+  /** Para onde leva o mosaico (em branco: a página do item). */
+  ligacao: string;
+  /** Data e hora da contagem, ISO com fuso (em branco: o início do evento). */
+  data: string;
+  /** Linha de cima e texto da ligação de cada tipo, quando não se escreve outro. */
+  automaticos: Record<TipoFoco, { sobretitulo: string; ligacao: string }>;
+  /** Nomes das unidades da contagem. */
+  unidades: { dias: string; horas: string; minutos: string; segundos: string };
+}
+
+export const EM_FOCO_PADRAO: ConteudoEmFoco = {
+  // O Ubuntu 2027, tal como o painel o mostrava antes de se poder escolher.
+  tipo: "evento",
+  item: UBUNTU.slug,
   activa: true,
   sobretitulo: UBUNTU.nome,
   titulo: "Africa Ubuntu Breakfast Run",
   subtitulo: `31 de Janeiro · ${UBUNTU.percurso}`,
-  data: UBUNTU.partida,
-  ligacao: `/eventos/${UBUNTU.slug}`,
-  textoLigacao: "Ver o evento",
   foto: "passeios",
+  textoLigacao: "Ver o evento",
+  ligacao: "",
+  data: UBUNTU.partida,
+  automaticos: {
+    evento: { sobretitulo: "Evento em foco", ligacao: "Ver o evento" },
+    prova: { sobretitulo: "Prova em foco", ligacao: "Ver a prova" },
+    artigo: { sobretitulo: "Para ler", ligacao: "Ler o artigo" },
+    rota: { sobretitulo: "Rota em foco", ligacao: "Ver a rota" },
+    anuncio: { sobretitulo: "No marketplace", ligacao: "Ver o anúncio" },
+    clube: { sobretitulo: "Clube em foco", ligacao: "Ver o clube" },
+    modalidade: { sobretitulo: "Desporto", ligacao: "Ver a modalidade" },
+    seguranca: { sobretitulo: "Segurança", ligacao: "Ler o guia" },
+    personalizado: { sobretitulo: "Em foco", ligacao: "Saber mais" },
+  },
+  unidades: { dias: "dias", horas: "horas", minutos: "min", segundos: "seg" },
 };
 
 /* ---------------- Painel Explorar ---------------- */
@@ -112,6 +222,11 @@ export interface ConteudoPainel {
     todosArtigos: string;
     /** Título do painel grande quando ainda não há artigos. */
     semArtigos: string;
+    /**
+     * Com vários artigos marcados como destaque, o painel grande passa de um
+     * para o outro a cada tantos segundos (0: só muda quando se escolhe).
+     */
+    intervalo: number;
   };
   clubes: { titulo: string; foto: string; texto: string; textoSemProvincias: string };
   desporto: { titulo: string; foto: string; textoLider: string; textoProva: string; textoVazio: string };
@@ -130,6 +245,7 @@ export const PAINEL_PADRAO: ConteudoPainel = {
     maisArtigos: "Mais artigos",
     todosArtigos: "Todos os artigos",
     semArtigos: "Artigos",
+    intervalo: 7,
   },
   clubes: {
     titulo: "Clubes",
@@ -162,7 +278,8 @@ export const PAINEL_PADRAO: ConteudoPainel = {
 
 export const DOCS: DefDoc[] = [
   { chave: "site.entrada", titulo: "Entrada", pagina: "/", padrao: () => ENTRADA_PADRAO },
-  { chave: "site.contagem", titulo: "Contagem decrescente", pagina: "/explorar", padrao: () => CONTAGEM_PADRAO },
+  { chave: "site.abertura", titulo: "Abertura (luzes de partida)", pagina: "/", padrao: () => ABERTURA_PADRAO },
+  { chave: "site.contagem", titulo: "Em foco (painel Explorar)", pagina: "/explorar", padrao: () => EM_FOCO_PADRAO },
   { chave: "site.painel", titulo: "Painel Explorar", pagina: "/explorar", padrao: () => PAINEL_PADRAO },
 ];
 

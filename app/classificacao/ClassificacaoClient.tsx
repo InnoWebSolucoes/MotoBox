@@ -169,7 +169,7 @@ export function ClassificacaoClient({
               </Aviso>
             ) : (
               <div className="mt-10">
-                <div aria-hidden className={`hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/50 md:grid ${COL_PILOTOS}`}>
+                <div aria-hidden className={`hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/75 md:grid ${COL_PILOTOS}`}>
                   <span>{tx.colunas.pos}</span>
                   <span>{tx.colunas.piloto}</span>
                   <span>{tx.colunas.equipa}</span>
@@ -199,14 +199,14 @@ export function ClassificacaoClient({
                           {/* Ocupa a coluna toda: a pista da barra tem o mesmo comprimento em todas as linhas. */}
                           <span className="min-w-0 flex-1">
                             <span className="flex items-baseline gap-2">
-                              <span className="text-sm tabular-nums text-white/45">{p.numero}</span>
+                              <span className="text-sm tabular-nums text-white/70">{p.numero}</span>
                               <span className="truncate font-medium transition-colors group-hover:text-mb-red-light">{p.nome}</span>
                             </span>
-                            <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-white/55 md:hidden">
+                            <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-white/75 md:hidden">
                               <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: corEquipa.get(p.equipaSlug) ?? "#3d3d47" }} />
                               <span className="truncate">{p.equipa}</span>
                             </span>
-                            <span className="mt-0.5 block text-xs tabular-nums text-white/45 md:hidden">
+                            <span className="mt-0.5 block text-xs tabular-nums text-white/70 md:hidden">
                               {preencher(tx.linhaPiloto, { vitorias: p.estatisticas.vitorias, podios: p.estatisticas.podios, poles: p.estatisticas.poles })}
                             </span>
                             {/* Barra de pontos relativa ao líder */}
@@ -242,7 +242,7 @@ export function ClassificacaoClient({
                             <span className="sr-only"> pontos</span>
                           </span>
                           {lider && p.posicao > 1 && (
-                            <span className="block text-[11px] tabular-nums text-white/50">
+                            <span className="block text-[11px] tabular-nums text-white/75">
                               −{lider.estatisticas.pontos - p.estatisticas.pontos}
                               <span className="sr-only"> do líder</span>
                             </span>
@@ -262,7 +262,7 @@ export function ClassificacaoClient({
         ) : (
           /* ---- Equipas ---- */
           <div className="mt-10">
-            <div aria-hidden className={`hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/50 md:grid ${COL_EQUIPAS}`}>
+            <div aria-hidden className={`hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/75 md:grid ${COL_EQUIPAS}`}>
               <span>{tx.colunas.pos}</span>
               <span>{tx.colunas.equipa}</span>
               <span>{tx.colunas.base}</span>
@@ -283,11 +283,11 @@ export function ClassificacaoClient({
                       <EmblemaEquipa logo={e.logo} cor={e.cor} />
                       <span className="min-w-0">
                         <span className="block truncate font-medium transition-colors group-hover:text-mb-red-light">{e.nome}</span>
-                        <span className="block truncate text-xs text-white/55">
+                        <span className="block truncate text-xs text-white/75">
                           <span className="md:hidden">{e.base} · </span>
                           {contar(e.pilotos.length, tx.pilotoUm, tx.pilotoVarios)}
                         </span>
-                        <span className="mt-0.5 block text-xs tabular-nums text-white/45 md:hidden">
+                        <span className="mt-0.5 block text-xs tabular-nums text-white/70 md:hidden">
                           {preencher(tx.linhaEquipa, { vitorias: e.estatisticas.vitorias, podios: e.estatisticas.podios, titulos: e.estatisticas.titulos })}
                         </span>
                       </span>
@@ -317,7 +317,7 @@ export function ClassificacaoClient({
         )}
 
         {/* Legenda */}
-        <p className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-white/50">
+        <p className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-white/75">
           {tx.legenda.vit && <span>{tx.legenda.vit}</span>}
           {tx.legenda.pod && <span>{tx.legenda.pod}</span>}
           {aba === "pilotos" ? tx.legenda.pole && <span>{tx.legenda.pole}</span> : tx.legenda.tit && <span>{tx.legenda.tit}</span>}

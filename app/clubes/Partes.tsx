@@ -23,7 +23,7 @@ export function CartaoClube({ clube }: { clube: Clube }) {
         <Monograma nome={clube.nome} cor={clube.cor} className="absolute bottom-3 left-3 size-12 text-sm shadow-lg" />
       </div>
       <div className="flex flex-1 flex-col p-4 pt-5 md:p-5">
-        <p className="text-[0.8125rem] text-white/60">
+        <p className="text-[0.8125rem] text-white/80">
           <span className="text-mb-red-light">{nomeTipo(clube.tipo)}</span> · {localClube(clube)}
           {clube.fundacao ? ` · desde ${clube.fundacao}` : ""}
         </p>

@@ -134,7 +134,7 @@ export default function AdminBilheteira() {
                         sel ? "bg-mb-red text-white" : "text-white/75 hover:bg-white/[0.08] hover:text-white"
                       }`}>
                       <span className="block max-w-56 truncate">{e.titulo}</span>
-                      <span className={`block text-xs ${sel ? "text-white/80" : "text-white/45"}`}>
+                      <span className={`block text-xs ${sel ? "text-white/80" : "text-white/70"}`}>
                         {dataCurta(e.dataInicio, true)}{rascunhos[e.slug] ? " · por guardar" : ""}
                       </span>
                     </button>
@@ -168,14 +168,14 @@ export default function AdminBilheteira() {
                             {b.nome}
                             {b.destaque && <Etiqueta tom="vermelho"><Star className="size-3" aria-hidden />Em destaque</Etiqueta>}
                           </p>
-                          {b.descricao && <p className="mt-0.5 text-[13px] text-white/55">{b.descricao}</p>}
+                          {b.descricao && <p className="mt-0.5 text-[13px] text-white/75">{b.descricao}</p>}
                         </div>
                         <p className="text-xl font-semibold tabular-nums">{formatKz(b.preco)}</p>
                       </div>
 
                       <div className="mb-4">
                         <div className="mb-1.5 flex justify-between gap-3 text-xs">
-                          <span className="text-white/60">{v.qtd} de {b.disponiveis} vendidos</span>
+                          <span className="text-white/80">{v.qtd} de {b.disponiveis} vendidos</span>
                           <span className="text-[#4ade80]">{formatKz(v.receita)}</span>
                         </div>
                         <div className="h-1.5 overflow-hidden rounded-full bg-white/10">

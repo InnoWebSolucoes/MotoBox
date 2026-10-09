@@ -11,6 +11,15 @@ export type Bi = { pt: string; en: string };
 
 const b = (pt: string, en: string): Bi => ({ pt, en });
 
+/** Números das fontes citadas (1 = a primeira da lista FONTES, no fim). */
+export type Fontes = number[];
+
+/** Partes do desenho do capacete (cada uma tem o seu ponto no desenho). */
+export type ParteCapacete = "calota" | "espuma" | "forro" | "viseira" | "correia" | "etiqueta";
+
+/** Zonas do desenho do motard (secção Equipamento). */
+export type ZonaCorpo = "casaco" | "luvas" | "calcas" | "botas";
+
 /* ---------------- Fotografias da página ---------------- */
 
 /** Chave de fotografia do site (lib/imagens.ts) ou endereço de uma imagem carregada. */
@@ -59,6 +68,9 @@ export const UI = {
     "This page is for information. It doesn't replace a riding school, a first aid course or professional advice. Laws change: if in doubt, check with the authorities.",
   ),
   abreNovaJanela: b("abre numa nova janela", "opens in a new window"),
+  capitulos: b("Capítulos", "Chapters"),
+  capituloDe: b("Capítulo {n} de {total}", "Chapter {n} of {total}"),
+  verFonte: b("Fonte {n}", "Source {n}"),
 };
 
 /* ---------------- Números de abertura ---------------- */
@@ -173,6 +185,79 @@ export const CAPACETE = {
     "Um capacete integral bem ajustado: justo nas bochechas, sem folga na testa.",
     "A well-fitted full-face helmet: snug on the cheeks, no gap at the brow.",
   ),
+  /* Desenho do capacete com pontos para tocar. */
+  anatomiaTitulo: b("Por dentro de um capacete", "Inside a helmet"),
+  anatomiaTexto: b(
+    "Toque nos pontos para ver o que faz cada parte. Cada uma tem um trabalho, e nenhuma protege sozinha.",
+    "Tap the points to see what each part does. Each one has a job, and none of them protects on its own.",
+  ),
+  anatomiaDescricao: b(
+    "Desenho de um capacete integral visto de lado, com um corte na parte de trás que mostra as camadas: a calota por fora, a espuma de absorção e o forro de conforto por dentro. À frente, a viseira; em baixo, a correia com a fivela e a etiqueta de homologação.",
+    "Drawing of a full-face helmet seen from the side, with a cutaway at the back showing the layers: the shell outside, the impact-absorbing foam and the comfort lining inside. The visor is at the front; underneath, the chin strap with its buckle and the approval label.",
+  ),
+  anatomiaAnterior: b("Parte anterior", "Previous part"),
+  anatomiaSeguinte: b("Parte seguinte", "Next part"),
+  anatomia: [
+    {
+      id: "calota",
+      nome: b("Calota", "Shell"),
+      // Snell, FAQ: "The hard shell (...) spread the impact to a larger area of the foam".
+      texto: b(
+        "A casca exterior, rija. Numa pancada, espalha a força por uma área maior da espuma que está por baixo e protege de objectos que a tentem furar. Se tiver fissuras, troque de capacete.",
+        "The hard outer casing. In an impact it spreads the force over a larger area of the foam underneath and protects against objects that could pierce it. If it's cracked, replace the helmet.",
+      ),
+      fontes: [6],
+    },
+    {
+      id: "espuma",
+      nome: b("Espuma de absorção (EPS)", "Impact liner (EPS)"),
+      // Snell, FAQ: EPS; "the liner exerts a controlled braking force that slows the head much more gently".
+      texto: b(
+        "Poliestireno expandido: é esta camada que protege o cérebro. Ao esmagar-se, trava a cabeça com muito mais suavidade. Depois de esmagada não volta ao lugar, e isso não se vê por fora. Por isso, depois de uma queda com a cabeça lá dentro, o capacete troca-se.",
+        "Expanded polystyrene: this is the layer that protects your brain. By crushing, it slows your head down far more gently. Once crushed it doesn't spring back, and you can't see that from outside. That's why a helmet is replaced after any crash with your head inside it.",
+      ),
+      fontes: [6],
+    },
+    {
+      id: "forro",
+      nome: b("Forro de conforto", "Comfort lining"),
+      // Snell, FAQ: ajuste justo; substituir ao fim de cinco anos.
+      texto: b(
+        "O enchimento macio que encosta à cabeça e dá o ajuste: justo nas bochechas, sem folga na testa. O suor, o sol e o uso diário gastam o forro e a espuma: troque o capacete a cada cinco anos, mesmo sem quedas.",
+        "The soft padding that sits against your head and gives the fit: snug on the cheeks, no gap at the brow. Sweat, sun and daily use wear out the lining and the foam: replace the helmet every five years, even without a crash.",
+      ),
+      fontes: [6],
+    },
+    {
+      id: "viseira",
+      nome: b("Viseira", "Visor"),
+      texto: b(
+        "Limpa e sem riscos. À noite, só viseira transparente. Com chuva, uma película anti-embaciamento ajuda a manter a visão.",
+        "Clean and scratch-free. At night, a clear visor only. In the rain, an anti-fog insert helps you keep your vision.",
+      ),
+      fontes: [],
+    },
+    {
+      id: "correia",
+      nome: b("Correia e fivela", "Chin strap and buckle"),
+      // Snell, FAQ: "not be too loose to allow more than two fingers".
+      texto: b(
+        "Sempre apertada, mesmo para ir «só ali»: um capacete desapertado pode sair antes de a cabeça bater no chão. Entre a correia e o queixo cabem um ou dois dedos, não mais.",
+        "Always fastened, even for a quick trip: an unfastened helmet can come off before your head hits the ground. One or two fingers between the strap and your chin, no more.",
+      ),
+      fontes: [6],
+    },
+    {
+      id: "etiqueta",
+      nome: b("Etiqueta de homologação", "Approval label"),
+      // SHARP e Demon Tweeks: etiqueta ECE 22.06.
+      texto: b(
+        "Cosida na correia ou no forro: um «E» dentro de um círculo e o código 06 da norma ECE 22.06. Nos Estados Unidos, a marca é DOT. Sem etiqueta, não é um capacete: é um chapéu.",
+        "Sewn onto the strap or the lining: an \"E\" inside a circle and the standard's code, 06, for ECE 22.06. In the United States the mark is DOT. No label, no helmet: it's just a hat.",
+      ),
+      fontes: [4, 5],
+    },
+  ] as { id: ParteCapacete; nome: Bi; texto: Bi; fontes: Fontes }[],
 };
 
 /* ---------------- 02 · Chuva ---------------- */
@@ -190,6 +275,32 @@ export const CHUVA = {
   ),
   // Highway Code (Reino Unido), regra 227.
   numeroFonte: b("Highway Code britânico, regra 227", "UK Highway Code, rule 227"),
+  /* Comparação seco / molhado. Os metros são os da tabela "Typical stopping
+     distances" do Highway Code (regra 126): reacção + travagem. Molhado = o
+     dobro do total, o mínimo da regra 227. */
+  travagem: {
+    titulo: b("Quanto precisa para parar", "How far you need to stop"),
+    texto: b(
+      "Escolha uma velocidade e compare o piso seco com o molhado.",
+      "Pick a speed and compare a dry road with a wet one.",
+    ),
+    velocidade: b("Velocidade", "Speed"),
+    seco: b("Piso seco", "Dry road"),
+    molhado: b("Piso molhado", "Wet road"),
+    reaccao: b("a reagir", "thinking"),
+    travar: b("a travar", "braking"),
+    noMinimo: b("pelo menos", "at least"),
+    velocidades: [
+      { rotulo: "48 km/h", reaccao: 9, travagem: 14 },
+      { rotulo: "80 km/h", reaccao: 15, travagem: 38 },
+      { rotulo: "96 km/h", reaccao: 18, travagem: 55 },
+    ] as { rotulo: string; reaccao: number; travagem: number }[],
+    nota: b(
+      "Distâncias típicas de paragem do Highway Code britânico (regra 126). São um guia geral, que depende da atenção, do piso, do tempo e do estado do veículo, e as motas precisam de mais distância para parar. Com piso molhado, pelo menos o dobro (regra 227).",
+      "Typical stopping distances from the UK Highway Code (rule 126). They're a general guide that depends on your attention, the road surface, the weather and the condition of the vehicle, and motorcycles need a greater distance to stop. On a wet road, at least double (rule 227).",
+    ),
+    fontes: [21, 9] as Fontes,
+  },
   dicas: [
     {
       titulo: b("Dobre a distância", "Double the gap"),
@@ -274,6 +385,39 @@ export const VISIBILIDADE = {
       "A reflective vest or strips weigh next to nothing and make you visible from far away in other drivers' headlights.",
     ),
   ],
+  /* Cena ilustrativa: o que vê o condutor de trás, de dia e de noite. */
+  cena: {
+    titulo: b("O que vê quem vem atrás", "What the driver behind you sees"),
+    dia: b("Dia", "Day"),
+    noite: b("Noite", "Night"),
+    escuro: b("Roupa escura", "Dark clothes"),
+    visivel: b("Cores vivas e reflector", "Bright and reflective"),
+    diaEscuro: b(
+      "De dia, roupa escura perde-se no asfalto, nas sombras e no meio do trânsito.",
+      "By day, dark clothing disappears against the tarmac, the shadows and the traffic.",
+    ),
+    diaVisivel: b(
+      "Capacete e roupa de cores vivas ou fluorescentes destacam-no à luz do dia.",
+      "A bright helmet and bright or fluorescent clothing make you stand out in daylight.",
+    ),
+    noiteEscuro: b(
+      "À noite, de roupa escura, quem vem atrás vê pouco mais do que uma luz pequena.",
+      "At night, in dark clothing, the driver behind sees little more than one small light.",
+    ),
+    noiteVisivel: b(
+      "O material reflector devolve a luz dos faróis: aparece ao longe, com a forma de uma pessoa.",
+      "Reflective material bounces the headlights back: you show up from far away, in the shape of a person.",
+    ),
+    nota: b(
+      "Desenho ilustrativo. Recomendações do Highway Code britânico, regras 86 e 87.",
+      "Illustrative drawing. Recommendations from the UK Highway Code, rules 86 and 87.",
+    ),
+    descricao: b(
+      "Desenho de uma estrada vista de dentro de um carro, com um motociclista à frente, visto de trás.",
+      "Drawing of a road seen from inside a car, with a motorcyclist ahead, seen from behind.",
+    ),
+    fontes: [7] as Fontes,
+  },
 };
 
 /* ---------------- 04 · Equipamento ---------------- */
@@ -287,14 +431,28 @@ export const EQUIPAMENTO = {
     "An Australian study of 212 riders who had crashed found that those wearing motorcycle gear were admitted to hospital far less often. Even ordinary boots protected feet better than trainers or shoes.",
   ),
   estudo: b("de Rome et al., 2011", "de Rome et al., 2011"),
+  fontes: [11] as Fontes,
   numeros: [
     { valor: "−59%", texto: b("de risco de internamento com luvas de mota", "risk of hospital admission with motorcycle gloves") },
     { valor: "−51%", texto: b("com calças de mota", "with motorcycle trousers") },
     { valor: "−21%", texto: b("com casaco de mota", "with a motorcycle jacket") },
   ],
+  numerosTitulo: b(
+    "Quanto baixa o risco de ser internado",
+    "How much lower the risk of hospital admission is",
+  ),
+  figuraTitulo: b("Vista o motard", "Gear up the rider"),
+  figuraTexto: b("Escolha uma peça para ver o que protege.", "Pick a piece to see what it protects."),
+  figuraDescricao: b(
+    "Desenho de um motard de frente, com casaco, luvas, calças e botas. A peça escolhida fica a vermelho.",
+    "Drawing of a rider from the front, wearing a jacket, gloves, trousers and boots. The chosen piece is shown in red.",
+  ),
+  normaRotulo: b("Norma a procurar", "Standard to look for"),
   pecas: [
     {
       nome: b("Casaco", "Jacket"),
+      zona: "casaco",
+      norma: "EN 17092",
       texto: b(
         "Com protecções nos ombros e nos cotovelos. Para o calor de Angola, há casacos de rede com protecções: arejados e seguros.",
         "With shoulder and elbow armour. For Angola's heat, there are mesh jackets with armour: airy and safe.",
@@ -302,6 +460,8 @@ export const EQUIPAMENTO = {
     },
     {
       nome: b("Luvas", "Gloves"),
+      zona: "luvas",
+      norma: "EN 13594",
       texto: b(
         "As mãos são a primeira coisa a tocar no chão. Luvas de mota, com reforço na palma.",
         "Your hands are the first thing to hit the ground. Motorcycle gloves with reinforced palms.",
@@ -309,6 +469,8 @@ export const EQUIPAMENTO = {
     },
     {
       nome: b("Calças", "Trousers"),
+      zona: "calcas",
+      norma: "EN 17092",
       texto: b(
         "De mota, com protecções nos joelhos. A ganga comum rasga-se depressa no asfalto.",
         "Motorcycle trousers with knee armour. Ordinary denim wears through quickly on tarmac.",
@@ -316,12 +478,14 @@ export const EQUIPAMENTO = {
     },
     {
       nome: b("Botas", "Boots"),
+      zona: "botas",
+      norma: "EN 13634",
       texto: b(
         "Acima do tornozelo e com sola firme. Chinelos e ténis quase não protegem.",
         "Above the ankle with a firm sole. Flip-flops and trainers offer almost no protection.",
       ),
     },
-  ],
+  ] as { nome: Bi; texto: Bi; zona?: ZonaCorpo; norma?: string }[],
   etiquetas: b(
     "Ao comprar, procure a marcação CE e a norma: EN 17092 na roupa, EN 13594 nas luvas, EN 13634 nas botas e EN 1621 nas protecções.",
     "When buying, look for the CE mark and the standard: EN 17092 for clothing, EN 13594 for gloves, EN 13634 for boots and EN 1621 for armour.",
@@ -342,6 +506,14 @@ export const PASSAGEIROS = {
     "\"Carrying passengers under the age of seven on motorcycles and mopeds is prohibited, except on vehicles fitted with a rigid body not intended solely for carrying goods.\"",
   ),
   leiFonte: b("Código de Estrada de Angola, artigo 90.º", "Angolan Road Code, article 90 (our translation)"),
+  destaque: {
+    valor: "7",
+    unidade: b("anos", "years"),
+    texto: b(
+      "a idade mínima para ir atrás numa mota ou num ciclomotor. Abaixo disso, a lei proíbe, salvo em veículos com caixa rígida.",
+      "the minimum age to ride pillion on a motorcycle or moped. Below it, the law forbids it, except on vehicles with a rigid body.",
+    ),
+  },
   dicas: [
     b(
       "O capacete tem de servir a quem o usa. Um capacete de adulto numa cabeça pequena abana, roda e não protege.",
@@ -477,6 +649,16 @@ export const VERIFICACAO = {
       ),
     },
   ],
+  /* A lista para marcar. {feitos} e {total} trocam-se pelos números. */
+  progresso: b("{feitos} de {total} verificados", "{feitos} of {total} checked"),
+  falta: b("Marque cada ponto à medida que verifica.", "Tick each point as you check it."),
+  pronto: b("Pronto para sair", "Ready to ride"),
+  prontoTexto: b("Tudo verificado. Boa viagem, e correia apertada.", "All checked. Ride safe, strap fastened."),
+  recomecar: b("Limpar as marcas", "Clear the ticks"),
+  memoria: b(
+    "As marcas ficam guardadas só neste aparelho, até ao fim do dia.",
+    "Ticks are saved on this device only, until the end of the day.",
+  ),
 };
 
 /* ---------------- 08 · Em grupo ---------------- */
@@ -510,7 +692,7 @@ export const GRUPO = {
       "Everyone rides at their own pace. Nobody pushes past their limits to keep up: the group waits.",
     ),
   ],
-  diagramaTitulo: b("Formação em ziguezague", "Staggered formation"),
+  diagramaTitulo: b("Como vai o grupo", "How the group rides"),
   diagramaSentido: b("Sentido de marcha", "Direction of travel"),
   diagramaLider: b("Líder", "Leader"),
   diagramaFecho: b("Fecho", "Sweep"),
@@ -519,6 +701,24 @@ export const GRUPO = {
     "Diagram of one lane seen from above with five motorcycles in a staggered line: the leader in front on the left of the lane, the next behind on the right, and so on down to the sweep.",
   ),
   clubes: b("Procurar um clube para passear", "Find a club to ride with"),
+  modoRecta: b("Em recta", "On straights"),
+  modoCurva: b("Em curvas", "On bends"),
+  legendaRecta: b(
+    "Ziguezague: o líder no terço esquerdo da faixa, o seguinte no terço direito, pelo menos um segundo atrás.",
+    "Staggered: the leader in the left third of the lane, the next rider in the right third, at least one second behind.",
+  ),
+  legendaCurva: b(
+    "Fila indiana, com pelo menos dois segundos entre motas.",
+    "Single file, with at least two seconds between bikes.",
+  ),
+  diagramaDescricaoCurva: b(
+    "Esquema da mesma faixa com as cinco motas em fila indiana, mais afastadas umas das outras: o líder à frente e o fecho no fim.",
+    "Diagram of the same lane with the five motorcycles in single file, further apart: the leader in front and the sweep at the back.",
+  ),
+  diagramaFonte: b("Motorcycle Safety Foundation", "Motorcycle Safety Foundation"),
+  fontes: [13] as Fontes,
+  umSegundo: b("1 s", "1 s"),
+  doisSegundos: b("2 s", "2 s"),
 };
 
 /* ---------------- 09 · Em caso de acidente ---------------- */
@@ -592,6 +792,11 @@ export const ACIDENTE = {
     "Faça um curso de primeiros socorros. Num passeio de grupo, basta uma pessoa que saiba para fazer a diferença. E guarde no telemóvel um contacto «em caso de emergência».",
     "Take a first aid course. On a group ride, one person who knows what to do can make all the difference. And save an \"in case of emergency\" contact on your phone.",
   ),
+  ligar: b("Ligar", "Call"),
+  passoDe: b("Passo {n} de {total}", "Step {n} of {total}"),
+  anterior: b("Passo anterior", "Previous step"),
+  seguinte: b("Passo seguinte", "Next step"),
+  fontes: [10, 14, 16] as Fontes,
 };
 
 /* ---------------- 10 · Seguro ---------------- */
@@ -679,6 +884,130 @@ export const HISTORIAS = {
   ),
   forum: b("Contar no Fórum", "Share on the Forum"),
   contacto: b("Escrever à MotoBox", "Write to MotoBox"),
+  anterior: b("História anterior", "Previous story"),
+  seguinte: b("História seguinte", "Next story"),
+};
+
+/* ---------------- Teste rápido ---------------- */
+
+/** Perguntas sobre o que está na página. "certa" conta a partir de 1 (1 = a primeira opção). */
+export const QUIZ = {
+  titulo: b("Sabe o que fazer?", "Do you know what to do?"),
+  texto: b(
+    "Seis perguntas rápidas sobre o que leu. A resposta aparece logo, com a explicação.",
+    "Six quick questions about what you've read. The answer shows straight away, with the explanation.",
+  ),
+  perguntaDe: b("Pergunta {n} de {total}", "Question {n} of {total}"),
+  certo: b("Certo.", "Correct."),
+  errado: b("Não é bem assim.", "Not quite."),
+  seguinte: b("Pergunta seguinte", "Next question"),
+  verResultado: b("Ver o resultado", "See your score"),
+  resultado: b("{certas} de {total} certas", "{certas} of {total} correct"),
+  resultadoTudo: b("Sabe o que fazer. Partilhe com quem anda consigo.", "You know what to do. Share it with the people you ride with."),
+  resultadoParte: b("Reveja os capítulos das perguntas que falharam: vale a pena.", "Go back over the chapters for the questions you missed: it's worth it."),
+  rever: b("Rever", "Review"),
+  recomecar: b("Responder de novo", "Try again"),
+  perguntas: [
+    {
+      pergunta: b(
+        "Um motociclista caiu. Está no chão, consciente e a respirar. Tira-lhe o capacete?",
+        "A rider has crashed. They're on the ground, conscious and breathing. Do you take their helmet off?",
+      ),
+      opcoes: [
+        b("Sim, para ele respirar melhor", "Yes, so they can breathe more easily"),
+        b("Não. Deixo-o quieto e ligo 111", "No. I keep them still and call 111"),
+        b("Sim, desde que seja com cuidado", "Yes, as long as I'm careful"),
+      ],
+      certa: 2,
+      explicacao: b(
+        "Não se tira o capacete a um motociclista ferido. Só se ele não respirar e não houver outra forma de lhe abrir as vias respiratórias, e sempre a dois.",
+        "Don't remove an injured rider's helmet. Only if they aren't breathing and there's no other way to open their airway, and always with two people.",
+      ),
+      seccao: "acidente",
+    },
+    {
+      pergunta: b("Começou a chover. A distância de que precisa para parar…", "It's started to rain. The distance you need to stop…"),
+      opcoes: [
+        b("Fica igual, se os pneus forem bons", "Stays the same, if your tyres are good"),
+        b("Aumenta um pouco", "Goes up a little"),
+        b("Fica pelo menos no dobro", "At least doubles"),
+      ],
+      certa: 3,
+      explicacao: b(
+        "Com piso molhado, a distância de paragem é pelo menos o dobro. Deixe o dobro do espaço e trave mais cedo, com suavidade.",
+        "On a wet road, your stopping distance at least doubles. Leave twice the gap and brake earlier and more gently.",
+      ),
+      seccao: "chuva",
+    },
+    {
+      pergunta: b(
+        "Quanto espaço deve ficar entre a correia do capacete e o queixo?",
+        "How much room should there be between the helmet strap and your chin?",
+      ),
+      opcoes: [
+        b("Nenhum: tem de apertar até doer", "None: it should be tight enough to hurt"),
+        b("Um ou dois dedos", "One or two fingers"),
+        b("Uma mão inteira, para respirar", "A whole hand, so you can breathe"),
+      ],
+      certa: 2,
+      explicacao: b(
+        "Um ou dois dedos, não mais. Justo, mas sem doer. Mais largo do que isso, o capacete pode sair numa queda.",
+        "One or two fingers, no more. Snug, but it shouldn't hurt. Any looser and the helmet can come off in a crash.",
+      ),
+      seccao: "capacete",
+    },
+    {
+      pergunta: b(
+        "Caiu com o capacete posto. Por fora, parece intacto. E agora?",
+        "You crashed with your helmet on. From the outside, it looks fine. Now what?",
+      ),
+      opcoes: [
+        b("Continua a servir", "It's still good"),
+        b("Troca-se: a espuma pode estar esmagada por dentro", "Replace it: the foam may be crushed inside"),
+        b("Basta trocar a viseira", "Just replace the visor"),
+      ],
+      certa: 2,
+      explicacao: b(
+        "A espuma interior protege esmagando-se, e isso não se vê por fora. Um capacete que já protegeu uma vez não protege da mesma forma a segunda.",
+        "The inner foam protects by crushing, and you can't see that from outside. A helmet that has protected you once won't protect you the same way a second time.",
+      ),
+      seccao: "capacete",
+    },
+    {
+      pergunta: b(
+        "Passeio de clube numa estrada de serra, cheia de curvas. Como vai o grupo?",
+        "A club ride on a mountain road full of bends. How does the group ride?",
+      ),
+      opcoes: [
+        b("Em ziguezague, a um segundo", "Staggered, one second apart"),
+        b("Em fila indiana, com pelo menos dois segundos entre motas", "Single file, at least two seconds apart"),
+        b("Lado a lado, para não se perder ninguém", "Side by side, so nobody gets lost"),
+      ],
+      certa: 2,
+      explicacao: b(
+        "Em curvas, com mau piso ou pouca visibilidade, passa-se a fila indiana, com pelo menos dois segundos entre motas.",
+        "On bends, bad surfaces or in poor visibility, switch to single file with at least two seconds between bikes.",
+      ),
+      seccao: "grupo",
+    },
+    {
+      pergunta: b(
+        "Qual é a taxa de álcool no sangue segura para andar de mota?",
+        "What's a safe blood alcohol level for riding a motorcycle?",
+      ),
+      opcoes: [
+        b("Até 0,6 g/l, o limite do Código de Estrada", "Up to 0.6 g/l, the Road Code limit"),
+        b("Até 0,4 g/l", "Up to 0.4 g/l"),
+        b("Zero", "Zero"),
+      ],
+      certa: 3,
+      explicacao: b(
+        "A lei considera sob influência quem passa de 0,6 g/l, mas a OMS avisa que o risco começa bem antes. Em cima de uma mota, a única taxa segura é zero.",
+        "The law treats anyone above 0.6 g/l as under the influence, but the WHO warns that the risk starts well before that. On a motorcycle, the only safe level is zero.",
+      ),
+      seccao: "cabeca",
+    },
+  ] as { pergunta: Bi; opcoes: Bi[]; certa: number; explicacao: Bi; seccao: string }[],
 };
 
 /* ---------------- Fontes ---------------- */
@@ -784,5 +1113,12 @@ export const FONTES: { nome: Bi; url: string }[] = [
   {
     nome: b("Decreto n.º 35/09, de 11 de Agosto (seguro automóvel obrigatório)", "Decree 35/09 of 11 August (mandatory motor insurance)"),
     url: "https://lex.ao/docs/conselho-de-ministros/2009/decreto-n-o-35-09-de-11-de-agosto/",
+  },
+  {
+    nome: b(
+      "Highway Code (Reino Unido): regras gerais, 103 a 158 (distâncias típicas de paragem, regra 126)",
+      "UK Highway Code: general rules, 103 to 158 (typical stopping distances, rule 126)",
+    ),
+    url: "https://www.gov.uk/guidance/the-highway-code/general-rules-techniques-and-advice-for-all-drivers-and-riders-103-to-158",
   },
 ];

@@ -87,7 +87,7 @@ export function PilotosClient({
           </select>
 
           <div className="relative w-full sm:ml-auto sm:w-64">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-white/45" aria-hidden />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-white/70" aria-hidden />
             <input
               type="search"
               value={busca}
@@ -99,7 +99,7 @@ export function PilotosClient({
           </div>
         </div>
 
-        <p className="mt-6 text-sm text-white/60" aria-live="polite">
+        <p className="mt-6 text-sm text-white/80" aria-live="polite">
           {contar(filtrados.length, t.contadorUm, t.contadorVarios)}
         </p>
 

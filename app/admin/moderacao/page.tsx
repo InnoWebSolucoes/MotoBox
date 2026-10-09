@@ -290,12 +290,12 @@ export default function AdminModeracao() {
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <Etiqueta>{nomeTipo(d.tipo)}</Etiqueta>
                     <Estado valor={d.estado} rotulo={ROTULO_ESTADO[d.estado]} />
-                    <span className="ml-auto text-xs text-white/45">{haQuanto(d.criado)}</span>
+                    <span className="ml-auto text-xs text-white/70">{haQuanto(d.criado)}</span>
                   </div>
                   <p className="font-medium text-white">{d.alvoTitulo}</p>
                   <p className="mt-1 text-sm font-medium text-white/85">{d.motivo}</p>
-                  {d.detalhe && <p className="mt-1.5 line-clamp-2 text-sm text-white/65">{d.detalhe}</p>}
-                  <p className="mt-2 text-xs text-white/45">Denunciado por {d.denunciante}</p>
+                  {d.detalhe && <p className="mt-1.5 line-clamp-2 text-sm text-white/80">{d.detalhe}</p>}
+                  <p className="mt-2 text-xs text-white/70">Denunciado por {d.denunciante}</p>
                   {d.resolucao && (
                     <p className="mt-2 border-l-2 border-ok pl-2 text-xs text-white/70">{d.resolucao}</p>
                   )}
@@ -335,7 +335,7 @@ export default function AdminModeracao() {
               <div className="rounded-[var(--raio)] border border-white/10 bg-black/[0.18] p-4 text-sm">
                 <p className="text-white">{aberta.motivo}</p>
                 {aberta.detalhe && <p className="mt-1 text-white/70">{aberta.detalhe}</p>}
-                <p className="mt-2 text-xs text-white/45">
+                <p className="mt-2 text-xs text-white/70">
                   {aberta.denunciante} · {dataCurta(aberta.criado, true)}
                 </p>
               </div>
@@ -351,7 +351,7 @@ export default function AdminModeracao() {
                     {opcoes.alvo.escondido && <Estado valor="suspenso" rotulo="Escondido do site" />}
                   </p>
                   {opcoes.alvo.linhas.filter(Boolean).map((l, i) => (
-                    <p key={i} className="mt-1 line-clamp-3 text-white/60">{l}</p>
+                    <p key={i} className="mt-1 line-clamp-3 text-white/80">{l}</p>
                   ))}
                   {opcoes.alvo.href && !opcoes.alvo.escondido && (
                     <a href={comBase(opcoes.alvo.href)} target="_blank" rel="noopener noreferrer"
@@ -382,7 +382,7 @@ export default function AdminModeracao() {
                         className="mt-1 accent-mb-red" />
                       <span>
                         <span className={`block text-sm ${a.perigo ? "text-mb-red-light" : "text-white"}`}>{a.nome}</span>
-                        <span className="block text-xs leading-relaxed text-white/55">{a.descricao}</span>
+                        <span className="block text-xs leading-relaxed text-white/75">{a.descricao}</span>
                       </span>
                     </label>
                   ))}
@@ -391,7 +391,7 @@ export default function AdminModeracao() {
             )}
 
             {aberta.estado !== "pendente" && (
-              <p className="text-sm text-white/60">
+              <p className="text-sm text-white/80">
                 Já {ROTULO_ESTADO[aberta.estado]}{aberta.resolucao ? `: ${aberta.resolucao}` : "."} Pode mudar a nota e voltar a marcar.
               </p>
             )}

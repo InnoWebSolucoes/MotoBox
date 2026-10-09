@@ -2,159 +2,107 @@
 
 /* ============================================================
    MOTOBOX — Área de conta
-   Tudo o que aqui aparece vem da conta de quem tem sessão:
-   perfil, clubes e marcas seguidos, notificações e anúncios
-   próprios. As
+   Trata da sessão e da API; o desenho está em
+   components/conta/PainelConta.tsx. Tudo o que aqui aparece vem
+   da conta de quem tem sessão: perfil, clube, garagem, anúncios
+   próprios e guardados, fórum, preferências e notificações. As
    preferências guardam-se sozinhas a cada clique, e o separador
    aberto fica no endereço (?aba=), para sobreviver a um reload.
+   Os textos fixos editam-se em Definições → Área de membro.
    ============================================================ */
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
-import { Placeholder } from "@/components/Brand";
-import { Monograma } from "@/components/painel/kit";
-import { SeloVerificado } from "@/components/SeloVerificado";
-import { AnunciosGuardados } from "@/components/AnunciosGuardados";
-import { Button, ButtonLink, Icon, Tag } from "@/components/ui";
-import { formatData, formatKz } from "@/lib/data";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Check, UserRound } from "lucide-react";
 import { useAuth } from "@/lib/auth/contexto";
-import {
-  MARCAS, CANAIS_ACTIVOS, PREFERENCIAS_PADRAO,
-  type Preferencias, type TipoNotificacao, type Canal,
-} from "@/lib/conta/preferencias";
-import type { AnuncioMarketplace, Clube, Noticia } from "@/lib/types";
-import type { Encomenda } from "@/lib/admin/types";
-import { RecortarAvatar, useTextosRecorte, type EstadoRecorte } from "./RecortarAvatar";
+import { PREFERENCIAS_PADRAO, type Preferencias } from "@/lib/conta/preferencias";
+import type { AnuncioGuardado } from "@/lib/conta/favoritos";
+import type { AbaConta, ConteudoConta } from "@/lib/conteudo/grupos/contas";
 import { comBase } from "@/lib/base";
-import { PROVINCIAS } from "@/lib/provincias";
-import { fotoDe } from "@/app/eventos/foto";
+import { Seta } from "@/components/painel/kit";
+import { pedir, type ArtigoResumo, type ClubeResumo, type DadosConta, type EventoResumo, type MotaGaragem } from "@/components/conta/dados";
+import { ABAS, PainelConta, type RotaComProvincias } from "@/components/conta/PainelConta";
+import type { EstadoGravacao } from "@/components/conta/partes";
 
-type Aba = "resumo" | "preferencias" | "notificacoes" | "anuncios";
-
-const ABAS: { id: Aba; label: string; icone: string }[] = [
-  { id: "resumo", label: "Resumo", icone: "user" },
-  { id: "preferencias", label: "Clubes e marcas", icone: "flag" },
-  { id: "notificacoes", label: "Notificações", icone: "bell" },
-  { id: "anuncios", label: "Anúncios", icone: "tag" },
-];
-
-
-interface PerfilConta {
-  id: string; nome: string; email: string; telefone: string | null; provincia: string | null;
-  avatar_cor: string; registado: string; verificado: boolean; newsletter: boolean; estado: string;
-}
-
-/** Cor e logótipo da conta, já resolvidos pelo servidor. */
-interface AvatarDados {
-  cor: string;
-  url: string | null;
-}
-
-interface DadosConta {
-  perfil: PerfilConta | null;
-  email: string;
-  /** Opcional: uma resposta antiga da API ainda não o traz. */
-  avatar?: AvatarDados;
-  preferencias: Preferencias;
-  encomendas: Encomenda[];
-  anuncios: AnuncioMarketplace[];
-}
-
-type EstadoGravacao = "parado" | "a-guardar" | "guardado" | "erro";
-
-function iniciais(n: string) {
-  return n.split(/\s+/).filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
-}
-
-/* ---------- Avatar: cor e logótipo ---------- */
-
-/** Cores prontas: todas seguram a inicial a branco e assentam no fundo escuro do site. */
-const CORES_AVATAR = [
-  "#e10600", "#c2410c", "#b45309", "#15803d", "#0f766e",
-  "#0369a1", "#1d4ed8", "#6d28d9", "#be185d", "#475569",
-];
-const COR_PADRAO = "#e10600";
-const COR_HEX = /^#[0-9a-f]{6}$/i;
-const TIPOS_IMAGEM = ["image/jpeg", "image/png", "image/webp"];
-// A fotografia escolhida só serve para recortar: o que sobe é o recorte de
-// 512 px (bem abaixo dos 2 MB do servidor). Fotografias de telemóvel passam.
-const IMAGEM_MAX = 20 * 1024 * 1024;
-
-const normalizarCor = (c: string | undefined) => (c && COR_HEX.test(c) ? c.toLowerCase() : COR_PADRAO);
-
-async function enviarImagem(imagem: Blob): Promise<string | null> {
-  const dados = new FormData();
-  dados.append("ficheiro", imagem, `logotipo.${imagem.type.split("/")[1] ?? "jpg"}`);
-  try {
-    const r = await fetch(comBase("/api/conta/avatar"), { method: "POST", body: dados });
-    if (r.ok) return null;
-    const j = await r.json().catch(() => ({}));
-    return String(j.erro ?? `Erro ${r.status}`);
-  } catch {
-    return "Não foi possível contactar o servidor.";
-  }
-}
-
-/** Círculo da conta: o logótipo por cima da cor escolhida, ou a inicial sobre ela. */
-function AvatarConta({ url, cor, nome, className = "" }: {
-  url: string | null; cor: string; nome: string; className?: string;
-}) {
-  return (
-    <span className={`relative grid shrink-0 place-items-center overflow-hidden rounded-full font-display text-white ${className}`}
-      style={{ backgroundColor: cor }}>
-      {url ? (
-        <Image src={url} alt="" fill sizes="112px" unoptimized={url.startsWith("blob:")} className="object-cover" />
-      ) : (
-        iniciais(nome)
-      )}
-    </span>
-  );
-}
-
-const campo =
-  "h-11 w-full bg-ink-950 px-3.5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 outline-none transition-shadow focus:ring-2 focus:ring-mb-red";
+/** Nomes antigos dos separadores, para as ligações que já andam por aí (emails, favoritos). */
+const ALIAS: Record<string, AbaConta> = { perfil: "resumo", favoritos: "guardados", palavra: "seguranca" };
 
 export function ContaClient({
-  clubes, noticias,
+  textos, clubes, artigos, eventos, eventosTotal, rotas, semana, marketplaceAberto,
 }: {
-  clubes: Clube[];
-  noticias: Noticia[];
+  textos: ConteudoConta;
+  clubes: ClubeResumo[];
+  artigos: ArtigoResumo[];
+  eventos: EventoResumo[];
+  eventosTotal: number;
+  rotas: RotaComProvincias[];
+  semana: number;
+  marketplaceAberto: boolean;
 }) {
   const router = useRouter();
   const caminho = usePathname();
   const parametros = useSearchParams();
   const { utilizador, carregando, sair, recarregarPerfil } = useAuth();
+  const uid = utilizador?.id;
 
-  const pedida = parametros.get("aba");
-  const aba: Aba = ABAS.some((a) => a.id === pedida) ? (pedida as Aba) : "resumo";
-  const setAba = (a: Aba) => router.replace(`${caminho}?aba=${a}`, { scroll: false });
+  const pedida = parametros.get("aba") ?? "";
+  const aba: AbaConta = (ABAS as string[]).includes(pedida) ? (pedida as AbaConta) : ALIAS[pedida] ?? "resumo";
+  const irPara = (a: AbaConta) => router.replace(`${caminho}?aba=${a}`, { scroll: false });
 
   const [dados, setDados] = useState<DadosConta | null>(null);
   const [erroCarregar, setErroCarregar] = useState<string | null>(null);
   const [prefs, setPrefs] = useState<Preferencias>(PREFERENCIAS_PADRAO);
   const [gravacao, setGravacao] = useState<EstadoGravacao>("parado");
-  const [editarPerfil, setEditarPerfil] = useState(false);
-  const [formAnuncio, setFormAnuncio] = useState<AnuncioMarketplace | "novo" | null>(null);
+  const [gravacaoClube, setGravacaoClube] = useState<EstadoGravacao>("parado");
   const [aSair, setASair] = useState(false);
 
+  // Anúncios guardados: a lista fica marcada com a conta, para não passar de uma conta a outra.
+  const [favoritos, setFavoritos] = useState<{ dono: string; lista: AnuncioGuardado[] } | null>(null);
+  const [erroFavoritos, setErroFavoritos] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
+  const [aRemoverFavorito, setARemoverFavorito] = useState<string[]>([]);
+  const [artigosGuardados, setArtigosGuardados] = useState<string[]>([]);
+  const [aMudarArtigo, setAMudarArtigo] = useState<string[]>([]);
+  /** Aviso curto em baixo do ecrã (um artigo que não se guardou, por exemplo). */
+  const [aviso, setAviso] = useState<string | null>(null);
+  useEffect(() => {
+    if (!aviso) return;
+    const id = window.setTimeout(() => setAviso(null), 5000);
+    return () => window.clearTimeout(id);
+  }, [aviso]);
+
   const aplicar = useCallback((r: { dados?: DadosConta; erro?: string }) => {
-    if (r.erro) { setErroCarregar(r.erro); return; }
-    setDados(r.dados!);
-    setPrefs(r.dados!.preferencias);
+    if (r.erro || !r.dados) { setErroCarregar(r.erro ?? "Não foi possível carregar a sua conta."); return; }
+    setDados(r.dados);
+    setPrefs(r.dados.preferencias ?? PREFERENCIAS_PADRAO);
+    setArtigosGuardados(r.dados.artigos ?? []);
     setErroCarregar(null);
   }, []);
 
-  const carregar = useCallback(async () => aplicar(await lerConta()), [aplicar]);
+  const recarregar = useCallback(async () => {
+    const [r] = await Promise.all([lerConta(), recarregarPerfil()]);
+    aplicar(r);
+  }, [aplicar, recarregarPerfil]);
 
   useEffect(() => {
-    if (!utilizador) return;
+    if (!uid) return;
     let vivo = true;
     lerConta().then((r) => { if (vivo) aplicar(r); });
     return () => { vivo = false; };
-  }, [utilizador, aplicar]);
+  }, [uid, aplicar]);
+
+  useEffect(() => {
+    if (!uid) return;
+    let vivo = true;
+    pedir("/api/conta/favoritos?anuncios=1", "GET").then(({ erro, json }) => {
+      if (!vivo) return;
+      if (erro) { setErroFavoritos(erro); return; }
+      setErroFavoritos(null);
+      setFavoritos({ dono: uid, lista: Array.isArray(json.anuncios) ? (json.anuncios as AnuncioGuardado[]) : [] });
+    });
+    return () => { vivo = false; };
+  }, [uid, tentativa]);
 
   /* ---------- Preferências: guardam-se sozinhas ---------- */
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -163,24 +111,50 @@ export function ContaClient({
     setGravacao("a-guardar");
     if (temporizador.current) clearTimeout(temporizador.current);
     temporizador.current = setTimeout(async () => {
-      try {
-        const r = await fetch(comBase("/api/conta"), {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ preferencias: proximas }),
-        });
-        setGravacao(r.ok ? "guardado" : "erro");
-      } catch {
-        setGravacao("erro");
-      }
+      const { erro } = await pedir("/api/conta", "PATCH", { preferencias: proximas });
+      setGravacao(erro ? "erro" : "guardado");
     }, 500);
   };
   useEffect(() => () => { if (temporizador.current) clearTimeout(temporizador.current); }, []);
 
-  const alternar = (chave: "clubes" | "marcas", valor: string) => {
-    const lista = prefs[chave];
-    mudarPrefs({ ...prefs, [chave]: lista.includes(valor) ? lista.filter((x) => x !== valor) : [...lista, valor] });
+  /* ---------- Clube a que pertence ---------- */
+  const escolherClube = async (slug: string) => {
+    if (!dados) return;
+    const antes = dados.clube ?? null;
+    setDados({ ...dados, clube: slug || null });
+    setGravacaoClube("a-guardar");
+    const { erro } = await pedir("/api/conta", "PATCH", { clube: slug });
+    if (erro) setDados((d) => (d ? { ...d, clube: antes } : d));
+    setGravacaoClube(erro ? "erro" : "guardado");
   };
+
+  /* ---------- Guardados ---------- */
+  const removerFavorito = async (a: AnuncioGuardado) => {
+    if (aRemoverFavorito.includes(a.id)) return;
+    setARemoverFavorito((r) => [...r, a.id]);
+    const { erro } = await pedir("/api/conta/favoritos", "POST", { id: a.id, guardar: false });
+    setARemoverFavorito((r) => r.filter((x) => x !== a.id));
+    if (erro) { setErroFavoritos(erro); return; }
+    setFavoritos((f) => (f ? { ...f, lista: f.lista.filter((x) => x.id !== a.id) } : f));
+  };
+
+  const alternarArtigo = async (slug: string) => {
+    if (aMudarArtigo.includes(slug)) return;
+    const guardar = !artigosGuardados.includes(slug);
+    setAMudarArtigo((l) => [...l, slug]);
+    // Muda já no ecrã; volta atrás se o servidor recusar.
+    setArtigosGuardados((l) => (guardar ? [slug, ...l] : l.filter((s) => s !== slug)));
+    const { erro, json } = await pedir("/api/conta/artigos", "POST", { slug, guardar });
+    setAMudarArtigo((l) => l.filter((s) => s !== slug));
+    if (erro) {
+      setArtigosGuardados((l) => (guardar ? l.filter((s) => s !== slug) : [slug, ...l]));
+      setAviso(erro);
+      return;
+    }
+    if (Array.isArray(json.slugs)) setArtigosGuardados(json.slugs as string[]);
+  };
+
+  const mudarGaragem = (garagem: MotaGaragem[]) => setDados((d) => (d ? { ...d, garagem } : d));
 
   const terminarSessao = async () => {
     setASair(true);
@@ -188,368 +162,61 @@ export function ContaClient({
     window.location.replace(comBase("/"));
   };
 
-  if (carregando || (utilizador && !dados && !erroCarregar)) {
+  if (carregando || (utilizador && !dados && !erroCarregar)) return <Esqueleto />;
+
+  if (!utilizador) return <SemSessao textos={textos} />;
+
+  if (erroCarregar || !dados) {
     return (
-      <div className="py-2">
-        <div className="card h-40 animate-pulse" />
-        <div className="mt-6 h-12 animate-pulse rounded-full bg-ink-900" />
+      <div className="painel painel-escuro mx-auto max-w-xl p-8 text-center">
+        <p role="alert" className="text-[15px] text-white">{erroCarregar}</p>
+        <button type="button" onClick={() => void recarregar()}
+          className="mt-5 inline-flex h-11 items-center rounded-[var(--raio)] bg-mb-red px-5 text-[15px] text-white hover:bg-mb-red-dark">
+          Tentar de novo
+        </button>
       </div>
     );
   }
-
-  if (!utilizador || erroCarregar || !dados) {
-    return (
-      <div className="py-20 text-center">
-        <p className="text-sm text-ink-400">{erroCarregar ?? "Precisa de entrar para ver a sua conta."}</p>
-        <ButtonLink href="/entrar?destino=/conta" className="mt-5">Entrar</ButtonLink>
-      </div>
-    );
-  }
-
-  const perfil = dados.perfil;
-  const nome = perfil?.nome || dados.email;
-  const avatar: AvatarDados = {
-    cor: normalizarCor(dados.avatar?.cor ?? perfil?.avatar_cor),
-    url: dados.avatar?.url ?? null,
-  };
-  const anunciosActivos = dados.anuncios.length;
-  const clubesSeguidos = clubes.filter((c) => prefs.clubes.includes(c.slug));
-
-  // Artigos dos clubes e marcas seguidos; sem nada seguido, os mais recentes.
-  const termos = [...clubesSeguidos.map((c) => c.nome), ...prefs.marcas].map((t) => t.toLowerCase());
-  const relevantes = termos.length
-    ? noticias.filter((n) => termos.some((t) => `${n.titulo} ${n.resumo} ${n.tags.join(" ")}`.toLowerCase().includes(t)))
-    : [];
-  const feed = (relevantes.length ? relevantes : noticias).slice(0, 4);
 
   return (
-    <div className="py-2">
-      {/* Cabeçalho do perfil */}
-      <header className="card overflow-hidden">
-        <div className="relative h-28">
-          <Placeholder nome="painel-clubes" className="absolute inset-0" />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink-900 to-transparent" />
-        </div>
-        {/* `relative` põe esta faixa por cima da imagem, que está posicionada. */}
-        <div className="relative flex flex-wrap items-end gap-5 px-6 pb-6 -mt-10">
-          <button type="button" onClick={() => setEditarPerfil(true)} aria-label="Alterar logótipo e cor"
-            title="Alterar logótipo e cor" className="group relative shrink-0 rounded-full">
-            <AvatarConta url={avatar.url} cor={avatar.cor} nome={nome} className="size-20 text-2xl ring-4 ring-ink-900" />
-            <span aria-hidden
-              className="absolute -bottom-0.5 -right-0.5 grid size-7 place-items-center rounded-full bg-ink-800 text-ink-200 ring-4 ring-ink-900 transition-colors group-hover:bg-white group-hover:text-ink-950">
-              <IconeCamara />
-            </span>
-          </button>
-          <div className="min-w-0 flex-1 basis-56">
-            <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl uppercase leading-tight text-white break-words">
-              {nome}
-              {perfil?.verificado && <SeloVerificado tamanho={20} rotulo="Conta verificada" />}
-            </h1>
-            <p className="mt-0.5 text-sm text-ink-500 break-words">
-              {dados.email}
-              {perfil?.provincia ? ` · ${perfil.provincia}` : ""}
-              {perfil?.registado ? ` · membro desde ${perfil.registado.slice(0, 4)}` : ""}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setEditarPerfil(true)}>
-              <Icon name="settings" className="size-4" />
-              Editar perfil
-            </Button>
-            <Button variant="ghost" size="sm" onClick={terminarSessao} disabled={aSair}>
-              <Icon name="logout" className="size-4" />
-              {aSair ? "A sair…" : "Sair"}
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Abas */}
-      <nav className="mt-6 flex gap-1 overflow-x-auto no-scrollbar border-b border-white/6">
-        {ABAS.map((a) => (
-          <button
-            key={a.id}
-            onClick={() => setAba(a.id)}
-            aria-pressed={aba === a.id}
-            className="tab gap-2"
-          >
-            <Icon name={a.icone} className="size-4" />
-            {a.label}
-          </button>
-        ))}
-      </nav>
-
-      <div className="py-8">
-        {/* ---------- RESUMO ---------- */}
-        {aba === "resumo" && (
-          <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-start">
-            <div className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-3">
-                {[
-                  { v: clubesSeguidos.length, l: "Clubes que segue", i: "flag", a: "preferencias" as Aba },
-                  { v: prefs.marcas.length, l: "Marcas de interesse", i: "bike", a: "preferencias" as Aba },
-                  { v: anunciosActivos, l: "Anúncios activos", i: "tag", a: "anuncios" as Aba },
-                ].map((s) => (
-                  <button key={s.l} onClick={() => setAba(s.a)} className="card card-hover p-5 text-left">
-                    <span className="grid size-9 place-items-center rounded-full bg-mb-red/12 text-mb-red">
-                      <Icon name={s.i} className="size-4.5" />
-                    </span>
-                    <p className="mt-3 font-display text-3xl text-white">{s.v}</p>
-                    <p className="eyebrow mt-0.5 text-ink-600">{s.l}</p>
-                  </button>
-                ))}
-              </div>
-
-              <div className="card p-6">
-                <h2 className="eyebrow text-mb-red mb-1">Para si</h2>
-                <p className="text-xs text-ink-600 mb-5">
-                  {relevantes.length
-                    ? "Com base nos clubes e marcas que segue."
-                    : "Os artigos mais recentes. Siga clubes e marcas para personalizar."}
-                </p>
-                <div>
-                  {feed.map((n) => (
-                    <Link key={n.slug} href={`/artigos/${n.slug}`} className="group flex gap-3.5 border-b border-white/6 py-3 first:pt-0 last:border-0 last:pb-0">
-                      <Placeholder nome={fotoDe(n.slug, n.imagem)} className="media size-16 shrink-0" tamanhos="64px" />
-                      <div className="min-w-0 flex-1">
-                        <p className="eyebrow text-mb-red">{n.categoria}</p>
-                        <p className="mt-1 text-sm text-white line-clamp-2 group-hover:text-mb-red transition-colors">{n.titulo}</p>
-                        <p className="mt-1 text-[11px] text-ink-600">{formatData(n.data, { day: "2-digit", month: "short" })}</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <aside className="space-y-4">
-              <div className="card p-5">
-                <h2 className="eyebrow text-mb-red mb-4">Clubes que segue</h2>
-                {clubesSeguidos.length === 0 && (
-                  <p className="text-sm text-ink-500">Ainda não segue nenhum clube.</p>
-                )}
-                <div className="space-y-3">
-                  {clubesSeguidos.map((c) => (
-                    <Link key={c.slug} href={`/clubes/${c.slug}`} className="group flex items-center gap-3">
-                      <Monograma nome={c.nome} cor={c.cor} className="size-10 text-xs" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm text-white transition-colors group-hover:text-mb-red-light">{c.nome}</p>
-                        <p className="truncate text-xs text-ink-500">{c.tipo === "Outro" ? "Convívio e solidariedade" : c.tipo}</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-                <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => setAba("preferencias")}>
-                  Gerir
-                </Button>
-              </div>
-
-              <div className="card p-5">
-                <h2 className="eyebrow text-mb-red mb-3">Fórum</h2>
-                <p className="text-sm text-ink-500">Tire dúvidas e partilhe com a comunidade motard.</p>
-                <ButtonLink href="/forum" variant="outline" size="sm" className="mt-4 w-full">
-                  Ir para o fórum
-                </ButtonLink>
-              </div>
-            </aside>
-          </div>
-        )}
-
-        {/* ---------- PREFERÊNCIAS ---------- */}
-        {aba === "preferencias" && (
-          <div className="space-y-6 max-w-4xl">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-ink-400 leading-relaxed">
-                Escolha o que quer seguir. Usamos estas preferências para personalizar a página inicial,
-                a newsletter e as notificações que recebe.
-              </p>
-              <EstadoGuardar estado={gravacao} />
-            </div>
-
-            <section className="card p-6">
-              <h2 className="eyebrow text-mb-red mb-1">Clubes</h2>
-              <p className="text-xs text-ink-600 mb-5">Artigos, passeios e encontros dos clubes que segue, primeiro.</p>
-              <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                {clubes.map((c) => (
-                  <Escolha key={c.slug} on={prefs.clubes.includes(c.slug)} onClick={() => alternar("clubes", c.slug)}>
-                    <Monograma nome={c.nome} cor={c.cor} className="size-9 text-[11px]" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm text-white">{c.nome}</span>
-                      <span className="block truncate text-[11px] text-ink-500">{c.tipo === "Outro" ? "Convívio e solidariedade" : c.tipo}</span>
-                    </span>
-                  </Escolha>
-                ))}
-              </div>
-            </section>
-
-            <section className="card p-6">
-              <h2 className="eyebrow text-mb-red mb-1">Marcas de interesse</h2>
-              <p className="text-xs text-ink-600 mb-5">Avisamos quando surgirem anúncios ou notícias destas marcas.</p>
-              <div className="flex flex-wrap gap-2">
-                {MARCAS.map((m) => {
-                  const on = prefs.marcas.includes(m);
-                  return (
-                    <button key={m} onClick={() => alternar("marcas", m)} aria-pressed={on}
-                      className="chip">
-                      {m}
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          </div>
-        )}
-
-        {/* ---------- NOTIFICAÇÕES ---------- */}
-        {aba === "notificacoes" && (
-          <div className="max-w-3xl space-y-6">
-            <div className="flex justify-end"><EstadoGuardar estado={gravacao} /></div>
-            <section className="card p-6">
-              <h2 className="eyebrow text-mb-red mb-1">O que quer receber</h2>
-              <p className="text-xs text-ink-600 mb-5">Notificações personalizadas com base nas suas preferências.</p>
-              <div className="divide-y divide-white/6">
-                {(
-                  [
-                    ["calendario", "Eventos", "Novos passeios, encontros e raides no calendário."],
-                    ["marketplace", "Marketplace", "Novos anúncios das marcas que segue."],
-                    ["forum", "Fórum", "Respostas novas nos tópicos em que participou."],
-                    ["newsletter", "Newsletter semanal", "Os artigos da semana, às segundas-feiras."],
-                  ] as [TipoNotificacao, string, string][]
-                ).map(([k, titulo, desc]) => (
-                  <label key={k} className="flex cursor-pointer items-start gap-4 py-4">
-                    <input type="checkbox" checked={prefs.notificacoes[k]}
-                      onChange={(e) => mudarPrefs({ ...prefs, notificacoes: { ...prefs.notificacoes, [k]: e.target.checked } })}
-                      className="mt-1 size-4 shrink-0 accent-[#e10600]" />
-                    <span className="min-w-0">
-                      <span className="block font-display text-sm uppercase text-white">{titulo}</span>
-                      <span className="mt-0.5 block text-xs text-ink-500">{desc}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </section>
-
-            <section className="card p-6">
-              <h2 className="eyebrow text-mb-red mb-5">Como quer receber</h2>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {(
-                  [
-                    ["email", "Email", "mail"],
-                    ["push", "Notificação no telemóvel", "bell"],
-                    ["whatsapp", "WhatsApp", "whatsapp"],
-                  ] as [Canal, string, string][]
-                ).map(([k, label, icone]) => {
-                  const activo = CANAIS_ACTIVOS.includes(k);
-                  const on = activo && prefs.canais[k];
-                  return (
-                    <button key={k} disabled={!activo}
-                      onClick={() => mudarPrefs({ ...prefs, canais: { ...prefs.canais, [k]: !prefs.canais[k] } })}
-                      aria-pressed={on}
-                      className={`flex flex-col items-center gap-2.5 rounded-card p-5 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                        on ? "bg-mb-red/10 ring-2 ring-inset ring-mb-red/70" : "bg-ink-950 hover:bg-ink-800"
-                      }`}>
-                      <span className={`grid size-11 place-items-center rounded-full ${on ? "bg-mb-red/15 text-mb-red" : "bg-ink-800 text-ink-500"}`}>
-                        <Icon name={icone} className="size-5" />
-                      </span>
-                      <span className="text-center text-xs text-white">{label}</span>
-                      {!activo && <span className="text-[10px] uppercase tracking-widest text-ink-500">Brevemente</span>}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="mt-4 text-xs text-ink-600">As notificações por email são enviadas para {dados.email}.</p>
-            </section>
-          </div>
-        )}
-
-        {/* ---------- ANÚNCIOS ---------- */}
-        {aba === "anuncios" && (
-          <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="font-display text-xl uppercase text-white">Os meus anúncios</h2>
-                <p className="mt-1 text-sm text-ink-500">Gira os anúncios que publicou no marketplace.</p>
-              </div>
-              <Button size="lg" onClick={() => setFormAnuncio("novo")}>
-                <Icon name="plus" className="size-4" />
-                Publicar anúncio
-              </Button>
-            </div>
-
-            {perfil?.verificado && (
-              <div className="card bg-ok/8 p-5">
-                <p className="flex items-center gap-2.5 text-sm text-ink-200">
-                  <SeloVerificado tamanho={20} decorativo />
-                  <span>
-                    <strong className="text-white">Conta verificada.</strong> Os seus anúncios aparecem
-                    com o selo de vendedor verificado.
-                  </span>
-                </p>
-              </div>
-            )}
-
-            {dados.anuncios.length === 0 ? (
-              <div className="card p-8 text-center">
-                <p className="text-sm text-ink-400">Ainda não publicou nenhum anúncio.</p>
-              </div>
-            ) : (
-              <div className="grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
-                {dados.anuncios.map((a) => (
-                  <div key={a.id}>
-                    <Link href={`/marketplace/${a.id}`} className="media relative block aspect-[4/3]">
-                      <Placeholder nome={a.imagens[0] ?? a.categoria} className="absolute inset-0" />
-                      <div className="absolute left-3 top-3"><Tag tone="ok">Activo</Tag></div>
-                    </Link>
-                    <div className="pt-3.5">
-                      <h3 className="font-display text-sm uppercase leading-snug text-white line-clamp-2">{a.titulo}</h3>
-                      <p className="mt-2 font-display text-lg text-white">{formatKz(a.preco)}</p>
-                      <p className="mt-1 flex items-center gap-1.5 text-[11px] text-ink-600">
-                        <Icon name="eye" className="size-3" />
-                        {a.visualizacoes.toLocaleString("pt-PT")} visualizações
-                      </p>
-                      <div className="mt-4 flex gap-2">
-                        <Button variant="dark" size="sm" className="flex-1" onClick={() => setFormAnuncio(a)}>Editar</Button>
-                        <TerminarAnuncio id={a.id} aoTerminar={carregar} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Anúncios de outras pessoas que guardou com o coração */}
-            <section className="border-t border-white/6 pt-8">
-              <h2 className="font-display text-xl uppercase text-white">Guardados</h2>
-              <p className="mt-1 text-sm text-ink-500">Os anúncios que guardou no marketplace.</p>
-              <AnunciosGuardados className="mt-5" />
-            </section>
-          </div>
-        )}
-      </div>
-
-      {editarPerfil && (
-        <EditarPerfil
-          perfil={perfil}
-          avatar={avatar}
-          nomeConta={nome}
-          aoFechar={() => setEditarPerfil(false)}
-          aoGuardar={async () => { setEditarPerfil(false); await Promise.all([carregar(), recarregarPerfil()]); }}
-        />
-      )}
-
-      {formAnuncio && (
-        <FormAnuncio
-          anuncio={formAnuncio === "novo" ? null : formAnuncio}
-          provinciaPadrao={perfil?.provincia ?? "Luanda"}
-          aoFechar={() => setFormAnuncio(null)}
-          aoGuardar={async () => { setFormAnuncio(null); await carregar(); }}
-        />
-      )}
-    </div>
+    <>
+    <PainelConta
+      textos={textos}
+      clubes={clubes}
+      artigos={artigos}
+      eventos={eventos}
+      eventosTotal={eventosTotal}
+      rotas={rotas}
+      semana={semana}
+      marketplaceAberto={marketplaceAberto}
+      dados={dados}
+      prefs={prefs}
+      gravacao={gravacao}
+      gravacaoClube={gravacaoClube}
+      favoritos={favoritos && favoritos.dono === uid ? favoritos.lista : null}
+      erroFavoritos={erroFavoritos}
+      aRemoverFavorito={aRemoverFavorito}
+      artigosGuardados={artigosGuardados}
+      aMudarArtigo={aMudarArtigo}
+      aSair={aSair}
+      aba={aba}
+      irPara={irPara}
+      recarregar={recarregar}
+      mudarPrefs={mudarPrefs}
+      escolherClube={(s) => void escolherClube(s)}
+      removerFavorito={(a) => void removerFavorito(a)}
+      tentarFavoritos={() => { setErroFavoritos(null); setTentativa((n) => n + 1); }}
+      alternarArtigo={(s) => void alternarArtigo(s)}
+      mudarGaragem={mudarGaragem}
+      sair={() => void terminarSessao()}
+    />
+    <p role="status" aria-live="polite"
+      className={aviso ? "fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-[var(--raio)] bg-ink-900 px-4 py-3 text-[15px] text-white shadow-2xl ring-1 ring-white/15 lg:bottom-28" : "sr-only"}>
+      {aviso ?? ""}
+    </p>
+    </>
   );
 }
-
-/* ---------------- Peças ---------------- */
 
 async function lerConta(): Promise<{ dados?: DadosConta; erro?: string }> {
   try {
@@ -561,362 +228,51 @@ async function lerConta(): Promise<{ dados?: DadosConta; erro?: string }> {
   }
 }
 
-function EstadoGuardar({ estado }: { estado: EstadoGravacao }) {
-  if (estado === "parado") return <span className="text-xs text-ink-600">As alterações guardam-se automaticamente.</span>;
-  const tom = estado === "erro" ? "text-mb-red" : estado === "guardado" ? "text-ok" : "text-ink-400";
-  const texto = estado === "erro" ? "Não foi possível guardar. Tente de novo." : estado === "guardado" ? "Guardado" : "A guardar…";
-  return <span role="status" className={`text-xs ${tom}`}>{texto}</span>;
-}
-
-function Escolha({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
+/** A carregar: a forma do painel, a pulsar (parada para quem pede menos movimento). */
+function Esqueleto() {
+  const bloco = "painel painel-escuro animate-pulse motion-reduce:animate-none";
   return (
-    <button onClick={onClick} aria-pressed={on}
-      className={`flex items-center gap-3 rounded-full py-1.5 pl-1.5 pr-3.5 text-left transition-colors ${
-        on ? "bg-mb-red/12 ring-1 ring-inset ring-mb-red/60" : "bg-ink-950 hover:bg-ink-800"
-      }`}>
-      {children}
-      <span className={`grid size-5 shrink-0 place-items-center rounded-full ${on ? "bg-mb-red text-white" : "border border-ink-600"}`}>
-        {on && <Icon name="check" className="size-3" />}
-      </span>
-    </button>
-  );
-}
-
-function Janela({ titulo, aoFechar, children }: { titulo: string; aoFechar: () => void; children: ReactNode }) {
-  useEffect(() => {
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") aoFechar(); };
-    document.addEventListener("keydown", esc);
-    document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", esc); document.body.style.overflow = ""; };
-  }, [aoFechar]);
-  // No <body>: o painel da página isola o empilhamento e a janela ficava por baixo do botão.
-  return createPortal(
-    <div className="fixed inset-0 z-100 flex items-end justify-center sm:items-center sm:p-4">
-      <div className="absolute inset-0 bg-black/75" onClick={aoFechar} aria-hidden />
-      <div role="dialog" aria-modal="true" aria-label={titulo}
-        className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-2xl bg-ink-900 p-6 shadow-2xl shadow-black/60 ring-1 ring-white/5 sm:rounded-2xl">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 className="font-display text-lg uppercase tracking-tight text-white">{titulo}</h2>
-          <button onClick={aoFechar} aria-label="Fechar" className="-mr-2 grid size-9 place-items-center rounded-full text-ink-400 transition-colors hover:bg-white/8 hover:text-white">
-            <Icon name="close" className="size-5" />
-          </button>
-        </div>
-        {children}
+    <div className="space-y-[var(--intervalo)]" aria-busy="true" aria-label="A carregar a sua conta">
+      <div className={`${bloco} h-80`} />
+      <div className={`${bloco} h-14`} />
+      <div className="grid grid-cols-2 gap-[var(--intervalo)] pt-2.5 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => <div key={i} className={`${bloco} h-44`} />)}
       </div>
-    </div>,
-    document.body,
+    </div>
   );
 }
 
-function Rotulo({ texto, children }: { texto: string; children: ReactNode }) {
+/** Sem sessão: o que a conta dá, e entrar ou criar conta. */
+function SemSessao({ textos }: { textos: ConteudoConta }) {
+  const t = textos.semSessao;
+  const destino = encodeURIComponent("/conta");
   return (
-    <label className="block">
-      <span className="eyebrow mb-1.5 block text-ink-500">{texto}</span>
-      {children}
-    </label>
-  );
-}
-
-async function enviar(url: string, metodo: string, corpo: unknown): Promise<string | null> {
-  try {
-    const r = await fetch(comBase(url), {
-      method: metodo, headers: { "Content-Type": "application/json" },
-      body: corpo === undefined ? undefined : JSON.stringify(corpo),
-    });
-    if (r.ok) return null;
-    const j = await r.json().catch(() => ({}));
-    return String(j.erro ?? `Erro ${r.status}`);
-  } catch {
-    return "Não foi possível contactar o servidor.";
-  }
-}
-
-/**
- * O que fazer à imagem ao guardar: nada, pôr uma nova, ou tirá-la. A nova
- * guarda o ficheiro original e o enquadramento, para se poder voltar a ajustar.
- */
-type EscolhaImagem =
-  | { tipo: "manter" }
-  | { tipo: "nova"; blob: Blob; preview: string; original: File; recorte: EstadoRecorte }
-  | { tipo: "remover" };
-
-function IconeCamara() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 8h3l2-3h6l2 3h3v11H4V8Z" />
-      <circle cx="12" cy="13" r="3.5" />
-    </svg>
-  );
-}
-
-function EditarPerfil({ perfil, avatar, nomeConta, aoFechar, aoGuardar }: {
-  perfil: PerfilConta | null; avatar: AvatarDados; nomeConta: string;
-  aoFechar: () => void; aoGuardar: () => Promise<void>;
-}) {
-  const [nome, setNome] = useState(perfil?.nome ?? "");
-  const [telefone, setTelefone] = useState(perfil?.telefone ?? "");
-  const [provincia, setProvincia] = useState(perfil?.provincia ?? "");
-  const [cor, setCor] = useState(avatar.cor);
-  const [hex, setHex] = useState(avatar.cor);
-  const [imagem, setImagem] = useState<EscolhaImagem>({ tipo: "manter" });
-  const [erro, setErro] = useState<string | null>(null);
-  const [erroImagem, setErroImagem] = useState<string | null>(null);
-  const [aGuardar, setAGuardar] = useState(false);
-  /** Imagem aberta no recorte (a janela mostra-o em vez do formulário). */
-  const [recorte, setRecorte] = useState<{ original: File; inicial?: EstadoRecorte } | null>(null);
-  const seletor = useRef<HTMLInputElement>(null);
-  const secaoImagem = useRef<HTMLElement>(null);
-  const voltarFoco = useRef(false);
-  const tx = useTextosRecorte();
-
-  // Ao sair do recorte, o foco volta aos botões da imagem em vez de cair no início da página.
-  useEffect(() => {
-    if (recorte || !voltarFoco.current) return;
-    voltarFoco.current = false;
-    secaoImagem.current?.querySelector<HTMLButtonElement>("[data-foco-imagem]")?.focus();
-  }, [recorte]);
-
-  // Liberta a pré-visualização anterior quando muda, e a última ao fechar.
-  useEffect(() => () => {
-    if (imagem.tipo === "nova") URL.revokeObjectURL(imagem.preview);
-  }, [imagem]);
-
-  const urlMostrada = imagem.tipo === "nova" ? imagem.preview : imagem.tipo === "remover" ? null : avatar.url;
-  const personalizada = !CORES_AVATAR.includes(cor);
-
-  const mudarCor = (c: string) => { setCor(c); setHex(c); };
-  const escreverHex = (v: string) => {
-    const valor = v.trim().startsWith("#") ? v.trim() : `#${v.trim()}`;
-    setHex(v);
-    if (COR_HEX.test(valor)) setCor(valor.toLowerCase());
-  };
-
-  const escolherFicheiro = (f: File | undefined) => {
-    setErroImagem(null);
-    if (!f) return;
-    if (!TIPOS_IMAGEM.includes(f.type)) { setErroImagem("Use uma imagem JPG, PNG ou WebP."); return; }
-    if (f.size > IMAGEM_MAX) { setErroImagem("A imagem tem mais de 20 MB."); return; }
-    setRecorte({ original: f });
-  };
-
-  const fecharRecorte = () => { voltarFoco.current = true; setRecorte(null); };
-
-  // O recorte já sai a 512 px: é esse que se mostra e se envia ao guardar.
-  const aplicarRecorte = (blob: Blob, estado: EstadoRecorte) => {
-    if (!recorte) return;
-    setImagem({ tipo: "nova", blob, preview: URL.createObjectURL(blob), original: recorte.original, recorte: estado });
-    fecharRecorte();
-  };
-
-  const guardar = async () => {
-    setAGuardar(true);
-    setErro(null);
-    // Só vai o que mudou: uma conta sem linha em `utilizadores` pode mudar a cor
-    // e o logótipo sem esbarrar na validação do nome.
-    const corpo: Record<string, unknown> = {};
-    if (nome !== (perfil?.nome ?? "") || telefone !== (perfil?.telefone ?? "") || provincia !== (perfil?.provincia ?? "")) {
-      corpo.perfil = { nome, telefone, provincia };
-    }
-    if (cor !== avatar.cor) corpo.avatarCor = cor;
-
-    let e: string | null = null;
-    if (Object.keys(corpo).length > 0) e = await enviar("/api/conta", "PATCH", corpo);
-    if (!e && imagem.tipo === "nova") e = await enviarImagem(imagem.blob);
-    if (!e && imagem.tipo === "remover") e = await enviar("/api/conta/avatar", "DELETE", undefined);
-    setAGuardar(false);
-    if (e) { setErro(e); return; }
-    await aoGuardar();
-  };
-
-  if (recorte) {
-    // Esc, o fundo e o X fecham só o recorte: o que já se escreveu no perfil fica.
-    return (
-      <Janela titulo={tx.titulo} aoFechar={fecharRecorte}>
-        <RecortarAvatar fonte={recorte.original} inicial={recorte.inicial} cor={cor}
-          aoAplicar={aplicarRecorte} aoCancelar={fecharRecorte} />
-      </Janela>
-    );
-  }
-
-  return (
-    <Janela titulo="Editar perfil" aoFechar={aoFechar}>
-      {/* Logótipo e cor, com o resultado ao vivo no círculo grande */}
-      <section ref={secaoImagem} aria-label="Logótipo e cor" className="mb-6 border-b border-white/6 pb-6">
-        <div className="flex flex-wrap items-center gap-5">
-          <AvatarConta url={urlMostrada} cor={cor} nome={nome || nomeConta} className="size-24 text-3xl" />
-          <div className="min-w-0 flex-1 basis-44">
-            <p className="font-display text-base uppercase text-white">Logótipo ou fotografia</p>
-            <p className="mt-0.5 text-xs text-ink-500">JPG, PNG ou WebP, até 20 MB.</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {imagem.tipo === "nova" && (
-                <Button type="button" variant="dark" size="sm" data-foco-imagem
-                  onClick={() => setRecorte({ original: imagem.original, inicial: imagem.recorte })}>
-                  {tx.ajustar}
-                </Button>
-              )}
-              <Button type="button" variant="dark" size="sm" data-foco-imagem={imagem.tipo === "nova" ? undefined : true}
-                onClick={() => seletor.current?.click()}>
-                {urlMostrada ? "Trocar imagem" : "Carregar imagem"}
-              </Button>
-              {urlMostrada && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setImagem({ tipo: "remover" })}>
-                  Remover
-                </Button>
-              )}
-            </div>
-            <input ref={seletor} type="file" accept={TIPOS_IMAGEM.join(",")} className="sr-only" tabIndex={-1} aria-hidden
-              onChange={(e) => { escolherFicheiro(e.target.files?.[0]); e.target.value = ""; }} />
-            {erroImagem && <p role="alert" className="mt-2 text-sm text-mb-red">{erroImagem}</p>}
-          </div>
-        </div>
-
-        <p className="eyebrow mb-2.5 mt-6 text-ink-500">Cor</p>
-        <div className="flex flex-wrap items-center gap-2.5">
-          {CORES_AVATAR.map((c) => (
-            <button key={c} type="button" onClick={() => mudarCor(c)} aria-pressed={cor === c} aria-label={`Cor ${c}`}
-              className={`size-8 rounded-full transition-transform hover:scale-110 ${
-                cor === c ? "ring-2 ring-white ring-offset-2 ring-offset-ink-900" : ""
-              }`}
-              style={{ backgroundColor: c }} />
-          ))}
-          {/* Cor livre, para acertar com a do logótipo */}
-          <label title="Cor personalizada"
-            className={`relative size-8 cursor-pointer overflow-hidden rounded-full transition-transform hover:scale-110 ${
-              personalizada ? "ring-2 ring-white ring-offset-2 ring-offset-ink-900" : ""
-            }`}
-            style={{
-              background: personalizada
-                ? cor
-                : "conic-gradient(#e10600, #f59e0b, #22c55e, #0ea5e9, #6d28d9, #be185d, #e10600)",
-            }}>
-            <input type="color" value={cor} onChange={(e) => mudarCor(e.target.value.toLowerCase())}
-              aria-label="Cor personalizada" className="absolute inset-0 size-full cursor-pointer opacity-0" />
-          </label>
-          <input value={hex} onChange={(e) => escreverHex(e.target.value)} maxLength={7} spellCheck={false}
-            aria-label="Código da cor (#rrggbb)"
-            className="h-8 w-24 bg-ink-950 px-3 font-mono text-xs uppercase text-white ring-1 ring-inset ring-white/10 outline-none focus:ring-2 focus:ring-mb-red" />
-        </div>
-        <p className="mt-3 text-xs text-ink-600">A cor aparece por trás do logótipo e quando não há imagem.</p>
-      </section>
-
-      <div className="space-y-4">
-        <Rotulo texto="Nome"><input className={campo} value={nome} onChange={(e) => setNome(e.target.value)} maxLength={80} /></Rotulo>
-        <Rotulo texto="Telefone"><input className={campo} value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="+244 9xx xxx xxx" maxLength={30} /></Rotulo>
-        <Rotulo texto="Província">
-          <select className={campo} value={provincia} onChange={(e) => setProvincia(e.target.value)}>
-            <option value="">Não indicada</option>
-            {PROVINCIAS.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
-        </Rotulo>
-        {erro && <p role="alert" className="text-sm text-mb-red">{erro}</p>}
-        <div className="flex justify-end gap-2 pt-2">
-          <Button variant="ghost" onClick={aoFechar}>Cancelar</Button>
-          <Button onClick={guardar} disabled={aGuardar}>{aGuardar ? "A guardar…" : "Guardar"}</Button>
+    <section className="grid gap-[var(--intervalo)] lg:grid-cols-[1.3fr_1fr]">
+      <div className="painel painel-escuro flex flex-col p-6 md:p-10">
+        <span aria-hidden className="chip-mb chip-mb-lg"><UserRound /></span>
+        <p className="sobretitulo mt-10 text-white/85">{t.sobretitulo}</p>
+        <h1 className="titulo-2 mt-4 max-w-[18ch] text-balance text-white">{t.titulo}</h1>
+        <p className="texto-lead mt-5 max-w-[48ch] text-white/90">{t.texto}</p>
+        <div className="mt-8 flex flex-wrap gap-[var(--intervalo)]">
+          <Link href={`/entrar?destino=${destino}`}
+            className="group inline-flex h-14 items-center gap-6 rounded-[var(--raio)] bg-mb-red px-6 text-[15px] text-white transition-colors hover:bg-mb-red-dark">
+            {t.entrar}
+            <Seta className="size-4" />
+          </Link>
+          <Link href={`/entrar?modo=registar&destino=${destino}`}
+            className="inline-flex h-14 items-center rounded-[var(--raio)] bg-white/12 px-6 text-[15px] text-white transition-colors hover:bg-white/20">
+            {t.criar}
+          </Link>
         </div>
       </div>
-    </Janela>
-  );
-}
-
-function FormAnuncio({ anuncio, provinciaPadrao, aoFechar, aoGuardar }: {
-  anuncio: AnuncioMarketplace | null; provinciaPadrao: string;
-  aoFechar: () => void; aoGuardar: () => Promise<void>;
-}) {
-  const [f, setF] = useState({
-    titulo: anuncio?.titulo ?? "", categoria: anuncio?.categoria ?? "Motas",
-    preco: anuncio ? String(anuncio.preco) : "", negociavel: anuncio?.negociavel ?? false,
-    marca: anuncio?.marca ?? "", modelo: anuncio?.modelo ?? "",
-    ano: anuncio?.ano ? String(anuncio.ano) : "", quilometragem: anuncio?.quilometragem ? String(anuncio.quilometragem) : "",
-    estado: anuncio?.estado ?? "Bom", provincia: anuncio?.provincia ?? provinciaPadrao, descricao: anuncio?.descricao ?? "",
-  });
-  const [erro, setErro] = useState<string | null>(null);
-  const [aGuardar, setAGuardar] = useState(false);
-  const def = (campos: Partial<typeof f>) => setF((x) => ({ ...x, ...campos }));
-
-  const guardar = async () => {
-    setAGuardar(true);
-    const e = anuncio
-      ? await enviar(`/api/conta/anuncios?id=${encodeURIComponent(anuncio.id)}`, "PATCH", f)
-      : await enviar("/api/conta/anuncios", "POST", f);
-    setAGuardar(false);
-    if (e) { setErro(e); return; }
-    await aoGuardar();
-  };
-
-  return (
-    <Janela titulo={anuncio ? "Editar anúncio" : "Publicar anúncio"} aoFechar={aoFechar}>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <Rotulo texto="Título"><input className={campo} value={f.titulo} onChange={(e) => def({ titulo: e.target.value })} placeholder="Ex.: KTM 250 SX-F 2022, pronta a correr" maxLength={90} /></Rotulo>
-        </div>
-        <Rotulo texto="Categoria">
-          <select className={campo} value={f.categoria} onChange={(e) => def({ categoria: e.target.value as typeof f.categoria })}>
-            {["Motas", "Peças", "Equipamento", "Acessórios"].map((c) => <option key={c}>{c}</option>)}
-          </select>
-        </Rotulo>
-        <Rotulo texto="Estado">
-          <select className={campo} value={f.estado} onChange={(e) => def({ estado: e.target.value as typeof f.estado })}>
-            {["Nova", "Como nova", "Muito bom", "Bom", "Para peças"].map((c) => <option key={c}>{c}</option>)}
-          </select>
-        </Rotulo>
-        <Rotulo texto="Preço (Kz)"><input className={campo} inputMode="numeric" value={f.preco} onChange={(e) => def({ preco: e.target.value.replace(/[^\d]/g, "") })} /></Rotulo>
-        <Rotulo texto="Província">
-          <select className={campo} value={f.provincia} onChange={(e) => def({ provincia: e.target.value as typeof f.provincia })}>
-            {PROVINCIAS.map((p) => <option key={p}>{p}</option>)}
-          </select>
-        </Rotulo>
-        <Rotulo texto="Marca"><input className={campo} value={f.marca} onChange={(e) => def({ marca: e.target.value })} list="marcas-conta" maxLength={40} /></Rotulo>
-        <datalist id="marcas-conta">{MARCAS.map((m) => <option key={m} value={m} />)}</datalist>
-        <Rotulo texto="Modelo"><input className={campo} value={f.modelo} onChange={(e) => def({ modelo: e.target.value })} maxLength={60} /></Rotulo>
-        <Rotulo texto="Ano"><input className={campo} inputMode="numeric" value={f.ano} onChange={(e) => def({ ano: e.target.value.replace(/[^\d]/g, "").slice(0, 4) })} /></Rotulo>
-        <Rotulo texto="Quilómetros"><input className={campo} inputMode="numeric" value={f.quilometragem} onChange={(e) => def({ quilometragem: e.target.value.replace(/[^\d]/g, "") })} /></Rotulo>
-        <div className="sm:col-span-2">
-          <Rotulo texto="Descrição">
-            <textarea className={`${campo} h-32 py-2`} value={f.descricao} onChange={(e) => def({ descricao: e.target.value })} maxLength={3000}
-              placeholder="Estado, revisões, o que inclui, onde se pode ver." />
-          </Rotulo>
-        </div>
-        <label className="flex items-center gap-2 text-sm text-ink-300 sm:col-span-2">
-          <input type="checkbox" checked={f.negociavel} onChange={(e) => def({ negociavel: e.target.checked })} className="size-4 accent-[#e10600]" />
-          Preço negociável
-        </label>
-      </div>
-      <p className="mt-4 text-xs text-ink-600">Por agora os anúncios são publicados sem fotografias.</p>
-      {erro && <p role="alert" className="mt-3 text-sm text-mb-red">{erro}</p>}
-      <div className="mt-5 flex justify-end gap-2">
-        <Button variant="ghost" onClick={aoFechar}>Cancelar</Button>
-        <Button onClick={guardar} disabled={aGuardar}>{aGuardar ? "A guardar…" : anuncio ? "Guardar" : "Publicar"}</Button>
-      </div>
-    </Janela>
-  );
-}
-
-function TerminarAnuncio({ id, aoTerminar }: { id: string; aoTerminar: () => Promise<void> }) {
-  const [confirmar, setConfirmar] = useState(false);
-  const [aApagar, setAApagar] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-
-  if (!confirmar) {
-    return <Button variant="dark" size="sm" className="flex-1" onClick={() => setConfirmar(true)}>Terminar</Button>;
-  }
-  return (
-    <Janela titulo="Terminar anúncio" aoFechar={() => setConfirmar(false)}>
-      <p className="text-sm text-ink-300">O anúncio sai do marketplace e não pode ser recuperado. Continuar?</p>
-      {erro && <p role="alert" className="mt-3 text-sm text-mb-red">{erro}</p>}
-      <div className="mt-5 flex justify-end gap-2">
-        <Button variant="ghost" onClick={() => setConfirmar(false)}>Cancelar</Button>
-        <Button disabled={aApagar} onClick={async () => {
-          setAApagar(true);
-          const e = await enviar(`/api/conta/anuncios?id=${encodeURIComponent(id)}`, "DELETE", undefined);
-          setAApagar(false);
-          if (e) { setErro(e); return; }
-          setConfirmar(false);
-          await aoTerminar();
-        }}>
-          {aApagar ? "A terminar…" : "Terminar anúncio"}
-        </Button>
-      </div>
-    </Janela>
+      <ul className="grid gap-[var(--intervalo)] sm:grid-cols-2 lg:grid-cols-1">
+        {(Array.isArray(t.vantagens) ? t.vantagens : []).filter(Boolean).map((v) => (
+          <li key={v} className="painel painel-escuro flex items-center gap-4 p-5 text-[15px] leading-snug text-white">
+            <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-mb-red"><Check className="size-4" /></span>
+            {v}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

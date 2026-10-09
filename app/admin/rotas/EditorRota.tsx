@@ -64,7 +64,7 @@ function CampoProvincias({ valor, mudar }: { valor: string[]; mudar: (v: string[
   return (
     <div className="min-w-0">
       <span className="mb-1.5 block text-[13px] font-medium text-white/75">Províncias por onde passa</span>
-      <span className="-mt-0.5 mb-2 block text-xs leading-relaxed text-white/50">
+      <span className="-mt-0.5 mb-2 block text-xs leading-relaxed text-white/75">
         A página mostra os clubes destas províncias em &quot;Clubes na região&quot;.
       </span>
       <div className="flex flex-wrap gap-1.5">

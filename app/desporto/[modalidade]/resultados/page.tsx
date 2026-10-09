@@ -75,7 +75,7 @@ export default async function ResultadosModalidadePage({ params }: { params: Pro
           )}
 
           {a.legenda && (
-            <p className="mt-10 flex items-start gap-2.5 text-sm text-white/55">
+            <p className="mt-10 flex items-start gap-2.5 text-sm text-white/75">
               <Flag className="mt-0.5 size-4 shrink-0 text-mb-red-light" aria-hidden />
               {a.legenda}
             </p>

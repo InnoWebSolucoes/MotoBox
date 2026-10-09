@@ -119,7 +119,7 @@ export function AnunciosGuardados({
     return (
       <div className={className}>
         <p className="font-display text-lg uppercase text-ink-300">Ainda não guardou anúncios</p>
-        <p className="mt-1.5 text-sm text-ink-500">
+        <p className="mt-1.5 text-sm text-ink-300">
           Carregue em Guardar num anúncio do marketplace para o encontrar aqui mais tarde.
         </p>
         <ButtonLink href="/marketplace" variant="dark" size="sm" className="mt-5">
@@ -147,11 +147,11 @@ export function AnunciosGuardados({
               </div>
               <div className="min-w-0">
                 <p className="font-display text-lg leading-none text-white tabular-nums">{formatKz(a.preco)}</p>
-                <p className="mt-2 flex items-start gap-1.5 font-display text-sm uppercase leading-snug text-white transition-colors group-hover:text-mb-red">
+                <p className="mt-2 flex items-start gap-1.5 font-display text-sm uppercase leading-snug text-white transition-colors group-hover:text-mb-red-light">
                   <span className="line-clamp-2">{a.titulo}</span>
                   {a.verificado && <SeloVerificado tamanho={14} className="mt-0.5" />}
                 </p>
-                <p className="mt-1.5 text-xs text-ink-500">
+                <p className="mt-1.5 text-xs text-ink-300">
                   {[a.provincia, a.estado, a.negociavel ? "Negociável" : ""].filter(Boolean).join(" · ")}
                 </p>
               </div>
@@ -161,7 +161,7 @@ export function AnunciosGuardados({
               onClick={() => remover(a)}
               disabled={aRemover.includes(a.id)}
               aria-label={`Remover dos guardados: ${a.titulo}`}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 font-ui text-sm text-ink-400 transition-colors hover:bg-white/8 hover:text-white disabled:opacity-50"
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 font-ui text-sm text-ink-300 transition-colors hover:bg-white/8 hover:text-white disabled:opacity-50"
             >
               <Icon name="close" className="size-3.5" />
               <span className="hidden sm:inline">{aRemover.includes(a.id) ? "A remover…" : "Remover"}</span>

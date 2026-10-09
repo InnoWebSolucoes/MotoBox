@@ -335,7 +335,7 @@ export function RecortarAvatar({ fonte, inicial, cor, aoAplicar, aoCancelar }: {
 
   return (
     <div>
-      <p id={idInstrucoes} className="text-sm leading-relaxed text-ink-400">{tx.instrucoes}</p>
+      <p id={idInstrucoes} className="text-sm leading-relaxed text-ink-300">{tx.instrucoes}</p>
       <p id={idTeclado} className="sr-only">{tx.teclado}</p>
 
       <div
@@ -383,7 +383,7 @@ export function RecortarAvatar({ fonte, inicial, cor, aoAplicar, aoCancelar }: {
           }}
         />
         {!pronto && !erro && (
-          <p className="absolute inset-0 grid place-items-center text-sm text-ink-400">
+          <p className="absolute inset-0 grid place-items-center text-sm text-ink-300">
             <span className="animate-pulse">{tx.aAbrir}</span>
           </p>
         )}
@@ -416,7 +416,7 @@ export function RecortarAvatar({ fonte, inicial, cor, aoAplicar, aoCancelar }: {
       </div>
       <p role="status" className="sr-only">{anuncio}</p>
 
-      {erro && <p role="alert" className="mt-3 text-center text-sm text-mb-red">{erro}</p>}
+      {erro && <p role="alert" className="mt-3 text-center text-sm text-mb-red-light">{erro}</p>}
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
         <Button type="button" variant="ghost" size="sm" onClick={repor} disabled={!pronto}>

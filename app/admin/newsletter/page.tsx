@@ -246,41 +246,41 @@ export default function AdminNewsletter() {
               onChange={alternarAutomatico}
             />
             {colunaEmFalta && (
-              <p className="text-xs leading-relaxed text-white/50">
+              <p className="text-xs leading-relaxed text-white/75">
                 Para poder desligar, falta uma actualização da base de dados (supabase/migracao-2026-09.sql). Até lá, o envio fica ligado.
               </p>
             )}
           </div>
 
           <dl className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2.5 rounded-[var(--raio)] border border-white/10 bg-black/[0.15] px-4 py-3.5 text-sm">
-            <dt className="text-white/55">Último envio</dt>
+            <dt className="text-white/75">Último envio</dt>
             <dd className="text-white">
               {ultimo ? (
                 <>
                   <span className="first-letter:uppercase">{quandoLuanda(ultimo.quando)}</span>
-                  <span className="block text-xs text-white/50">{ultimo.detalhe}{ultimo.utilizador ? ` · ${ultimo.utilizador}` : ""}</span>
+                  <span className="block text-xs text-white/75">{ultimo.detalhe}{ultimo.utilizador ? ` · ${ultimo.utilizador}` : ""}</span>
                 </>
               ) : (
-                <span className="text-white/55">Ainda não saiu nenhuma.</span>
+                <span className="text-white/75">Ainda não saiu nenhuma.</span>
               )}
             </dd>
-            <dt className="text-white/55">Próximo</dt>
+            <dt className="text-white/75">Próximo</dt>
             <dd className="text-white">
-              {!automatica ? <span className="text-white/55">Desligado</span> : proximo ? quandoLuanda(proximo) : "…"}
+              {!automatica ? <span className="text-white/75">Desligado</span> : proximo ? quandoLuanda(proximo) : "…"}
             </dd>
-            <dt className="text-white/55">Esta semana</dt>
+            <dt className="text-white/75">Esta semana</dt>
             <dd className={info?.vazio ? "text-gold" : "text-white"}>
               {erroInfo ? (
                 <span className="text-mb-red-light">{erroInfo}</span>
               ) : !info ? (
-                <span className="text-white/55">A preparar…</span>
+                <span className="text-white/75">A preparar…</span>
               ) : info.vazio ? (
                 "Sem novidades por agora: se continuar assim, o envio é saltado."
               ) : (
                 conteudoSemana(info.seccoes)
               )}
             </dd>
-            <dt className="text-white/55">Para quem</dt>
+            <dt className="text-white/75">Para quem</dt>
             <dd className="tabular-nums text-white">{info ? info.destinatarios : activos} subscritores activos</dd>
           </dl>
         </div>
@@ -323,12 +323,12 @@ export default function AdminNewsletter() {
         </Ferramentas>
 
         <ul className="divide-y divide-white/[0.07] md:hidden">
-          {fatia.length === 0 && <li className="py-10 text-center text-sm text-white/50">Nenhum subscritor corresponde aos filtros.</li>}
+          {fatia.length === 0 && <li className="py-10 text-center text-sm text-white/75">Nenhum subscritor corresponde aos filtros.</li>}
           {fatia.map((s) => (
             <li key={s.id} className="flex items-center gap-3 py-3">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm text-white">{s.email}</p>
-                <p className="truncate text-xs text-white/50">{[s.nome, nomeOrigem(s.origem), dataCurta(s.subscrito, true)].filter(Boolean).join(" · ")}</p>
+                <p className="truncate text-xs text-white/75">{[s.nome, nomeOrigem(s.origem), dataCurta(s.subscrito, true)].filter(Boolean).join(" · ")}</p>
               </div>
               <button type="button" onClick={() => void alternarActivo(s)} title={s.ativo ? "Cancelar a subscrição" : "Reactivar a subscrição"}>
                 <Estado valor={s.ativo ? "ativo" : "arquivada"} rotulo={s.ativo ? "Activo" : "Cancelado"} />
@@ -346,8 +346,8 @@ export default function AdminNewsletter() {
             <Linha key={s.id}>
               <Cel className="text-white">{s.email}</Cel>
               <Cel className="text-white/70">{s.nome ?? ""}</Cel>
-              <Cel className="text-white/60">{nomeOrigem(s.origem)}</Cel>
-              <Cel className="whitespace-nowrap tabular-nums text-white/60">{dataCurta(s.subscrito, true)}</Cel>
+              <Cel className="text-white/80">{nomeOrigem(s.origem)}</Cel>
+              <Cel className="whitespace-nowrap tabular-nums text-white/80">{dataCurta(s.subscrito, true)}</Cel>
               <Cel>
                 <button type="button" onClick={() => void alternarActivo(s)} title={s.ativo ? "Cancelar a subscrição" : "Reactivar a subscrição"}>
                   <Estado valor={s.ativo ? "ativo" : "arquivada"} rotulo={s.ativo ? "Activo" : "Cancelado"} />
@@ -401,7 +401,7 @@ export default function AdminNewsletter() {
       >
         {info ? (
           <>
-            <p className="text-sm leading-relaxed text-white/60">
+            <p className="text-sm leading-relaxed text-white/80">
               Com o conteúdo de hoje (semana de {info.semana.rotulo}). O envio de segunda-feira usa o conteúdo desse dia.
               {info.vazio && <span className="text-gold"> Esta semana ainda não há novidades: o envio automático seria saltado.</span>}
             </p>
@@ -414,7 +414,7 @@ export default function AdminNewsletter() {
             />
           </>
         ) : (
-          <p className="py-10 text-center text-sm text-white/55">{erroInfo ?? "A preparar a pré-visualização…"}</p>
+          <p className="py-10 text-center text-sm text-white/75">{erroInfo ?? "A preparar a pré-visualização…"}</p>
         )}
       </Gaveta>
 

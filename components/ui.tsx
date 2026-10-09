@@ -112,7 +112,7 @@ export function SectionHead({
   return (
     <div className={`flex flex-wrap items-end justify-between gap-4 ${className}`}>
       <div className="max-w-2xl">
-        {eyebrow && <p className="sobretitulo mb-3 text-white/60">{eyebrow}</p>}
+        {eyebrow && <p className="sobretitulo mb-3 text-white/80">{eyebrow}</p>}
         <h2 className="titulo-3">{titulo}</h2>
         {descricao && <p className="mt-3 text-sm leading-relaxed text-white/70">{descricao}</p>}
       </div>
@@ -157,7 +157,7 @@ export function EmptyState({ titulo, descricao }: { titulo: string; descricao: s
   return (
     <div className="painel painel-escuro px-8 py-14 text-center">
       <p className="text-lg font-semibold text-white/85">{titulo}</p>
-      <p className="mt-2 text-sm text-white/55">{descricao}</p>
+      <p className="mt-2 text-sm text-white/75">{descricao}</p>
     </div>
   );
 }
@@ -167,7 +167,7 @@ export function EmptyState({ titulo, descricao }: { titulo: string; descricao: s
 export function PosicaoBadge({ posicao, size = "md" }: { posicao: number; size?: "sm" | "md" }) {
   const dim = size === "sm" ? "w-6 text-lg" : "w-9 text-2xl";
   return (
-    <span className={`shrink-0 font-semibold leading-none tabular-nums ${dim} ${posicao === 0 ? "text-sm text-white/50" : "text-white"}`}>
+    <span className={`shrink-0 font-semibold leading-none tabular-nums ${dim} ${posicao === 0 ? "text-sm text-white/75" : "text-white"}`}>
       {posicao === 0 ? "NC" : posicao}
     </span>
   );

@@ -100,7 +100,7 @@ export default function AdminAtividade() {
           <div className="space-y-6">
             {porDia.map((g) => (
               <section key={g.dia}>
-                <h2 className="mb-2 text-sm font-medium text-white/60 first-letter:uppercase">{g.dia}</h2>
+                <h2 className="mb-2 text-sm font-medium text-white/80 first-letter:uppercase">{g.dia}</h2>
                 <ol className="divide-y divide-white/[0.07] rounded-[var(--raio)] border border-white/[0.08] bg-black/[0.12]">
                   {g.itens.map((a) => (
                     <li key={a.id} className="flex items-start gap-3 px-4 py-3">
@@ -108,12 +108,12 @@ export default function AdminAtividade() {
                       <div className="min-w-0 flex-1">
                         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                           <span className="font-medium text-white">{a.utilizador}</span>
-                          <span className="text-white/65">{a.accao.toLowerCase()}</span>
+                          <span className="text-white/80">{a.accao.toLowerCase()}</span>
                           <Etiqueta>{a.entidade}</Etiqueta>
                         </p>
                         {a.detalhe && <p className="mt-0.5 text-sm text-white/70 [overflow-wrap:anywhere]">{a.detalhe}</p>}
                       </div>
-                      <span className="shrink-0 pt-0.5 text-xs tabular-nums text-white/45">{hora(a.quando)}</span>
+                      <span className="shrink-0 pt-0.5 text-xs tabular-nums text-white/70">{hora(a.quando)}</span>
                     </li>
                   ))}
                 </ol>

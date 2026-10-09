@@ -161,7 +161,7 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
                         className="group flex items-center justify-between gap-3 py-3 first:pt-0"
                       >
                         <span className="text-sm font-medium transition-colors group-hover:text-mb-red-light">{c.categoria}</span>
-                        <span className="flex min-w-0 items-center gap-3 text-sm text-white/60">
+                        <span className="flex min-w-0 items-center gap-3 text-sm text-white/80">
                           <span className="truncate">{c.vencedor}</span>
                           <Seta className="size-3 text-white" />
                         </span>

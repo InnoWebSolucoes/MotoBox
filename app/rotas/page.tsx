@@ -40,13 +40,13 @@ export default async function Rotas() {
               <Link key={r.slug} href={`/rotas/${r.slug}`} className="painel painel-escuro group flex flex-col p-[var(--intervalo)]">
                 <QuadroRota foto={r.fotos[0]} className="aspect-[4/3]" tamanhos="(max-width: 768px) 100vw, 33vw" />
                 <div className="flex flex-1 flex-col p-4 pt-5 md:p-5">
-                  <p className="text-[0.8125rem] text-white/60">{r.regiao}</p>
+                  <p className="text-[0.8125rem] text-white/80">{r.regiao}</p>
                   <h3 className="mt-1.5 text-xl font-semibold leading-snug tracking-tight">{r.nome}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-white/70">{r.subtitulo}</p>
-                  <p className="mt-4 text-[0.8125rem] text-white/60 tabular-nums">
+                  <p className="mt-4 text-[0.8125rem] text-white/80 tabular-nums">
                     {t.km} km · {duracao(t.minMota)} a rodar · {r.dias} {r.dias > 1 ? "dias" : "dia"}
                   </p>
-                  <div className="mt-auto flex items-center justify-between gap-4 pt-4 text-[0.8125rem] text-white/60">
+                  <div className="mt-auto flex items-center justify-between gap-4 pt-4 text-[0.8125rem] text-white/80">
                     <span>
                       {r.piso} · <span className="text-mb-red-light">{r.exigencia}</span>
                     </span>
@@ -57,7 +57,7 @@ export default async function Rotas() {
             );
           })}
         </div>
-        {p.lista.nota && <p className="mt-6 max-w-[90ch] text-xs leading-relaxed text-white/45">{p.lista.nota}</p>}
+        {p.lista.nota && <p className="mt-6 max-w-[90ch] text-xs leading-relaxed text-white/70">{p.lista.nota}</p>}
       </Seccao>
 
       <Seccao className="!pt-0">
@@ -68,17 +68,17 @@ export default async function Rotas() {
               <h3 className="text-lg font-semibold leading-snug">{c.regiao}</h3>
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <dt className="text-white/55">{p.quandoIr.seco}</dt>
+                  <dt className="text-white/75">{p.quandoIr.seco}</dt>
                   <dd className="mt-0.5">{c.seco}</dd>
                 </div>
                 <div>
-                  <dt className="text-white/55">{p.quandoIr.chuva}</dt>
+                  <dt className="text-white/75">{p.quandoIr.chuva}</dt>
                   <dd className="mt-0.5">{c.chuva}</dd>
                 </div>
               </dl>
               {c.nota && <p className="mt-4 text-sm text-white/70">{c.nota}</p>}
               {c.fonte?.url && (
-                <a href={c.fonte.url} target="_blank" rel="noopener noreferrer" className="mt-auto pt-4 text-xs text-white/45 hover:text-white">
+                <a href={c.fonte.url} target="_blank" rel="noopener noreferrer" className="mt-auto pt-4 text-xs text-white/70 hover:text-white">
                   Fonte: {c.fonte.nome}
                 </a>
               )}
@@ -105,7 +105,7 @@ export default async function Rotas() {
                 ))}
               </ul>
               {g.fontes.length > 0 && (
-                <p className="mt-auto pt-5 text-xs text-white/45">
+                <p className="mt-auto pt-5 text-xs text-white/70">
                   Fontes:{" "}
                   {g.fontes.map((f, j) => (
                     <span key={`${f.url}-${j}`}>
@@ -131,7 +131,7 @@ export default async function Rotas() {
                   <a href={`tel:${num.numero}`} className="text-3xl font-semibold tabular-nums tracking-tight hover:text-mb-red-light">
                     {num.numero}
                   </a>
-                  <p className="mt-1 text-xs leading-snug text-white/65">{num.servico}</p>
+                  <p className="mt-1 text-xs leading-snug text-white/80">{num.servico}</p>
                 </li>
               ))}
             </ul>
@@ -148,7 +148,7 @@ export default async function Rotas() {
               <span aria-hidden className="text-4xl font-semibold text-mb-red-light">{i + 1}</span>
               <p className="mt-auto pt-6 text-[15px] leading-relaxed">{r.texto}</p>
               {r.fonte?.url && (
-                <a href={r.fonte.url} target="_blank" rel="noopener noreferrer" className="mt-3 text-xs text-white/45 hover:text-white">
+                <a href={r.fonte.url} target="_blank" rel="noopener noreferrer" className="mt-3 text-xs text-white/70 hover:text-white">
                   {r.fonte.nome}
                 </a>
               )}
@@ -169,7 +169,7 @@ export default async function Rotas() {
             </BotaoMB>
           )}
         </div>
-        {p.notaFinal && <p className="mt-6 text-xs text-white/45">{p.notaFinal}</p>}
+        {p.notaFinal && <p className="mt-6 text-xs text-white/70">{p.notaFinal}</p>}
       </Seccao>
     </PaginaInterior>
   );

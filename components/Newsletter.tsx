@@ -91,7 +91,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
         </span>
         <div className={variante === "rodape" ? "" : "mt-4"}>
           <p className="font-display uppercase tracking-wide text-white">Subscrição confirmada</p>
-          <p className="mt-1 text-sm text-ink-400">
+          <p className="mt-1 text-sm text-ink-300">
             {antesEmail}<span className="text-ink-200">{email.trim()}</span>{depoisEmail}
           </p>
         </div>
@@ -125,7 +125,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
             setEstado("idle");
           }}
           placeholder="o.seu@email.ao"
-          className="h-12 w-full min-w-0 sm:flex-1 rounded-full bg-ink-950 px-5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red outline-none"
+          className="h-12 w-full min-w-0 sm:flex-1 rounded-full bg-ink-950 px-5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-300 focus:ring-2 focus:ring-mb-red outline-none"
         />
         <button
           type="submit"
@@ -160,11 +160,11 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
         }
       >
         <div>
-          <p className="eyebrow text-mb-red">Newsletter Motobox</p>
+          <p className="eyebrow text-mb-red-light">Newsletter Motobox</p>
           <h2 className="title-xl mt-3 text-3xl sm:text-4xl">
             Não perca<br />nenhuma prova
           </h2>
-          <p className="mt-4 max-w-md text-sm text-ink-400 leading-relaxed">
+          <p className="mt-4 max-w-md text-sm text-ink-300 leading-relaxed">
             Resultados, calendário, bilhetes e as histórias da comunidade motard angolana, no seu
             email, todas as semanas. Sem spam, e cancela quando quiser.
           </p>
@@ -174,7 +174,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
           <Armadilha />
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="nl-nome" className="eyebrow block text-ink-500 mb-2">
+              <label htmlFor="nl-nome" className="eyebrow block text-ink-300 mb-2">
                 Nome
               </label>
               <input
@@ -182,12 +182,12 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="O seu nome"
-                className="h-12 w-full rounded-full bg-ink-950 px-5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red outline-none"
+                className="h-12 w-full rounded-full bg-ink-950 px-5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-300 focus:ring-2 focus:ring-mb-red outline-none"
               />
             </div>
             <div>
-              <label htmlFor="nl-email" className="eyebrow block text-ink-500 mb-2">
-                Email <span className="text-mb-red">*</span>
+              <label htmlFor="nl-email" className="eyebrow block text-ink-300 mb-2">
+                Email <span className="text-mb-red-light">*</span>
               </label>
               <input
                 id="nl-email"
@@ -199,13 +199,13 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
                   setEstado("idle");
                 }}
                 placeholder="o.seu@email.ao"
-                className="h-12 w-full rounded-full bg-ink-950 px-5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-600 focus:ring-2 focus:ring-mb-red outline-none"
+                className="h-12 w-full rounded-full bg-ink-950 px-5 text-sm text-white ring-1 ring-inset ring-white/10 placeholder:text-ink-300 focus:ring-2 focus:ring-mb-red outline-none"
               />
             </div>
           </div>
 
           <fieldset className="mt-5">
-            <legend className="eyebrow text-ink-500 mb-2.5">Quero receber sobre</legend>
+            <legend className="eyebrow text-ink-300 mb-2.5">Quero receber sobre</legend>
             <div className="flex flex-wrap gap-2">
               {INTERESSES.map((i) => {
                 const on = interesses.includes(i);
@@ -238,7 +238,7 @@ export function Newsletter({ variante = "faixa" }: { variante?: "faixa" | "carta
             >
               {estado === "a-enviar" ? "A subscrever…" : "Subscrever"}
             </button>
-            <p className="text-xs text-ink-600 max-w-xs">
+            <p className="text-xs text-ink-300 max-w-xs">
               Ao subscrever aceita receber comunicações da Motobox Angola.
             </p>
           </div>

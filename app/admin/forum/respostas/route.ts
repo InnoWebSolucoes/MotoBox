@@ -10,6 +10,11 @@ import { tabelaEmFalta } from "@/lib/forum/respostas";
    todas (as escondidas também), esconde, volta a mostrar ou
    apaga. A contagem do tópico acompanha as respostas visíveis.
 
+   A linha "op-<tópico>" é a mensagem de abertura de um tópico
+   aberto por um membro (ver app/forum/_servidor/forum.ts): vem
+   marcada com `abertura: true` e não conta como resposta.
+   Escondida, a página do tópico mostra o resumo (`excerto`).
+
    GET    ?topico=<id>          respostas (as mais recentes primeiro)
    PATCH  { id, publicado }     mostra ou esconde uma resposta
    DELETE ?id=<id>              apaga uma resposta
@@ -67,6 +72,7 @@ export async function GET(req: NextRequest) {
       corpo: String(l.corpo ?? ""),
       criadoEm: String(l.criado_em ?? ""),
       publicado: l.publicado !== false,
+      abertura: String(l.id).startsWith("op-"),
     })),
   });
 }
@@ -87,7 +93,7 @@ export async function PATCH(req: NextRequest) {
 
   const { error } = await db.from("respostas_forum").update({ publicado }).eq("id", id);
   if (error) return erro(error.message, 500);
-  if ((antes.publicado !== false) !== publicado) {
+  if ((antes.publicado !== false) !== publicado && !id.startsWith("op-")) {
     await acertarContagem(db, String(antes.topico_id), publicado ? 1 : -1);
   }
   revalidar();
@@ -107,7 +113,7 @@ export async function DELETE(req: NextRequest) {
 
   const { error } = await db.from("respostas_forum").delete().eq("id", id);
   if (error) return erro(error.message, 500);
-  if (antes.publicado !== false) await acertarContagem(db, String(antes.topico_id), -1);
+  if (antes.publicado !== false && !id.startsWith("op-")) await acertarContagem(db, String(antes.topico_id), -1);
   revalidar();
   return NextResponse.json({ ok: true });
 }

@@ -136,6 +136,10 @@ export interface ConteudoPaginaArtigos {
   artigoPartilhar: string;
   artigoPartilharBotao: string;
   artigoCopiado: string;
+  /** Guardar o artigo na conta do membro (/conta → Guardados). */
+  artigoGuardar: string;
+  artigoGuardarBotao: string;
+  artigoGuardado: string;
   artigoFonte: string;
   artigoEtiquetas: string;
   artigoTodos: string;
@@ -157,6 +161,9 @@ export const PAGINA_ARTIGOS_PADRAO: ConteudoPaginaArtigos = {
   artigoPartilhar: "Partilhar",
   artigoPartilharBotao: "Partilhar artigo",
   artigoCopiado: "Ligação copiada",
+  artigoGuardar: "Guardar",
+  artigoGuardarBotao: "Guardar artigo",
+  artigoGuardado: "Guardado na sua conta",
   artigoFonte: "Fonte:",
   artigoEtiquetas: "Etiquetas",
   artigoTodos: "Todos os artigos",

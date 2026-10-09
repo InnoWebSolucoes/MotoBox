@@ -133,7 +133,7 @@ export default async function DesportoPage() {
                     <p className="mt-4 flex flex-wrap items-baseline gap-x-2 text-sm text-white/85">
                       <span className="text-mb-red-light">{t.modalidades.proximaPrincipal}</span>
                       <span>{principal.proxima.titulo}</span>
-                      <span className="text-white/55">
+                      <span className="text-white/75">
                         · {formatData(principal.proxima.dataInicio, { day: "2-digit", month: "short" })}
                       </span>
                     </p>
@@ -167,7 +167,7 @@ export default async function DesportoPage() {
                   >
                     <Foto nome={m.imagem} className="min-h-40" largura={500} tamanhos="(max-width: 640px) 120px, 192px" />
                     <div className="flex min-w-0 flex-col p-3 sm:p-5">
-                      <p className="text-[0.8125rem] text-white/60">
+                      <p className="text-[0.8125rem] text-white/80">
                         {total > 0 ? <span className="text-mb-red-light">{nProvas(total)}</span> : t.modalidades.semProvas}
                       </p>
                       <h3 className="mt-1.5 text-2xl font-semibold leading-tight tracking-tight">{m.nome}</h3>
@@ -175,7 +175,7 @@ export default async function DesportoPage() {
                         <C>{m.descricao}</C>
                       </p>
                       {marco && (
-                        <p className="mt-3 text-xs leading-snug text-white/55">
+                        <p className="mt-3 text-xs leading-snug text-white/75">
                           <span className="text-white/85">{proxima ? t.modalidades.proxima : t.modalidades.ultima}</span> {marco.titulo} ·{" "}
                           {formatData(marco.dataInicio, { day: "2-digit", month: "short" })}
                         </p>
@@ -221,12 +221,12 @@ export default async function DesportoPage() {
             {t.federacoes.lista.map((f, i) => (
               <li key={`${i}-${f.sigla}`} className="painel painel-escuro flex flex-col p-6 lg:p-8">
                 <p className="text-4xl font-semibold leading-none tracking-tight">{f.sigla}</p>
-                <p className="mt-3 text-sm text-white/65">{f.nome}</p>
+                <p className="mt-3 text-sm text-white/80">{f.nome}</p>
                 <p className="mt-6 text-[15px] leading-relaxed text-white/85">
                   <C>{f.texto}</C>
                 </p>
                 {f.fontes.length > 0 && (
-                  <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/50">
+                  <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/75">
                     <span>{t.federacoes.rotuloFontes}</span>
                     {f.fontes.map((fonte) => (
                       <a
@@ -317,14 +317,14 @@ function CartaoModalidade({
           <div className="mt-5 border-t border-white/10 pt-4">
             <p className="text-[0.8125rem] text-mb-red-light">{futura ? t.modalidades.proximaProva : t.modalidades.ultimaProva}</p>
             <p className="mt-1 text-[15px] font-medium leading-snug text-white">{marco.titulo}</p>
-            <p className="mt-1 text-xs leading-snug text-white/55">
+            <p className="mt-1 text-xs leading-snug text-white/75">
               {formatData(marco.dataInicio, { day: "2-digit", month: "long" })} · {marco.circuito}, {marco.provincia}
             </p>
           </div>
         ) : destaque ? (
           <p className="mt-5 flex items-baseline gap-3 border-t border-white/10 pt-4">
             <span className="shrink-0 text-xl font-semibold leading-none text-mb-red-light">{destaque.valor}</span>
-            <span className="text-xs leading-snug text-white/55">
+            <span className="text-xs leading-snug text-white/75">
               <C>{destaque.label}</C>
             </span>
           </p>

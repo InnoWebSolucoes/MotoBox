@@ -37,7 +37,7 @@ export function Formulario({
           );
         }
         if (c.tipo === "nota") {
-          return <div key={`nota-${i}`} className="text-[13px] leading-relaxed text-white/55 md:col-span-2">{c.texto}</div>;
+          return <div key={`nota-${i}`} className="text-[13px] leading-relaxed text-white/75 md:col-span-2">{c.texto}</div>;
         }
         return (
           <div key={c.chave} className={`min-w-0 ${largura}`}>
@@ -210,16 +210,16 @@ function ListaObjectos({
         <span className="text-[13px] font-medium text-white/75">
           {c.etiqueta}
           {c.obrigatorio && <span className="ml-1 text-mb-red-light">*</span>}
-          <span className="ml-2 text-white/40">{valor.length}</span>
+          <span className="ml-2 text-white/70">{valor.length}</span>
         </span>
         {valor.length > 1 && (
           <span className="flex gap-2 text-xs">
-            <button type="button" className="text-white/55 hover:text-white" onClick={() => setAbertos(new Set(valor.map((_, i) => i)))}>Abrir todos</button>
-            <button type="button" className="text-white/55 hover:text-white" onClick={() => setAbertos(new Set())}>Fechar todos</button>
+            <button type="button" className="text-white/75 hover:text-white" onClick={() => setAbertos(new Set(valor.map((_, i) => i)))}>Abrir todos</button>
+            <button type="button" className="text-white/75 hover:text-white" onClick={() => setAbertos(new Set())}>Fechar todos</button>
           </span>
         )}
       </div>
-      {c.ajuda && <p className="-mt-1 mb-2 text-xs leading-relaxed text-white/50">{c.ajuda}</p>}
+      {c.ajuda && <p className="-mt-1 mb-2 text-xs leading-relaxed text-white/75">{c.ajuda}</p>}
       <ol className="space-y-[var(--intervalo)]">
         {valor.map((item, i) => {
           const obj = eObjecto(item) ? item : {};
@@ -235,7 +235,7 @@ function ListaObjectos({
                   <span className="grid size-6 shrink-0 place-items-center rounded-[4px] bg-white/10 text-xs tabular-nums text-white/70">{i + 1}</span>
                   <span className="truncate text-sm text-white">{resumo}</span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden
-                    className={`ml-auto size-4 shrink-0 text-white/50 transition-transform ${aberto ? "rotate-180" : ""}`}>
+                    className={`ml-auto size-4 shrink-0 text-white/75 transition-transform ${aberto ? "rotate-180" : ""}`}>
                     <path d="m6 9 6 6 6-6" />
                   </svg>
                 </button>
@@ -298,7 +298,7 @@ function CampoBi({
         {lado("pt", "Português")}
         {lado("en", "English")}
       </div>
-      {ajuda && <p className="mt-1.5 text-xs leading-relaxed text-white/50">{ajuda}</p>}
+      {ajuda && <p className="mt-1.5 text-xs leading-relaxed text-white/75">{ajuda}</p>}
     </div>
   );
 }
@@ -340,7 +340,7 @@ function CampoCoordenadas({
           <Input type="number" step="any" value={lng ?? ""} onChange={(e) => mudar({ ...v, lng: num(e.target.value) })} placeholder="13.2344" />
         </Campo>
       </div>
-      <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+      <p className="mt-1.5 text-xs leading-relaxed text-white/75">
         {ajuda ?? "Graus decimais. No Google Maps: clique com o botão direito no sítio e copie os dois números."}
         {lat !== undefined && lng !== undefined && (
           <>

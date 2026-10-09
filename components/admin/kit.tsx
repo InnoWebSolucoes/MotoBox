@@ -20,7 +20,7 @@ import {
 /** Campo de texto, selecção e área: escuro, cantos do painel, contorno vermelho ao focar. */
 export const CLASSE_CAMPO =
   "w-full rounded-[var(--raio)] border border-white/10 bg-black/25 px-3 py-2.5 text-[15px] text-white " +
-  "placeholder:text-white/35 outline-none transition-colors focus:border-mb-red focus:bg-black/35 disabled:opacity-50";
+  "placeholder:text-white/55 outline-none transition-colors focus:border-mb-red focus:bg-black/35 disabled:opacity-50";
 
 const BOTAO_BASE =
   "inline-flex shrink-0 items-center justify-center gap-2 rounded-[var(--raio)] text-sm font-medium " +
@@ -97,7 +97,7 @@ export function Painel({
             {icone && <ChipIcone>{icone}</ChipIcone>}
             <div className="min-w-0">
               {titulo && <h2 className="text-lg font-semibold leading-tight text-white">{titulo}</h2>}
-              {descricao && <p className="mt-1 max-w-3xl text-sm leading-relaxed text-white/60">{descricao}</p>}
+              {descricao && <p className="mt-1 max-w-3xl text-sm leading-relaxed text-white/80">{descricao}</p>}
             </div>
           </div>
           {accoes && <div className="flex flex-wrap items-center gap-2">{accoes}</div>}
@@ -121,9 +121,9 @@ export function CabecalhoPagina({
       <div className="flex min-w-0 items-start gap-4">
         {icone && <ChipIcone className="chip-mb-lg mt-1">{icone}</ChipIcone>}
         <div className="min-w-0">
-          {sobretitulo && <p className="text-sm text-white/55">{sobretitulo}</p>}
+          {sobretitulo && <p className="text-sm text-white/75">{sobretitulo}</p>}
           <h1 className="titulo-3 text-balance">{titulo}</h1>
-          {descricao && <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-white/65">{descricao}</p>}
+          {descricao && <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-white/80">{descricao}</p>}
         </div>
       </div>
       {accoes && <div className="flex flex-wrap items-center gap-2">{accoes}</div>}
@@ -143,14 +143,14 @@ export function Estatistica({
   const corpo = (
     <>
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm text-white/65">{rotulo}</p>
-        {icone && <span className="text-white/45 [&_svg]:size-5">{icone}</span>}
+        <p className="text-sm text-white/80">{rotulo}</p>
+        {icone && <span className="text-white/70 [&_svg]:size-5">{icone}</span>}
       </div>
       <p className={`mt-auto pt-4 text-[2rem] font-semibold leading-none tracking-tight tabular-nums ${tons[tom]}`}>
         {valor}
-        {sufixo && <span className="ml-1.5 text-sm font-normal text-white/50">{sufixo}</span>}
+        {sufixo && <span className="ml-1.5 text-sm font-normal text-white/75">{sufixo}</span>}
       </p>
-      {variacao && <p className="mt-2 text-xs text-white/50">{variacao}</p>}
+      {variacao && <p className="mt-2 text-xs text-white/75">{variacao}</p>}
     </>
   );
   const classe = "painel painel-escuro flex min-h-32 flex-col p-5";
@@ -176,7 +176,7 @@ export function Campo({
         {obrigatorio && <span className="ml-1 text-mb-red-light">*</span>}
       </span>
       {children}
-      {ajuda && <span className="mt-1.5 block text-xs leading-relaxed text-white/50">{ajuda}</span>}
+      {ajuda && <span className="mt-1.5 block text-xs leading-relaxed text-white/75">{ajuda}</span>}
     </label>
   );
 }
@@ -257,13 +257,13 @@ export function CampoEndereco({
         : "Mudar o endereço de uma página já publicada parte as ligações que alguém tenha partilhado."}
     >
       <span className="flex items-center rounded-[var(--raio)] border border-white/10 bg-black/25 transition-colors focus-within:border-mb-red">
-        <span className="shrink-0 select-none pl-3 text-[15px] text-white/40">{prefixo}/</span>
+        <span className="shrink-0 select-none pl-3 text-[15px] text-white/70">{prefixo}/</span>
         <input
           value={valor}
           onChange={(e) => onChange(limpar(e.target.value))}
           onBlur={() => onChange(valor.replace(/-+$/, ""))}
           placeholder="gerado-a-partir-do-titulo"
-          className="min-w-0 flex-1 bg-transparent py-2.5 pr-3 text-[15px] text-white outline-none placeholder:text-white/35"
+          className="min-w-0 flex-1 bg-transparent py-2.5 pr-3 text-[15px] text-white outline-none placeholder:text-white/55"
         />
       </span>
     </Campo>
@@ -281,7 +281,7 @@ export function Interruptor({
     <div className="flex items-start justify-between gap-4 rounded-[var(--raio)] bg-black/20 px-4 py-3.5">
       <div className="min-w-0">
         <p className="text-[15px] text-white">{etiqueta}</p>
-        {descricao && <p className="mt-0.5 text-[13px] leading-relaxed text-white/55">{descricao}</p>}
+        {descricao && <p className="mt-0.5 text-[13px] leading-relaxed text-white/75">{descricao}</p>}
       </div>
       <button
         type="button"
@@ -318,7 +318,7 @@ export function Grupo({
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p aria-hidden className="text-[15px] font-semibold text-white">{titulo}</p>
-          {descricao && <p className="mt-0.5 text-[13px] leading-relaxed text-white/55">{descricao}</p>}
+          {descricao && <p className="mt-0.5 text-[13px] leading-relaxed text-white/75">{descricao}</p>}
         </div>
         {accoes && <div className="flex flex-wrap gap-2">{accoes}</div>}
       </div>
@@ -384,7 +384,7 @@ export function Vazio({ titulo, children, accao }: { titulo: string; children?: 
   return (
     <div className="rounded-[var(--raio)] border border-dashed border-white/15 px-6 py-12 text-center">
       <p className="text-[15px] font-medium text-white">{titulo}</p>
-      {children && <p className="mx-auto mt-1.5 max-w-md text-sm leading-relaxed text-white/55">{children}</p>}
+      {children && <p className="mx-auto mt-1.5 max-w-md text-sm leading-relaxed text-white/75">{children}</p>}
       {accao && <div className="mt-5 flex justify-center">{accao}</div>}
     </div>
   );
@@ -393,7 +393,7 @@ export function Vazio({ titulo, children, accao }: { titulo: string; children?: 
 /** Indicador de carregamento. */
 export function Carregando({ texto = "A carregar…" }: { texto?: string }) {
   return (
-    <div role="status" className="flex items-center gap-3 px-1 py-10 text-sm text-white/60">
+    <div role="status" className="flex items-center gap-3 px-1 py-10 text-sm text-white/80">
       <span aria-hidden className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-mb-red" />
       {texto}
     </div>
@@ -418,7 +418,7 @@ export function Abas<K extends string>({
           className="pilula aria-selected:bg-mb-red aria-selected:text-white"
         >
           {a.nome}
-          {a.contador !== undefined && <span className="tabular-nums text-white/60">{a.contador}</span>}
+          {a.contador !== undefined && <span className="tabular-nums text-white/80">{a.contador}</span>}
         </button>
       ))}
     </div>
@@ -437,7 +437,7 @@ export function Procura({
   return (
     <div className="relative min-w-[200px] flex-1">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/45" aria-hidden>
+        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/70" aria-hidden>
         <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
       </svg>
       <input
@@ -462,7 +462,7 @@ export function Tabela({ cabecalhos, children, vazio }: {
         <thead>
           <tr className="border-b border-white/10">
             {cabecalhos.map((h) => (
-              <th key={h} className="px-3 pb-2.5 text-left text-xs font-medium text-white/50">
+              <th key={h} className="px-3 pb-2.5 text-left text-xs font-medium text-white/75">
                 {h}
               </th>
             ))}
@@ -471,7 +471,7 @@ export function Tabela({ cabecalhos, children, vazio }: {
         <tbody>{children}</tbody>
       </table>
       {vazio && (
-        <p className="py-10 text-center text-sm text-white/50">Nenhum registo corresponde aos filtros.</p>
+        <p className="py-10 text-center text-sm text-white/75">Nenhum registo corresponde aos filtros.</p>
       )}
     </div>
   );
@@ -501,9 +501,9 @@ export function AccaoIcone({
   tom?: "neutral" | "perigo" | "ok"; children: ReactNode;
 }) {
   const tons = {
-    neutral: "text-white/60 hover:bg-white/10 hover:text-white",
-    perigo: "text-white/60 hover:bg-mb-red hover:text-white",
-    ok: "text-white/60 hover:bg-ok hover:text-white",
+    neutral: "text-white/80 hover:bg-white/10 hover:text-white",
+    perigo: "text-white/80 hover:bg-mb-red hover:text-white",
+    ok: "text-white/80 hover:bg-ok hover:text-white",
   } as const;
   return (
     <button
@@ -551,7 +551,7 @@ export function Gaveta({
         <header className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 md:px-6">
           <div className="min-w-0">
             <h2 className="text-xl font-semibold leading-tight text-white">{titulo}</h2>
-            {descricao && <p className="mt-1 text-[13px] text-white/55">{descricao}</p>}
+            {descricao && <p className="mt-1 text-[13px] text-white/75">{descricao}</p>}
           </div>
           <button
             type="button" onClick={aoFechar} aria-label="Fechar"
@@ -663,7 +663,7 @@ export function ListaTexto({
   return (
     <div className="min-w-0">
       <span className="mb-1.5 block text-[13px] font-medium text-white/75">{etiqueta}</span>
-      {ajuda && <span className="-mt-0.5 mb-2 block text-xs leading-relaxed text-white/50">{ajuda}</span>}
+      {ajuda && <span className="-mt-0.5 mb-2 block text-xs leading-relaxed text-white/75">{ajuda}</span>}
       {valores.length > 0 && (
         <ul className="mb-2 space-y-1.5">
           {valores.map((v, i) => (
@@ -740,7 +740,7 @@ export function usePaginacao<T>(itens: T[], porPagina = 12) {
 
   const controlos = total > 1 ? (
     <div className="mt-5 flex items-center justify-between gap-3">
-      <p className="text-[13px] text-white/50">
+      <p className="text-[13px] text-white/75">
         Página {paginaSegura} de {total} · {itens.length} registos
       </p>
       <div className="flex gap-2">

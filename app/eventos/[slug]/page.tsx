@@ -137,7 +137,7 @@ export default async function EventoPagina({ params }: { params: Promise<{ slug:
                           {h.hora}
                         </span>
                         <span>
-                          <span className="block text-xs text-white/55">{h.dia}</span>
+                          <span className="block text-xs text-white/75">{h.dia}</span>
                           <span className="block text-[15px] leading-snug">{h.sessao}</span>
                         </span>
                       </li>

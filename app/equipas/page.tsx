@@ -71,7 +71,7 @@ export default async function EquipasPage() {
         .map((g) => (
           <Seccao key={g.chave} className="!pt-0">
             <h2 className="titulo-3">{g.titulo}</h2>
-            {g.descricao && <p className="mt-3 text-[15px] text-white/65">{g.descricao}</p>}
+            {g.descricao && <p className="mt-3 text-[15px] text-white/80">{g.descricao}</p>}
             <div className="mt-8 grid gap-[var(--intervalo)] md:grid-cols-2">
               {g.lista.map((e) => (
                 <CartaoEquipa
@@ -151,7 +151,7 @@ function CartaoEquipa({
           <ul className="mt-4 flex flex-wrap gap-1.5">
             {pilotos.map((p) => (
               <li key={p.slug} className="inline-flex items-center gap-1.5 rounded-[4px] bg-white/7 px-2 py-1 text-xs text-white/80">
-                <span className="tabular-nums text-white/45">{p.numero}</span>
+                <span className="tabular-nums text-white/70">{p.numero}</span>
                 {p.nome}
               </li>
             ))}
@@ -170,7 +170,7 @@ function CartaoEquipa({
               ] as const
             ).map(([id, k, v]) => (
               <div key={id} className="flex flex-col-reverse">
-                <dt className="mt-1 text-xs text-white/50">{k}</dt>
+                <dt className="mt-1 text-xs text-white/75">{k}</dt>
                 <dd className="text-xl font-semibold leading-none tabular-nums">{v}</dd>
               </div>
             ))}

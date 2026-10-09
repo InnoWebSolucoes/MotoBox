@@ -17,7 +17,7 @@ interface Aviso {
 /** Coração do botão Guardar: cheio quando o anúncio está guardado. */
 function Coracao({ cheio }: { cheio: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" className={`size-4 ${cheio ? "text-mb-red" : ""}`} aria-hidden="true">
+    <svg viewBox="0 0 24 24" className={`size-4 ${cheio ? "text-mb-red-light" : ""}`} aria-hidden="true">
       <path
         d="M12 20s-7-4.4-7-9.2A4.1 4.1 0 0 1 12 8a4.1 4.1 0 0 1 7 2.8C19 15.6 12 20 12 20Z"
         fill={cheio ? "currentColor" : "none"}
@@ -160,14 +160,14 @@ export function AccoesAnuncio({
           <div className="pointer-events-auto flex max-w-full items-center gap-3 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-sm text-ink-950 shadow-2xl shadow-black/40">
             <Icon
               name={aviso.tipo === "ok" ? "check" : "help"}
-              className={`size-4 shrink-0 ${aviso.tipo === "ok" ? "text-ok" : "text-mb-red"}`}
+              className={`size-4 shrink-0 ${aviso.tipo === "ok" ? "text-ok" : "text-mb-red-light"}`}
             />
             <span className="font-ui text-base leading-tight">{aviso.texto}</span>
             <button
               type="button"
               onClick={() => setAviso(null)}
               aria-label="Fechar aviso"
-              className="grid size-8 shrink-0 place-items-center rounded-full text-ink-600 transition-colors hover:bg-ink-950/8 hover:text-ink-950"
+              className="grid size-8 shrink-0 place-items-center rounded-full text-ink-300 transition-colors hover:bg-ink-950/8 hover:text-ink-950"
             >
               <Icon name="close" className="size-3.5" />
             </button>

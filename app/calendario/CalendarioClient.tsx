@@ -87,7 +87,7 @@ export function CalendarioClient({
       <Seccao className="!pt-0">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           <h2 className="titulo-2">{t.lista.titulo}</h2>
-          <p className="text-sm text-white/60" aria-live="polite">
+          <p className="text-sm text-white/80" aria-live="polite">
             {contar(filtrados.length, t.lista.contadorUm, t.lista.contadorVarios)}
             {disciplina !== "Todas" ? ` · ${disciplina}` : ""}
           </p>
@@ -187,7 +187,7 @@ export function CalendarioClient({
         )}
 
         {bilheteiraAberta && eventos.some((e) => vendaBilhetes(e, bilheteiraAberta, agora) === "a-venda") && (
-          <p className="mt-8 flex flex-wrap items-center gap-3 text-sm text-white/60">
+          <p className="mt-8 flex flex-wrap items-center gap-3 text-sm text-white/80">
             <Etiqueta tom="vermelho">{t.notaBilhetes.etiqueta}</Etiqueta>
             <span>{t.notaBilhetes.texto}</span>
             <LigacaoSeta href="/bilhetes">{t.notaBilhetes.ligacao}</LigacaoSeta>

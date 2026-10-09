@@ -246,7 +246,7 @@ export function EditorLegais({ abaInicial }: { abaInicial: AbaLegais }) {
                       >
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm">{p.titulo}</span>
-                          <span className={`block truncate text-xs ${sel ? "text-white/75" : "text-white/45"}`}>/{p.slug}</span>
+                          <span className={`block truncate text-xs ${sel ? "text-white/75" : "text-white/70"}`}>/{p.slug}</span>
                         </span>
                         {!p.publicado && <span className={`mt-0.5 shrink-0 text-[11px] ${sel ? "text-white/80" : "text-gold"}`}>Rascunho</span>}
                       </button>
@@ -255,7 +255,7 @@ export function EditorLegais({ abaInicial }: { abaInicial: AbaLegais }) {
                 })}
               </ul>
               {lista.length === 0 && !nova && (
-                <p className="px-3 py-6 text-center text-sm text-white/50">Ainda não há páginas legais.</p>
+                <p className="px-3 py-6 text-center text-sm text-white/75">Ainda não há páginas legais.</p>
               )}
             </nav>
 
@@ -267,7 +267,7 @@ export function EditorLegais({ abaInicial }: { abaInicial: AbaLegais }) {
                     {nova ? <Etiqueta tom="ouro">Página nova, ainda por criar</Etiqueta> : (
                       <>
                         <Estado valor={pagina.publicado ? "publicado" : "rascunho"} rotulo={pagina.publicado ? "Publicada" : "Rascunho"} />
-                        {original && <span className="text-xs text-white/50">Actualizada a {formatDataCurta(original.atualizado)}</span>}
+                        {original && <span className="text-xs text-white/75">Actualizada a {formatDataCurta(original.atualizado)}</span>}
                       </>
                     )}
                     {sujo && !nova && <Etiqueta tom="ouro">Alterações por gravar</Etiqueta>}

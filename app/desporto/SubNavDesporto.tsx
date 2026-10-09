@@ -92,7 +92,7 @@ export function SubNavDesporto({
               <Link
                 href="/desporto"
                 aria-current={pathname === "/desporto" ? "page" : undefined}
-                className={`transition-colors hover:text-white ${segundo ? "text-white/60" : "font-medium text-white"}`}
+                className={`transition-colors hover:text-white ${segundo ? "text-white/80" : "font-medium text-white"}`}
               >
                 {t("nav.desporto")}
               </Link>

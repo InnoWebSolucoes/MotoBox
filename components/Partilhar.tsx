@@ -323,7 +323,7 @@ export function Partilhar({
           <div className="mb-2 flex items-center justify-between gap-3 px-2.5">
             <div className="min-w-0">
               <p className="text-base font-semibold text-white">{rotulo}</p>
-              <p className="truncate text-xs text-white/55">{titulo}</p>
+              <p className="truncate text-xs text-white/75">{titulo}</p>
             </div>
             <button
               type="button"
@@ -335,7 +335,7 @@ export function Partilhar({
             </button>
           </div>
         ) : (
-          <p className="px-2.5 pb-1 pt-1.5 text-xs text-white/50" aria-hidden>{rotulo}</p>
+          <p className="px-2.5 pb-1 pt-1.5 text-xs text-white/75" aria-hidden>{rotulo}</p>
         )}
         <div ref={menu} id={idMenu} role="menu" aria-label={`${rotulo}: ${titulo}`} className="grid gap-0.5">
           {lista}

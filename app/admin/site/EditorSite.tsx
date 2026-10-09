@@ -2,10 +2,14 @@
 
 /* ============================================================
    MOTOBOX ADMIN — Entrada e painel
-   Quatro documentos do conteúdo editável, em separadores:
+   Cinco documentos do conteúdo editável, em separadores:
    - "site.entrada": a frase da página inicial e o vídeo de fundo
-     de todo o site;
-   - "site.contagem": a contagem decrescente do painel Explorar;
+     de todo o site (com a velocidade e o quanto escurece);
+   - "site.abertura": a abertura com as luzes de partida, que
+     aparece uma vez por visita;
+   - "site.contagem": o mosaico "Em foco" do painel Explorar (um
+     evento com contagem decrescente, uma rota, um anúncio…; ver
+     ./foco.tsx);
    - "site.painel": os textos e as fotografias fixos dos mosaicos
      do painel Explorar;
    - "site.geral": os textos que aparecem em todo o site (rodapé,
@@ -16,24 +20,31 @@
    ============================================================ */
 
 import { useState } from "react";
-import { Globe, House, LayoutGrid, Timer } from "lucide-react";
-import { useAdmin } from "@/lib/admin/store";
-import { CabecalhoPagina, Campo, Input, Painel, Seleccao } from "@/components/admin/kit";
+import { Crosshair, Globe, House, LayoutGrid, TrafficCone } from "lucide-react";
+import { CabecalhoPagina, Campo, Painel, Seleccao } from "@/components/admin/kit";
 import { EditorDoc } from "@/components/admin/editor/EditorDoc";
 import { Formulario } from "@/components/admin/editor/Formulario";
 import type { CampoEsquema } from "@/components/admin/editor/esquema";
 import { AbasEmLinhas } from "../paginas/_editor/partes";
 import { EditorPartes } from "./EditorPartes";
 import { PARTES_GERAL } from "./geral";
+import { EditorFoco } from "./foco";
 
-export type AbaSite = "entrada" | "contagem" | "painel" | "geral";
+/** "contagem" é o "Em foco" (o endereço ?aba=contagem ficou, para as ligações antigas). */
+export type AbaSite = "entrada" | "abertura" | "contagem" | "painel" | "geral";
 
 const ABAS: { chave: AbaSite; nome: string }[] = [
   { chave: "entrada", nome: "Entrada" },
-  { chave: "contagem", nome: "Contagem decrescente" },
+  { chave: "abertura", nome: "Abertura" },
+  { chave: "contagem", nome: "Em foco" },
   { chave: "painel", nome: "Painel Explorar" },
   { chave: "geral", nome: "Geral" },
 ];
+
+/** Velocidades do vídeo de fundo, na lista de escolha. */
+const VELOCIDADES = [0.5, 0.6, 0.75, 0.85, 1];
+const nomeVelocidade = (v: number) =>
+  v === 0.5 ? "0,5× (metade: muito calmo)" : v === 1 ? "1× (como está no ficheiro)" : `${String(v).replace(".", ",")}×`;
 
 /* ---------------- Entrada ---------------- */
 
@@ -70,61 +81,67 @@ const ESQUEMA_ENTRADA: CampoEsquema[] = [
         tipo: "imagem", chave: "poster", etiqueta: "Imagem de espera",
         ajuda: "Aparece enquanto o vídeo carrega e a quem tem o movimento reduzido no telemóvel. Use a primeira imagem do vídeo, para a troca não se notar.",
       },
+      {
+        tipo: "personalizado", chave: "velocidade", etiqueta: "Velocidade do vídeo", largura: "meia",
+        render: (v, mudar) => {
+          const actual = typeof v === "number" ? v : Number(v) || 1;
+          const lista = VELOCIDADES.includes(actual) ? VELOCIDADES : [...VELOCIDADES, actual].sort((a, b) => a - b);
+          return (
+            <Campo
+              etiqueta="Velocidade do vídeo"
+              ajuda="Mais devagar fica mais calmo por trás do texto. O vídeo de origem já vem a metade da velocidade, por isso 1× chega."
+            >
+              <Seleccao
+                valor={String(actual)}
+                onChange={(x) => mudar(Number(x))}
+                opcoes={lista.map((n) => ({ valor: String(n), nome: nomeVelocidade(n) }))}
+              />
+            </Campo>
+          );
+        },
+      },
+      {
+        tipo: "numero", chave: "escurecer", etiqueta: "Escurecer o vídeo na entrada (%)", largura: "meia",
+        min: 0, max: 80, passo: 5,
+        ajuda: "0 deixa o vídeo como está; 45 é o de origem. Mais alto, o texto branco lê-se melhor por cima de imagens claras.",
+      },
     ],
   },
 ];
 
-/* ---------------- Contagem ---------------- */
+/* ---------------- Abertura ---------------- */
 
-/** "Para onde leva": endereço escrito à mão, ou um evento escolhido da lista. */
-function CampoLigacao({ valor, mudar }: { valor: string; mudar: (v: string) => void }) {
-  const { estado } = useAdmin();
-  const eventos = [...estado.eventos].sort((a, b) => b.dataInicio.localeCompare(a.dataInicio));
-  const escolhido = eventos.find((e) => valor === `/eventos/${e.slug}`)?.slug ?? "";
-  return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Campo etiqueta="Ligar a um evento" ajuda="Escolha o evento e o endereço preenche-se sozinho.">
-        <Seleccao
-          valor={escolhido}
-          onChange={(slug) => { if (slug) mudar(`/eventos/${slug}`); }}
-          opcoes={[{ valor: "", nome: "Escolher um evento…" }, ...eventos.map((e) => ({ valor: e.slug, nome: `${e.titulo} (${e.dataInicio.slice(0, 10)})` }))]}
-        />
-      </Campo>
-      <Campo etiqueta="Para onde leva o painel" ajuda="Uma página do site (ex.: /eventos/ubuntu-2027) ou um endereço completo.">
-        <Input value={valor} onChange={(e) => mudar(e.target.value)} placeholder="/eventos/…" />
-      </Campo>
-    </div>
-  );
-}
-
-const ESQUEMA_CONTAGEM: CampoEsquema[] = [
+const ESQUEMA_ABERTURA: CampoEsquema[] = [
   {
-    tipo: "booleano", chave: "activa", etiqueta: "Mostrar a contagem decrescente",
-    descricao: "Desligada, o painel continua lá, com o evento e a fotografia, mas sem os números a contar.",
+    tipo: "booleano", chave: "activa", etiqueta: "Mostrar a abertura com as luzes de partida",
+    descricao: "Uma vez por visita: cinco pares de luzes vermelhas acendem-se uma a uma, apagam-se todas de uma vez e o site aparece. Quem quiser salta-a logo. Nunca aparece no painel de gestão nem aos motores de pesquisa.",
   },
   {
-    tipo: "secao", titulo: "Textos do painel",
+    tipo: "seleccao", chave: "onde", etiqueta: "Onde aparece", largura: "meia",
+    opcoes: [
+      { valor: "todas", nome: "Na primeira página que a pessoa abre" },
+      { valor: "entrada", nome: "Só quando entra pela página inicial" },
+    ],
+    mostrarSe: (v) => Boolean(v.activa),
+  },
+  {
+    tipo: "secao", titulo: "Textos",
+    descricao: "Por baixo das luzes. Quando as luzes se apagam, a pergunta dá lugar à frase de partida.",
+    mostrarSe: (v) => Boolean(v.activa),
     campos: [
-      { tipo: "texto", chave: "sobretitulo", etiqueta: "Linha de cima", largura: "meia", placeholder: "Ubuntu 2027" },
-      { tipo: "texto", chave: "titulo", etiqueta: "Título", largura: "meia" },
-      { tipo: "texto", chave: "subtitulo", etiqueta: "Linha por baixo do título", ajuda: "Por exemplo, o dia e o percurso." },
-      { tipo: "texto", chave: "textoLigacao", etiqueta: "Texto da ligação, em baixo", largura: "meia", placeholder: "Ver o evento" },
+      { tipo: "texto", chave: "sobretitulo", etiqueta: "Linha pequena por cima das luzes", largura: "meia", placeholder: "Grelha de partida" },
+      { tipo: "texto", chave: "titulo", etiqueta: "Pergunta", largura: "meia", placeholder: "Pronto?", obrigatorio: true },
+      { tipo: "area", chave: "texto", etiqueta: "Texto por baixo da pergunta", linhas: 2 },
+      { tipo: "texto", chave: "partida", etiqueta: "Frase quando as luzes se apagam", placeholder: "Luzes apagadas. Bora!" },
+      { tipo: "texto", chave: "botao", etiqueta: "Botão vermelho (arranca já)", largura: "meia", placeholder: "Arrancar" },
+      { tipo: "texto", chave: "saltar", etiqueta: "Botão para saltar", largura: "meia", placeholder: "Saltar" },
+      { tipo: "texto", chave: "dica", etiqueta: "Dica por baixo dos botões (só no computador)", placeholder: "A tecla Esc também salta a abertura." },
     ],
   },
   {
-    tipo: "secao", titulo: "Quando e para onde",
-    campos: [
-      {
-        tipo: "datahora", chave: "data", etiqueta: "Data e hora do arranque", largura: "meia",
-        ajuda: "Hora de Luanda. Os números chegam a zero a esta hora e ficam em zero.",
-      },
-      {
-        tipo: "personalizado", chave: "ligacao", etiqueta: "Para onde leva",
-        render: (v, mudar) => <CampoLigacao valor={typeof v === "string" ? v : ""} mudar={mudar} />,
-      },
-    ],
+    tipo: "nota",
+    texto: "Para a ver outra vez depois de gravar, abra o site numa janela privada (ou feche o separador e volte a abri-lo).",
   },
-  { tipo: "imagem", chave: "foto", etiqueta: "Fotografia de fundo do painel", formato: "aspect-[4/3]" },
 ];
 
 /* ---------------- Painel Explorar ---------------- */
@@ -134,12 +151,16 @@ const AJUDA_CHAVETAS = "As palavras entre chavetas são trocadas pelos valores d
 const ESQUEMA_PAINEL: CampoEsquema[] = [
   {
     tipo: "nota",
-    texto: "O artigo em destaque, o número de clubes, o líder do campeonato e o próximo evento escolhem-se sozinhos a partir do que está publicado. Aqui ficam os textos e as fotografias à volta.",
+    texto: "Os artigos em destaque, o número de clubes, o líder do campeonato e o próximo evento escolhem-se sozinhos a partir do que está publicado. Aqui ficam os textos e as fotografias à volta.",
   },
   {
-    tipo: "objecto", chave: "destaque", etiqueta: "Artigo em destaque (o painel grande)",
-    ajuda: "Mostra o artigo marcado como destaque em Artigos, ou o mais recente.",
+    tipo: "objecto", chave: "destaque", etiqueta: "Artigos em destaque (o painel grande)",
+    ajuda: "Mostra os artigos marcados como destaque em Artigos, um de cada vez, a passar sozinhos (sem nenhum marcado, o mais recente).",
     campos: [
+      {
+        tipo: "numero", chave: "intervalo", etiqueta: "Segundos de cada artigo", largura: "meia", min: 0, max: 60, passo: 1,
+        ajuda: "Com vários em destaque, o painel passa ao seguinte ao fim deste tempo. 0: só muda quando se carrega nos pontos.",
+      },
       { tipo: "texto", chave: "rotulo", etiqueta: "Antes da categoria", largura: "meia", ajuda: "Lê-se \"Artigo em destaque · Clubes\"; a categoria junta-se sozinha." },
       { tipo: "texto", chave: "semArtigos", etiqueta: "Título quando ainda não há artigos", largura: "meia" },
       { tipo: "texto", chave: "maisArtigos", etiqueta: "Título da caixa \"Mais artigos\"", largura: "meia", ajuda: "Só nos ecrãs largos." },
@@ -198,14 +219,18 @@ const ESQUEMA_PAINEL: CampoEsquema[] = [
   },
 ];
 
-const DOCS: Record<Exclude<AbaSite, "geral">, { chave: string; pagina: string; esquema: CampoEsquema[]; titulo: string; descricao: string }> = {
+const DOCS: Record<Exclude<AbaSite, "geral">, { chave: string; pagina: string; esquema?: CampoEsquema[]; titulo: string; descricao: string }> = {
   entrada: {
     chave: "site.entrada", pagina: "/", esquema: ESQUEMA_ENTRADA,
     titulo: "Entrada", descricao: "A página inicial do site e o vídeo de fundo que todas as páginas partilham.",
   },
+  abertura: {
+    chave: "site.abertura", pagina: "/", esquema: ESQUEMA_ABERTURA,
+    titulo: "Abertura", descricao: "As luzes de partida que recebem quem abre o site, uma vez por visita.",
+  },
   contagem: {
-    chave: "site.contagem", pagina: "/explorar", esquema: ESQUEMA_CONTAGEM,
-    titulo: "Contagem decrescente", descricao: "O painel à direita, no Explorar, que conta os dias até um evento.",
+    chave: "site.contagem", pagina: "/explorar",
+    titulo: "Em foco", descricao: "O mosaico à direita, no Explorar: um evento ou uma prova com contagem decrescente, um artigo, uma rota, um anúncio, um clube, uma modalidade, uma secção da segurança ou algo escrito à mão.",
   },
   painel: {
     chave: "site.painel", pagina: "/explorar", esquema: ESQUEMA_PAINEL,
@@ -214,7 +239,7 @@ const DOCS: Record<Exclude<AbaSite, "geral">, { chave: string; pagina: string; e
 };
 
 const ICONES: Record<AbaSite, React.ReactNode> = {
-  entrada: <House />, contagem: <Timer />, painel: <LayoutGrid />, geral: <Globe />,
+  entrada: <House />, abertura: <TrafficCone />, contagem: <Crosshair />, painel: <LayoutGrid />, geral: <Globe />,
 };
 
 export function EditorSite({ abaInicial }: { abaInicial: AbaSite }) {
@@ -240,7 +265,7 @@ export function EditorSite({ abaInicial }: { abaInicial: AbaSite }) {
         icone={ICONES[aba]}
         descricao={aba === "geral"
           ? "Os textos que aparecem em todo o site: o rodapé, o botão vermelho de baixo, a página 404, a página \"Sem acesso\", as páginas da newsletter, o aviso de cookies e a página de manutenção."
-          : "A primeira coisa que se vê do site: a página inicial com o vídeo de fundo e o painel Explorar."}
+          : "A primeira coisa que se vê do site: a abertura com as luzes de partida, a página inicial com o vídeo de fundo e o painel Explorar."}
       />
 
       <div className="mb-5">
@@ -254,7 +279,11 @@ export function EditorSite({ abaInicial }: { abaInicial: AbaSite }) {
             <EditorDoc chave={d.chave} pagina={d.pagina}>
               {(dados, mudar) => (
                 <Painel titulo={d.titulo} descricao={d.descricao} icone={ICONES[k]}>
-                  <Formulario esquema={d.esquema} valor={dados} onChange={mudar} />
+                  {d.esquema ? (
+                    <Formulario esquema={d.esquema} valor={dados} onChange={mudar} />
+                  ) : (
+                    <EditorFoco dados={dados} mudar={mudar} />
+                  )}
                 </Painel>
               )}
             </EditorDoc>

@@ -2,34 +2,39 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  CalendarDays, Mail, MessagesSquare, Newspaper, Route, ShieldCheck, Store, Timer, Trophy, Users, BookOpen,
+  CalendarDays, Mail, MessagesSquare, Newspaper, Route, ShieldCheck, Store, Trophy, Users, BookOpen,
 } from "lucide-react";
 import { lerClubes, lerEventos, lerNoticias, lerPilotos } from "@/lib/supabase/publico";
 import { classificacaoPilotos } from "@/lib/data";
 import { doCampeonatoDe, eComunidade, eProva } from "@/lib/desporto";
 import { lerPaginaDesporto } from "@/app/desporto/dados";
 import { lerRedes } from "@/lib/redes";
-import { artigoEmDestaque, diaMes, eventosFuturos } from "@/lib/motobox";
+import { diaMes, eventosFuturos } from "@/lib/motobox";
 import { lerDoc } from "@/lib/conteudo";
 import {
-  CONTAGEM_PADRAO, PAINEL_PADRAO, fundir, preencher, type ConteudoContagem, type ConteudoPainel,
+  EM_FOCO_PADRAO, PAINEL_PADRAO, TIPOS_FOCO, fundir, numeroEntre, preencher, type ConteudoEmFoco, type ConteudoPainel,
 } from "@/lib/conteudo/grupos/site";
 import { Chip, FotoFundo, Logotipo, Moldura, Seta, ordem } from "@/components/painel/kit";
 import { Tempo } from "@/components/painel/Tempo";
-import { ContagemUbuntu } from "@/components/painel/ContagemUbuntu";
+import { DestaqueRotativo } from "@/components/painel/DestaqueRotativo";
+import { EmFoco } from "@/components/painel/EmFoco";
 import { Icon } from "@/components/ui";
 import { fotoDe } from "@/app/eventos/foto";
+import { resolverFoco } from "./foco";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
 
-/** Textos e fotografias fixos do painel e a contagem decrescente (Gestão › Entrada e painel). */
-async function lerTextos(): Promise<{ p: ConteudoPainel; c: ConteudoContagem }> {
+/** Textos e fotografias fixos do painel e o que está "Em foco" (Gestão › Entrada e painel). */
+async function lerTextos(): Promise<{ p: ConteudoPainel; c: ConteudoEmFoco }> {
   const [p, c] = await Promise.all([
     lerDoc<ConteudoPainel>("site.painel"),
-    lerDoc<ConteudoContagem>("site.contagem"),
+    lerDoc<ConteudoEmFoco>("site.contagem"),
   ]);
-  return { p: fundir(PAINEL_PADRAO, p), c: fundir(CONTAGEM_PADRAO, c) };
+  const foco = fundir(EM_FOCO_PADRAO, c);
+  // Um tipo desconhecido (gravado à mão) volta ao de partida.
+  if (!TIPOS_FOCO.includes(foco.tipo)) foco.tipo = EM_FOCO_PADRAO.tipo;
+  return { p: fundir(PAINEL_PADRAO, p), c: foco };
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -39,12 +44,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /* ============================================================
    MOTOBOX — Painel
-   Uma grelha de 16 colunas que enche o ecrã: o artigo em
-   destaque no painel grande, os clubes, o desporto e os eventos
-   por baixo; à direita as redes, o tempo, a contagem decrescente
-   (hoje para o Ubuntu) e as secções de serviço. Os textos e as
-   fotografias fixos vêm do conteúdo editável ("site.painel" e
-   "site.contagem"); os números e os destaques, dos dados. No computador o painel nunca rola: a grelha
+   Uma grelha de 16 colunas que enche o ecrã: os artigos em
+   destaque no painel grande (passam de um para o outro quando há
+   vários), os clubes, o desporto e os eventos por baixo; à
+   direita as redes, o tempo, o mosaico "Em foco" (um evento com
+   contagem decrescente, uma rota, um anúncio…) e as secções de
+   serviço. Os textos e as fotografias fixos vêm do conteúdo
+   editável ("site.painel" e "site.contagem"); os números e os
+   destaques, dos dados. No computador o painel nunca rola: a grelha
    aperta-se à altura do ecrã e, num ecrã baixo (variantes "baixo" e
    "mbaixo" em globals.css), os textos secundários encolhem ou saem.
    No telemóvel, os painéis empilham-se.
@@ -55,8 +62,13 @@ export default async function Painel() {
     lerNoticias(), lerClubes(), lerEventos(), lerRedes(), lerPilotos(), lerTextos(),
   ]);
 
-  const destaque = artigoEmDestaque(artigos);
-  const outros = artigos.filter((a) => a.slug !== destaque?.slug).slice(0, 3);
+  // Todos os artigos marcados como destaque passam no painel grande; sem nenhum, o mais recente.
+  const marcados = artigos.filter((a) => a.destaque);
+  const destaques = marcados.length ? marcados : artigos.slice(0, 1);
+  const emDestaque = new Set(destaques.map((a) => a.slug));
+  // "Mais artigos": os mais recentes que não estão a passar; os em destaque só no fim, para completar.
+  const outros = [...artigos.filter((a) => !emDestaque.has(a.slug)).slice(0, 3), ...destaques]
+    .map((a) => ({ slug: a.slug, titulo: a.titulo, categoria: a.categoria }));
   // Eventos da comunidade no painel de Eventos; as provas vão para o Desporto.
   const proximo = eventosFuturos(eventos.filter((e) => eComunidade(e.disciplina)))[0];
   const proximaProva = eventosFuturos(eventos.filter((e) => eProva(e.disciplina)))[0];
@@ -67,6 +79,7 @@ export default async function Painel() {
   const soClubes = clubes.filter((cl) => cl.tipo !== "Movimento");
   const provincias = new Set(soClubes.map((cl) => cl.provincia).filter(Boolean)).size;
   const data = (iso: string) => `${diaMes(iso).dia} ${diaMes(iso).mes}`;
+  const foco = await resolverFoco(c, { eventos, artigos, clubes });
 
   return (
     <Moldura>
@@ -76,56 +89,21 @@ export default async function Painel() {
       <h1 className="sr-only">Painel da MotoBox Angola</h1>
 
       <div className="grid grid-cols-[var(--tile)_var(--tile)_minmax(0,1fr)] gap-[var(--intervalo)] lg:h-full lg:grid-cols-[var(--tile)_repeat(15,minmax(0,1fr))] lg:grid-rows-[var(--tile)_minmax(0,1fr)_minmax(0,0.8fr)]">
-        {/* ---------- Artigo em destaque ---------- */}
+        {/* ---------- Artigos em destaque (passam de um para o outro) ---------- */}
         <section
           aria-label="Artigos"
           className="painel recorte revelar group col-span-full h-[72svh] min-h-[30rem] lg:col-[1/12] lg:row-[1/3] lg:h-auto lg:min-h-0"
           style={ordem(0)}
         >
-          {destaque ? (
-            <>
-              <FotoFundo nome={fotoDe(destaque.slug, destaque.imagem)} veu="esquerda" prioridade tamanhos="(max-width: 1024px) 100vw, 70vw" />
-              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/10 to-transparent" aria-hidden />
-              <Link
-                href={`/artigos/${destaque.slug}`}
-                aria-label={`Ler o artigo: ${destaque.titulo}`}
-                className="absolute inset-0 z-10"
-              />
-              <span className="absolute right-4 top-4 z-20 md:right-5 md:top-5">
-                <Chip><Newspaper /></Chip>
-              </span>
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-6 md:p-8 xl:pr-[21rem] baixo:p-6 baixo:xl:pr-[19rem]">
-                <p className="text-sm text-white/80">{p.destaque.rotulo} · {destaque.categoria}</p>
-                <h2 className="titulo-3 mt-3 line-clamp-3 max-w-[20ch] text-balance baixo:mt-2 baixo:line-clamp-2 baixo:text-[1.75rem]">{destaque.titulo}</h2>
-                <p className="mt-3 line-clamp-3 max-w-[50ch] text-sm leading-relaxed text-white/85 md:text-[15px] baixo:line-clamp-2 mbaixo:hidden">
-                  {destaque.resumo}
-                </p>
-                <Seta className="mt-5 size-5 baixo:mt-3" />
-              </div>
-
-              {/* Mais artigos, por cima da fotografia */}
-              <aside className="absolute bottom-0 right-0 z-20 hidden w-[20rem] p-5 xl:block baixo:w-[18rem] baixo:p-4">
-                <div className="rounded-[var(--raio)] bg-black/60 p-4 backdrop-blur-md baixo:p-3">
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/55">{p.destaque.maisArtigos}</p>
-                  <ul className="mt-3 divide-y divide-white/10">
-                    {outros.map((a, n) => (
-                      // Num ecrã baixo ficam dois artigos; num muito baixo, um.
-                      <li key={a.slug} className={n === 2 ? "baixo:hidden" : n === 1 ? "mbaixo:hidden" : ""}>
-                        <Link href={`/artigos/${a.slug}`} className="group/item block py-2.5 baixo:py-2">
-                          <span className="block text-xs text-mb-red-light">{a.categoria}</span>
-                          <span className="mt-0.5 line-clamp-2 block text-sm leading-snug text-white/90 transition-colors group-hover/item:text-white">
-                            {a.titulo}
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/artigos" className="mt-2 inline-flex items-center gap-2 text-sm text-white">
-                    <span className="sublinhado">{p.destaque.todosArtigos}</span>
-                  </Link>
-                </div>
-              </aside>
-            </>
+          {destaques.length ? (
+            <DestaqueRotativo
+              artigos={destaques.map((a) => ({
+                slug: a.slug, titulo: a.titulo, resumo: a.resumo, categoria: a.categoria, foto: fotoDe(a.slug, a.imagem),
+              }))}
+              outros={outros}
+              textos={p.destaque}
+              intervalo={numeroEntre(p.destaque.intervalo, 0, 60, PAINEL_PADRAO.destaque.intervalo)}
+            />
           ) : (
             <PainelVazio href="/artigos" titulo={p.destaque.semArtigos} icone={<Newspaper />} />
           )}
@@ -203,34 +181,13 @@ export default async function Painel() {
           <Tempo />
         </div>
 
-        {/* ---------- Contagem decrescente (hoje: Ubuntu 2027) ---------- */}
-        <Link
-          href={c.ligacao || "/eventos"}
-          className="painel revelar group order-6 col-span-full flex min-h-[22rem] flex-col p-5 [text-shadow:0_1px_10px_rgb(0_0_0/0.55)] lg:order-none lg:col-[12/17] lg:row-[2/3] lg:min-h-0 mbaixo:p-4"
-          style={ordem(7)}
-        >
-          <FotoFundo nome={[c.foto, "passeios"]} veu="cima" tamanhos="(max-width: 1024px) 100vw, 30vw" />
-          <div className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-black/75 to-transparent" aria-hidden />
-          <div className="flex items-start justify-between gap-4">
-            <p className="text-[15px]">{c.sobretitulo}</p>
-            {c.activa ? (
-              <Timer className="size-5" strokeWidth={1.6} aria-hidden />
-            ) : (
-              <CalendarDays className="size-5" strokeWidth={1.6} aria-hidden />
-            )}
-          </div>
-          <p className="mt-6 text-lg leading-tight baixo:mt-3">{c.titulo}</p>
-          {c.subtitulo && <p className="mt-1 text-[0.8125rem] text-white/80">{c.subtitulo}</p>}
-          <div className="mt-auto pt-4">
-            {c.activa && c.data && !Number.isNaN(new Date(c.data).getTime()) && <ContagemUbuntu data={c.data} />}
-            {c.textoLigacao && (
-              <span className="mt-3 inline-flex items-center gap-2 text-sm mbaixo:hidden">
-                <span className="sublinhado">{c.textoLigacao}</span>
-                <Seta className="size-3" />
-              </span>
-            )}
-          </div>
-        </Link>
+        {/* ---------- Em foco: um evento com contagem, uma rota, um anúncio… ---------- */}
+        <EmFoco
+          foco={foco}
+          unidades={c.unidades}
+          className="order-6 col-span-full min-h-[22rem] lg:order-none lg:col-[12/17] lg:row-[2/3] lg:min-h-0"
+          i={7}
+        />
 
         {/* ---------- Secções de serviço: três em cima, duas em baixo ---------- */}
         <div className="order-5 col-span-full grid grid-cols-6 gap-[var(--intervalo)] lg:order-none lg:col-[12/17] lg:row-[3/4] lg:grid-rows-2">

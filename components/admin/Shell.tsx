@@ -199,7 +199,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </Link>
         <div className="painel flex min-w-0 flex-1 flex-col justify-center px-4">
           <p className="truncate text-[15px] font-semibold leading-tight">Gestão</p>
-          <p className="truncate text-xs text-white/55">Temporada {estado.definicoes.temporada}</p>
+          <p className="truncate text-xs text-white/75">Temporada {estado.definicoes.temporada}</p>
         </div>
         <button type="button" onClick={() => setMenuAberto(false)} aria-label="Fechar menu"
           className="painel grid size-[var(--tile)] shrink-0 place-items-center lg:hidden">
@@ -210,7 +210,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <div className="painel min-h-0 flex-1 overflow-y-auto px-2 py-3">
         {NAVEGACAO.map((g) => (
           <div key={g.grupo} className="mb-3 last:mb-0">
-            <p className="px-3 pb-1 text-xs text-white/45">{g.grupo}</p>
+            <p className="px-3 pb-1 text-xs text-white/70">{g.grupo}</p>
             <ul className="space-y-0.5">
               {g.itens.map((it) => {
                 const n = it.contador ? contadores[it.contador] : 0;
@@ -279,7 +279,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </button>
 
             <p className="min-w-0 flex-1 truncate text-sm">
-              {grupoActual && <span className="text-white/50">{grupoActual.grupo} <span aria-hidden>·</span> </span>}
+              {grupoActual && <span className="text-white/75">{grupoActual.grupo} <span aria-hidden>·</span> </span>}
               <span className="font-medium text-white">{itemActual?.nome ?? "Gestão"}</span>
             </p>
 
@@ -309,7 +309,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 </span>
                 <span className="hidden text-left text-xs leading-tight sm:block">
                   <span className="block max-w-40 truncate text-[13px] text-white">{nome}</span>
-                  <span className="block text-white/50">{papel}</span>
+                  <span className="block text-white/75">{papel}</span>
                 </span>
               </button>
 
@@ -318,7 +318,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   className="absolute right-0 top-full z-40 mt-2 w-64 overflow-hidden rounded-[var(--raio)] border border-white/10 bg-[#2c2c33]/95 shadow-2xl backdrop-blur-xl">
                   <div className="border-b border-white/10 px-4 py-3">
                     <p className="truncate text-sm text-white">{nome}</p>
-                    <p className="truncate text-xs text-white/50">{utilizador?.email}</p>
+                    <p className="truncate text-xs text-white/75">{utilizador?.email}</p>
                   </div>
                   <Link href="/" target="_blank" role="menuitem"
                     className="flex items-center gap-2 px-4 py-2.5 text-sm text-white/80 transition-colors hover:bg-white/[0.07] hover:text-white">

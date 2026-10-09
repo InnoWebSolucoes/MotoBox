@@ -365,11 +365,11 @@ function LinhaEvento({
         <span className="mt-1 text-xs uppercase tracking-[0.15em]">{mes}</span>
       </span>
       <span className="min-w-0 px-2 py-1.5 md:px-3">
-        <span className="block text-[13px] text-white/55">
+        <span className="block text-[13px] text-white/75">
           <span className="text-mb-red-light">{e.disciplina}</span> · {[e.localidade, e.provincia].filter(Boolean).join(", ")}
         </span>
         <span className="mt-0.5 block truncate text-[15px] font-semibold text-white md:text-base">{e.titulo || "Sem título"}</span>
-        <span className="mt-0.5 block text-[13px] text-white/55">{intervaloDatas(e.dataInicio, e.dataFim)}</span>
+        <span className="mt-0.5 block text-[13px] text-white/75">{intervaloDatas(e.dataInicio, e.dataFim)}</span>
         <span className="mt-2 flex flex-wrap gap-1.5">
           {!publicado(e) && <Etiqueta>Rascunho</Etiqueta>}
           {e.estado !== "agendado" && <Etiqueta tom={e.estado === "concluido" ? "neutro" : "vermelho"}>{nomeEstado(e.estado)}</Etiqueta>}

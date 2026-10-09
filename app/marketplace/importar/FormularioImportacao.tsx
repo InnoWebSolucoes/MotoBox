@@ -152,7 +152,7 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
           <Icon name="check" className="size-7" />
         </span>
         <h3 className="title-xl mt-5 text-2xl">{x(FORM.sucessoTitulo)}</h3>
-        <p className="mx-auto mt-3 max-w-md text-sm text-ink-400 leading-relaxed">
+        <p className="mx-auto mt-3 max-w-md text-sm text-ink-300 leading-relaxed">
           {x(FORM.sucessoTexto)
             .replace("{nome}", form.nome.split(" ")[0] ?? "")
             .replace("{email}", form.email)}
@@ -172,10 +172,10 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
   }
 
   const campo = (k: CampoPedido) =>
-    `w-full bg-ink-900 px-4 text-sm text-white ring-inset placeholder:text-ink-600 outline-none transition-shadow ${
+    `w-full bg-ink-900 px-4 text-sm text-white ring-inset placeholder:text-ink-300 outline-none transition-shadow ${
       erros[k] ? "ring-2 ring-mb-red" : "ring-1 ring-white/10 focus:ring-2 focus:ring-mb-red"
     }`;
-  const rotulo = "eyebrow mb-2 block text-ink-500";
+  const rotulo = "eyebrow mb-2 block text-ink-300";
   const erro = (k: CampoPedido) =>
     erros[k] ? <p id={`imp-${k}-erro`} className="mt-1.5 text-xs text-mb-red-light">{erros[k]}</p> : null;
   const ligar = (k: CampoPedido) => ({
@@ -188,7 +188,7 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
     <form onSubmit={submeter} noValidate className="space-y-5 rounded-card bg-ink-950 p-6 sm:p-8">
       <div>
         <label htmlFor="imp-ligacao" className={rotulo}>
-          {x(FORM.ligacao)} <span className="text-mb-red">*</span>
+          {x(FORM.ligacao)} <span className="text-mb-red-light">*</span>
         </label>
         <input
           {...ligar("ligacao")}
@@ -205,7 +205,7 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
 
       <div>
         <label htmlFor="imp-titulo" className={rotulo}>
-          {x(FORM.titulo)} <span className="text-mb-red">*</span>
+          {x(FORM.titulo)} <span className="text-mb-red-light">*</span>
         </label>
         <input
           {...ligar("titulo")}
@@ -254,7 +254,7 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="imp-nome" className={rotulo}>
-            {x(FORM.nome)} <span className="text-mb-red">*</span>
+            {x(FORM.nome)} <span className="text-mb-red-light">*</span>
           </label>
           <input
             {...ligar("nome")}
@@ -269,7 +269,7 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
         </div>
         <div>
           <label htmlFor="imp-email" className={rotulo}>
-            {x(FORM.email)} <span className="text-mb-red">*</span>
+            {x(FORM.email)} <span className="text-mb-red-light">*</span>
           </label>
           <input
             {...ligar("email")}
@@ -284,7 +284,7 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
         </div>
         <div>
           <label htmlFor="imp-telefone" className={rotulo}>
-            {x(FORM.telefone)} <span className="normal-case tracking-normal text-ink-600">({x(FORM.opcional)})</span>
+            {x(FORM.telefone)} <span className="normal-case tracking-normal text-ink-300">({x(FORM.opcional)})</span>
           </label>
           <input
             {...ligar("telefone")}
@@ -299,13 +299,13 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
         </div>
         <div>
           <label htmlFor="imp-provincia" className={rotulo}>
-            {x(FORM.provincia)} <span className="text-mb-red">*</span>
+            {x(FORM.provincia)} <span className="text-mb-red-light">*</span>
           </label>
           <select
             {...ligar("provincia")}
             value={form.provincia}
             onChange={(e) => mudar("provincia", e.target.value)}
-            className={`h-12 ${campo("provincia")} ${form.provincia ? "" : "text-ink-500"}`}
+            className={`h-12 ${campo("provincia")} ${form.provincia ? "" : "text-ink-300"}`}
           >
             <option value="">{x(FORM.escolha)}</option>
             {PROVINCIAS_ANGOLA.map((p) => (
@@ -318,7 +318,7 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
 
       <div>
         <label htmlFor="imp-notas" className={rotulo}>
-          {x(FORM.notas)} <span className="normal-case tracking-normal text-ink-600">({x(FORM.opcional)})</span>
+          {x(FORM.notas)} <span className="normal-case tracking-normal text-ink-300">({x(FORM.opcional)})</span>
         </label>
         <textarea
           {...ligar("notas")}
@@ -344,7 +344,7 @@ function Formulario({ restaurar, FORM }: { restaurar: boolean; FORM: TextosForm 
           {estado === "a-enviar" ? x(FORM.aEnviar) : x(FORM.enviar)}
           {estado !== "a-enviar" && <Icon name="arrow" className="size-4" />}
         </Button>
-        <p className="text-xs text-ink-500 leading-relaxed">
+        <p className="text-xs text-ink-300 leading-relaxed">
           {utilizador ? x(FORM.privacidade) : x(FORM.sessaoNota)}
         </p>
       </div>

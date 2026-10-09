@@ -109,7 +109,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
             <div className="flex items-center gap-4">
               <EmblemaEquipa logo={equipa.logo} cor={equipa.cor} className="size-16 text-xl" />
               <div>
-                <p className="text-sm text-white/60">{equipa.tipo === "Equipa" ? t.sobreEquipa : t.sobreClube}</p>
+                <p className="text-sm text-white/80">{equipa.tipo === "Equipa" ? t.sobreEquipa : t.sobreClube}</p>
                 <h2 className="titulo-4 mt-1">{equipa.nome}</h2>
               </div>
             </div>
@@ -127,7 +127,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
                 ] as const
               ).map(([id, k, v]) => (
                 <div key={id} className="flex flex-col-reverse rounded-[var(--raio)] bg-white/5 p-4">
-                  <dt className="mt-1 text-xs text-white/55">{k}</dt>
+                  <dt className="mt-1 text-xs text-white/75">{k}</dt>
                   <dd className="text-[15px] font-medium leading-snug">{v}</dd>
                 </div>
               ))}
@@ -164,9 +164,9 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
                   <Posicao posicao={posicao} className="size-14 text-2xl" />
                   <div>
                     <p className="text-2xl font-semibold tabular-nums">
-                      {equipa.estatisticas.pontos} <span className="text-sm font-normal text-white/55">{t.campeonato.pts}</span>
+                      {equipa.estatisticas.pontos} <span className="text-sm font-normal text-white/75">{t.campeonato.pts}</span>
                     </p>
-                    <p className="text-sm text-white/55">{t.campeonato.texto}</p>
+                    <p className="text-sm text-white/75">{t.campeonato.texto}</p>
                   </div>
                 </div>
                 <LigacaoSeta href="/classificacao" className="mt-5">
