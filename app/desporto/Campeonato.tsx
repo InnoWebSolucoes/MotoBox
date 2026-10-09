@@ -22,7 +22,7 @@ import { FilaPilotos, Posicao, ProximaProva, TituloBloco, UltimosResultados, Vaz
 const ANCORA = "!scroll-mt-28";
 
 export function Campeonato({
-  provas, corridas, pilotos, equipas, bilheteiraAberta, textos = PAGINA_DESPORTO_PADRAO(),
+  provas, corridas, pilotos, equipas, bilheteiraAberta, textos = PAGINA_DESPORTO_PADRAO(), ano = TEMPORADA,
 }: {
   /** Provas a mostrar no calendário, por data. */
   provas: Evento[];
@@ -33,12 +33,14 @@ export function Campeonato({
   bilheteiraAberta: boolean;
   /** Textos e categorias do campeonato (Modalidades › Página Desporto). */
   textos?: PaginaDesporto;
+  /** Temporada em curso (Definições). */
+  ano?: number;
 }) {
   const agora = instante();
   const proxima = provas.find((e) => new Date(e.dataInicio).getTime() > agora);
   const categorias = textos.campeonato.categorias ?? CATEGORIAS_CAMPEONATO;
   const classificacao = classificacaoPilotos(pilotos.filter(doCampeonatoDe(categorias)));
-  const valores = { ano: TEMPORADA, campeonato: textos.campeonato.nome };
+  const valores = { ano, campeonato: textos.campeonato.nome };
   const { classificacao: tc, resultados: tr, calendario: tk, pilotos: tp, equipas: te } = textos;
   const topPilotos = classificacao.slice(0, 5);
   const topEquipas = classificacaoEquipas(equipas.filter((e) => e.tipo === "Equipa")).slice(0, 6);
@@ -82,6 +84,7 @@ export function Campeonato({
                         />
                         <Retrato
                           nome={retratoDe(p)}
+                          pessoa={p.nome}
                           iniciais={iniciais(p.nome)}
                           cor={cores.get(p.equipaSlug)}
                           className="size-11 shrink-0 rounded-[4px]"

@@ -5,7 +5,8 @@ import { C } from "@/components/T";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, Chamada, Seccao } from "@/components/painel/blocos";
 import { Foto, FotoFundo, Seta } from "@/components/painel/kit";
-import { TEMPORADA, formatData } from "@/lib/data";
+import { formatData } from "@/lib/data";
+import { lerTemporada } from "@/lib/conteudo/ler-geral";
 import {
   SECCOES_MOTOCROSS, eProva, eventosDaModalidade, instante, preencher, principalDe, type ModalidadeCompleta,
 } from "@/lib/desporto";
@@ -50,7 +51,8 @@ export default async function DesportoPage() {
   ]);
   const provas = eventos.filter((e) => eProva(e.disciplina));
   const agora = instante();
-  const valores = { ano: TEMPORADA, campeonato: t.campeonato.nome };
+  const ano = await lerTemporada();
+  const valores = { ano, campeonato: t.campeonato.nome };
 
   const modalidades = lista.map((m) => {
     const listaProvas = eventosDaModalidade(m, provas);
@@ -108,7 +110,7 @@ export default async function DesportoPage() {
         </Seccao>
 
         {/* ============ CAMPEONATO NACIONAL: o que estava nas antigas secções Calendário, Resultados e Pilotos ============ */}
-        <Campeonato provas={provas} corridas={corridas} pilotos={pilotos} equipas={equipas} bilheteiraAberta={bilheteiraAberta} textos={t} />
+        <Campeonato provas={provas} corridas={corridas} pilotos={pilotos} equipas={equipas} bilheteiraAberta={bilheteiraAberta} textos={t} ano={ano} />
 
         {/* ============ COMPETIÇÃO: MOTOCROSS EM DESTAQUE, DUAS AO LADO E AS RESTANTES NUMA FILA ============ */}
         <Seccao id="modalidades" className="!pt-0 !scroll-mt-28">

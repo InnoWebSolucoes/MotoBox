@@ -3,6 +3,11 @@ import { Barlow_Condensed, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { urlPublica } from "@/lib/base";
 import CookieBanner from "@/components/CookieBanner";
+import { Analitica } from "@/components/Analitica";
+import { TextosGeraisProvider } from "@/components/painel/TextosGerais";
+import { lerDefinicoesSite, lerTextosGerais } from "@/lib/conteudo/ler-geral";
+import { GERAL_PADRAO } from "@/lib/conteudo/grupos/geral";
+import { definicoesSeed } from "@/lib/admin/seed";
 import { IdiomaProvider } from "@/lib/i18n/contexto";
 import { AuthProvider } from "@/lib/auth/contexto";
 import { SessaoObrigatoriaProvider } from "@/components/SessaoObrigatoria";
@@ -62,7 +67,13 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // O vídeo de fundo de todo o site (Gestão › Entrada e painel), já em endereços prontos a usar.
-  const entrada = await lerDoc<ConteudoEntrada>("site.entrada").catch(() => ENTRADA_PADRAO);
+  // Os textos gerais (rodapé, botão de acção, cookies, manutenção…) vêm de Entrada e painel › Geral;
+  // o modo de manutenção, o aviso de cookies e a medição de audiências, das Definições.
+  const [entrada, geral, definicoes] = await Promise.all([
+    lerDoc<ConteudoEntrada>("site.entrada").catch(() => ENTRADA_PADRAO),
+    lerTextosGerais().catch(() => GERAL_PADRAO()),
+    lerDefinicoesSite().catch(() => definicoesSeed),
+  ]);
   const video = entrada?.video || ENTRADA_PADRAO.video;
   const fundo = {
     video: video.startsWith("/") ? urlLocal(video) : video,
@@ -80,11 +91,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </a>
         <IdiomaProvider>
           <AuthProvider>
-            <SessaoObrigatoriaProvider>
-              <Cenario fundo={fundo}>{children}</Cenario>
-              <CookieBanner />
-              <IntroCapacete />
-            </SessaoObrigatoriaProvider>
+            <TextosGeraisProvider textos={geral}>
+              <SessaoObrigatoriaProvider>
+                <Cenario
+                  fundo={fundo}
+                  manutencao={{ activa: definicoes.manutencao === true, email: definicoes.emailContacto }}
+                >
+                  {children}
+                </Cenario>
+                <CookieBanner activo={definicoes.cookieBanner !== false} />
+                <IntroCapacete />
+              </SessaoObrigatoriaProvider>
+              <Analitica codigo={definicoes.analytics} />
+            </TextosGeraisProvider>
           </AuthProvider>
         </IdiomaProvider>
       </body>

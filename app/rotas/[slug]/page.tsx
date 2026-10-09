@@ -79,11 +79,11 @@ const COR_ESTADO: Record<Estado, string> = {
 };
 const metros = (n: number) => `${n.toLocaleString("pt-PT")} m`;
 
-/** Classes do botão largo do painel (como BotaoMB), para a ligação de descarga. */
+/** Classes do botão largo do painel (como BotaoMB), para as ligações de descarga (GPX e guia em PDF). */
 const BOTAO =
   "group inline-flex h-14 w-full max-w-[20.5rem] items-center justify-between gap-6 rounded-[var(--raio)] px-5 text-[15px] text-white transition-colors";
 
-function BotaoGpx({ href, ficheiro, texto, className = "" }: { href: string; ficheiro: string; texto: string; className?: string }) {
+function BotaoDescarregar({ href, ficheiro, texto, className = "" }: { href: string; ficheiro: string; texto: string; className?: string }) {
   return (
     <a href={href} download={ficheiro} className={`${BOTAO} bg-white/10 hover:bg-white/20 ${className}`}>
       <span>{texto}</span>
@@ -191,6 +191,9 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
   const fontes = fontesDaRota(rota, pagina);
   const gpx = comBase(`/rotas/${rota.slug}/gpx`);
   const ficheiroGpx = `motobox-${rota.slug}.gpx`;
+  // O guia em PDF (app/rotas/[slug]/guia): tudo o que é preciso para a viagem, para imprimir.
+  const guia = comBase(`/rotas/${rota.slug}/guia`);
+  const ficheiroGuia = `motobox-${rota.slug}-guia.pdf`;
   const noMapa = rota.paragens.filter(coordValida);
   const temMapa = noMapa.length >= 2;
   const navegacao = temMapa ? urlNavegacao(noMapa) : "";
@@ -224,7 +227,15 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
               {tx.botaoMapa}
             </BotaoMB>
           )}
-          <BotaoGpx href={gpx} ficheiro={ficheiroGpx} texto={tx.botaoGpx} className="bg-black/50 backdrop-blur-md hover:bg-black/70" />
+          <BotaoDescarregar href={gpx} ficheiro={ficheiroGpx} texto={tx.botaoGpx} className="bg-black/50 backdrop-blur-md hover:bg-black/70" />
+          {pagina.guia.botao && (
+            <BotaoDescarregar
+              href={guia}
+              ficheiro={ficheiroGuia}
+              texto={pagina.guia.botao}
+              className="bg-black/50 backdrop-blur-md hover:bg-black/70"
+            />
+          )}
         </div>
         {capa && (
           <p className="mt-6 max-w-[60ch] text-xs leading-relaxed text-white/60">
@@ -375,7 +386,8 @@ export default async function RotaPagina({ params }: { params: Promise<{ slug: s
               <BotaoMB href={navegacao} externo>
                 {tx.botaoMapa}
               </BotaoMB>
-              <BotaoGpx href={gpx} ficheiro={ficheiroGpx} texto={tx.botaoGpx} />
+              <BotaoDescarregar href={gpx} ficheiro={ficheiroGpx} texto={tx.botaoGpx} />
+              {pagina.guia.botao && <BotaoDescarregar href={guia} ficheiro={ficheiroGuia} texto={pagina.guia.botao} />}
               {multiDia && (
                 <div className="flex flex-wrap gap-2 sm:ml-3">
                   {dias.map((d) => {

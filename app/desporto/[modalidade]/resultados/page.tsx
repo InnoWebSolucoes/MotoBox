@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Flag, Trophy } from "lucide-react";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, Numeros, Seccao } from "@/components/painel/blocos";
-import { TEMPORADA } from "@/lib/data";
+import { lerTemporada } from "@/lib/conteudo/ler-geral";
 import { corridasDaModalidade, preencher, principalDe, seccoesDaModalidade } from "@/lib/desporto";
 import { lerCorridas, lerEventos } from "@/lib/supabase/publico";
 import { SubNavDesporto } from "../../SubNavDesporto";
@@ -39,10 +39,10 @@ export default async function ResultadosModalidadePage({ params }: { params: Pro
   const m = lista.find((x) => x.slug === modalidade);
   if (!m || m.slug === principalDe(lista)?.slug) notFound();
 
-  const [eventos, corridas] = await Promise.all([lerEventos(), lerCorridas()]);
+  const [eventos, corridas, ano] = await Promise.all([lerEventos(), lerCorridas(), lerTemporada()]);
   const corridasM = corridasDaModalidade(m, eventos, corridas);
   const a = t.modalidade.arquivo;
-  const valores = { ano: TEMPORADA, campeonato: t.campeonato.nome, modalidade: m.nome };
+  const valores = { ano, campeonato: t.campeonato.nome, modalidade: m.nome };
 
   return (
     <>

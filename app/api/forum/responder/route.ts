@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { utilizadorActual, perfilDe } from "@/lib/conta/sessao";
@@ -6,6 +6,7 @@ import {
   avatarDaConta, corValida, respostaDaLinha, tabelaEmFalta, COLUNAS_PUBLICAS,
 } from "@/lib/forum/respostas";
 import { COR_PADRAO, RESPOSTA_MAX, RESPOSTA_MIN } from "@/lib/forum/tipos";
+import { notificarRespostaForum } from "@/lib/notificacoes";
 
 /* ============================================================
    MOTOBOX — Responder a um tópico do fórum
@@ -13,7 +14,8 @@ import { COR_PADRAO, RESPOSTA_MAX, RESPOSTA_MIN } from "@/lib/forum/tipos";
    publicado e não fechado. O nome, a cor e o logótipo vêm da
    conta: nunca do que o navegador diz sobre quem escreve.
    Depois de guardar, o tópico conta mais uma resposta e passa
-   a mostrar quem respondeu por último.
+   a mostrar quem respondeu por último, e quem já tinha respondido
+   no tópico (com os avisos do fórum ligados) recebe um email.
    ============================================================ */
 
 export const dynamic = "force-dynamic";
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
   /* ---------- O fórum e o tópico aceitam respostas? ---------- */
   const [{ data: def }, { data: topico, error: erroTopico }] = await Promise.all([
     db.from("definicoes").select("forum_aberto").eq("id", 1).maybeSingle(),
-    db.from("topicos").select("id, publicado, bloqueado, respostas").eq("id", topicoId).maybeSingle(),
+    db.from("topicos").select("id, titulo, publicado, bloqueado, respostas").eq("id", topicoId).maybeSingle(),
   ]);
   if (def && def.forum_aberto === false) return erro("O fórum está fechado de momento.", 403);
   if (erroTopico) return erro("Não foi possível confirmar o tópico. Tente mais tarde.", 500);
@@ -147,6 +149,11 @@ export async function POST(req: NextRequest) {
     revalidatePath(`/forum/${topicoId}`);
     revalidatePath("/forum");
   } catch { /* fora de contexto */ }
+
+  // Depois de responder ao navegador: avisa quem participa no tópico.
+  after(() => notificarRespostaForum({
+    topicoId, topicoTitulo: String(topico.titulo ?? "Tópico do fórum"), autorId: user.id, autorNome: nome, texto,
+  }));
 
   return NextResponse.json({ resposta }, { status: 201 });
 }

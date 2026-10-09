@@ -33,6 +33,16 @@ export const DESTINOS: Record<string, Destino> = {
   "paginas.marketplace": { href: "/admin/marketplace?aba=pagina", onde: "Marketplace", resumo: "O topo e os textos fixos da página Marketplace." },
   "paginas.forum": { href: "/admin/forum?aba=pagina", onde: "Fórum", resumo: "O topo e os textos fixos da página Fórum." },
   "desporto.equipas": { href: "/admin/equipas", onde: "Equipas", resumo: "As fotografias de capa das equipas." },
+  "site.geral": { href: "/admin/site?aba=geral", onde: "Entrada e painel", resumo: "Rodapé, botão de acção, página 404, aviso de cookies, manutenção e newsletter." },
+  "site.emails": { href: "/admin/definicoes?aba=emails", onde: "Definições", resumo: "Para onde vão os emails do site, o remetente e o texto de cada email." },
+  "site.contas": { href: "/admin/definicoes?aba=contas", onde: "Definições", resumo: "Os textos de entrar, criar conta e recuperar a palavra-passe." },
+  "campeonato.calendario": { href: "/admin/provas?aba=paginas&doc=calendario", onde: "Provas", resumo: "Os textos fixos do calendário e da página de cada prova." },
+  "campeonato.resultados": { href: "/admin/provas?aba=paginas&doc=resultados", onde: "Provas", resumo: "Os textos fixos dos resultados." },
+  "campeonato.classificacao": { href: "/admin/provas?aba=paginas&doc=classificacao", onde: "Provas", resumo: "Os textos fixos da classificação." },
+  "campeonato.pilotos": { href: "/admin/provas?aba=paginas&doc=pilotos", onde: "Provas", resumo: "Os textos fixos da lista e da ficha de cada piloto." },
+  "campeonato.equipas": { href: "/admin/provas?aba=paginas&doc=equipas", onde: "Provas", resumo: "Os textos fixos da lista e da página de cada equipa." },
+  "campeonato.bilhetes": { href: "/admin/provas?aba=paginas&doc=bilhetes", onde: "Provas", resumo: "Os textos fixos da bilheteira." },
+  "campeonato.compra": { href: "/admin/provas?aba=paginas&doc=compra", onde: "Provas", resumo: "A compra de bilhetes e os meios de pagamento." },
 };
 
 /** Listas de itens (grupos) e a secção onde se editam. */

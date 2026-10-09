@@ -2,6 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { utilizadorActual, perfilDe } from "@/lib/conta/sessao";
 import {
+  avisarEquipa, emailConfigurado, emailDoModelo, enviarEmail, lerConfigEmails, primeiroNome, urlSite,
+} from "@/lib/email";
+import {
   CATEGORIAS_IMPORTACAO, MENSAGENS_ERRO, validarPedido,
 } from "@/app/marketplace/importar/opcoes";
 
@@ -10,7 +13,10 @@ import {
    Só com sessão. O pedido entra em `mensagens`, como o contacto,
    com o assunto "Pedido de importação: …" e todos os detalhes no
    corpo: a equipa lê-o e responde por email em Mensagens, no
-   painel. Nada é cobrado nem prometido aqui: a resposta é um
+   painel. Segue também um email para a equipa (Definições →
+   Emails → Pedidos de importação), com "responder para" quem
+   pediu, e um recibo para quem pediu (se os recibos estiverem
+   ligados). Nada é cobrado nem prometido aqui: a resposta é um
    orçamento feito à mão.
    ============================================================ */
 
@@ -72,10 +78,37 @@ export async function POST(req: NextRequest) {
     assunto: `Pedido de importação: ${pedido.titulo}`.slice(0, 200),
     mensagem,
   });
+  /* ---------- Email para a equipa (e recibo para quem pediu) ---------- */
+  const cfg = await lerConfigEmails();
+  const paraEquipa = emailDoModelo(cfg, "importacaoEquipa", { titulo: pedido.titulo, nome: pedido.nome, email: pedido.email }, {
+    url: `${urlSite()}/admin/mensagens`,
+    detalhes: [
+      ["O que é", pedido.titulo],
+      ["Tipo", categoria],
+      ["Quantidade", String(pedido.quantidade)],
+      ["Ligação", pedido.ligacao],
+      ["Entrega em", pedido.provincia],
+      ["Contacto", [pedido.nome, pedido.email, pedido.telefone].filter(Boolean).join(" · ")],
+      ["Referência", id],
+    ],
+    citacao: pedido.notas ? { rotulo: "Notas:", texto: pedido.notas } : undefined,
+  });
+  const falhaEquipa = await avisarEquipa(cfg, "importacao", { ...paraEquipa, responderPara: pedido.email, tipo: "importacaoEquipa" });
+  if (falhaEquipa) console.error(`[importacao] aviso à equipa não seguiu: ${falhaEquipa}`);
+
   if (error) {
     console.error("[importacao]", error.message);
-    return erro("Não foi possível enviar o pedido. Tente de novo dentro de momentos.", 500);
+    // Sem registo e sem email, o pedido perdia-se: só aí se diz que falhou.
+    if (falhaEquipa) return erro("Não foi possível enviar o pedido. Tente de novo dentro de momentos.", 500);
   }
 
-  return NextResponse.json({ ok: true, referencia: id }, { status: 201 });
+  let recibo = false;
+  if (cfg.conteudo.recibos && emailConfigurado()) {
+    const r = emailDoModelo(cfg, "importacaoRecibo", { nome: primeiroNome(pedido.nome), titulo: pedido.titulo, referencia: id });
+    const enviado = await enviarEmail({ para: pedido.email, ...r, tipo: "importacaoRecibo" }, cfg);
+    recibo = enviado.ok;
+    if (!enviado.ok) console.error(`[importacao] recibo para ${pedido.email} não seguiu: ${enviado.erro}`);
+  }
+
+  return NextResponse.json({ ok: true, referencia: id, equipaAvisada: !falhaEquipa, recibo }, { status: 201 });
 }

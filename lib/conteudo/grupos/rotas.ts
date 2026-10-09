@@ -6,9 +6,11 @@
    código (lib/rotas.ts).
 
    "paginas.rotas" guarda os textos de /rotas, os textos fixos da
-   página de cada rota e o que é comum a todas as rotas
-   (emergência, documentos, rede, combustível, o que levar, quando
-   ir, planear, regras da estrada e as tabelas de clima).
+   página de cada rota, os do guia em PDF de cada rota (o botão e
+   o documento, em "guia", ver TEXTOS_GUIA em lib/rotas-pagina.ts)
+   e o que é comum a todas as rotas (emergência, documentos, rede,
+   combustível, o que levar, quando ir, planear, regras da estrada
+   e as tabelas de clima).
 
    As páginas lêem tudo com lib/rotas-conteudo.ts; o painel edita
    em /admin/rotas.
@@ -27,7 +29,7 @@ export const GRUPOS: DefGrupo[] = [
   },
 ];
 
-/** Entrada da secção /rotas e o que é comum a todas as rotas (emergência, documentos, regras…). */
+/** Entrada da secção /rotas, os textos fixos das rotas e do guia em PDF e o que é comum a todas (emergência, documentos, regras…). */
 export const DOCS: DefDoc[] = [
   { chave: "paginas.rotas", titulo: "Rotas (página da secção)", pagina: "/rotas", padrao: () => paginaRotasPadrao() },
 ];

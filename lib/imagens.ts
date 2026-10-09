@@ -1,169 +1,196 @@
 /**
  * Registo de fotografias.
  *
- * Enquanto o arquivo fotográfico da MotoBox não é fornecido, cada chave de
- * imagem usada em `lib/data.ts` aponta para uma fotografia livre do Unsplash,
- * escolhida por tema (estrada, clubes, scooters, clássicas, oficina). Para passar
- * a produção basta trocar os URLs por ficheiros do arquivo real — a chave e a
- * assinatura dos componentes `Placeholder` / `Retrato` mantêm-se.
+ * Cada chave de imagem usada em `lib/data.ts`, na base de dados e nas páginas
+ * aponta para uma fotografia real, publicada no Instagram da MotoBox
+ * (@motobox_angola) ou no do próprio clube. As fotografias foram escolhidas por
+ * tema (motocross, Dia do Motard, passeios, clubes) e copiadas para o Supabase
+ * Storage (bucket "media", pasta imagens/), com o nome
+ * `instagram-<código da publicação>-<n.º da imagem no carrossel>.jpg`.
  *
- * Todos os URLs foram verificados (HTTP 200). Os parâmetros de tamanho e
- * recorte são aplicados em `src()`, não guardados aqui.
+ * A lista com a publicação de origem, a data e o que cada fotografia mostra
+ * está em `lib/imagens-instagram.ts`.
+ *
+ * Os retratos de pilotos (RETRATOS) são fotografias de corrida com o capacete
+ * posto: os pilotos do site são fictícios e ninguém é reconhecível.
+ *
+ * A largura pedida a `src()` só se aplica a fotografias do Unsplash (por
+ * exemplo, um endereço antigo colado no painel); as do Storage seguem tal como
+ * estão e é o optimizador do Next que as dimensiona.
  */
 
 import { BASE, comBase } from "@/lib/base";
 
-const U = (id: string) => `https://images.unsplash.com/${id}`;
+/** Ficheiros públicos do bucket "media" (projecto Supabase da MotoBox). */
+const MEDIA = "https://sluahnkxfnibximsqcht.supabase.co/storage/v1/object/public/media";
+
+/** Fotografia do Instagram copiada para o Storage: "DbfmkCCDm2b-1" → …/imagens/instagram-DbfmkCCDm2b-1.jpg */
+const IG = (ref: string) => `${MEDIA}/imagens/instagram-${ref}.jpg`;
 
 /** Caminho de um ficheiro do próprio site, com o prefixo /motobox. */
 export const urlLocal = (caminho: string) => (caminho.startsWith(`${BASE}/`) ? caminho : comBase(caminho));
 
 /** Provas, circuitos, notícias e vídeos — imagens largas. */
 export const CENAS: Record<string, string> = {
-  "kilamba": U("photo-1542550546-88afdd84b64f"),
-  "benguela": U("photo-1500578862199-d2872c0781ec"),
-  "lubango": U("photo-1602478411948-e28ad9b247b8"),
-  "cabinda": U("photo-1749453841347-2cda97af2526"),
-  "namibe": U("photo-1546489545-697049cfdc1e"),
-  "huambo": U("photo-1715178160659-7cc8ef44ade1"),
-  "tundavala": U("photo-1687227394984-a9de8f64fd0d"),
-  "gala": U("photo-1761860467031-5175bbc0503e"),
-  "natal": U("photo-1489731007795-388eee095ff6"),
-  "mxgp": U("photo-1551759390-5c112a9ffef0"),
-  "ktm": U("photo-1605121476668-ae388fa8fe27"),
-  "dakar": U("photo-1514826863517-464eed44915d"),
-  "competicao": U("photo-1626130569162-f90681b6982a"),
-  "passeios": U("photo-1556036518-705db5129896"),
-  "mecanica": U("photo-1636761358757-0a616eb9e17e"),
-  "geral": U("photo-1752778268540-dfc2eb7a10e4"),
-  "novatos": U("photo-1687278346516-17a9f85b0252"),
+  "kilamba": IG("DSKHLvuDGe4-3"),
+  "benguela": IG("DCe7tpetE5C-6"),
+  "lubango": IG("DdjRu2YjDrX-17"),
+  "cabinda": IG("DW3R3ozjQcx-4"),
+  "namibe": IG("DBvc8neIInk-1"),
+  "huambo": IG("DSKHLvuDGe4-8"),
+  "tundavala": IG("DdjRu2YjDrX-20"),
+  "gala": IG("Dby44iSnCiV-7"),
+  "natal": IG("DavYPd7jBW8-12"),
+  "mxgp": IG("DXOgXAkjGzU-2"),
+  "ktm": IG("DdjRu2YjDrX-14"),
+  "dakar": IG("DTcnUPYDgQk-1"),
+  "competicao": IG("DdjRu2YjDrX-19"),
+  "passeios": IG("DT-_0YuETLc-1"),
+  "mecanica": IG("DcEhdn5DghP-1"),
+  "geral": IG("DbfmkCCDm2b-3"),
+  "novatos": IG("DX1mrF1DDPg-2"),
 };
 
-/** Retratos de pilotos, por slug. */
+/** Retratos de pilotos, por slug: pilotos em prova, de capacete posto. */
 export const RETRATOS: Record<string, string> = {
-  "nelson-kiala": U("photo-1591037307610-9b7bcdffb72a"),
-  "joana-ferraz": U("photo-1559913516-d47b38fab290"),
-  "ivandro-cabral": U("photo-1591216105236-5ba45970702a"),
-  "carlos-samba": U("photo-1736454327682-a684ef60c3fe"),
-  "mario-bengui": U("photo-1582092605221-bf4ddf388587"),
-  "rui-katchimba": U("photo-1591124999021-a0b9ebe09b9a"),
-  "adilson-mbala": U("photo-1591037240570-58b94467a14b"),
-  "eduardo-neto": U("photo-1562402082-05a4e888ca96"),
-  "helder-quissanga": U("photo-1606497058128-19b758a3dd88"),
-  "paulo-tembo": U("photo-1788421845004-62ba196cf860"),
-  "bruno-tchipa": U("photo-1660337294765-2a20770826aa"),
-  "silvio-domingos": U("photo-1606927131353-c0ad17d60b56"),
+  "nelson-kiala": IG("DeG034qDmZW-3"),
+  "joana-ferraz": IG("DXFD2QqDNf8-2"),
+  "ivandro-cabral": IG("DdjRu2YjDrX-15"),
+  "carlos-samba": IG("DKsU0buNEJu-3"),
+  "mario-bengui": IG("DeG034qDmZW-5"),
+  "rui-katchimba": IG("DdjRu2YjDrX-11"),
+  "adilson-mbala": IG("DXFD2QqDNf8-3"),
+  "eduardo-neto": IG("DeG034qDmZW-2"),
+  "helder-quissanga": IG("DdjRu2YjDrX-18"),
+  "paulo-tembo": IG("DdjRu2YjDrX-12"),
+  "bruno-tchipa": IG("DeG034qDmZW-4"),
+  "silvio-domingos": IG("DX1mrF1DDPg-4"),
 };
 
 /** Anúncios do marketplace. */
 export const ARTIGOS: Record<string, string> = {
-  "crf450": U("photo-1542550546-88afdd84b64f"),
-  "ktm250": U("photo-1605121476668-ae388fa8fe27"),
-  "fe350": U("photo-1582092722992-b2f960bafbfb"),
-  "tenere": U("photo-1514826863517-464eed44915d"),
-  "dr650": U("photo-1687227394984-a9de8f64fd0d"),
-  "capacete": U("photo-1611004061856-ccc3cbe944b2"),
-  "botas": U("photo-1725387023639-28e9a42a83b1"),
-  "equipamento": U("photo-1611004060674-7e8864bcb4e4"),
-  "escape": U("photo-1771252297207-eca148228341"),
-  "suspensao": U("photo-1762012507780-060fe0bcc783"),
-  "plasticos": U("photo-1769537754889-8d731b83547f"),
-  "suporte": U("photo-1774902410486-648614277f1f"),
+  "crf450": IG("DeG034qDmZW-9"),
+  "ktm250": IG("DdjRu2YjDrX-16"),
+  "fe350": IG("DCe7tpetE5C-6"),
+  "tenere": IG("DZMsNT5tpvd-1"),
+  "dr650": IG("DLem_f1sYAq-1"),
+  "capacete": IG("DXFD2QqDNf8-1"),
+  "botas": IG("DeG034qDmZW-11"),
+  "equipamento": IG("DX1mrF1DDPg-3"),
+  "escape": IG("DcEhdn5DghP-6"),
+  "suspensao": IG("DcEhdn5DghP-8"),
+  "plasticos": IG("DcEhdn5DghP-7"),
+  "suporte": IG("DcEhdn5DghP-1"),
 };
 
 /**
  * Imagens por slug: cada artigo, clube, evento e rota tem a sua.
- * Fotografias ilustrativas do Unsplash, até chegar o arquivo da MotoBox.
+ * Os clubes usam fotografias das suas próprias contas de Instagram.
  */
 export const POR_SLUG: Record<string, string> = {
   /* Artigos */
-  "artigo-dia-do-motard": U("photo-1653058489330-b6ede759022e"),
-  "artigo-amigos-da-picada": U("photo-1680473930033-008346c88cf4"),
-  "artigo-lady-riders": U("photo-1598683308075-3ec9bc7e54e0"),
-  "artigo-serra-da-leba": U("photo-1574417462817-a4e1aa71cc78"),
-  "artigo-chuva": U("photo-1761252986972-7915b9f79cc3"),
-  "artigo-capacete": U("photo-1611004061856-ccc3cbe944b2"),
-  "artigo-primeira-mota": U("photo-1519750292352-c9fc17322ed7"),
-  "artigo-verificacao": U("photo-1636761358757-0a616eb9e17e"),
-  "artigo-grupo": U("photo-1698306757353-441cccd70e4f"),
-  "artigo-300-km": U("photo-1623044933416-81d33fb60378"),
-  "artigo-kalandula": U("photo-1749453841347-2cda97af2526"),
-  "artigo-mota-usada": U("photo-1564410979892-38e38dda0b2f"),
+  "artigo-dia-do-motard": IG("DaqgievjrnF-4"),
+  "artigo-amigos-da-picada": IG("DLPZ6uHMcCx-1"),
+  "artigo-lady-riders": IG("DVp--SuDFU5-1"),
+  "artigo-serra-da-leba": IG("B_pMzdugT2Z-1"),
+  "artigo-chuva": IG("DW1Zt26lyG6-5"),
+  "artigo-capacete": IG("DXFD2QqDNf8-1"),
+  "artigo-primeira-mota": IG("DXOgXAkjGzU-4"),
+  "artigo-verificacao": IG("DNdX5I9MWtz-1"),
+  "artigo-grupo": IG("DavYPd7jBW8-9"),
+  "artigo-300-km": IG("ClE15vph_gI-2"),
+  "artigo-kalandula": IG("DW1Zt26lyG6-1"),
+  "artigo-mota-usada": IG("DaKjfkWsfFU-1"),
 
-  /* Clubes (capas ilustrativas) */
-  "clube-amigos-da-picada": U("photo-1680473930033-008346c88cf4"),
-  "clube-ladies-in-2-wheels": U("photo-1598683308075-3ec9bc7e54e0"),
-  "clube-elite-motard": U("photo-1674829198252-589ed0f49716"),
-  "clube-300-km-a-norte": U("photo-1623044933416-81d33fb60378"),
-  "clube-motards-de-angola": U("photo-1698306757353-441cccd70e4f"),
-  "clube-anjos-bantu": U("photo-1578719434213-4b2632627d99"),
-  "clube-tuaregs": U("photo-1582092605221-bf4ddf388587"),
-  "clube-performance-bikers": U("photo-1687181493462-0ca5d5627285"),
-  "clube-african-nomadas": U("photo-1574417462817-a4e1aa71cc78"),
-  "clube-amigos-do-capim": U("photo-1556036518-705db5129896"),
-  "clube-nomadas-angola": U("photo-1609204276470-d22da7d40a3c"),
-  "clube-vespa": U("photo-1747831127542-34be7e80d16b"),
+  /* Clubes (fotografias das contas dos próprios clubes) */
+  "clube-amigos-da-picada": IG("Dby44iSnCiV-1"),
+  "clube-ladies-in-2-wheels": IG("DF-TKRPIq-4-1"),
+  "clube-elite-motard": IG("ClE3S7FBb1l-4"),
+  "clube-300-km-a-norte": IG("CoLjbIvsalB-1"),
+  "clube-motards-de-angola": IG("DKsU0buNEJu-1"),
+  "clube-anjos-bantu": IG("DWPOelXjkL8-8"),
+  "clube-tuaregs": IG("DavZJwkjAQW-1"),
+  "clube-performance-bikers": IG("DGzya6bM8j_-1"),
+  "clube-african-nomadas": IG("C2PgSGss_XY-4"),
+  // A conta do clube só tem uma imagem pequena: esta é dos Motards de Angola, «Amigo capim».
+  "clube-amigos-do-capim": IG("C65x4Z0sNAj-3"),
+  "clube-nomadas-angola": IG("B_b6bwuAYfF-1"),
+  "clube-vespa": IG("C3qHQEnMJyW-1"),
 
   /* Eventos */
-  "dia-do-motard-angolano-2026": U("photo-1687181493462-0ca5d5627285"),
-  "encontro-motobox-marginal": U("photo-1674829198252-589ed0f49716"),
-  "oficina-aberta-mecanica-basica": U("photo-1636761358757-0a616eb9e17e"),
-  "passeio-miradouro-da-lua": U("photo-1582092605221-bf4ddf388587"),
-  "raide-serra-da-leba": U("photo-1574417462817-a4e1aa71cc78"),
-  "passeio-solidario-natal-2026": U("photo-1556036518-705db5129896"),
+  "dia-do-motard-angolano-2026": IG("DbfmkCCDm2b-2"),
+  "encontro-motobox-marginal": IG("DaqgievjrnF-1"),
+  "oficina-aberta-mecanica-basica": IG("DcEhdn5DghP-8"),
+  "passeio-miradouro-da-lua": IG("ClE3S7FBb1l-3"),
+  "raide-serra-da-leba": IG("B_pMzdugT2Z-1"),
+  "passeio-solidario-natal-2026": IG("DW3R3ozjQcx-12"),
+  "moto-4-kilamba": IG("DXFD2QqDNf8-4"),
+  "moto-4-kilamba-2026": IG("DXFD2QqDNf8-4"),
 
-  /* Rotas */
-  "serra-da-leba": U("photo-1574417462817-a4e1aa71cc78"),
-  "tundavala": U("photo-1687227394984-a9de8f64fd0d"),
-  "kalandula-e-pungo-andongo": U("photo-1749453841347-2cda97af2526"),
-  "miradouro-da-lua": U("photo-1582092722992-b2f960bafbfb"),
-  "cabo-ledo-e-quicama": U("photo-1573826688141-c0caf0e14081"),
-  "deserto-do-namibe": U("photo-1514826863517-464eed44915d"),
-  "costa-de-benguela": U("photo-1736454327682-a684ef60c3fe"),
-  "estrada-da-costa": U("photo-1680473930033-008346c88cf4"),
+  /* Rotas (as páginas das rotas usam as fotografias do Commons, em lib/rotas-fotos.ts) */
+  "serra-da-leba": IG("B_pMzdugT2Z-1"),
+  "tundavala": IG("DdjRu2YjDrX-20"),
+  "kalandula-e-pungo-andongo": IG("DW1Zt26lyG6-1"),
+  "miradouro-da-lua": IG("ClE3S7FBb1l-3"),
+  "cabo-ledo-e-quicama": IG("C14RJZzspq9-1"),
+  "deserto-do-namibe": IG("DBvc8neIInk-1"),
+  "costa-de-benguela": IG("ClE2xbmBYXh-5"),
+  "estrada-da-costa": IG("ClE3S7FBb1l-3"),
 
   /* Marketplace (novos tipos de mota) */
-  "vespa-amarela": U("photo-1747831127542-34be7e80d16b"),
-  "trail-estrada": U("photo-1514826863517-464eed44915d"),
-  "classica": U("photo-1564410979892-38e38dda0b2f"),
+  "vespa-amarela": IG("C14RJZzspq9-2"),
+  "trail-estrada": IG("DNdX5I9MWtz-2"),
+  "classica": IG("DaqgievjrnF-1"),
+
+  /* Desporto */
+  "moto-4": IG("DYALZYxDJIZ-1"),
 
   /* Painel e secções */
-  "painel-clubes": U("photo-1574417462817-a4e1aa71cc78"),
-  "painel-eventos": U("photo-1687181493462-0ca5d5627285"),
-  "painel-sobre": U("photo-1446446765936-ffb206d1c0f2"),
-  "scooters": U("photo-1666275898271-451725695d92"),
-  "custom": U("photo-1558980664-ce6960be307d"),
-  "classicas": U("photo-1568708167256-1f385e6485f5"),
-  "desportivas": U("photo-1653058489330-b6ede759022e"),
-  "trail": U("photo-1667684446493-b5f5550c05ea"),
-  "cidade": U("photo-1710297008210-4acfbc2bf550"),
-  "chuva": U("photo-1693935963214-ce2feacbc7f8"),
-  "noite": U("photo-1702231945323-6e3d2153ab92"),
+  "painel-clubes": IG("C2IbIXLIvYx-3"),
+  "painel-eventos": IG("DavYPd7jBW8-10"),
+  "painel-sobre": IG("C2PgSGss_XY-6"),
+  "scooters": IG("C_kY30liZyR-2"),
+  "custom": IG("DXl9OEsjPYs-1"),
+  "classicas": IG("DaqgievjrnF-1"),
+  "desportivas": IG("DUFnyinjlp1-1"),
+  "trail": IG("ClE1sQJBcQo-1"),
+  "cidade": IG("DbfmkCCDm2b-4"),
+  "chuva": IG("DW1Zt26lyG6-5"),
+  "noite": IG("Dby44iSnCiV-6"),
 };
 
 /**
  * Fotografia de fundo das aberturas de página, por rota.
  */
 export const BANNERS: Record<string, string> = {
-  "artigos": U("photo-1653058489330-b6ede759022e"),
-  "clubes": U("photo-1574417462817-a4e1aa71cc78"),
-  "eventos": U("photo-1687181493462-0ca5d5627285"),
-  "rotas": U("photo-1582092605221-bf4ddf388587"),
-  "seguranca": U("photo-1611004061856-ccc3cbe944b2"),
-  "marketplace": U("photo-1564410979892-38e38dda0b2f"),
-  "importar": U("photo-1771252297207-eca148228341"),
-  "forum": U("photo-1556036518-705db5129896"),
-  "sobre": U("photo-1446446765936-ffb206d1c0f2"),
-  "contacto": U("photo-1609204276470-d22da7d40a3c"),
-  "legal": U("photo-1582092722992-b2f960bafbfb"),
-  "entrar": U("photo-1598683308075-3ec9bc7e54e0"),
-  "conta": U("photo-1602478411948-e28ad9b247b8"),
+  "artigos": IG("DdjRu2YjDrX-6"),
+  "clubes": IG("C2PgSGss_XY-5"),
+  "eventos": IG("DbfmkCCDm2b-1"),
+  "rotas": IG("DKsU0buNEJu-2"),
+  "seguranca": IG("DbfmkCCDm2b-5"),
+  "marketplace": IG("C2PgSGss_XY-3"),
+  "importar": IG("DMxwIL9NTkr-5"),
+  "forum": IG("DEKpBl3NKLp-4"),
+  "sobre": IG("DW_LM6gDJlC-1"),
+  "contacto": IG("DYwhrpGuYR0-1"),
+  "legal": IG("Co8KkeJM9XI-4"),
+  "entrar": IG("DFYkDtpM3Y2-5"),
+  "conta": IG("DGzya6bM8j_-1"),
 };
+
+/**
+ * Endereço de uma fotografia na largura pedida. Só o Unsplash recebe os
+ * parâmetros de tamanho e recorte; os ficheiros do Storage não os entendem
+ * e seguem tal como estão.
+ */
+function dimensionar(base: string, w: number, q: number): string {
+  return base.startsWith("https://images.unsplash.com/") ? `${base}?auto=format&fit=crop&w=${w}&q=${q}` : base;
+}
 
 /** URL do banner de uma rota, já dimensionado. */
 export function banner(chave: string, { w = 1920, q = 60 } = {}): string | null {
   const base = BANNERS[chave];
-  return base ? `${base}?auto=format&fit=crop&w=${w}&q=${q}` : null;
+  return base ? dimensionar(base, w, q) : null;
 }
 
 /** Todas as chaves conhecidas, numa só tabela. */
@@ -194,7 +221,7 @@ export function src(
     if (c.startsWith("/")) return urlLocal(c);
     // chaves derivadas do tipo "capacete-2" (galerias) caem na imagem base
     const base = TODAS[c] ?? TODAS[c.replace(/-\d+$/, "")];
-    if (base) return `${base}?auto=format&fit=crop&w=${w}&q=${q}`;
+    if (base) return dimensionar(base, w, q);
   }
   return null;
 }

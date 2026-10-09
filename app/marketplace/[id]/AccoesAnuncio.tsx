@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth/contexto";
 import { useExigirSessao } from "@/components/SessaoObrigatoria";
+import { Partilhar } from "@/components/Partilhar";
 import { Button, Icon } from "@/components/ui";
 import { formatKz } from "@/lib/data";
 import { ContactarVendedor } from "./ContactarVendedor";
@@ -11,8 +12,6 @@ import { comBase } from "@/lib/base";
 interface Aviso {
   texto: string;
   tipo: "ok" | "erro";
-  /** Texto a enviar pelo WhatsApp, quando o aviso vem da partilha. */
-  whatsapp?: string;
 }
 
 /** Coração do botão Guardar: cheio quando o anúncio está guardado. */
@@ -32,7 +31,9 @@ function Coracao({ cheio }: { cheio: boolean }) {
 
 /**
  * Acções da coluna de compra: contactar o vendedor, guardar o anúncio
- * na conta (user_metadata.favoritos, via /api/conta/favoritos) e partilhar.
+ * na conta (user_metadata.favoritos, via /api/conta/favoritos) e partilhar
+ * (WhatsApp, Facebook, Instagram, X, Telegram, email, copiar a ligação;
+ * ver components/Partilhar.tsx).
  */
 export function AccoesAnuncio({
   anuncioId, titulo, preco, vendedorNome, vendedorAuthId, mensagemInicial,
@@ -49,11 +50,11 @@ export function AccoesAnuncio({
   const exigirSessao = useExigirSessao();
   const uid = utilizador?.id;
 
-  // Aviso curto no fundo do ecrã (partilha e erros ao guardar).
+  // Aviso curto no fundo do ecrã (erros ao guardar).
   const [aviso, setAviso] = useState<Aviso | null>(null);
   useEffect(() => {
     if (!aviso) return;
-    const t = window.setTimeout(() => setAviso(null), aviso.whatsapp ? 8000 : 5000);
+    const t = window.setTimeout(() => setAviso(null), 5000);
     return () => window.clearTimeout(t);
   }, [aviso]);
 
@@ -122,35 +123,6 @@ export function AccoesAnuncio({
     });
   }
 
-  /* ---------- Partilhar ---------- */
-  async function partilhar() {
-    const url = `${window.location.origin}/marketplace/${encodeURIComponent(anuncioId)}`;
-    const texto = `${titulo} · ${formatKz(preco)}`;
-    const dados = { title: titulo, text: texto, url };
-
-    // Telemóvel (e alguns computadores): a folha de partilha do sistema.
-    if (typeof navigator.share === "function" && (navigator.canShare?.(dados) ?? true)) {
-      try {
-        await navigator.share(dados);
-        return;
-      } catch (e) {
-        // Fechar a folha sem escolher não é um erro. Outra falha segue para copiar.
-        if ((e as DOMException)?.name === "AbortError") return;
-      }
-    }
-
-    let copiado = false;
-    try {
-      await navigator.clipboard.writeText(url);
-      copiado = true;
-    } catch { /* sem permissão ou ligação não segura */ }
-    setAviso({
-      tipo: copiado ? "ok" : "erro",
-      texto: copiado ? "Ligação copiada" : "Não foi possível copiar a ligação",
-      whatsapp: `${texto}\n${url}`,
-    });
-  }
-
   return (
     <>
       <div className="mt-6 space-y-2">
@@ -173,10 +145,12 @@ export function AccoesAnuncio({
             <Coracao cheio={guardado} />
             {guardado ? "Guardado" : "Guardar"}
           </Button>
-          <Button variant="dark" className="flex-1" onClick={partilhar}>
-            <Icon name="share" className="size-4" />
-            Partilhar
-          </Button>
+          <Partilhar
+            caminho={`/marketplace/${encodeURIComponent(anuncioId)}`}
+            titulo={titulo}
+            texto={`${titulo} · ${formatKz(preco)}`}
+            className="inline-flex h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--raio)] bg-white/8 px-5 text-[15px] text-white transition-colors hover:bg-white/15 aria-expanded:bg-white/15"
+          />
         </div>
       </div>
 
@@ -189,18 +163,6 @@ export function AccoesAnuncio({
               className={`size-4 shrink-0 ${aviso.tipo === "ok" ? "text-ok" : "text-mb-red"}`}
             />
             <span className="font-ui text-base leading-tight">{aviso.texto}</span>
-            {aviso.whatsapp && (
-              <a
-                href={`https://wa.me/?text=${encodeURIComponent(aviso.whatsapp)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Partilhar por WhatsApp"
-                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-ink-950 px-3 font-ui text-sm text-white transition-colors hover:bg-ink-800"
-              >
-                <Icon name="whatsapp" className="size-4 text-[#25d366]" />
-                WhatsApp
-              </a>
-            )}
             <button
               type="button"
               onClick={() => setAviso(null)}

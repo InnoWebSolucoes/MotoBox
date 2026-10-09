@@ -7,7 +7,7 @@ export async function GET(pedido: NextRequest) {
   const { searchParams } = new URL(pedido.url);
   const codigo = searchParams.get("code");
   const pedidoDestino = searchParams.get("destino") ?? "/conta";
-  const destino = /^\/(?!\/)/.test(pedidoDestino) ? pedidoDestino : "/conta";
+  const destino = /^\/(?!\/)[^\s\\]*$/.test(pedidoDestino) ? pedidoDestino : "/conta";
 
   if (!codigo) return redireccionar("/entrar");
 

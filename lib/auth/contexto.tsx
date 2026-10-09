@@ -88,7 +88,8 @@ function mensagem(erro: string): string {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessao, setSessao] = useState<Session | null>(null);
   const [perfil, setPerfil] = useState<Perfil | null>(null);
-  const [carregando, setCarregando] = useState(true);
+  // Sem Supabase configurado não há sessão a esperar.
+  const [carregando, setCarregando] = useState(authConfigurada);
 
   const cliente = useMemo(() => (authConfigurada ? supabaseNavegador() : null), []);
 
@@ -120,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [cliente]);
 
   useEffect(() => {
-    if (!cliente) { setCarregando(false); return; }
+    if (!cliente) return;
 
     cliente.auth.getSession().then(async ({ data }) => {
       setSessao(data.session);

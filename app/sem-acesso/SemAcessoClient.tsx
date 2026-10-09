@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/contexto";
-import { useIdioma } from "@/lib/i18n/contexto";
+import { useTextosGerais } from "@/components/painel/TextosGerais";
 
+// Os textos editam-se em Gestão › Entrada e painel › Geral (Sem acesso).
 export function SemAcessoClient() {
-  const { t } = useIdioma();
+  const { semAcesso: t } = useTextosGerais();
   const { perfil, sair } = useAuth();
 
   return (
@@ -17,8 +18,8 @@ export function SemAcessoClient() {
         </svg>
       </div>
 
-      <h1 className="title-xl text-3xl text-white">{t("auth.semAcesso")}</h1>
-      <p className="mx-auto mt-3 max-w-md text-sm text-ink-400">{t("auth.semAcessoTexto")}</p>
+      <h1 className="title-xl text-3xl text-white">{t.titulo}</h1>
+      {t.texto && <p className="mx-auto mt-3 max-w-md text-sm text-ink-400">{t.texto}</p>}
 
       {perfil && (
         <p className="mt-4 text-xs text-ink-500">
@@ -29,11 +30,11 @@ export function SemAcessoClient() {
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Link href="/"
           className="inline-flex h-11 items-center rounded-full border-2 border-ink-500 px-6 font-ui text-base text-white transition-colors hover:border-white">
-          {t("comum.inicio")}
+          {t.inicio}
         </Link>
         <button type="button" onClick={() => void sair()}
           className="inline-flex h-11 items-center rounded-full bg-mb-red px-6 font-ui text-base text-white transition-colors hover:bg-mb-red-dark">
-          {t("auth.sair")}
+          {t.sair}
         </button>
       </div>
     </div>

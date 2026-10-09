@@ -6,8 +6,8 @@ import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, Seccao } from "@/components/painel/blocos";
 import { TEMPORADA } from "@/lib/data";
 import type { Piloto } from "@/lib/types";
-import { useIdioma } from "@/lib/i18n/contexto";
 import { useConteudo } from "@/lib/i18n/useConteudo";
+import { PILOTOS_PADRAO, contar, preencher, type TextosPilotos } from "@/lib/conteudo/grupos/geral";
 import { categoriasComPilotos } from "@/lib/desporto";
 import { Aviso } from "@/app/calendario/pecas";
 import { CartaoPiloto } from "./CartaoPiloto";
@@ -16,15 +16,20 @@ export function PilotosClient({
   pilotos: originais,
   cores,
   ordemCategorias,
+  textos: t = PILOTOS_PADRAO(),
+  ano = TEMPORADA,
 }: {
   pilotos: (Piloto & { posicao: number })[];
   /** Cor de cada equipa, por slug. */
   cores: Record<string, string>;
   /** Ordem das categorias (Modalidades › Página Desporto); por omissão, a do código. */
   ordemCategorias?: string[];
+  /** Textos fixos (Provas › Páginas do campeonato › Pilotos). */
+  textos?: TextosPilotos;
+  /** Temporada em curso (Definições). */
+  ano?: number;
 }) {
   const pilotos = useConteudo(originais, ["bio"]);
-  const { t } = useIdioma();
   const [categoria, setCategoria] = useState("Todas");
   const [provincia, setProvincia] = useState("Todas");
   const [busca, setBusca] = useState("");
@@ -55,15 +60,15 @@ export function PilotosClient({
 
   return (
     <PaginaInterior icone={<UserRound />}>
-      <Abertura compacta foto="competicao" sobretitulo={`Temporada ${TEMPORADA}`} titulo={t("paginas.pilotosTitulo")} texto={t("paginas.pilotosSub")} />
+      <Abertura compacta foto={t.foto} sobretitulo={preencher(t.sobretitulo, { ano })} titulo={t.titulo} texto={t.texto} />
 
       <Seccao>
         {/* Filtros: categoria, província e pesquisa */}
         <div className="flex flex-wrap items-center gap-3">
-          <div role="group" aria-label="Categoria" className="no-scrollbar -mx-1 flex max-w-full gap-2 overflow-x-auto px-1">
+          <div role="group" aria-label={t.filtros.rotuloCategoria} className="no-scrollbar -mx-1 flex max-w-full gap-2 overflow-x-auto px-1">
             {categorias.map((c) => (
               <button key={c} type="button" onClick={() => setCategoria(c)} aria-pressed={categoria === c} className="pilula">
-                {c}
+                {c === "Todas" ? t.filtros.todas : c}
               </button>
             ))}
           </div>
@@ -71,12 +76,12 @@ export function PilotosClient({
           <select
             value={provincia}
             onChange={(e) => setProvincia(e.target.value)}
-            aria-label="Filtrar por província"
+            aria-label={t.filtros.rotuloProvincia}
             className="campo !h-9 w-auto min-w-[10rem] text-sm"
           >
             {provincias.map((p) => (
               <option key={p} value={p}>
-                {p === "Todas" ? "Todas as províncias" : p}
+                {p === "Todas" ? t.filtros.todasProvincias : p}
               </option>
             ))}
           </select>
@@ -87,26 +92,26 @@ export function PilotosClient({
               type="search"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              placeholder="Procurar piloto…"
-              aria-label="Procurar piloto"
+              placeholder={t.filtros.procurar}
+              aria-label={t.filtros.procurar.replace(/[….]+$/, "")}
               className="campo !h-9 pl-10 text-sm"
             />
           </div>
         </div>
 
         <p className="mt-6 text-sm text-white/60" aria-live="polite">
-          {filtrados.length} {filtrados.length === 1 ? "piloto" : "pilotos"}
+          {contar(filtrados.length, t.contadorUm, t.contadorVarios)}
         </p>
 
         {filtrados.length > 0 ? (
           <div className="mt-4 grid gap-[var(--intervalo)] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtrados.map((p) => (
-              <CartaoPiloto key={p.slug} piloto={p} posicao={p.posicao} cor={cores[p.equipaSlug]} />
+              <CartaoPiloto key={p.slug} piloto={p} posicao={p.posicao} cor={cores[p.equipaSlug]} textos={t.cartao} />
             ))}
           </div>
         ) : (
-          <Aviso className="mt-4" titulo="Nenhum piloto encontrado" icone={<Search />}>
-            Experimente outros filtros ou outra pesquisa.
+          <Aviso className="mt-4" titulo={t.vazioTitulo} icone={<Search />}>
+            {t.vazioTexto}
           </Aviso>
         )}
       </Seccao>

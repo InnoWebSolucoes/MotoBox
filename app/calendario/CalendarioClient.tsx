@@ -5,28 +5,34 @@ import { Calendar, LayoutGrid, List, Ticket } from "lucide-react";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, BotaoMB, Numeros, Seccao } from "@/components/painel/blocos";
 import { FotoFundo } from "@/components/painel/kit";
-import { TEMPORADA } from "@/lib/data";
 import { DISCIPLINAS_PROVA, vendaBilhetes } from "@/lib/desporto";
 import { intervaloDatas } from "@/lib/motobox";
 import type { Disciplina, Evento } from "@/lib/types";
-import { useIdioma } from "@/lib/i18n/contexto";
 import { useConteudo } from "@/lib/i18n/useConteudo";
+import { contar, preencher, type TextosCalendario } from "@/lib/conteudo/grupos/geral";
 import { Contagem } from "./Contagem";
 import { CartaoEvento, LinhaEvento } from "./ListaEventos";
 import { Aviso, Etiqueta, LigacaoSeta } from "./pecas";
 import { fotoDe } from "@/app/eventos/foto";
 
-/** Só provas: os passeios, encontros e acções solidárias vivem em /eventos. */
+/**
+ * Só provas: os passeios, encontros e acções solidárias vivem em /eventos.
+ * Os textos fixos vêm do painel (Provas › Páginas do campeonato › Calendário).
+ */
 export function CalendarioClient({
   eventos: originais,
   bilheteiraAberta,
+  textos: t,
+  ano,
 }: {
   eventos: Evento[];
   /** Interruptor "Bilheteira aberta" das Definições, lido no servidor. */
   bilheteiraAberta: boolean;
+  textos: TextosCalendario;
+  /** Temporada em curso (Definições). */
+  ano: number;
 }) {
   const eventos = useConteudo(originais, ["titulo", "resumo", "descricao", "circuito", "entrada"]);
-  const { t } = useIdioma();
   const [disciplina, setDisciplina] = useState<Disciplina | "Todas">("Todas");
   const [vista, setVista] = useState<"lista" | "grelha">("lista");
   const [mostrarPassados, setMostrarPassados] = useState(true);
@@ -54,43 +60,45 @@ export function CalendarioClient({
     <PaginaInterior icone={<Calendar />}>
       <Abertura
         compacta
-        foto="trail"
-        sobretitulo={`Temporada ${TEMPORADA}`}
-        titulo={t("paginas.calendarioTitulo")}
-        texto="As provas de Desporto em Angola: motocross, enduro, rally-raid, velocidade, moto 4 e karting. Clique numa prova para ver horários, circuito e bilhetes."
+        foto={t.foto}
+        sobretitulo={preencher(t.sobretitulo, { ano })}
+        titulo={t.titulo}
+        texto={t.texto}
       >
-        <LigacaoSeta href="/eventos" className="text-[15px]">
-          Passeios, encontros e acções solidárias estão em Eventos
-        </LigacaoSeta>
+        {t.ligacaoEventos.texto && t.ligacaoEventos.href && (
+          <LigacaoSeta href={t.ligacaoEventos.href} className="text-[15px]">
+            {t.ligacaoEventos.texto}
+          </LigacaoSeta>
+        )}
       </Abertura>
 
       <Seccao>
         <Numeros
           colunas={4}
           itens={[
-            { valor: eventos.length, texto: "Provas" },
-            { valor: new Set(eventos.map((e) => e.provincia)).size, texto: "Províncias" },
-            { valor: new Set(eventos.map((e) => e.disciplina)).size, texto: "Disciplinas" },
-            { valor: eventos.filter((e) => new Date(e.dataInicio).getTime() > agora).length, texto: "Por disputar" },
+            { valor: eventos.length, texto: t.numeros.provas },
+            { valor: new Set(eventos.map((e) => e.provincia)).size, texto: t.numeros.provincias },
+            { valor: new Set(eventos.map((e) => e.disciplina)).size, texto: t.numeros.disciplinas },
+            { valor: eventos.filter((e) => new Date(e.dataInicio).getTime() > agora).length, texto: t.numeros.porDisputar },
           ]}
         />
       </Seccao>
 
       <Seccao className="!pt-0">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-          <h2 className="titulo-2">Provas</h2>
+          <h2 className="titulo-2">{t.lista.titulo}</h2>
           <p className="text-sm text-white/60" aria-live="polite">
-            {filtrados.length} {filtrados.length === 1 ? "prova" : "provas"}
+            {contar(filtrados.length, t.lista.contadorUm, t.lista.contadorVarios)}
             {disciplina !== "Todas" ? ` · ${disciplina}` : ""}
           </p>
         </div>
 
         {/* Filtros: disciplina, provas passadas e vista */}
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-          <div role="group" aria-label="Disciplina" className="no-scrollbar -mx-1 flex max-w-full gap-2 overflow-x-auto px-1">
+          <div role="group" aria-label={t.lista.rotuloDisciplina} className="no-scrollbar -mx-1 flex max-w-full gap-2 overflow-x-auto px-1">
             {disciplinas.map((d) => (
               <button key={d} type="button" onClick={() => setDisciplina(d)} aria-pressed={disciplina === d} className="pilula">
-                {d}
+                {d === "Todas" ? t.lista.todas : d}
               </button>
             ))}
           </div>
@@ -103,9 +111,9 @@ export function CalendarioClient({
                 onChange={(e) => setMostrarPassados(e.target.checked)}
                 className="size-4 accent-[#e10600]"
               />
-              Provas passadas
+              {t.lista.passadas}
             </label>
-            <div role="group" aria-label="Vista" className="flex h-9 items-center gap-1 rounded-[4px] bg-white/7 p-1">
+            <div role="group" aria-label={t.lista.rotuloVista} className="flex h-9 items-center gap-1 rounded-[4px] bg-white/7 p-1">
               {(["lista", "grelha"] as const).map((v) => (
                 <button
                   key={v}
@@ -117,7 +125,7 @@ export function CalendarioClient({
                   }`}
                 >
                   {v === "lista" ? <List className="size-4" aria-hidden /> : <LayoutGrid className="size-4" aria-hidden />}
-                  {t(v === "lista" ? "paginas.vistaLista" : "paginas.vistaGrelha")}
+                  {v === "lista" ? t.lista.vistaLista : t.lista.vistaGrelha}
                 </button>
               ))}
             </div>
@@ -130,28 +138,28 @@ export function CalendarioClient({
             <FotoFundo nome={fotoDe(proximo.slug, proximo.imagem)} veu="esquerda" tamanhos="(max-width: 1024px) 100vw, 80vw" />
             <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 to-transparent" aria-hidden />
             <div>
-              <p className="sobretitulo text-white/85">Próxima prova</p>
+              <p className="sobretitulo text-white/85">{t.destaque.etiqueta}</p>
               <h3 className="titulo-3 mt-4 max-w-[22ch] text-balance">{proximo.titulo}</h3>
               <p className="mt-4 max-w-[52ch] text-[15px] leading-relaxed text-white/85">{proximo.resumo}</p>
               <p className="mt-3 text-sm text-white/70">
                 {intervaloDatas(proximo.dataInicio, proximo.dataFim)} · {proximo.circuito}, {proximo.provincia}
               </p>
               <div className="mt-8 flex flex-wrap gap-[var(--intervalo)]">
-                {vendaProximo === "a-venda" && <BotaoMB href={`/bilhetes/${proximo.slug}`}>Comprar bilhetes</BotaoMB>}
+                {vendaProximo === "a-venda" && <BotaoMB href={`/bilhetes/${proximo.slug}`}>{t.destaque.comprar}</BotaoMB>}
                 {vendaProximo === "esgotado" && (
                   <span className="inline-flex h-14 items-center gap-2 rounded-[var(--raio)] bg-black/65 px-5 text-[15px] text-white/80">
                     <Ticket className="size-4" aria-hidden />
-                    Esgotado
+                    {t.destaque.esgotado}
                   </span>
                 )}
                 <BotaoMB href={`/calendario/${proximo.slug}`} variante="escuro" className="!bg-black/60 hover:!bg-black/75">
-                  Ver detalhes
+                  {t.destaque.detalhes}
                 </BotaoMB>
               </div>
             </div>
             <div>
-              <p className="mb-3 text-sm text-white/75">Começa em</p>
-              <Contagem data={proximo.dataInicio} />
+              <p className="mb-3 text-sm text-white/75">{t.destaque.comecaEm}</p>
+              <Contagem data={proximo.dataInicio} textos={t.contagem} />
             </div>
           </div>
         )}
@@ -161,28 +169,28 @@ export function CalendarioClient({
           (vista === "lista" ? (
             <ol className="mt-8">
               {filtrados.map((e) => (
-                <LinhaEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} ate={t("comum.ate")} />
+                <LinhaEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} textos={t.linha} />
               ))}
             </ol>
           ) : (
             <div className="mt-8 grid gap-[var(--intervalo)] sm:grid-cols-2 xl:grid-cols-3">
               {filtrados.map((e) => (
-                <CartaoEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} />
+                <CartaoEvento key={e.slug} e={e} agora={agora} bilheteiraAberta={bilheteiraAberta} textos={t.linha} />
               ))}
             </div>
           ))}
 
         {filtrados.length === 0 && (
-          <Aviso className="mt-8" titulo="Nenhuma prova encontrada" icone={<Calendar />}>
-            Experimente outro filtro de disciplina.
+          <Aviso className="mt-8" titulo={t.lista.vazioTitulo} icone={<Calendar />}>
+            {t.lista.vazioTexto}
           </Aviso>
         )}
 
         {bilheteiraAberta && eventos.some((e) => vendaBilhetes(e, bilheteiraAberta, agora) === "a-venda") && (
           <p className="mt-8 flex flex-wrap items-center gap-3 text-sm text-white/60">
-            <Etiqueta tom="vermelho">Bilhetes à venda</Etiqueta>
-            <span>Compre online e guarde o bilhete com código QR no telemóvel.</span>
-            <LigacaoSeta href="/bilhetes">Todos os bilhetes</LigacaoSeta>
+            <Etiqueta tom="vermelho">{t.notaBilhetes.etiqueta}</Etiqueta>
+            <span>{t.notaBilhetes.texto}</span>
+            <LigacaoSeta href="/bilhetes">{t.notaBilhetes.ligacao}</LigacaoSeta>
           </p>
         )}
       </Seccao>

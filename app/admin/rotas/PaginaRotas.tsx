@@ -5,7 +5,8 @@
    O documento "paginas.rotas": os textos de /rotas, o que é
    comum a todas as rotas (emergência, documentos, rede, preço do
    combustível, o que levar, quando ir, planear, regras), as
-   tabelas de clima e os textos fixos da página de cada rota.
+   tabelas de clima, os textos fixos da página de cada rota e os
+   do guia em PDF.
    ============================================================ */
 
 import { useState } from "react";
@@ -16,11 +17,12 @@ import { EditorDoc } from "@/components/admin/editor/EditorDoc";
 import { Formulario } from "@/components/admin/editor/Formulario";
 import type { CampoEsquema, Valor } from "@/components/admin/editor/esquema";
 import {
-  ESQUEMA_PAGINA_COMUM, ESQUEMA_PAGINA_DETALHE, ESQUEMA_PAGINA_ENTRADA, ESQUEMA_PAGINA_PLANEAR, ESQUEMA_PAGINA_QUANDO, fonte,
+  ESQUEMA_PAGINA_COMUM, ESQUEMA_PAGINA_DETALHE, ESQUEMA_PAGINA_ENTRADA, ESQUEMA_PAGINA_GUIA, ESQUEMA_PAGINA_PLANEAR,
+  ESQUEMA_PAGINA_QUANDO, fonte,
 } from "./esquemas";
 import { AbasPartes } from "./Partes";
 
-type Parte = "entrada" | "quando" | "planear" | "comum" | "clima" | "detalhe";
+type Parte = "entrada" | "quando" | "planear" | "comum" | "clima" | "detalhe" | "guia";
 
 const PARTES: { chave: Parte; nome: string; descricao: string }[] = [
   { chave: "entrada", nome: "Entrada", descricao: "A abertura de /rotas, a lista das rotas, o quadro \"Melhor em grupo\" e o que aparece no Google." },
@@ -29,6 +31,7 @@ const PARTES: { chave: Parte; nome: string; descricao: string }[] = [
   { chave: "comum", nome: "Comum a todas as rotas", descricao: "Emergência, documentos, rede, preço do combustível e a lista \"Em qualquer viagem\": aparecem em todas as rotas." },
   { chave: "clima", nome: "Clima por cidade", descricao: "As tabelas de clima e luz. Cada rota escolhe uma destas cidades (em Informação prática)." },
   { chave: "detalhe", nome: "Textos da página de cada rota", descricao: "Títulos, botões e notas que se repetem em todas as páginas de rota." },
+  { chave: "guia", nome: "Guia em PDF", descricao: "O botão \"Descarregar o guia (PDF)\" de cada rota e os títulos e legendas do documento." },
 ];
 
 const ESQUEMAS: Partial<Record<Parte, CampoEsquema[]>> = {
@@ -37,6 +40,7 @@ const ESQUEMAS: Partial<Record<Parte, CampoEsquema[]>> = {
   planear: ESQUEMA_PAGINA_PLANEAR,
   comum: ESQUEMA_PAGINA_COMUM,
   detalhe: ESQUEMA_PAGINA_DETALHE,
+  guia: ESQUEMA_PAGINA_GUIA,
 };
 
 /* ---------------- Clima: 12 meses ---------------- */

@@ -3,7 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { utilizadorActual, perfilDe, type PerfilConta } from "@/lib/conta/sessao";
 import { ID_ANUNCIO } from "@/lib/conta/favoritos";
-import { enviarEmailUnico, modeloSimples, urlSite } from "@/lib/email";
+import { avisarEquipa, emailDoModelo, enviarEmail, lerConfigEmails, urlSite } from "@/lib/email";
 
 /* ============================================================
    MOTOBOX — Contactar o vendedor de um anúncio
@@ -12,8 +12,9 @@ import { enviarEmailUnico, modeloSimples, urlSite } from "@/lib/email";
    por email, com "responder para" o email de quem escreveu: o
    email do vendedor nunca chega ao comprador. Sem conta ligada
    (anúncios da equipa ou de demonstração), ou se o email não
-   seguir, a mensagem entra em Mensagens no painel e a equipa
-   encaminha-a.
+   seguir, a mensagem entra em Mensagens no painel e segue por
+   email para a equipa (Definições → Emails → Mensagens para
+   vendedores sem conta), que a encaminha.
    ============================================================ */
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ function erro(mensagem: string, codigo = 400) {
 /** Nome a mostrar ao vendedor: o do perfil, o da conta ou o início do email. */
 function nomeDe(user: User, perfil: PerfilConta | null): string {
   const meta = typeof user.user_metadata?.nome === "string" ? user.user_metadata.nome.trim() : "";
-  return (perfil?.nome?.trim() || meta || (user.email ?? "").split("@")[0] || "Um membro da Motobox").slice(0, 80);
+  return (perfil?.nome?.trim() || meta || (user.email ?? "").split("@")[0] || "Um membro da MotoBox").slice(0, 80);
 }
 
 export async function POST(req: NextRequest) {
@@ -47,14 +48,14 @@ export async function POST(req: NextRequest) {
   if (mensagem.length > MAXIMO) return erro(`A mensagem é demasiado longa (máx. ${MAXIMO} caracteres).`);
 
   const email = (user.email ?? "").toLowerCase();
-  if (!email) return erro("A sua conta não tem email associado. Fale com a equipa Motobox.");
+  if (!email) return erro("A sua conta não tem email associado. Fale com a equipa MotoBox.");
 
   const db = supabaseAdmin();
   if (!db) return erro("De momento não é possível enviar mensagens. Tente mais tarde.", 503);
 
   const perfil = await perfilDe(user);
   if (perfil && ["suspenso", "banido"].includes(perfil.estado)) {
-    return erro("A sua conta não pode contactar vendedores. Fale com a equipa Motobox.", 403);
+    return erro("A sua conta não pode contactar vendedores. Fale com a equipa MotoBox.", 403);
   }
 
   const { data: anuncio, error: erroAnuncio } = await db
@@ -70,6 +71,8 @@ export async function POST(req: NextRequest) {
   const titulo = String(anuncio.titulo ?? "Anúncio").replace(/\s+/g, " ").trim();
   const nome = nomeDe(user, perfil);
   const ligacao = `${urlSite()}/marketplace/${encodeURIComponent(anuncioId)}`;
+  const cfg = await lerConfigEmails();
+  const citacao = { rotulo: `Mensagem de ${nome} (${email}):`, texto: mensagem };
 
   /* ---------- Vendedor com conta: email directo ---------- */
   let falhaEmail: string | null = null;
@@ -77,32 +80,19 @@ export async function POST(req: NextRequest) {
     const { data: conta } = await db.auth.admin.getUserById(vendedor.authId);
     const para = conta?.user?.email;
     if (para) {
-      const corpoEmail = modeloSimples({
-        titulo: `${nome} tem interesse no seu anúncio`,
-        paragrafos: [
-          `Anúncio: ${titulo}`,
-          `Mensagem de ${nome}:`,
-          ...mensagem.split(/\n+/),
-          `Para responder, basta responder a este email: a resposta segue directamente para ${nome} (${email}).`,
-        ],
-        botao: { texto: "Ver o anúncio", url: ligacao },
-        rodape:
-          "Recebeu este email porque tem um anúncio no marketplace da Motobox. O seu endereço não foi mostrado a quem escreveu. " +
-          "A Motobox não intermedeia pagamentos: combine sempre um encontro em local público.",
+      const corpoEmail = emailDoModelo(cfg, "vendedor", { comprador: nome, anuncio: titulo }, {
+        url: ligacao, citacao, detalhes: [["Anúncio", titulo]],
       });
-      falhaEmail = await enviarEmailUnico({
-        para,
-        assunto: `Mensagem sobre o seu anúncio: ${titulo}`.slice(0, 150),
-        html: corpoEmail.html,
-        texto: corpoEmail.texto,
-        responderPara: email,
-      });
-      if (!falhaEmail) return NextResponse.json({ ok: true, via: "email" }, { status: 201 });
+      const r = await enviarEmail({ para, ...corpoEmail, responderPara: email, tipo: "vendedor" }, cfg);
+      if (r.ok) return NextResponse.json({ ok: true, via: "email" }, { status: 201 });
+      falhaEmail = r.erro;
       console.error(`[marketplace/contactar] Email ao vendedor do anúncio ${anuncioId} falhou: ${falhaEmail}`);
+    } else {
+      falhaEmail = "A conta do vendedor já não existe ou não tem email.";
     }
   }
 
-  /* ---------- Sem conta ligada, ou o email falhou: Mensagens no painel ---------- */
+  /* ---------- Sem conta ligada, ou o email falhou: a equipa encaminha ---------- */
   const nota = falhaEmail
     ? ["", `Nota: o email ao vendedor (${vendedor.nome ?? "com conta"}) não seguiu: ${falhaEmail} Encaminhe esta mensagem.`]
     : [];
@@ -112,11 +102,25 @@ export async function POST(req: NextRequest) {
     email,
     telefone: null,
     assunto: `Interesse no anúncio: ${titulo}`.slice(0, 200),
-    mensagem: [mensagem, "", `Anúncio: ${titulo}`, ligacao, ...nota].join("\n"),
+    mensagem: [mensagem, "", `Anúncio: ${titulo}`, ligacao, `Vendedor: ${vendedor.nome ?? "sem nome"}`, ...nota].join("\n"),
   });
-  if (error) {
-    console.error("[marketplace/contactar]", error.message);
-    return erro(falhaEmail ?? "Não foi possível enviar a mensagem. Tente de novo.", falhaEmail ? 502 : 500);
+  if (error) console.error("[marketplace/contactar]", error.message);
+
+  const paraEquipa = emailDoModelo(cfg, "marketplaceEquipa", { comprador: nome, anuncio: titulo, vendedor: vendedor.nome ?? "sem nome" }, {
+    url: ligacao,
+    citacao,
+    detalhes: [
+      ["Anúncio", titulo],
+      ["Vendedor", vendedor.nome ?? "sem nome"],
+      ...(falhaEmail ? [["Porque chega aqui", `O email ao vendedor não seguiu: ${falhaEmail}`] as [string, string]] : []),
+    ],
+  });
+  const falhaEquipa = await avisarEquipa(cfg, "marketplace", { ...paraEquipa, responderPara: email, tipo: "marketplaceEquipa" });
+  if (falhaEquipa) console.error(`[marketplace/contactar] aviso à equipa não seguiu: ${falhaEquipa}`);
+
+  // Só falha quando a mensagem não ficou guardada nem seguiu por email.
+  if (error && falhaEquipa) {
+    return erro("Não foi possível enviar a mensagem. Tente de novo dentro de momentos.", 502);
   }
 
   return NextResponse.json({ ok: true, via: "equipa" }, { status: 201 });

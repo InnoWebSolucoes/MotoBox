@@ -280,6 +280,7 @@ export function FilaPilotos({ pilotos, cores }: { pilotos: (Piloto & { posicao?:
               <div className="relative aspect-[3/4] overflow-hidden rounded-[var(--raio)]">
                 <Retrato
                   nome={retratoDe(p)}
+                  pessoa={p.nome}
                   iniciais={iniciais(p.nome)}
                   cor={cores.get(p.equipaSlug)}
                   className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"

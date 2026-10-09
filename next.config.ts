@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
   basePath: "/motobox",
   // Há um package-lock.json na pasta pessoal; a raiz do projecto é esta.
   turbopack: { root: path.join(__dirname) },
+  // O guia em PDF de cada rota lê as letras e o logótipo do disco
+  // (lib/rotas-pdf/recursos): têm de ir com a função na Vercel.
+  outputFileTracingIncludes: {
+    "/rotas/*/guia": ["./lib/rotas-pdf/recursos/**/*"],
+  },
   images: {
     // Fotografias de demonstração (ver lib/imagens.ts). Quando o arquivo
     // fotográfico da MotoBox entrar, este padrão deixa de ser necessário.

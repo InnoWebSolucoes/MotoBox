@@ -6,6 +6,7 @@ import {
   type ColeccaoIA, type Contexto, type Ficheiro,
 } from "@/lib/admin/organizador";
 import { TEMPORADA } from "@/lib/data";
+import { lerTemporada } from "@/lib/conteudo/ler-geral";
 import type { Corrida, Equipa, Evento, Noticia, Patrocinador, Piloto, Video } from "@/lib/types";
 
 /* ============================================================
@@ -55,7 +56,7 @@ async function lerContexto(): Promise<Contexto> {
   const [eventos, pilotos, equipas, corridas, noticias, patrocinadores, videos] = r;
 
   return {
-    temporada: TEMPORADA,
+    temporada: await lerTemporada(),
     eventos: listaDaBase<Evento>("eventos", eventos.data),
     pilotos: listaDaBase<Piloto>("pilotos", pilotos.data),
     equipas: listaDaBase<Equipa>("equipas", equipas.data),

@@ -9,6 +9,8 @@ import { Seta } from "@/components/painel/kit";
 import { intervaloDatas } from "@/lib/motobox";
 import { lerCorrida, lerCorridas, lerEvento, lerPilotos } from "@/lib/supabase/publico";
 import { retratoDe } from "@/lib/desporto";
+import { preencher } from "@/lib/conteudo/grupos/geral";
+import { lerTextosResultados } from "@/lib/conteudo/ler-geral";
 import { Ficha, LegendaResultados, TituloSeccao, iniciais } from "@/app/calendario/pecas";
 import { TabelaResultados } from "../TabelaResultados";
 import { fotoDe } from "@/app/eventos/foto";
@@ -29,12 +31,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const c = await lerCorrida(slug);
-  if (!c) return { title: "Resultado não encontrado" };
-  return {
-    title: `${c.nome} ${c.temporada}, ${c.categoria}`,
-    description: `Resultado completo do ${c.nome} de ${c.temporada}, categoria ${c.categoria}. Vencedor: ${c.vencedor}.`,
-  };
+  const [c, { corrida: t }] = await Promise.all([lerCorrida(slug), lerTextosResultados()]);
+  if (!c) return { title: t.naoEncontrado };
+  const valores = { nome: c.nome, temporada: c.temporada, categoria: c.categoria, vencedor: c.vencedor };
+  return { title: preencher(t.pesquisaTitulo, valores), description: preencher(t.pesquisaDescricao, valores) };
 }
 
 export default async function ResultadoPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -42,7 +42,8 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
   const corrida = await lerCorrida(slug);
   if (!corrida) notFound();
 
-  const evento = await lerEvento(corrida.eventoSlug);
+  const [evento, textos] = await Promise.all([lerEvento(corrida.eventoSlug), lerTextosResultados()]);
+  const t = textos.corrida;
   const outrasCategorias = (await lerCorridas()).filter(
     (c) => c.eventoSlug === corrida.eventoSlug && c.slug !== corrida.slug,
   );
@@ -60,21 +61,21 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
       <Abertura
         compacta
         foto={fotoDe(corrida.slug, corrida.imagem)}
-        sobretitulo={[corrida.ronda > 0 ? `Ronda ${corrida.ronda}` : null, corrida.categoria, String(corrida.temporada)]
+        sobretitulo={[corrida.ronda > 0 ? preencher(textos.ronda, { ronda: corrida.ronda }) : null, corrida.categoria, String(corrida.temporada)]
           .filter(Boolean)
           .join(" · ")}
         titulo={corrida.nome}
         texto={`${corrida.circuito}, ${corrida.provincia} · ${intervaloDatas(corrida.data)}`}
       >
         <p className="text-[15px] text-white/85">
-          Vencedor: <span className="font-semibold text-white">{corrida.vencedor}</span>
+          {t.vencedor} <span className="font-semibold text-white">{corrida.vencedor}</span>
         </p>
       </Abertura>
 
       {/* Pódio: o retrato de cada piloto, posição grande e o tempo */}
       {classificados.length > 0 && (
         <Seccao>
-          <TituloSeccao titulo="Pódio" accao={{ href: "/resultados", texto: "Arquivo de resultados" }} />
+          <TituloSeccao titulo={t.podio} accao={{ href: "/resultados", texto: t.arquivo }} />
           <ol className="mt-8 grid gap-[var(--intervalo)] sm:grid-cols-3">
             {classificados.slice(0, 3).map((r) => (
               <li key={r.pilotoSlug}>
@@ -84,6 +85,7 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
                 >
                   <Retrato
                     nome={retrato(r.pilotoSlug)}
+                    pessoa={r.piloto}
                     iniciais={iniciais(r.piloto)}
                     className="foto-painel absolute inset-0 -z-20 [container-type:size]"
                     tamanhos="(max-width: 640px) 100vw, 33vw"
@@ -105,7 +107,7 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
                     <p className="truncate text-sm text-white/75">{r.equipa}</p>
                     <div className="mt-3 flex items-end justify-between gap-3">
                       <p className="text-lg tabular-nums">{r.tempo}</p>
-                      <p className="text-sm tabular-nums text-white/75">{r.pontos} pts</p>
+                      <p className="text-sm tabular-nums text-white/75">{r.pontos} {t.pts}</p>
                     </div>
                   </div>
                 </Link>
@@ -119,9 +121,9 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
           {/* Classificação completa */}
           <div className="min-w-0">
-            <h2 className="titulo-3">Classificação da corrida</h2>
-            <TabelaResultados resultados={corrida.resultados} className="mt-8" />
-            <LegendaResultados className="mt-6" />
+            <h2 className="titulo-3">{t.classificacao}</h2>
+            <TabelaResultados resultados={corrida.resultados} className="mt-8" textos={textos.tabela} />
+            <LegendaResultados className="mt-6" itens={textos.tabela.legenda} />
           </div>
 
           {/* Barra lateral */}
@@ -130,7 +132,7 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
               <div className="flex items-center gap-4 rounded-[var(--raio)] bg-mb-red p-6">
                 <Timer className="size-8 shrink-0" aria-hidden />
                 <div className="min-w-0">
-                  <p className="text-sm text-white/85">Melhor volta da corrida</p>
+                  <p className="text-sm text-white/85">{t.melhorVolta}</p>
                   <p className="mt-1 truncate text-xl font-semibold">{melhorVolta.piloto}</p>
                   <p className="truncate text-sm text-white/80">{melhorVolta.equipa}</p>
                 </div>
@@ -138,19 +140,19 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
             )}
 
             <Ficha
-              titulo="Resumo"
+              titulo={t.resumo.titulo}
               icone={<ListChecks />}
               linhas={[
-                ["Categoria", corrida.categoria],
-                ["Partidas", String(corrida.resultados.length)],
-                ["Classificados", String(classificados.length)],
-                ["Desistências", String(corrida.resultados.length - classificados.length)],
-                ["Circuito", corrida.circuito],
+                [t.resumo.categoria, corrida.categoria],
+                [t.resumo.partidas, String(corrida.resultados.length)],
+                [t.resumo.classificados, String(classificados.length)],
+                [t.resumo.desistencias, String(corrida.resultados.length - classificados.length)],
+                [t.resumo.circuito, corrida.circuito],
               ]}
             />
 
             {outrasCategorias.length > 0 && (
-              <Ficha titulo="Outras categorias" icone={<Trophy />}>
+              <Ficha titulo={t.outrasCategorias} icone={<Trophy />}>
                 <ul className="mt-4 divide-y divide-white/8">
                   {outrasCategorias.map((c) => (
                     <li key={c.slug}>
@@ -172,7 +174,7 @@ export default async function ResultadoPage({ params }: { params: Promise<{ slug
 
             {evento && (
               <BotaoMB href={`/calendario/${evento.slug}`} variante="escuro" className="!max-w-none">
-                Página da prova
+                {t.paginaProva}
               </BotaoMB>
             )}
           </aside>

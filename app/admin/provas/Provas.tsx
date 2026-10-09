@@ -5,6 +5,9 @@
    As provas do calendário de Desporto (a tabela eventos, só as
    disciplinas de competição): a ficha completa de cada prova,
    do título aos bilhetes, e a ligação aos seus resultados.
+   Os textos fixos das páginas estão na aba "Páginas do
+   campeonato" (PaginasCampeonato). A temporada é a das
+   Definições.
    ============================================================ */
 
 import Link from "next/link";
@@ -21,6 +24,7 @@ import {
   useConfigDesporto, type ConfigDesporto,
 } from "./_desporto/campos";
 import { AvisoModoLocal, ListaGestao } from "./_desporto/ListaGestao";
+import { NavProvas } from "./NavProvas";
 import { apagarItemConteudo, gravarItemConteudo, lerGrupoConteudo } from "../noticias/_partilhado";
 
 /** Nome da disciplina para quem gere ("Prova" é uma competição sem modalidade). */
@@ -48,6 +52,9 @@ const novoBilhete = () => ({
 export function Provas({ editar }: { editar?: string }) {
   const { estado } = useAdmin();
   const config = useConfigDesporto();
+  // A temporada em curso vem das Definições; sem ela (valor estranho), a do código.
+  const temporadaDef = Number(estado.definicoes.temporada);
+  const temporada = Number.isInteger(temporadaDef) && temporadaDef >= 2000 && temporadaDef <= 2100 ? temporadaDef : TEMPORADA;
   const provas = estado.eventos.filter((e) => eProva(e.disciplina));
 
   // "Como se participa" não tem coluna na tabela eventos: vive no conteúdo
@@ -194,10 +201,10 @@ export function Provas({ editar }: { editar?: string }) {
       prepararFicha={(e) => ({ ...e, entrada: extras.get(e.slug) ?? e.entrada ?? "" })}
       soNoPainel={["entrada"]}
       depoisDeGravar={gravarEntrada}
-      aviso={<AvisoModoLocal />}
+      aviso={<><NavProvas activa="provas" /><AvisoModoLocal /></>}
       numeros={
         <div className="grid grid-cols-2 gap-[var(--intervalo)] lg:grid-cols-4">
-          <Estatistica rotulo={`Provas em ${TEMPORADA}`} valor={provas.filter((e) => e.temporada === TEMPORADA).length} icone={<Flag />} />
+          <Estatistica rotulo={`Provas em ${temporada}`} valor={provas.filter((e) => e.temporada === temporada).length} icone={<Flag />} />
           <Estatistica rotulo="Por disputar" valor={provas.filter((e) => new Date(e.dataInicio).getTime() > agora).length} tom="red" />
           <Estatistica rotulo="Concluídas" valor={provas.filter((e) => e.estado === "concluido").length} />
           <Estatistica rotulo="Com bilhetes" valor={provas.filter((e) => (e.bilhetes?.length ?? 0) > 0).length} />
@@ -252,7 +259,7 @@ export function Provas({ editar }: { editar?: string }) {
         },
       ]}
       novo={() => ({
-        slug: "", titulo: "", disciplina: "Motocross", temporada: TEMPORADA,
+        slug: "", titulo: "", disciplina: "Motocross", temporada,
         circuito: "", provincia: "Luanda", localidade: "",
         dataInicio: "", dataFim: "", estado: "agendado", imagem: "", resumo: "", descricao: "",
         organizador: "Federação Angolana de Motociclismo", horarios: [], bilhetes: [],

@@ -2,10 +2,11 @@
    MOTOBOX — Rotas: os textos fixos das páginas
 
    Tudo o que /rotas e cada /rotas/<rota> mostram e não é de uma
-   rota em particular: a abertura, os títulos das secções, as notas
-   e o que é comum a todas as rotas (emergência, documentos, rede,
-   preço do combustível, o que levar, quando ir, a lista para
-   planear, as regras da estrada e as tabelas de clima).
+   rota em particular: a abertura, os títulos das secções, as notas,
+   os textos do guia em PDF de cada rota e o que é comum a todas as
+   rotas (emergência, documentos, rede, preço do combustível, o que
+   levar, quando ir, a lista para planear, as regras da estrada e
+   as tabelas de clima).
 
    Vive no documento "paginas.rotas" do conteúdo editável. O de
    partida é o que estava escrito nas páginas (ver
@@ -69,6 +70,45 @@ export interface TextosRota {
   outras: { titulo: string; todas: string };
 }
 
+/**
+ * Textos fixos do guia em PDF de cada rota (lib/rotas-pdf): o botão da
+ * página e tudo o que o documento escreve e não é de uma rota em
+ * particular. Marcadores: {n}, {cidade}, {quando}, {site}, {data}, {total}.
+ */
+export interface TextosGuia {
+  /** O botão na página da rota. */
+  botao: string;
+  /** No topo da capa e no cabeçalho de cada página. */
+  titulo: string;
+  rodape: string;
+  pagina: string;
+  capa: {
+    rota: string;
+    distancia: string; rodar: string; dia: string; dias: string; exigencia: string; piso: string; epoca: string;
+    partida: string; oPiso: string; porque: string; melhorEpoca: string; quantosDias: string;
+    qrPagina: string; qrPaginaTexto: string; qrMapa: string; qrMapaTexto: string;
+    mapa: string; gpx: string; gpxTexto: string; emergencia: string; offline: string;
+  };
+  estrada: { titulo: string; texto: string; boa: string; irregular: string; ma: string };
+  mapa: { titulo: string; nota: string; norte: string; escala: string };
+  itinerario: {
+    titulo: string; dia: string; abrirDia: string; peloCaminho: string; estrada: string; aviso: string;
+    total: string; rodar: string; carro: string; subida: string; maxima: string; minima: string; metodo: string;
+  };
+  pisos: { asfalto: string; buracos: string; terra: string; areia: string };
+  paragens: { titulo: string; texto: string; paragem: string; coordenadas: string; altitude: string; pontos: string; lugar: string; nota: string };
+  horario: { titulo: string; texto: string; luz: string; luzNota: string };
+  pratico: {
+    titulo: string; combustivel: string; semCombustivel: string; emergencia: string; contactos: string; contactosTexto: string;
+    comer: string; dormir: string; saude: string; perigos: string; rede: string; documentos: string; licencas: string; motas: string;
+  };
+  levar: { titulo: string; texto: string; rota: string; sempre: string; agua: string; grupo: string };
+  clima: { titulo: string; nota: string; maxima: string; minima: string; chuva: string; nascer: string; por: string; meses: string[] };
+  regras: { titulo: string };
+  dicas: { titulo: string };
+  fontes: { titulo: string; texto: string; nota: string };
+}
+
 export interface ConteudoPaginaRotas {
   seo: { titulo: string; descricao: string };
   abertura: { foto: string; sobretitulo: string; titulo: string; texto: string };
@@ -80,6 +120,8 @@ export interface ConteudoPaginaRotas {
   notaFinal: string;
   /** Textos fixos da página de cada rota. */
   detalhe: TextosRota;
+  /** Textos fixos do guia em PDF de cada rota. */
+  guia: TextosGuia;
 
   /* Comum a todas as rotas */
   EMERGENCIA: { numeros: { numero: string; servico: string }[]; notas: string[]; fontes: FonteRota[] };
@@ -109,6 +151,127 @@ const COMO_CALCULAMOS =
   `${pct(MARGEM_MOTA.terra)} % em terra e ${pct(MARGEM_MOTA.areia)} % em areia, pelo ritmo de grupo, pelos buracos e pelos controlos, ` +
   `e não conta as paragens. As altitudes são do modelo de terreno SRTM (30 m), lidas no OpenTopoData ao longo do traçado: ` +
   `a subida acumulada é uma estimativa.`;
+
+/** Textos fixos do guia em PDF (ver TextosGuia). */
+export const TEXTOS_GUIA: TextosGuia = {
+  botao: "Descarregar o guia (PDF)",
+  titulo: "Guia de viagem",
+  rodape: "MotoBox Angola · {site} · Gerado em {data}. Confirme as condições antes de sair.",
+  pagina: "Página {n} de {total}",
+  capa: {
+    rota: "Rota {n}",
+    distancia: "de distância",
+    rodar: "a rodar, sem paragens",
+    dia: "dia",
+    dias: "dias",
+    exigencia: "exigência",
+    piso: "piso",
+    epoca: "melhor época",
+    partida: "Partida",
+    oPiso: "O piso",
+    porque: "Porquê esta exigência",
+    melhorEpoca: "Melhor época",
+    quantosDias: "Quantos dias",
+    qrPagina: "Página da rota",
+    qrPaginaTexto: "Aponte a câmara do telemóvel para abrir a versão sempre actualizada, com o mapa e as fotografias.",
+    qrMapa: "Navegação",
+    qrMapaTexto: "Abre o percurso no Google Maps, paragem a paragem.",
+    mapa: "Abrir no Google Maps",
+    gpx: "Descarregar o GPX",
+    gpxTexto: "Paragens, pontos de interesse e traçado, para o OsmAnd, o Organic Maps ou um GPS de mota.",
+    emergencia: "Emergência",
+    offline: "Imprima este guia ou guarde-o no telemóvel: lê-se sem rede.",
+  },
+  estrada: {
+    titulo: "Estado da estrada",
+    texto: "O que contam os motards que passaram por lá ({quando}). As estradas mudam depressa: confirme antes de sair.",
+    boa: "Boa",
+    irregular: "Irregular",
+    ma: "Má",
+  },
+  mapa: {
+    titulo: "O percurso",
+    nota: "Esquema do traçado, com as paragens numeradas como no itinerário. Não substitui o GPS nem um mapa.",
+    norte: "N",
+    escala: "Escala",
+  },
+  itinerario: {
+    titulo: "Itinerário, troço a troço",
+    dia: "Dia",
+    abrirDia: "Abrir o dia {n} no Google Maps",
+    peloCaminho: "Pelo caminho",
+    estrada: "Estrada",
+    aviso: "Atenção",
+    total: "no total",
+    rodar: "a rodar de mota",
+    carro: "de carro (OSRM)",
+    subida: "de subida acumulada",
+    maxima: "de altitude máxima",
+    minima: "de altitude mínima",
+    metodo: COMO_CALCULAMOS,
+  },
+  pisos: { asfalto: "Asfalto", buracos: "Asfalto com buracos", terra: "Terra", areia: "Areia" },
+  paragens: {
+    titulo: "Paragens e coordenadas",
+    texto: "Em graus decimais (WGS84): escreva-as assim no GPS ou na pesquisa do Google Maps.",
+    paragem: "Paragem",
+    coordenadas: "Coordenadas",
+    altitude: "Altitude",
+    pontos: "Pontos de interesse",
+    lugar: "Lugar",
+    nota: "Nota",
+  },
+  horario: {
+    titulo: "Horário sugerido",
+    texto:
+      "Fora das cidades não se conduz de noite: há buracos sem aviso, gado e peões na estrada, e camiões e motas sem luzes. O horário conta com as paragens e deixa margem para chegar com luz.",
+    luz: "Luz do dia em {cidade}",
+    luzNota: "Dia 15 de cada mês, hora de Angola. A tabela completa está em Clima e luz.",
+  },
+  pratico: {
+    titulo: "Informação prática",
+    combustivel: "Combustível",
+    semCombustivel: "Maior troço sem combustível",
+    emergencia: "Emergência",
+    contactos: "Os seus contactos",
+    contactosTexto: "Hotel, alguém do grupo, mecânico, seguro:",
+    comer: "Onde comer",
+    dormir: "Onde dormir",
+    saude: "Hospital mais próximo",
+    perigos: "Perigos na estrada",
+    rede: "Rede móvel",
+    documentos: "Documentos",
+    licencas: "Licenças e entradas",
+    motas: "A mota certa",
+  },
+  levar: {
+    titulo: "O que levar",
+    texto: "Marque cada ponto à medida que arruma a mota.",
+    rota: "Para esta rota",
+    sempre: "Em qualquer viagem",
+    agua: "Água e comida",
+    grupo: "Sozinho ou em grupo",
+  },
+  clima: {
+    titulo: "Clima e luz · {cidade}",
+    nota:
+      "O nascer e o pôr do sol foram calculados para o dia 15 de cada mês, em hora de Angola (UTC+1). A vermelho, os meses com 50 mm de chuva ou mais.",
+    maxima: "Máxima (°C)",
+    minima: "Mínima (°C)",
+    chuva: "Chuva (mm)",
+    nascer: "Nascer do sol",
+    por: "Pôr do sol",
+    meses: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+  },
+  regras: { titulo: "Regras da estrada" },
+  dicas: { titulo: "Dicas para quem vai de mota" },
+  fontes: {
+    titulo: "Fontes",
+    texto: "Os números entre parênteses rectos no guia remetem para esta lista. Cada título abre a fonte.",
+    nota:
+      "Informação verificada em Outubro de 2026. Estradas, preços e combustível mudam: confirme localmente antes de partir. Mapas e traçado: © contribuidores do OpenStreetMap (ODbL), calculado com o OSRM.",
+  },
+};
 
 export const TEXTOS_PAGINA_ROTAS: TextosPaginaRotas = {
   seo: {
@@ -276,6 +439,7 @@ export const TEXTOS_PAGINA_ROTAS: TextosPaginaRotas = {
     },
     outras: { titulo: "Outras rotas", todas: "Todas as rotas" },
   },
+  guia: TEXTOS_GUIA,
 };
 
 /** Troca {n}, {nome}… pelos valores. Um marcador sem valor fica como está. */

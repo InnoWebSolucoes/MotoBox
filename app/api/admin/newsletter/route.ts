@@ -4,6 +4,7 @@ import {
   construirResumo, contagem, contarSubscritoresActivos, emailDaNewsletter,
   envioAutomaticoLigado, enviarNewsletterSemanal, ultimoEnvio,
 } from "@/lib/newsletter";
+import { lerConfigEmails } from "@/lib/email";
 
 /* ============================================================
    MOTOBOX — Newsletter no painel
@@ -30,13 +31,14 @@ export async function GET() {
     );
   }
   try {
-    const [resumo, destinatarios, automatico, ultimo] = await Promise.all([
+    const [resumo, destinatarios, automatico, ultimo, cfg] = await Promise.all([
       construirResumo({ db }),
       contarSubscritoresActivos(db),
       envioAutomaticoLigado(db),
       ultimoEnvio(db),
+      lerConfigEmails(),
     ]);
-    const email = emailDaNewsletter(resumo, EXEMPLO);
+    const email = emailDaNewsletter(resumo, EXEMPLO, cfg.modelo);
     return NextResponse.json({
       assunto: email.assunto,
       html: email.html,

@@ -9,13 +9,17 @@ import { Seta } from "@/components/painel/kit";
 import type { Piloto } from "@/lib/types";
 import { Etiqueta, iniciais } from "@/app/calendario/pecas";
 import { retratoDe } from "@/lib/desporto";
+import { CARTAO_PILOTO_PADRAO, preencher, type TextosCartaoPiloto } from "@/lib/conteudo/grupos/geral";
 
 export function CartaoPiloto({
   piloto: p,
   posicao,
   cor,
+  textos: t = CARTAO_PILOTO_PADRAO,
 }: {
   piloto: Piloto;
+  /** Textos fixos (Provas › Páginas do campeonato › Pilotos). */
+  textos?: TextosCartaoPiloto;
   /** Lugar na classificação geral; sem ela não se mostra. */
   posicao?: number;
   /** Cor da equipa: fundo do retrato sem fotografia e o ponto ao lado da equipa. */
@@ -30,6 +34,7 @@ export function CartaoPiloto({
       <div className="relative aspect-[4/5] self-start overflow-hidden rounded-[var(--raio)] sm:self-auto">
         <Retrato
           nome={retratoDe(p)}
+          pessoa={p.nome}
           iniciais={iniciais(p.nome)}
           cor={cor}
           className="foto-painel absolute inset-0 [container-type:size]"
@@ -43,7 +48,7 @@ export function CartaoPiloto({
               posicao === 1 ? "bg-mb-red" : "bg-black/65"
             }`}
           >
-            <span className="sr-only">Posição na classificação: </span>
+            <span className="sr-only">{t.posicao} </span>
             {posicao}.º
           </span>
         ) : null}
@@ -53,7 +58,7 @@ export function CartaoPiloto({
         {p.campeonatos > 0 && (
           <Etiqueta tom="vidro" className="absolute bottom-3 left-3 !hidden sm:!inline-flex">
             <Trophy className="size-3.5" aria-hidden />
-            {p.campeonatos}× campeão nacional
+            {preencher(t.campeao, { n: p.campeonatos })}
           </Etiqueta>
         )}
       </div>
@@ -74,7 +79,7 @@ export function CartaoPiloto({
         {p.campeonatos > 0 && (
           <p className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-white/70 sm:hidden">
             <Trophy className="size-3.5" aria-hidden />
-            {p.campeonatos}× campeão nacional
+            {preencher(t.campeao, { n: p.campeonatos })}
           </p>
         )}
 
@@ -82,12 +87,12 @@ export function CartaoPiloto({
           <dl className="flex gap-4 sm:gap-5">
             {(
               [
-                ["Pts", p.estatisticas.pontos],
-                ["Vit", p.estatisticas.vitorias],
-                ["Pód", p.estatisticas.podios],
+                ["pts", t.pts, p.estatisticas.pontos],
+                ["vit", t.vit, p.estatisticas.vitorias],
+                ["pod", t.pod, p.estatisticas.podios],
               ] as const
-            ).map(([k, v]) => (
-              <div key={k} className="flex flex-col-reverse">
+            ).map(([id, k, v]) => (
+              <div key={id} className="flex flex-col-reverse">
                 <dt className="mt-1 text-xs text-white/50">{k}</dt>
                 <dd className="text-xl font-semibold leading-none tabular-nums">{v}</dd>
               </div>

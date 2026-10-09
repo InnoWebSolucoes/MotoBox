@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/contexto";
 import { caminhoDaPagina } from "@/lib/base";
+import { useTextosGerais } from "./TextosGerais";
 
 /* ============================================================
    MOTOBOX — Botão de acção
@@ -11,6 +12,7 @@ import { caminhoDaPagina } from "@/lib/base";
    na entrada abre o painel ("Explorar"), no painel volta à
    entrada ("Fechar"), em qualquer outra página regressa ao
    painel. No telemóvel é uma barra vermelha a toda a largura.
+   Os textos editam-se em Gestão › Entrada e painel › Geral.
    ============================================================ */
 
 type Estado = "explorar" | "fechar" | "voltar";
@@ -22,15 +24,16 @@ function estadoPara(caminho: string): Estado {
 }
 
 const DESTINO: Record<Estado, string> = { explorar: "/explorar", fechar: "/", voltar: "/explorar" };
-const ROTULO: Record<Estado, string> = {
-  explorar: "Explorar a MotoBox",
-  fechar: "Fechar o painel",
-  voltar: "Voltar ao painel",
-};
 
 export function BarraAccao() {
   const caminho = caminhoDaPagina(usePathname());
   const estado = estadoPara(caminho);
+  const { barra } = useTextosGerais();
+  const rotulo: Record<Estado, string> = {
+    explorar: barra.explorarRotulo || barra.explorar,
+    fechar: barra.fecharRotulo || barra.fechar,
+    voltar: barra.voltar,
+  };
   // Nas páginas interiores o painel ocupa o ecrã inteiro: o botão flutua por cima.
   const flutua = estado === "voltar";
 
@@ -50,7 +53,7 @@ export function BarraAccao() {
       >
         <Link
           href={DESTINO[estado]}
-          aria-label={ROTULO[estado]}
+          aria-label={rotulo[estado]}
           data-estado={estado}
           className={`group/accao pointer-events-auto flex h-full w-full items-center bg-mb-red px-5 text-[15px] text-white transition-colors duration-300 hover:bg-mb-red-dark lg:h-[50px] lg:w-[210px] lg:rounded-[var(--raio)] ${
             flutua ? "lg:shadow-[0_12px_40px_rgb(0_0_0/0.55)]" : ""
@@ -58,16 +61,16 @@ export function BarraAccao() {
         >
           <span className="relative block h-[1.3em] w-full overflow-hidden">
             <Rotulo activo={estado === "explorar"} de={estado === "fechar" ? "baixo" : "cima"}>
-              <span>Explorar</span>
+              <span>{barra.explorar}</span>
               <IconeMenu />
             </Rotulo>
             <Rotulo activo={estado === "fechar"} de="baixo">
-              <span>Fechar</span>
+              <span>{barra.fechar}</span>
               <IconeFechar />
             </Rotulo>
             <Rotulo activo={estado === "voltar"} de="baixo" inicio>
               <IconeVoltar />
-              <span>Voltar ao painel</span>
+              <span>{barra.voltar}</span>
             </Rotulo>
           </span>
         </Link>
@@ -108,12 +111,13 @@ function Rotulo({
   );
 }
 
-function LigacaoConta() {
+export function LigacaoConta() {
   const { utilizador } = useAuth();
+  const { barra } = useTextosGerais();
   const conta = Boolean(utilizador);
   return (
     <Link href={conta ? "/conta" : "/entrar"} className="sublinhado text-sm text-white">
-      {conta ? "A minha conta" : "Entrar"}
+      {conta ? barra.conta : barra.entrar}
     </Link>
   );
 }

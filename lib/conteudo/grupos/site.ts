@@ -56,8 +56,12 @@ export const ENTRADA_PADRAO: ConteudoEntrada = {
   titulo: "A paixão anda sobre duas rodas",
   texto:
     "Histórias, clubes, passeios e segurança para quem anda de mota em Angola. Da scooter de todos os dias à moto de viagem, a comunidade motard num só lugar.",
-  video: "/videos/fundo.mp4",
-  poster: "/videos/fundo.jpg",
+  // Vídeo da MotoBox no Instagram (8.ª prova do Campeonato de Motocross,
+  // instagram.com/p/DeOelO6uUlE), cortado a 21 s: sem som, caras, títulos
+  // nem clarões, e escurecido para o texto da entrada se ler por cima (ver
+  // lib/imagens-instagram.ts). O de demonstração continua em /videos/fundo.mp4.
+  video: "https://sluahnkxfnibximsqcht.supabase.co/storage/v1/object/public/media/videos/instagram-DeOelO6uUlE-fundo.mp4",
+  poster: "https://sluahnkxfnibximsqcht.supabase.co/storage/v1/object/public/media/videos/instagram-DeOelO6uUlE-fundo.jpg",
   mostrarArtigo: true,
   rotuloArtigo: "Novo artigo",
 };

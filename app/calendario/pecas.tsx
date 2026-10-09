@@ -9,6 +9,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Seta } from "@/components/painel/kit";
+import { TABELA_RESULTADOS_PADRAO } from "@/lib/conteudo/grupos/geral";
 
 type Tom = "neutro" | "vermelho" | "contorno" | "vidro" | "directo";
 
@@ -44,12 +45,14 @@ export function Etiqueta({
  * Posição numa corrida ou na tabela: quadrado com o número. O líder fica a
  * vermelho, o pódio mais claro, o resto discreto. Zero é "não classificado".
  */
-export function Posicao({ posicao, className = "size-8 text-sm" }: { posicao: number; className?: string }) {
+export function Posicao({
+  posicao, className = "size-8 text-sm", naoClassificado = TABELA_RESULTADOS_PADRAO.naoClassificado,
+}: { posicao: number; className?: string; naoClassificado?: string }) {
   if (!posicao || posicao <= 0) {
     return (
       <span className={`grid shrink-0 place-items-center rounded-[4px] bg-white/5 text-[0.7rem] text-white/50 ${className}`}>
         <span aria-hidden>NC</span>
-        <span className="sr-only">Não classificado</span>
+        <span className="sr-only">{naoClassificado}</span>
       </span>
     );
   }
@@ -63,11 +66,11 @@ export function Posicao({ posicao, className = "size-8 text-sm" }: { posicao: nu
 }
 
 /** "MV": melhor volta da corrida. */
-export function MelhorVolta() {
+export function MelhorVolta({ rotulo = TABELA_RESULTADOS_PADRAO.melhorVolta }: { rotulo?: string }) {
   return (
-    <span title="Melhor volta" className="shrink-0 rounded-[3px] bg-mb-red/20 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-mb-red-light">
+    <span title={rotulo} className="shrink-0 rounded-[3px] bg-mb-red/20 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-mb-red-light">
       <span aria-hidden>MV</span>
-      <span className="sr-only">Melhor volta</span>
+      <span className="sr-only">{rotulo}</span>
     </span>
   );
 }
@@ -166,15 +169,15 @@ export function Aviso({
   );
 }
 
-/** Legenda das abreviaturas das tabelas de resultados. */
-export function LegendaResultados({ className = "" }: { className?: string }) {
+/** Legenda das abreviaturas das tabelas de resultados (editável em Provas › Páginas do campeonato › Resultados). */
+export function LegendaResultados({
+  className = "", itens = TABELA_RESULTADOS_PADRAO.legenda,
+}: { className?: string; itens?: string[] }) {
+  const visiveis = itens.filter((i) => i.trim());
+  if (visiveis.length === 0) return null;
   return (
     <p className={`flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-white/50 ${className}`}>
-      <span>MV: melhor volta da corrida</span>
-      <span>DNF: não terminou</span>
-      <span>DNS: não partiu</span>
-      <span>DSQ: desclassificado</span>
-      <span>NC: não classificado</span>
+      {visiveis.map((i, n) => <span key={n}>{i}</span>)}
     </p>
   );
 }

@@ -18,7 +18,8 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import { daBase } from "@/lib/supabase/mapeamento";
 import { classificacaoPilotos } from "@/lib/data";
 import { src } from "@/lib/imagens";
-import { enviarEmails, type EmailPreparado } from "@/lib/notificacoes";
+import { enviarLote, type EmailPreparado } from "@/lib/notificacoes";
+import { lerConfigEmails, modeloDe, type ConfigEmails } from "@/lib/email";
 import type { Corrida, Evento, Noticia, Piloto } from "@/lib/types";
 import { urlPublica } from "@/lib/base";
 
@@ -459,13 +460,24 @@ export interface DestinatarioNewsletter {
   nome?: string | null;
 }
 
-/** Mensagem pronta para um subscritor (HTML, texto e cabeçalhos de cancelamento). */
-export function emailDaNewsletter(r: ResumoSemanal, d: DestinatarioNewsletter): EmailPreparado {
+/**
+ * Mensagem pronta para um subscritor (HTML, texto e cabeçalhos de
+ * cancelamento). O assunto e a frase de abertura vêm do painel
+ * (Definições → Emails → Newsletter semanal).
+ */
+export function emailDaNewsletter(
+  r: ResumoSemanal,
+  d: DestinatarioNewsletter,
+  modelo: ConfigEmails["modelo"] = modeloDe(),
+): EmailPreparado {
   const base = urlBase();
   const cancelar = linkCancelamento(d.email);
   const nome = d.nome?.trim();
   const saudacao = nome ? `Olá, ${nome}.` : "Olá.";
   const resumoCurto = sumario(r);
+  const t = modelo("newsletter", { semana: r.semana.rotulo });
+  const assunto = t.assunto || r.assunto;
+  const abertura = t.paragrafos.join(" ") || "O resumo do motociclismo angolano:";
 
   const html = `<!doctype html>
 <html lang="pt-AO">
@@ -474,7 +486,7 @@ export function emailDaNewsletter(r: ResumoSemanal, d: DestinatarioNewsletter): 
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light">
-<title>${escapar(r.assunto)}</title>
+<title>${escapar(assunto)}</title>
 </head>
 <body style="margin:0;padding:0;background:${COR.fundo}">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${escapar(resumoCurto)}</div>
@@ -491,7 +503,7 @@ export function emailDaNewsletter(r: ResumoSemanal, d: DestinatarioNewsletter): 
 <tr><td style="padding:28px 28px 0;font-family:${FONTE}">
 <div style="font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${COR.vermelhoEscuro}">A semana</div>
 <h1 style="margin:6px 0 0;font-family:${FONTE};font-size:26px;line-height:1.15;font-weight:900;text-transform:uppercase;color:${COR.texto}">${escapar(r.semana.rotulo)}</h1>
-<p style="margin:14px 0 0;font-size:15px;line-height:1.5;color:#3a3a44">${escapar(saudacao)} O resumo do motociclismo angolano: ${escapar(resumoCurto.charAt(0).toLowerCase() + resumoCurto.slice(1))}</p>
+<p style="margin:14px 0 0;font-size:15px;line-height:1.5;color:#3a3a44">${escapar(saudacao)} ${escapar(abertura)} ${escapar(resumoCurto.charAt(0).toLowerCase() + resumoCurto.slice(1))}</p>
 </td></tr>
 ${blocoNoticias(r, base)}
 ${blocoResultados(r, base)}
@@ -513,9 +525,9 @@ MotoBox Angola · Luanda, Angola
 
   return {
     para: d.email,
-    assunto: r.assunto,
+    assunto,
     html,
-    texto: textoDaNewsletter(r, { saudacao, cancelar, base, resumoCurto }),
+    texto: textoDaNewsletter(r, { saudacao, cancelar, base, resumoCurto, abertura }),
     cabecalhos: {
       // Gmail e Outlook mostram "Cancelar subscrição" junto ao remetente
       // e fazem o POST de um clique (RFC 8058) para o mesmo endereço.
@@ -527,12 +539,12 @@ MotoBox Angola · Luanda, Angola
 
 function textoDaNewsletter(
   r: ResumoSemanal,
-  x: { saudacao: string; cancelar: string; base: string; resumoCurto: string },
+  x: { saudacao: string; cancelar: string; base: string; resumoCurto: string; abertura: string },
 ): string {
   const l: string[] = [
     `MOTOBOX ANGOLA · A semana de ${r.semana.rotulo}`,
     "",
-    `${x.saudacao} O resumo do motociclismo angolano: ${x.resumoCurto.charAt(0).toLowerCase()}${x.resumoCurto.slice(1)}`,
+    `${x.saudacao} ${x.abertura} ${x.resumoCurto.charAt(0).toLowerCase()}${x.resumoCurto.slice(1)}`,
   ];
 
   if (r.noticias.length) {
@@ -760,12 +772,13 @@ export async function enviarNewsletterSemanal(opcoes: {
       return vazio("erro", `Não foi possível registar o envio: ${erroTrava.message}`);
     }
 
-    const emails = subscritores.map((s) => emailDaNewsletter(resumo, s));
-    const enviados = await enviarEmails(emails);
+    const cfg = await lerConfigEmails();
+    const emails = subscritores.map((s) => emailDaNewsletter(resumo, s, cfg.modelo));
+    const { enviados, erro } = await enviarLote(emails, cfg);
 
     if (enviados === 0) {
       await db.from("atividade").delete().eq("id", id);
-      return vazio("erro", "A Resend não aceitou nenhum email. Confirme RESEND_API_KEY e o domínio de envio.", {
+      return vazio("erro", erro ?? "A Resend não aceitou nenhum email. Confirme RESEND_API_KEY e o domínio de envio.", {
         semana: resumo.semana.rotulo, destinatarios: emails.length, seccoes,
       });
     }

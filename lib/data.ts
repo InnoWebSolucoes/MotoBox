@@ -491,7 +491,7 @@ export const eventos: Evento[] = [
     dataInicio: "2026-05-23T08:00:00+01:00",
     dataFim: "2026-05-24T17:00:00+01:00",
     estado: "concluido",
-    imagem: "https://images.unsplash.com/photo-1713205136828-c3a69cfb6d7c?auto=format&fit=crop&w=1600&q=70",
+    imagem: "desportivas",
     resumo:
       "A temporada de velocidade abre no Autódromo de Luanda, com as motas de 600 cc numa corrida de 14 voltas no traçado curto de 3,2 km.",
     descricao:
@@ -521,7 +521,7 @@ export const eventos: Evento[] = [
     dataInicio: "2026-06-27T08:00:00+01:00",
     dataFim: "2026-06-28T17:00:00+01:00",
     estado: "concluido",
-    imagem: "https://images.unsplash.com/photo-1505570554449-69ce7d4fa36b?auto=format&fit=crop&w=1600&q=70",
+    imagem: "dakar",
     resumo:
       "Dois dias de karting no Circuito Santos Peras, com Cadetes, Júnior e DD2 em pista e a final de DD2 a fechar o domingo.",
     descricao:
@@ -610,7 +610,7 @@ export const eventos: Evento[] = [
     dataInicio: "2026-10-17T07:30:00+01:00",
     dataFim: "2026-10-17T17:30:00+01:00",
     estado: "bilhetes-abertos",
-    imagem: "https://images.unsplash.com/photo-1553966012-4dce025d8e03?auto=format&fit=crop&w=1600&q=70",
+    imagem: "moto-4",
     resumo:
       "Um dia de quads na areia a sul de Benguela: três mangas num traçado de 4 km, com partida em grelha e o público no alto da duna.",
     descricao:
@@ -799,7 +799,7 @@ export const eventos: Evento[] = [
     dataInicio: "2026-12-05T08:00:00+01:00",
     dataFim: "2026-12-06T17:00:00+01:00",
     estado: "bilhetes-abertos",
-    imagem: "https://images.unsplash.com/photo-1505570554449-69ce7d4fa36b?auto=format&fit=crop&w=1600&q=70",
+    imagem: "dakar",
     resumo:
       "A última prova de karting do ano no Circuito Santos Peras: quatro classes em pista e a final de DD2 a decidir quem fecha 2026 na frente.",
     descricao:
@@ -882,8 +882,9 @@ export const eventos: Evento[] = [
    está vem das páginas públicas dos próprios clubes ou de
    reportagens (ver `fonte`, que não aparece no site). Onde a sede
    não está publicada, a cidade fica vazia; sem nenhuma província
-   documentada, também a província. As fotografias de capa são
-   ilustrativas: não se copiam imagens das redes dos clubes.
+   documentada, também a província. As fotografias de capa vêm do
+   Instagram de cada clube (a pedido do dono do site; créditos em
+   lib/imagens-instagram.ts).
    Excepção: a pedido do dono do site, as fichas estão todas
    preenchidas. Os valores sem fonte estão marcados com
    «Placeholder (a confirmar com o clube)». O `contacto` nunca se
@@ -2519,7 +2520,7 @@ export const corridas: Corrida[] = [
     data: "2026-05-24",
     categoria: "Velocidade",
     vencedor: "Valter Lukoki",
-    imagem: "https://images.unsplash.com/photo-1713205136828-c3a69cfb6d7c?auto=format&fit=crop&w=1600&q=70",
+    imagem: "desportivas",
     resultados: [
       { posicao: 1, pilotoSlug: "valter-lukoki", piloto: "Valter Lukoki", equipa: "Belas Superbike Clube", voltas: 14, tempo: "24:01.307", pontos: 25, melhorVolta: true },
       { posicao: 2, pilotoSlug: "mauro-sapalo", piloto: "Mauro Sapalo", equipa: "Belas Superbike Clube", voltas: 14, tempo: "+1.882", pontos: 22 },
@@ -2538,7 +2539,7 @@ export const corridas: Corrida[] = [
     data: "2026-06-28",
     categoria: "Karting",
     vencedor: "Kelvin Muteka",
-    imagem: "https://images.unsplash.com/photo-1505570554449-69ce7d4fa36b?auto=format&fit=crop&w=1600&q=70",
+    imagem: "dakar",
     resultados: [
       { posicao: 1, pilotoSlug: "kelvin-muteka", piloto: "Kelvin Muteka", equipa: "Benguela Kart Clube", voltas: 18, tempo: "16:02.441", pontos: 25, melhorVolta: true },
       { posicao: 2, pilotoSlug: "edmilson-tchiwale", piloto: "Edmilson Tchiwale", equipa: "Benguela Kart Clube", voltas: 18, tempo: "+0.612", pontos: 22 },

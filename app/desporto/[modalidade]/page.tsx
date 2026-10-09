@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { BookOpen, Trophy } from "lucide-react";
 import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Seccao } from "@/components/painel/blocos";
-import { TEMPORADA, classificacaoPilotos } from "@/lib/data";
+import { classificacaoPilotos } from "@/lib/data";
+import { lerTemporada } from "@/lib/conteudo/ler-geral";
 import {
   corridasDaModalidade, corridasDoCampeonato, eProva, eventosDaModalidade, instante, preencher, principalDe,
   seccoesDaModalidade, type ModalidadeCompleta,
@@ -51,10 +52,10 @@ export default async function ModalidadePage({ params }: { params: Promise<{ mod
   const m = lista.find((x) => x.slug === modalidade);
   if (!m) notFound();
 
-  const [eventos, corridas, pilotos, equipas, { bilheteiraAberta }] = await Promise.all([
-    lerEventos(), lerCorridas(), lerPilotos(), lerEquipas(), lerDefinicoes(),
+  const [eventos, corridas, pilotos, equipas, { bilheteiraAberta }, ano] = await Promise.all([
+    lerEventos(), lerCorridas(), lerPilotos(), lerEquipas(), lerDefinicoes(), lerTemporada(),
   ]);
-  const dados = { m, c: m.guia, t, eventos, corridas, pilotos, equipas, bilheteiraAberta };
+  const dados = { m, c: m.guia, t, eventos, corridas, pilotos, equipas, bilheteiraAberta, ano };
 
   if (m.slug === principalDe(lista)?.slug) {
     return <PaginaMotocross {...dados} />;
@@ -67,11 +68,13 @@ type Dados = {
   eventos: Evento[]; corridas: Corrida[]; pilotos: Piloto[]; equipas: Equipa[];
   /** Interruptor "Bilheteira aberta" das Definições. */
   bilheteiraAberta: boolean;
+  /** Temporada em curso (Definições). */
+  ano: number;
 };
 
 /* ---------------- Motocross: o Campeonato Nacional e o guia ---------------- */
 
-function PaginaMotocross({ m, c, t, eventos, corridas: todas, pilotos, equipas, bilheteiraAberta }: Dados) {
+function PaginaMotocross({ m, c, t, eventos, corridas: todas, pilotos, equipas, bilheteiraAberta, ano }: Dados) {
   const provas = eventosDaModalidade(m, eventos);
   // Só as corridas do Campeonato Nacional: as de fora (velocidade, karting...) ficam nas suas modalidades.
   const corridas = corridasDoCampeonato(todas);
@@ -80,7 +83,7 @@ function PaginaMotocross({ m, c, t, eventos, corridas: todas, pilotos, equipas, 
     { id: "calendario", nome: t.modalidade.indiceCalendario },
     ...seccoesGuia(c, t.guia),
   ];
-  const valores = { ano: TEMPORADA, campeonato: t.campeonato.nome, modalidade: m.nome };
+  const valores = { ano, campeonato: t.campeonato.nome, modalidade: m.nome };
 
   return (
     <>
@@ -100,7 +103,7 @@ function PaginaMotocross({ m, c, t, eventos, corridas: todas, pilotos, equipas, 
           <IndicePagina indice={indice} rotulo={t.guia.nestaPagina} />
         </HeroModalidade>
 
-        <Campeonato provas={provas} corridas={corridas} pilotos={pilotos} equipas={equipas} bilheteiraAberta={bilheteiraAberta} textos={t} />
+        <Campeonato provas={provas} corridas={corridas} pilotos={pilotos} equipas={equipas} bilheteiraAberta={bilheteiraAberta} textos={t} ano={ano} />
 
         <GuiaModalidade
           c={c}
@@ -118,7 +121,7 @@ function PaginaMotocross({ m, c, t, eventos, corridas: todas, pilotos, equipas, 
 
 /* ---------------- As outras: guia completo, e a competição quando a há ---------------- */
 
-function PaginaModalidade({ m, c, t, eventos, corridas, pilotos, equipas, bilheteiraAberta }: Dados) {
+function PaginaModalidade({ m, c, t, eventos, corridas, pilotos, equipas, bilheteiraAberta, ano }: Dados) {
   const agora = instante();
   const provas = eventosDaModalidade(m, eventos).filter((e) => eProva(e.disciplina));
   const proxima = provas.find((e) => new Date(e.dataInicio).getTime() > agora);
@@ -132,7 +135,7 @@ function PaginaModalidade({ m, c, t, eventos, corridas, pilotos, equipas, bilhet
   const porDisputar = provas.filter((e) => new Date(e.dataInicio).getTime() > agora).length;
   const provincias = new Set(provas.map((e) => e.provincia)).size;
   const valores = {
-    ano: TEMPORADA, campeonato: t.campeonato.nome, modalidade: m.nome, categorias: m.categorias.join(", "),
+    ano, campeonato: t.campeonato.nome, modalidade: m.nome, categorias: m.categorias.join(", "),
   };
   const tm = t.modalidade;
 

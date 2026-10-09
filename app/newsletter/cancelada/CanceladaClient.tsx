@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { ButtonLink, Button, Icon } from "@/components/ui";
-import { useT } from "@/lib/i18n/contexto";
 import { BASE, comBase } from "@/lib/base";
+import { preencher } from "@/lib/conteudo/grupos/geral";
+import { useTextosGerais } from "@/components/painel/TextosGerais";
 
 export type EstadoCancelamento = "ok" | "invalido" | "erro";
 
 export function CanceladaClient({
   estado, email, token,
 }: { estado: EstadoCancelamento; email: string; token: string }) {
-  const t = useT();
+  // Os textos editam-se em Gestão › Entrada e painel › Geral (Newsletter).
+  const { newsletter: t } = useTextosGerais();
   // Voltar à lista: o mesmo pedido do formulário público.
   const [regresso, setRegresso] = useState<"idle" | "a-enviar" | "ok" | "erro">("idle");
 
@@ -29,15 +31,15 @@ export function CanceladaClient({
   }
 
   const titulo =
-    estado === "ok" ? t("newsletter.canceladaTitulo")
-    : estado === "erro" ? t("newsletter.erroCancelarTitulo")
-    : t("newsletter.linkInvalidoTitulo");
+    estado === "ok" ? t.canceladaTitulo
+    : estado === "erro" ? t.erroCancelarTitulo
+    : t.linkInvalidoTitulo;
 
   const texto =
     estado === "ok"
-      ? email ? t("newsletter.canceladaTexto", { email }) : t("newsletter.canceladaSemEmail")
-      : estado === "erro" ? t("newsletter.erroCancelarTexto")
-      : t("newsletter.linkInvalidoTexto");
+      ? email ? preencher(t.canceladaTexto, { email }) : t.canceladaSemEmail
+      : estado === "erro" ? t.erroCancelarTexto
+      : t.linkInvalidoTexto;
 
   return (
     <div className="relative overflow-hidden">
@@ -61,24 +63,24 @@ export function CanceladaClient({
           )}
         </div>
 
-        <p className="eyebrow text-mb-red">{t("newsletter.titulo")}</p>
+        {t.sobretitulo && <p className="eyebrow text-mb-red">{t.sobretitulo}</p>}
         <h1 className="title-xl mt-3 text-3xl text-white sm:text-4xl">{titulo}</h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-ink-400">{texto}</p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <ButtonLink href="/" variant="outline">{t("comum.inicio")}</ButtonLink>
+          <ButtonLink href="/" variant="outline">{t.inicio}</ButtonLink>
           {estado === "erro" && email && token && (
             // Rota de API, não página: navegação normal, sem o <Link> do Next.
             <a
               href={`${BASE}/api/newsletter/cancelar?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`}
               className="inline-flex h-11 items-center justify-center rounded-full bg-mb-red px-6 font-ui text-base text-white transition-colors hover:bg-mb-red-dark"
             >
-              {t("newsletter.tentarDeNovo")}
+              {t.tentarDeNovo}
             </a>
           )}
           {estado !== "ok" && (
             <ButtonLink href="/contacto" variant={estado === "erro" ? "dark" : "primary"}>
-              {t("newsletter.falarConnosco")}
+              {t.falarConnosco}
             </ButtonLink>
           )}
         </div>
@@ -90,11 +92,11 @@ export function CanceladaClient({
                 <span className="grid size-7 place-items-center rounded-full bg-ok/20 text-ok">
                   <Icon name="check" className="size-4" />
                 </span>
-                {t("newsletter.resubscrito")}
+                {t.resubscrito}
               </p>
             ) : (
               <>
-                <p className="text-sm text-ink-400">{t("newsletter.canceladaEngano")}</p>
+                <p className="text-sm text-ink-400">{t.canceladaEngano}</p>
                 <Button
                   type="button"
                   variant="dark"
@@ -103,10 +105,10 @@ export function CanceladaClient({
                   onClick={voltar}
                   disabled={regresso === "a-enviar"}
                 >
-                  {regresso === "a-enviar" ? t("newsletter.aSubscrever") : t("newsletter.voltarSubscrever")}
+                  {regresso === "a-enviar" ? t.aSubscrever : t.voltarSubscrever}
                 </Button>
                 {regresso === "erro" && (
-                  <p role="alert" className="mt-3 text-xs text-mb-red-light">{t("newsletter.erroEnvio")}</p>
+                  <p role="alert" className="mt-3 text-xs text-mb-red-light">{t.erroEnvio}</p>
                 )}
               </>
             )}

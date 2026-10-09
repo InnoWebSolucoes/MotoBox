@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { lerCorridas, lerDefinicoes, lerEvento, lerEventos } from "@/lib/supabase/publico";
 import { eComunidade, eProva } from "@/lib/desporto";
+import { lerTextosCalendario, lerTextosResultados } from "@/lib/conteudo/ler-geral";
+import { lerPaginaDesporto } from "@/app/desporto/dados";
 import { DetalheEvento } from "../DetalheEvento";
 
 // O Next exige um literal aqui, não aceita constante importada.
@@ -21,7 +23,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const e = await lerEvento(slug);
-  if (!e) return { title: "Evento não encontrado" };
+  if (!e) return { title: (await lerTextosCalendario()).prova.naoEncontrada };
   return { title: e.titulo, description: e.resumo };
 }
 
@@ -33,7 +35,18 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
   // antigas (emails, bilhetes, partilhas) continuam a funcionar por aqui.
   if (eComunidade(evento.disciplina)) redirect(`/eventos/${evento.slug}`);
 
-  const [corridas, definicoes] = await Promise.all([lerCorridas(), lerDefinicoes()]);
+  const [corridas, definicoes, textos, resultadosTextos, desporto] = await Promise.all([
+    lerCorridas(), lerDefinicoes(), lerTextosCalendario(), lerTextosResultados(), lerPaginaDesporto(),
+  ]);
   const resultados = corridas.filter((c) => c.eventoSlug === evento.slug);
-  return <DetalheEvento evento={evento} resultados={resultados} bilheteiraAberta={definicoes.bilheteiraAberta} />;
+  return (
+    <DetalheEvento
+      evento={evento}
+      resultados={resultados}
+      bilheteiraAberta={definicoes.bilheteiraAberta}
+      textos={textos}
+      tabela={resultadosTextos.tabela}
+      campeonato={desporto.campeonato.nome}
+    />
+  );
 }

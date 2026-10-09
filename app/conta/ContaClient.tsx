@@ -412,7 +412,7 @@ export function ContaClient({
                   [
                     ["calendario", "Eventos", "Novos passeios, encontros e raides no calendário."],
                     ["marketplace", "Marketplace", "Novos anúncios das marcas que segue."],
-                    ["forum", "Fórum", "Respostas aos seus tópicos e menções."],
+                    ["forum", "Fórum", "Respostas novas nos tópicos em que participou."],
                     ["newsletter", "Newsletter semanal", "Os artigos da semana, às segundas-feiras."],
                   ] as [TipoNotificacao, string, string][]
                 ).map(([k, titulo, desc]) => (

@@ -8,7 +8,8 @@ import {
 import type { ColeccaoNome } from "@/lib/admin/store";
 import {
   notificarNovoEvento, notificarBilhetesAbertos, notificarNovoResultado,
-  notificarNovoAnuncio, temBilhetes,
+  notificarNovoAnuncio, temBilhetes, avisarEncomendaNova, avisarEncomendaPaga,
+  type EncomendaEmail,
 } from "@/lib/notificacoes";
 import type { AnuncioMarketplace, Corrida, Evento } from "@/lib/types";
 
@@ -131,6 +132,12 @@ function notificarCriacao(
   if (coleccao === "eventos") after(() => notificarNovoEvento(registo as unknown as Evento));
   else if (coleccao === "corridas") after(() => notificarNovoResultado(registo as unknown as Corrida));
   else if (coleccao === "anuncios") after(() => notificarNovoAnuncio(registo as unknown as AnuncioMarketplace));
+  else if (coleccao === "encomendas") {
+    // Encomenda nova: a equipa (e o organizador, se estiver nos destinos) fica a saber;
+    // se já nasce paga, o comprador recebe logo a confirmação.
+    after(() => avisarEncomendaNova(registo as EncomendaEmail));
+    if (registo.estado === "pago") after(() => avisarEncomendaPaga(registo as EncomendaEmail));
+  }
 }
 
 /* ---------------- GET: listar ---------------- */
@@ -222,6 +229,12 @@ export async function PATCH(
     const { data: atual } = await db.from("eventos").select("*").eq("slug", id).maybeSingle();
     eventoAntes = atual;
   }
+  // Encomenda que passa a paga: o comprador recebe a confirmação por email.
+  let encomendaAntes: Record<string, unknown> | null = null;
+  if (coleccao === "encomendas" && campos.estado === "pago") {
+    const { data: atual } = await db.from("encomendas").select("*").eq("id", id).maybeSingle();
+    encomendaAntes = atual;
+  }
 
   const { data, error } = await escrever(linhaPara(coleccao, campos), (linha) =>
     db.from(TABELA[coleccao]).update(linha).eq(CHAVE_TABELA[coleccao], id).select(CHAVE_TABELA[coleccao]),
@@ -235,6 +248,10 @@ export async function PATCH(
   if (eventoAntes && !temBilhetes(eventoAntes.bilhetes) && temBilhetes(campos.bilhetes)) {
     const evento = { ...daBase<Record<string, unknown>>("eventos", eventoAntes), ...campos };
     after(() => notificarBilhetesAbertos(evento as unknown as Evento));
+  }
+  if (encomendaAntes && encomendaAntes.estado !== "pago") {
+    const encomenda = { ...daBase<Record<string, unknown>>("encomendas", encomendaAntes), ...campos };
+    after(() => avisarEncomendaPaga(encomenda as EncomendaEmail));
   }
   return NextResponse.json({ ok: true });
 }

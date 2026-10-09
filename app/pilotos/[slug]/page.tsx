@@ -12,6 +12,9 @@ import { retratoDe } from "@/lib/desporto";
 import { diaMes } from "@/lib/motobox";
 import { lerCorridas, lerEquipa, lerPiloto, lerPilotos } from "@/lib/supabase/publico";
 import { EmblemaEquipa, Ficha, LigacaoSeta, Posicao, iniciais } from "@/app/calendario/pecas";
+import { preencher } from "@/lib/conteudo/grupos/geral";
+import { lerTemporada, lerTextosPilotos } from "@/lib/conteudo/ler-geral";
+import { comValores } from "@/lib/textos";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -29,12 +32,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const p = await lerPiloto(slug);
-  if (!p) return { title: "Piloto não encontrado" };
-  return {
-    title: `${p.nome} #${p.numero}`,
-    description: `${p.nome}, piloto ${p.categoria} da ${p.equipa}. ${p.estatisticas.vitorias} vitórias e ${p.estatisticas.podios} pódios no motociclismo angolano.`,
+  const [p, { piloto: t }] = await Promise.all([lerPiloto(slug), lerTextosPilotos()]);
+  if (!p) return { title: t.naoEncontrado };
+  const valores = {
+    nome: p.nome, numero: p.numero, categoria: p.categoria, equipa: p.equipa,
+    vitorias: p.estatisticas.vitorias, podios: p.estatisticas.podios,
   };
+  return { title: preencher(t.pesquisaTitulo, valores), description: preencher(t.pesquisaDescricao, valores) };
 }
 
 export default async function PilotoPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -42,7 +46,10 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
   const piloto = await lerPiloto(slug);
   if (!piloto) notFound();
 
-  const [pilotos, corridas, equipa] = await Promise.all([lerPilotos(), lerCorridas(), lerEquipa(piloto.equipaSlug)]);
+  const [pilotos, corridas, equipa, textos, temporada] = await Promise.all([
+    lerPilotos(), lerCorridas(), lerEquipa(piloto.equipaSlug), lerTextosPilotos(), lerTemporada(),
+  ]);
+  const t = textos.piloto;
   const classificacao = classificacaoPilotos(pilotos);
   const posicao = classificacao.find((p) => p.slug === piloto.slug)?.posicao ?? 0;
   const lider = classificacao[0];
@@ -74,7 +81,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
           {piloto.campeonatos > 0 && (
             <span className="inline-flex h-12 items-center gap-2.5 rounded-[var(--raio)] bg-mb-red px-4 text-sm">
               <Trophy className="size-4" aria-hidden />
-              {piloto.campeonatos}× Campeão Nacional
+              {preencher(t.campeao, { n: piloto.campeonatos })}
             </span>
           )}
           {redes.map((r) => (
@@ -96,12 +103,12 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
         <Numeros
           colunas={3}
           itens={[
-            { valor: posicao > 0 ? `${posicao}.º` : "NC", texto: "Posição no campeonato" },
-            { valor: piloto.estatisticas.pontos, texto: "Pontos" },
-            { valor: piloto.estatisticas.vitorias, texto: "Vitórias" },
-            { valor: piloto.estatisticas.podios, texto: "Pódios" },
-            { valor: piloto.estatisticas.poles, texto: "Poles" },
-            { valor: piloto.estatisticas.corridas, texto: "Corridas" },
+            { valor: posicao > 0 ? `${posicao}.º` : t.numeros.naoClassificado, texto: t.numeros.posicao },
+            { valor: piloto.estatisticas.pontos, texto: t.numeros.pontos },
+            { valor: piloto.estatisticas.vitorias, texto: t.numeros.vitorias },
+            { valor: piloto.estatisticas.podios, texto: t.numeros.podios },
+            { valor: piloto.estatisticas.poles, texto: t.numeros.poles },
+            { valor: piloto.estatisticas.corridas, texto: t.numeros.corridas },
           ].map((n) => ({ ...n, valor: <span className="tabular-nums">{n.valor}</span> }))}
         />
 
@@ -110,6 +117,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
             <div className="flex items-center gap-4">
               <Retrato
                 nome={retratoDe(piloto)}
+                pessoa={piloto.nome}
                 iniciais={iniciais(piloto.nome)}
                 cor={equipa?.cor}
                 className="size-16 shrink-0 rounded-[var(--raio)] [container-type:size]"
@@ -117,7 +125,7 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                 tamanhos="64px"
               />
               <div>
-                <p className="text-sm text-white/60">Perfil</p>
+                <p className="text-sm text-white/60">{t.perfil}</p>
                 <h2 className="titulo-4 mt-1">{piloto.nome}</h2>
               </div>
             </div>
@@ -128,13 +136,13 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
             <dl className="mt-10 grid grid-cols-2 gap-[var(--intervalo)] sm:grid-cols-4">
               {(
                 [
-                  ["Equipa", piloto.equipa],
-                  ["Província", piloto.provincia],
-                  ["Idade", `${piloto.idade} anos`],
-                  [piloto.categoria === "Karting" ? "Kart" : "Mota", piloto.mota],
+                  ["equipa", t.dados.equipa, piloto.equipa],
+                  ["provincia", t.dados.provincia, piloto.provincia],
+                  ["idade", t.dados.idade, preencher(t.dados.idadeValor, { n: piloto.idade })],
+                  ["mota", piloto.categoria === "Karting" ? t.dados.kart : t.dados.mota, piloto.mota],
                 ] as const
-              ).map(([k, v]) => (
-                <div key={k} className="flex flex-col-reverse rounded-[var(--raio)] bg-white/5 p-4">
+              ).map(([id, k, v]) => (
+                <div key={id} className="flex flex-col-reverse rounded-[var(--raio)] bg-white/5 p-4">
                   <dt className="mt-1 text-xs text-white/55">{k}</dt>
                   <dd className="text-[15px] font-medium leading-snug">{v}</dd>
                 </div>
@@ -145,15 +153,15 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
             {historico.length > 0 && (
               <div className="mt-14">
                 <h2 className="flex items-center gap-3 titulo-3">
-                  Histórico de corridas
+                  {t.historico.titulo}
                   <History className="size-6 text-mb-red-light" aria-hidden />
                 </h2>
                 <div aria-hidden className="mt-8 hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/50 sm:grid sm:grid-cols-[minmax(0,1fr)_4.5rem_5.5rem_2.5rem_3rem]">
-                  <span>Prova</span>
-                  <span>Data</span>
-                  <span>Categoria</span>
-                  <span>Pos</span>
-                  <span className="text-right">Pts</span>
+                  <span>{t.historico.prova}</span>
+                  <span>{t.historico.data}</span>
+                  <span>{t.historico.categoria}</span>
+                  <span>{t.historico.pos}</span>
+                  <span className="text-right">{t.historico.pts}</span>
                 </div>
                 <ol className="mt-4 grid gap-[var(--intervalo)] sm:mt-0">
                   {historico.map(({ corrida, resultado }) => {
@@ -196,19 +204,21 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
           {/* Barra lateral */}
           <aside className="space-y-[var(--intervalo)] self-start">
             {/* Campeonato */}
-            <Ficha titulo="No campeonato" icone={<ListOrdered />}>
+            <Ficha titulo={t.campeonato.titulo} icone={<ListOrdered />}>
               <div className="mt-4 flex items-center gap-4">
                 <Posicao posicao={posicao} className="size-14 text-2xl" />
                 <div className="min-w-0 flex-1">
                   <p className="text-2xl font-semibold tabular-nums">
-                    {piloto.estatisticas.pontos} <span className="text-sm font-normal text-white/55">pts</span>
+                    {piloto.estatisticas.pontos} <span className="text-sm font-normal text-white/55">{t.campeonato.pts}</span>
                   </p>
                   {lider && posicao > 1 && (
                     <p className="text-sm text-white/55">
-                      <span className="tabular-nums">{lider.estatisticas.pontos - piloto.estatisticas.pontos}</span> pontos do líder
+                      {comValores(t.campeonato.doLider, {
+                        n: <span className="tabular-nums">{lider.estatisticas.pontos - piloto.estatisticas.pontos}</span>,
+                      })}
                     </p>
                   )}
-                  {posicao === 1 && <p className="text-sm text-mb-red-light">Líder do campeonato</p>}
+                  {posicao === 1 && <p className="text-sm text-mb-red-light">{t.campeonato.lider}</p>}
                 </div>
               </div>
               <div aria-hidden className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
@@ -220,27 +230,28 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
                 />
               </div>
               <LigacaoSeta href="/classificacao" className="mt-5">
-                Ver classificação
+                {t.campeonato.ligacao}
               </LigacaoSeta>
             </Ficha>
 
             {/* Números */}
             <Ficha
-              titulo="Números da carreira"
+              titulo={t.carreira.titulo}
               icone={<Gauge />}
               linhas={[
-                ["Estreia", String(piloto.estreia)],
-                ["Temporadas", String(new Date().getFullYear() - piloto.estreia + 1)],
-                ["Melhor resultado", piloto.estatisticas.melhorResultado],
-                ["Taxa de pódio", `${taxaPodio}%`],
-                ["Títulos nacionais", String(piloto.campeonatos)],
-                ["Nacionalidade", piloto.nacionalidade],
+                [t.carreira.estreia, String(piloto.estreia)],
+                // Contadas até à temporada em curso (Definições), e não até ao ano do relógio.
+                [t.carreira.temporadas, String(Math.max(1, temporada - piloto.estreia + 1))],
+                [t.carreira.melhor, piloto.estatisticas.melhorResultado],
+                [t.carreira.taxa, `${taxaPodio}%`],
+                [t.carreira.titulos, String(piloto.campeonatos)],
+                [t.carreira.nacionalidade, piloto.nacionalidade],
               ]}
             />
 
             {/* Equipa */}
             {equipa && (
-              <Ficha titulo="Equipa" icone={<Shield />}>
+              <Ficha titulo={t.equipa.titulo} icone={<Shield />}>
                 <Link href={`/equipas/${equipa.slug}`} className="group mt-4 flex items-center gap-3">
                   <EmblemaEquipa logo={equipa.logo} cor={equipa.cor} className="size-12 text-sm" />
                   <span className="min-w-0 flex-1">
@@ -252,20 +263,21 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
 
                 {colegas.length > 0 && (
                   <>
-                    <p className="mb-3 mt-6 text-sm text-white/55">Colegas de equipa</p>
+                    <p className="mb-3 mt-6 text-sm text-white/55">{t.equipa.colegas}</p>
                     <ul className="space-y-[var(--intervalo)]">
                       {colegas.map((c) => (
                         <li key={c.slug}>
                           <Link href={`/pilotos/${c.slug}`} className="group flex items-center gap-3 rounded-[var(--raio)] bg-white/5 p-[var(--intervalo)] pr-3 transition-colors hover:bg-white/10">
                             <Retrato
                               nome={retratoDe(c)}
+                              pessoa={c.nome}
                               iniciais={iniciais(c.nome)}
                               className="size-9 shrink-0 rounded-[4px] [container-type:size]"
                               largura={120}
                               tamanhos="36px"
                             />
                             <span className="min-w-0 flex-1 truncate text-sm">{c.nome}</span>
-                            <span className="text-sm tabular-nums text-white/55">{c.estatisticas.pontos} pts</span>
+                            <span className="text-sm tabular-nums text-white/55">{c.estatisticas.pontos} {t.equipa.pts}</span>
                           </Link>
                         </li>
                       ))}
@@ -276,14 +288,18 @@ export default async function PilotoPage({ params }: { params: Promise<{ slug: s
             )}
 
             {/* Seguir */}
-            <Ficha titulo="Seguir este piloto" icone={<Bell />}>
-              <p className="mt-3 text-sm leading-relaxed text-white/70">
-                Receba uma notificação sempre que {piloto.nome.split(" ")[0]} corre, pontua ou sobe ao pódio.
-              </p>
-              <BotaoMB href="/conta" className="mt-5 !max-w-none">
-                Seguir
-              </BotaoMB>
-            </Ficha>
+            {t.seguir.mostrar && (
+              <Ficha titulo={t.seguir.titulo} icone={<Bell />}>
+                <p className="mt-3 text-sm leading-relaxed text-white/70">
+                  {preencher(t.seguir.texto, { nome: piloto.nome.split(" ")[0] })}
+                </p>
+                {t.seguir.botao && (
+                  <BotaoMB href={t.seguir.ligacao || "/conta"} className="mt-5 !max-w-none">
+                    {t.seguir.botao}
+                  </BotaoMB>
+                )}
+              </Ficha>
+            )}
           </aside>
         </div>
       </Seccao>

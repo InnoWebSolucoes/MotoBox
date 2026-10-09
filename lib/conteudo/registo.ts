@@ -21,10 +21,12 @@ import * as clubes from "./grupos/clubes";
 import * as desporto from "./grupos/desporto";
 import * as eventos from "./grupos/eventos";
 import * as comunidade from "./grupos/comunidade";
+import * as geral from "./grupos/geral";
+import * as contas from "./grupos/contas";
 
 export type { DefDoc, DefGrupo } from "./registo-tipos";
 
-const FICHEIROS = [site, paginas, rotas, clubes, desporto, eventos, comunidade];
+const FICHEIROS = [site, paginas, rotas, clubes, desporto, eventos, comunidade, geral, contas];
 
 export const DOCS = new Map<string, DefDoc>(FICHEIROS.flatMap((f) => f.DOCS).map((d) => [d.chave, d]));
 

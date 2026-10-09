@@ -8,6 +8,7 @@ import { PaginaInterior } from "@/components/painel/PaginaInterior";
 import { Abertura, Seccao } from "@/components/painel/blocos";
 import { TEMPORADA } from "@/lib/data";
 import type { Equipa, Piloto } from "@/lib/types";
+import { CLASSIFICACAO_PADRAO, contar, preencher, type TextosClassificacao } from "@/lib/conteudo/grupos/geral";
 import { useIdioma } from "@/lib/i18n/contexto";
 import { CATEGORIAS_CAMPEONATO, CATEGORIAS_PILOTO, categoriasComPilotos, doCampeonatoDe, retratoDe } from "@/lib/desporto";
 import { Aviso, EmblemaEquipa, Posicao, iniciais } from "@/app/calendario/pecas";
@@ -37,12 +38,18 @@ export function ClassificacaoClient({
   pilotos,
   equipas,
   campeonato = CAMPEONATO_PADRAO,
+  textos: tx = CLASSIFICACAO_PADRAO(),
+  ano = TEMPORADA,
 }: {
   pilotos: PilotoClass[];
   equipas: EquipaClass[];
   campeonato?: { nome: string; categorias: string[]; categoriasPiloto: string[] };
+  /** Textos fixos (Provas › Páginas do campeonato › Classificação). */
+  textos?: TextosClassificacao;
+  /** Temporada em curso (Definições). */
+  ano?: number;
 }) {
-  const { t, idioma } = useIdioma();
+  const { idioma } = useIdioma();
   const [aba, setAba] = useState<"pilotos" | "equipas">("pilotos");
   const [categoria, setCategoria] = useState("Todas");
   // Só as categorias com pilotos, pela ordem de sempre (MX1, MX2, Rally / Enduro, Velocidade, Moto 4, Karting).
@@ -64,16 +71,16 @@ export function ClassificacaoClient({
     <PaginaInterior icone={<ListOrdered />}>
       <Abertura
         compacta
-        foto="geral"
-        sobretitulo={`${campeonato.nome} ${TEMPORADA}`}
-        titulo={t("paginas.classificacaoTitulo")}
-        texto="Pontuação do campeonato nacional de motociclismo, actualizada após cada prova. Pontuação a dobrar na ronda final."
+        foto={tx.foto}
+        sobretitulo={preencher(tx.sobretitulo, { campeonato: campeonato.nome, ano })}
+        titulo={tx.titulo}
+        texto={tx.texto}
       />
 
       <Seccao>
         {/* Abas e filtro de categoria */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div role="group" aria-label="Tabela" className="flex h-11 items-center gap-1 rounded-[var(--raio)] bg-white/7 p-1">
+          <div role="group" aria-label={tx.abas.rotulo} className="flex h-11 items-center gap-1 rounded-[var(--raio)] bg-white/7 p-1">
             {(["pilotos", "equipas"] as const).map((a) => (
               <button
                 key={a}
@@ -84,16 +91,16 @@ export function ClassificacaoClient({
                   aba === a ? "bg-white text-black" : "text-white/70 hover:text-white"
                 }`}
               >
-                {a === "pilotos" ? "Pilotos" : "Equipas e clubes"}
+                {a === "pilotos" ? tx.abas.pilotos : tx.abas.equipas}
               </button>
             ))}
           </div>
 
           {aba === "pilotos" && (
-            <div role="group" aria-label="Categoria" className="no-scrollbar -mx-1 flex max-w-full gap-2 overflow-x-auto px-1">
+            <div role="group" aria-label={tx.rotuloCategoria} className="no-scrollbar -mx-1 flex max-w-full gap-2 overflow-x-auto px-1">
               {categorias.map((c) => (
                 <button key={c} type="button" onClick={() => setCategoria(c)} aria-pressed={categoria === c} className="pilula">
-                  {c === "Todas" ? "Geral" : c}
+                  {c === "Todas" ? tx.geral : c}
                 </button>
               ))}
             </div>
@@ -118,6 +125,7 @@ export function ClassificacaoClient({
                       >
                         <Retrato
                           nome={retratoDe(p)}
+                          pessoa={p.nome}
                           iniciais={iniciais(p.nome)}
                           className="foto-painel absolute inset-0 -z-20 [container-type:size]"
                           tamanhos="(max-width: 640px) 100vw, 33vw"
@@ -140,10 +148,10 @@ export function ClassificacaoClient({
                           <div className="mt-4 flex items-end justify-between gap-4">
                             <p className="text-3xl font-semibold leading-none tabular-nums">
                               {p.estatisticas.pontos}
-                              <span className="ml-1 text-sm font-normal">pts</span>
+                              <span className="ml-1 text-sm font-normal">{tx.pts}</span>
                             </p>
                             <p className="text-xs tabular-nums text-white/85">
-                              {p.estatisticas.vitorias} Vit · {p.estatisticas.podios} Pód
+                              {preencher(tx.podioLinha, { vitorias: p.estatisticas.vitorias, podios: p.estatisticas.podios })}
                             </p>
                           </div>
                         </div>
@@ -156,19 +164,19 @@ export function ClassificacaoClient({
 
             {/* Tabela de pilotos */}
             {lista.length === 0 ? (
-              <Aviso className="mt-10" titulo="Sem pilotos nesta categoria" icone={<ListOrdered />}>
-                A tabela enche-se assim que houver pontos atribuídos.
+              <Aviso className="mt-10" titulo={tx.vazioPilotos.titulo} icone={<ListOrdered />}>
+                {tx.vazioPilotos.texto}
               </Aviso>
             ) : (
               <div className="mt-10">
                 <div aria-hidden className={`hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/50 md:grid ${COL_PILOTOS}`}>
-                  <span>Pos</span>
-                  <span>Piloto</span>
-                  <span>Equipa</span>
-                  <span className="text-right">Vit</span>
-                  <span className="text-right">Pód</span>
-                  <span className="text-right">Pole</span>
-                  <span className="text-right">Pontos</span>
+                  <span>{tx.colunas.pos}</span>
+                  <span>{tx.colunas.piloto}</span>
+                  <span>{tx.colunas.equipa}</span>
+                  <span className="text-right">{tx.colunas.vit}</span>
+                  <span className="text-right">{tx.colunas.pod}</span>
+                  <span className="text-right">{tx.colunas.pole}</span>
+                  <span className="text-right">{tx.colunas.pontos}</span>
                 </div>
                 <ol className="grid gap-[var(--intervalo)]">
                   {lista.map((p) => (
@@ -182,6 +190,7 @@ export function ClassificacaoClient({
                         <span className="flex min-w-0 items-center gap-3">
                           <Retrato
                             nome={retratoDe(p)}
+                            pessoa={p.nome}
                             iniciais={iniciais(p.nome)}
                             className="size-10 shrink-0 rounded-[4px] [container-type:size]"
                             largura={160}
@@ -198,7 +207,7 @@ export function ClassificacaoClient({
                               <span className="truncate">{p.equipa}</span>
                             </span>
                             <span className="mt-0.5 block text-xs tabular-nums text-white/45 md:hidden">
-                              {p.estatisticas.vitorias} Vit · {p.estatisticas.podios} Pód · {p.estatisticas.poles} Pole
+                              {preencher(tx.linhaPiloto, { vitorias: p.estatisticas.vitorias, podios: p.estatisticas.podios, poles: p.estatisticas.poles })}
                             </span>
                             {/* Barra de pontos relativa ao líder */}
                             <span aria-hidden className="mt-1.5 hidden h-1 w-full max-w-[14rem] overflow-hidden rounded-full bg-white/10 md:block">
@@ -247,20 +256,20 @@ export function ClassificacaoClient({
             )}
           </>
         ) : equipas.length === 0 ? (
-          <Aviso className="mt-10" titulo="Sem equipas pontuadas" icone={<ListOrdered />}>
-            A tabela de equipas enche-se assim que houver pontos atribuídos.
+          <Aviso className="mt-10" titulo={tx.vazioEquipas.titulo} icone={<ListOrdered />}>
+            {tx.vazioEquipas.texto}
           </Aviso>
         ) : (
           /* ---- Equipas ---- */
           <div className="mt-10">
             <div aria-hidden className={`hidden items-end gap-x-4 px-4 pb-3 text-xs text-white/50 md:grid ${COL_EQUIPAS}`}>
-              <span>Pos</span>
-              <span>Equipa</span>
-              <span>Base</span>
-              <span className="text-right">Vit</span>
-              <span className="text-right">Pód</span>
-              <span className="text-right">Tít</span>
-              <span className="text-right">Pontos</span>
+              <span>{tx.colunas.pos}</span>
+              <span>{tx.colunas.equipa}</span>
+              <span>{tx.colunas.base}</span>
+              <span className="text-right">{tx.colunas.vit}</span>
+              <span className="text-right">{tx.colunas.pod}</span>
+              <span className="text-right">{tx.colunas.tit}</span>
+              <span className="text-right">{tx.colunas.pontos}</span>
             </div>
             <ol className="grid gap-[var(--intervalo)]">
               {equipas.map((e) => (
@@ -276,10 +285,10 @@ export function ClassificacaoClient({
                         <span className="block truncate font-medium transition-colors group-hover:text-mb-red-light">{e.nome}</span>
                         <span className="block truncate text-xs text-white/55">
                           <span className="md:hidden">{e.base} · </span>
-                          {e.pilotos.length} {e.pilotos.length === 1 ? "piloto" : "pilotos"}
+                          {contar(e.pilotos.length, tx.pilotoUm, tx.pilotoVarios)}
                         </span>
                         <span className="mt-0.5 block text-xs tabular-nums text-white/45 md:hidden">
-                          {e.estatisticas.vitorias} Vit · {e.estatisticas.podios} Pód · {e.estatisticas.titulos} Tít
+                          {preencher(tx.linhaEquipa, { vitorias: e.estatisticas.vitorias, podios: e.estatisticas.podios, titulos: e.estatisticas.titulos })}
                         </span>
                       </span>
                     </span>
@@ -309,13 +318,15 @@ export function ClassificacaoClient({
 
         {/* Legenda */}
         <p className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-white/50">
-          <span>Vit: vitórias</span>
-          <span>Pód: pódios</span>
-          {aba === "pilotos" ? <span>Pole: melhores qualificações</span> : <span>Tít: títulos nacionais</span>}
-          <span className="inline-flex items-center gap-1.5">
-            <Clock className="size-3.5" aria-hidden />
-            Actualizado após cada prova
-          </span>
+          {tx.legenda.vit && <span>{tx.legenda.vit}</span>}
+          {tx.legenda.pod && <span>{tx.legenda.pod}</span>}
+          {aba === "pilotos" ? tx.legenda.pole && <span>{tx.legenda.pole}</span> : tx.legenda.tit && <span>{tx.legenda.tit}</span>}
+          {tx.legenda.actualizado && (
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="size-3.5" aria-hidden />
+              {tx.legenda.actualizado}
+            </span>
+          )}
         </p>
       </Seccao>
     </PaginaInterior>

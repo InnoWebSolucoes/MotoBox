@@ -1,13 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { enviarEmailUnico, modeloSimples } from "@/lib/email";
-import { destinoSeguro, ligacaoConfirmacao } from "@/lib/auth/ligacoes";
+import { EMAIL_VALIDO } from "@/lib/email";
+import { destinoSeguro } from "@/lib/auth/ligacoes";
+import { contaPorEmail, enviarConfirmacao, erroPublico } from "@/lib/auth/emails-conta";
 
 /* ============================================================
    MOTOBOX — Reenviar a confirmação de conta
    Para quem tenta entrar sem ter confirmado o email. Só segue
-   para contas por confirmar; a resposta é a mesma em todos os
-   casos, para não revelar que emails estão registados.
+   para contas que existem e estão por confirmar; a resposta é a
+   mesma nos outros casos, para não revelar que emails estão
+   registados. A conta procura-se primeiro sem a criar: o
+   generateLink "magiclink" de um email desconhecido criava uma.
    ============================================================ */
 
 export const dynamic = "force-dynamic";
@@ -17,27 +20,24 @@ export async function POST(req: NextRequest) {
   try { corpo = await req.json(); } catch { return NextResponse.json({ erro: "Pedido inválido." }, { status: 400 }); }
   const email = typeof corpo.email === "string" ? corpo.email.trim().toLowerCase() : "";
   const destino = destinoSeguro(corpo.destino);
+  if (!EMAIL_VALIDO.test(email)) return NextResponse.json({ erro: "Endereço de email inválido." }, { status: 400 });
 
   const db = supabaseAdmin();
   if (!db) return NextResponse.json({ erro: "Indisponível de momento." }, { status: 503 });
 
-  const { data, error } = await db.auth.admin.generateLink({ type: "magiclink", email });
-  if (error || !data?.user || data.user.email_confirmed_at) return NextResponse.json({ ok: true });
+  const conta = await contaPorEmail(db, email);
+  if (!conta || conta.confirmada) return NextResponse.json({ ok: true });
 
-  const nome = typeof data.user.user_metadata?.nome === "string" ? data.user.user_metadata.nome.split(/\s+/)[0] : "";
-  const { html, texto } = modeloSimples({
-    titulo: "Confirme a sua conta Motobox",
-    paragrafos: [
-      nome ? `Olá, ${nome}.` : "Olá.",
-      "Aqui está de novo a ligação para confirmar o seu email e activar a conta.",
-    ],
-    botao: {
-      texto: "Confirmar o meu email",
-      url: ligacaoConfirmacao(data.properties.hashed_token, data.properties.verification_type, destino),
-    },
-    rodape: "Se não foi você que criou esta conta, ignore esta mensagem.",
+  const { data, error } = await db.auth.admin.generateLink({ type: "magiclink", email });
+  if (error || !data?.user || data.user.id !== conta.id) {
+    if (error) console.error("[reenviar]", error.message);
+    return NextResponse.json({ ok: true });
+  }
+
+  const r = await enviarConfirmacao({
+    email, nome: conta.nome, destino,
+    hash: data.properties.hashed_token, tipo: data.properties.verification_type,
   });
-  const falha = await enviarEmailUnico({ para: email, assunto: "Confirme a sua conta Motobox", html, texto });
-  if (falha) return NextResponse.json({ erro: falha }, { status: 502 });
+  if (!r.ok) return NextResponse.json({ erro: erroPublico(r) }, { status: 502 });
   return NextResponse.json({ ok: true });
 }

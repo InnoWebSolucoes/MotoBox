@@ -10,6 +10,8 @@ import type { Evento } from "@/lib/types";
 import { Aviso } from "@/app/calendario/pecas";
 import { Checkout } from "./Checkout";
 import { fotoDe } from "@/app/eventos/foto";
+import { preencher, type TextosBilhetes } from "@/lib/conteudo/grupos/geral";
+import { lerTextosBilhetes, lerTextosCompra } from "@/lib/conteudo/ler-geral";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -27,19 +29,27 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const e = await lerEvento(slug);
-  return e ? { title: `Bilhetes para ${e.titulo}`, description: e.resumo } : { title: "Bilhetes" };
+  const [e, t] = await Promise.all([lerEvento(slug), lerTextosBilhetes()]);
+  return e
+    ? { title: preencher(t.compra.pesquisaTitulo, { titulo: e.titulo }), description: e.resumo }
+    : { title: t.pesquisa.titulo };
 }
 
 export default async function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [evento, { bilheteiraAberta }] = await Promise.all([lerEvento(slug), lerDefinicoes()]);
+  const [evento, { bilheteiraAberta }, t, compra] = await Promise.all([
+    lerEvento(slug), lerDefinicoes(), lerTextosBilhetes(), lerTextosCompra(),
+  ]);
   if (!evento) notFound();
 
   // A mesma regra das listas e da página do evento: sem venda, explica-se
   // porquê em vez de abrir um checkout que não pode concluir.
   const venda = vendaBilhetes(evento, bilheteiraAberta, instante());
-  const sobretitulo = ["Bilhetes", evento.ronda ? `Ronda ${evento.ronda}` : null, evento.disciplina].filter(Boolean).join(" · ");
+  const sobretitulo = [
+    t.compra.sobretitulo,
+    evento.ronda ? preencher(t.compra.ronda, { ronda: evento.ronda }) : null,
+    evento.disciplina,
+  ].filter(Boolean).join(" · ");
 
   return (
     <PaginaInterior icone={<Ticket />}>
@@ -52,10 +62,11 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
         texto={`${intervaloDatas(evento.dataInicio, evento.dataFim)} · ${evento.circuito}, ${evento.provincia}`}
       />
       {venda === "a-venda" ? (
-        <Checkout evento={evento} />
+        <Checkout evento={evento} textos={compra} />
       ) : (
         <SemVenda
           evento={evento}
+          textos={t.semVenda}
           motivo={
             venda === "esgotado" ? "esgotado" : !bilheteiraAberta && (evento.bilhetes?.length ?? 0) > 0 ? "fechada" : "sem-venda"
           }
@@ -65,33 +76,20 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
   );
 }
 
-const MOTIVOS = {
-  esgotado: {
-    titulo: "Bilhetes esgotados",
-    texto: "Já não há bilhetes à venda na MotoBox para este evento.",
-  },
-  fechada: {
-    titulo: "Bilheteira fechada",
-    texto: "A venda de bilhetes online na MotoBox está fechada de momento. Volte mais tarde ou veja na página do evento como participar.",
-  },
-  "sem-venda": {
-    titulo: "Sem bilhetes à venda",
-    texto: "Este evento não tem venda de bilhetes online na MotoBox. Veja na página do evento como participar.",
-  },
-} as const;
-
 /** Mensagem no lugar do checkout, com o caminho para a página do evento. */
-function SemVenda({ evento, motivo }: { evento: Evento; motivo: keyof typeof MOTIVOS }) {
-  const m = MOTIVOS[motivo];
+function SemVenda({
+  evento, motivo, textos,
+}: { evento: Evento; motivo: "esgotado" | "fechada" | "sem-venda"; textos: TextosBilhetes["semVenda"] }) {
+  const m = motivo === "esgotado" ? textos.esgotado : motivo === "fechada" ? textos.fechada : textos.semVenda;
   return (
     <Seccao estreita>
       <Aviso titulo={m.titulo} icone={<Ticket />}>
         {m.texto}
       </Aviso>
       <div className="mt-[var(--intervalo)] flex flex-wrap gap-[var(--intervalo)]">
-        <BotaoMB href={hrefEvento(evento)}>Ver o evento</BotaoMB>
+        <BotaoMB href={hrefEvento(evento)}>{textos.verEvento}</BotaoMB>
         <BotaoMB href="/bilhetes" variante="escuro">
-          Todos os bilhetes
+          {textos.todos}
         </BotaoMB>
       </div>
     </Seccao>

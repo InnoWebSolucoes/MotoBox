@@ -35,6 +35,9 @@ export function MiniRetrato({ p, cor, tamanho = "size-10" }: { p: Pick<Piloto, "
 
 export function Pilotos({ editar }: { editar?: string }) {
   const { estado, atualizar } = useAdmin();
+  // A temporada em curso vem das Definições; sem ela (valor estranho), a do código.
+  const temporadaDef = Number(estado.definicoes.temporada);
+  const temporada = Number.isInteger(temporadaDef) && temporadaDef >= 2000 && temporadaDef <= 2100 ? temporadaDef : TEMPORADA;
   const config = useConfigDesporto();
   const pilotos = estado.pilotos;
   const equipas = estado.equipas;
@@ -44,7 +47,7 @@ export function Pilotos({ editar }: { editar?: string }) {
   /** Estatísticas da temporada contadas nas tabelas de resultados. */
   const contar = (slug: string) => {
     const linhas = estado.corridas
-      .filter((c) => c.temporada === TEMPORADA)
+      .filter((c) => c.temporada === temporada)
       .flatMap((c) => c.resultados.filter((r) => r.pilotoSlug === slug));
     const pos = linhas.filter((r) => !r.estado && r.posicao > 0).map((r) => r.posicao);
     const melhor = pos.length ? Math.min(...pos) : 0;
@@ -111,7 +114,7 @@ export function Pilotos({ editar }: { editar?: string }) {
           render: () => (
             <div className="flex flex-wrap items-center gap-3 rounded-[var(--raio)] bg-black/20 px-4 py-3">
               <p className="min-w-0 flex-1 text-[13px] leading-relaxed text-white/60">
-                Pode somar os pontos, vitórias, pódios e corridas das tabelas de Resultados de {TEMPORADA}. Revê antes de gravar.
+                Pode somar os pontos, vitórias, pódios e corridas das tabelas de Resultados de {temporada}. Revê antes de gravar.
               </p>
               <Botao tamanho="sm" onClick={() => {
                 const c = contar(r.slug);
@@ -196,7 +199,7 @@ export function Pilotos({ editar }: { editar?: string }) {
       novo={() => ({
         slug: "", nome: "", numero: 0, equipa: "", equipaSlug: "",
         provincia: "Luanda", nacionalidade: "Angolana", idade: 20,
-        mota: "", categoria: config.categorias[0] ?? "", foto: "", bio: "", estreia: TEMPORADA,
+        mota: "", categoria: config.categorias[0] ?? "", foto: "", bio: "", estreia: temporada,
         estatisticas: { pontos: 0, vitorias: 0, podios: 0, poles: 0, corridas: 0, melhorResultado: "" },
         redes: {}, campeonatos: 0,
       }) as Piloto}
@@ -204,7 +207,7 @@ export function Pilotos({ editar }: { editar?: string }) {
         ...r,
         numero: Number(r.numero) || 0,
         idade: Number(r.idade) || 0,
-        estreia: Number(r.estreia) || TEMPORADA,
+        estreia: Number(r.estreia) || temporada,
         campeonatos: Number(r.campeonatos) || 0,
         estatisticas: {
           pontos: Number(r.estatisticas?.pontos) || 0,

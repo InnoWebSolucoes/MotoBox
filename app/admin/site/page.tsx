@@ -1,8 +1,8 @@
 import { EditorSite, type AbaSite } from "./EditorSite";
 
-/* MOTOBOX ADMIN — Entrada e painel (?aba=entrada | contagem | painel). */
+/* MOTOBOX ADMIN — Entrada e painel (?aba=entrada | contagem | painel | geral). */
 
-const ABAS: AbaSite[] = ["entrada", "contagem", "painel"];
+const ABAS: AbaSite[] = ["entrada", "contagem", "painel", "geral"];
 
 export default async function AdminSite({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
   const { aba } = await searchParams;

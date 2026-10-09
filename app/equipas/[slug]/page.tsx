@@ -11,6 +11,8 @@ import { lerEquipa, lerEquipas, lerPilotos } from "@/lib/supabase/publico";
 import { EmblemaEquipa, Ficha, LigacaoSeta, Posicao, fotoEquipa } from "@/app/calendario/pecas";
 import { CartaoPiloto } from "@/app/pilotos/CartaoPiloto";
 import { lerExtrasEquipas } from "@/app/desporto/dados";
+import { preencher } from "@/lib/conteudo/grupos/geral";
+import { lerTextosEquipas, lerTextosPilotos } from "@/lib/conteudo/ler-geral";
 
 // O Next exige um literal aqui, não aceita constante importada.
 export const revalidate = 60;
@@ -29,7 +31,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const e = await lerEquipa(slug);
-  if (!e) return { title: "Equipa não encontrada" };
+  if (!e) return { title: (await lerTextosEquipas()).equipa.naoEncontrada };
   return { title: e.nome, description: e.descricao.slice(0, 155) };
 }
 
@@ -38,7 +40,10 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
   const equipa = await lerEquipa(slug);
   if (!equipa) notFound();
 
-  const [equipas, pilotos, extras] = await Promise.all([lerEquipas(), lerPilotos(), lerExtrasEquipas()]);
+  const [equipas, pilotos, extras, textos, textosPilotos] = await Promise.all([
+    lerEquipas(), lerPilotos(), lerExtrasEquipas(), lerTextosEquipas(), lerTextosPilotos(),
+  ]);
+  const t = textos.equipa;
   const seus = pilotos.filter((p) => p.equipaSlug === equipa.slug);
   const posicao = classificacaoEquipas(equipas).find((e) => e.slug === equipa.slug)?.posicao;
   const outras = equipas.filter((e) => e.tipo === equipa.tipo && e.slug !== equipa.slug).slice(0, 3);
@@ -61,13 +66,13 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
               }`}
             >
               <ListOrdered className="size-4" aria-hidden />
-              {posicao}.º no campeonato
+              {preencher(t.noCampeonato, { n: posicao })}
             </span>
           )}
           {equipa.estatisticas.titulos > 0 && (
             <span className="inline-flex h-12 items-center gap-2.5 rounded-[var(--raio)] bg-black/65 px-4 text-sm">
               <Trophy className="size-4" aria-hidden />
-              {equipa.estatisticas.titulos}× Campeã Nacional
+              {preencher(t.campea, { n: equipa.estatisticas.titulos })}
             </span>
           )}
           {redes.map((r) => (
@@ -91,10 +96,10 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
             className="mb-14"
             colunas={4}
             itens={[
-              { valor: equipa.estatisticas.pontos, texto: "Pontos" },
-              { valor: equipa.estatisticas.vitorias, texto: "Vitórias" },
-              { valor: equipa.estatisticas.podios, texto: "Pódios" },
-              { valor: equipa.estatisticas.titulos, texto: "Títulos" },
+              { valor: equipa.estatisticas.pontos, texto: t.numeros.pontos },
+              { valor: equipa.estatisticas.vitorias, texto: t.numeros.vitorias },
+              { valor: equipa.estatisticas.podios, texto: t.numeros.podios },
+              { valor: equipa.estatisticas.titulos, texto: t.numeros.titulos },
             ].map((n) => ({ ...n, valor: <span className="tabular-nums">{n.valor}</span> }))}
           />
         )}
@@ -104,7 +109,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
             <div className="flex items-center gap-4">
               <EmblemaEquipa logo={equipa.logo} cor={equipa.cor} className="size-16 text-xl" />
               <div>
-                <p className="text-sm text-white/60">{equipa.tipo === "Equipa" ? "Sobre a equipa" : "Sobre o clube"}</p>
+                <p className="text-sm text-white/60">{equipa.tipo === "Equipa" ? t.sobreEquipa : t.sobreClube}</p>
                 <h2 className="titulo-4 mt-1">{equipa.nome}</h2>
               </div>
             </div>
@@ -115,13 +120,13 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
             <dl className="mt-10 grid grid-cols-2 gap-[var(--intervalo)] sm:grid-cols-4">
               {(
                 [
-                  ["Base", equipa.base],
-                  ["Fundação", String(equipa.fundacao)],
-                  ["Responsável", equipa.chefe],
-                  ["Membros", String(equipa.membros)],
+                  ["base", t.dados.base, equipa.base],
+                  ["fundacao", t.dados.fundacao, String(equipa.fundacao)],
+                  ["responsavel", t.dados.responsavel, equipa.chefe],
+                  ["membros", t.dados.membros, String(equipa.membros)],
                 ] as const
-              ).map(([k, v]) => (
-                <div key={k} className="flex flex-col-reverse rounded-[var(--raio)] bg-white/5 p-4">
+              ).map(([id, k, v]) => (
+                <div key={id} className="flex flex-col-reverse rounded-[var(--raio)] bg-white/5 p-4">
                   <dt className="mt-1 text-xs text-white/55">{k}</dt>
                   <dd className="text-[15px] font-medium leading-snug">{v}</dd>
                 </div>
@@ -130,10 +135,10 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
 
             {seus.length > 0 && (
               <div className="mt-14">
-                <h2 className="titulo-3">Pilotos</h2>
+                <h2 className="titulo-3">{t.pilotos}</h2>
                 <div className="mt-8 grid gap-[var(--intervalo)] sm:grid-cols-2">
                   {seus.map((p) => (
-                    <CartaoPiloto key={p.slug} piloto={p} cor={equipa.cor} />
+                    <CartaoPiloto key={p.slug} piloto={p} cor={equipa.cor} textos={textosPilotos.cartao} />
                   ))}
                 </div>
               </div>
@@ -142,36 +147,36 @@ export default async function EquipaPage({ params }: { params: Promise<{ slug: s
 
           <aside className="space-y-[var(--intervalo)] self-start">
             <Ficha
-              titulo="Ficha"
+              titulo={t.ficha.titulo}
               icone={<ClipboardList />}
               linhas={[
-                ["Tipo", equipa.tipo],
-                ["Província", equipa.provincia],
-                ["Fundação", String(equipa.fundacao)],
-                ["Membros", String(equipa.membros)],
-                ["Material", equipa.motas.join(", ")],
+                [t.ficha.tipo, equipa.tipo],
+                [t.ficha.provincia, equipa.provincia],
+                [t.ficha.fundacao, String(equipa.fundacao)],
+                [t.ficha.membros, String(equipa.membros)],
+                [t.ficha.material, equipa.motas.join(", ")],
               ]}
             />
 
             {posicao && (
-              <Ficha titulo="No campeonato" icone={<ListOrdered />}>
+              <Ficha titulo={t.campeonato.titulo} icone={<ListOrdered />}>
                 <div className="mt-4 flex items-center gap-4">
                   <Posicao posicao={posicao} className="size-14 text-2xl" />
                   <div>
                     <p className="text-2xl font-semibold tabular-nums">
-                      {equipa.estatisticas.pontos} <span className="text-sm font-normal text-white/55">pts</span>
+                      {equipa.estatisticas.pontos} <span className="text-sm font-normal text-white/55">{t.campeonato.pts}</span>
                     </p>
-                    <p className="text-sm text-white/55">Classificação de equipas</p>
+                    <p className="text-sm text-white/55">{t.campeonato.texto}</p>
                   </div>
                 </div>
                 <LigacaoSeta href="/classificacao" className="mt-5">
-                  Tabela completa
+                  {t.campeonato.ligacao}
                 </LigacaoSeta>
               </Ficha>
             )}
 
             {outras.length > 0 && (
-              <Ficha titulo={equipa.tipo === "Equipa" ? "Outras equipas" : "Outros clubes"} icone={<Shield />}>
+              <Ficha titulo={equipa.tipo === "Equipa" ? t.outrasEquipas : t.outrosClubes} icone={<Shield />}>
                 <ul className="mt-4 space-y-[var(--intervalo)]">
                   {outras.map((o) => (
                     <li key={o.slug}>

@@ -35,6 +35,9 @@ function daProva(e: Evento, r: Corrida): Partial<Corrida> {
 
 export function Resultados({ prova, editar, nova }: { prova?: string; editar?: string; nova?: string }) {
   const { estado } = useAdmin();
+  // A temporada em curso vem das Definições; sem ela (valor estranho), a do código.
+  const temporadaDef = Number(estado.definicoes.temporada);
+  const temporada = Number.isInteger(temporadaDef) && temporadaDef >= 2000 && temporadaDef <= 2100 ? temporadaDef : TEMPORADA;
   const config = useConfigDesporto();
   const provas = estado.eventos.filter((e) => eProva(e.disciplina)).sort((a, b) => a.dataInicio.localeCompare(b.dataInicio));
   const provaDe = (slug: string) => estado.eventos.find((e) => e.slug === slug);
@@ -157,7 +160,7 @@ export function Resultados({ prova, editar, nova }: { prova?: string; editar?: s
       }
       numeros={
         <div className="grid grid-cols-2 gap-[var(--intervalo)] lg:grid-cols-4">
-          <Estatistica rotulo={`Tabelas em ${TEMPORADA}`} valor={corridas.filter((c) => c.temporada === TEMPORADA).length} icone={<ListOrdered />} />
+          <Estatistica rotulo={`Tabelas em ${temporada}`} valor={corridas.filter((c) => c.temporada === temporada).length} icone={<ListOrdered />} />
           <Estatistica rotulo="Do campeonato" valor={corridas.filter((c) => c.ronda > 0).length} />
           <Estatistica rotulo="Vencedores diferentes" valor={new Set(corridas.map((c) => c.vencedor).filter(Boolean)).size} icone={<Trophy />} />
           <Estatistica rotulo="Sem prova ligada" valor={corridas.filter((c) => !c.eventoSlug || !provaDe(c.eventoSlug)).length}
@@ -203,7 +206,7 @@ export function Resultados({ prova, editar, nova }: { prova?: string; editar?: s
         { cabecalho: "Pilotos", celula: (c) => <span className="tabular-nums text-white/70">{c.resultados.length}</span> },
       ]}
       novo={() => ({
-        slug: "", eventoSlug: "", nome: "", ronda: 0, temporada: TEMPORADA, circuito: "", provincia: "Luanda",
+        slug: "", eventoSlug: "", nome: "", ronda: 0, temporada: temporada, circuito: "", provincia: "Luanda",
         data: new Date().toISOString().slice(0, 10), categoria: config.categorias[0] ?? "", vencedor: "", imagem: "", resultados: [],
       }) as unknown as Corrida}
       preparar={(r) => ({

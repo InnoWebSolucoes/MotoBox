@@ -2,31 +2,37 @@
 
 /* ============================================================
    MOTOBOX ADMIN — Entrada e painel
-   Três documentos do conteúdo editável, em separadores:
+   Quatro documentos do conteúdo editável, em separadores:
    - "site.entrada": a frase da página inicial e o vídeo de fundo
      de todo o site;
    - "site.contagem": a contagem decrescente do painel Explorar;
    - "site.painel": os textos e as fotografias fixos dos mosaicos
-     do painel Explorar.
-   Os três ficam abertos ao mesmo tempo, para nada se perder ao
+     do painel Explorar;
+   - "site.geral": os textos que aparecem em todo o site (rodapé,
+     botão de acção, 404, sem acesso, newsletter, aviso de
+     cookies e página de manutenção), em partes (ver ./geral.tsx).
+   Ficam todos abertos ao mesmo tempo, para nada se perder ao
    trocar de separador antes de gravar.
    ============================================================ */
 
 import { useState } from "react";
-import { House, LayoutGrid, Timer } from "lucide-react";
+import { Globe, House, LayoutGrid, Timer } from "lucide-react";
 import { useAdmin } from "@/lib/admin/store";
 import { CabecalhoPagina, Campo, Input, Painel, Seleccao } from "@/components/admin/kit";
 import { EditorDoc } from "@/components/admin/editor/EditorDoc";
 import { Formulario } from "@/components/admin/editor/Formulario";
 import type { CampoEsquema } from "@/components/admin/editor/esquema";
 import { AbasEmLinhas } from "../paginas/_editor/partes";
+import { EditorPartes } from "./EditorPartes";
+import { PARTES_GERAL } from "./geral";
 
-export type AbaSite = "entrada" | "contagem" | "painel";
+export type AbaSite = "entrada" | "contagem" | "painel" | "geral";
 
 const ABAS: { chave: AbaSite; nome: string }[] = [
   { chave: "entrada", nome: "Entrada" },
   { chave: "contagem", nome: "Contagem decrescente" },
   { chave: "painel", nome: "Painel Explorar" },
+  { chave: "geral", nome: "Geral" },
 ];
 
 /* ---------------- Entrada ---------------- */
@@ -192,7 +198,7 @@ const ESQUEMA_PAINEL: CampoEsquema[] = [
   },
 ];
 
-const DOCS: Record<AbaSite, { chave: string; pagina: string; esquema: CampoEsquema[]; titulo: string; descricao: string }> = {
+const DOCS: Record<Exclude<AbaSite, "geral">, { chave: string; pagina: string; esquema: CampoEsquema[]; titulo: string; descricao: string }> = {
   entrada: {
     chave: "site.entrada", pagina: "/", esquema: ESQUEMA_ENTRADA,
     titulo: "Entrada", descricao: "A página inicial do site e o vídeo de fundo que todas as páginas partilham.",
@@ -208,7 +214,7 @@ const DOCS: Record<AbaSite, { chave: string; pagina: string; esquema: CampoEsque
 };
 
 const ICONES: Record<AbaSite, React.ReactNode> = {
-  entrada: <House />, contagem: <Timer />, painel: <LayoutGrid />,
+  entrada: <House />, contagem: <Timer />, painel: <LayoutGrid />, geral: <Globe />,
 };
 
 export function EditorSite({ abaInicial }: { abaInicial: AbaSite }) {
@@ -232,14 +238,16 @@ export function EditorSite({ abaInicial }: { abaInicial: AbaSite }) {
         sobretitulo="Site"
         titulo="Entrada e painel"
         icone={ICONES[aba]}
-        descricao="A primeira coisa que se vê do site: a página inicial com o vídeo de fundo e o painel Explorar."
+        descricao={aba === "geral"
+          ? "Os textos que aparecem em todo o site: o rodapé, o botão vermelho de baixo, a página 404, a página \"Sem acesso\", as páginas da newsletter, o aviso de cookies e a página de manutenção."
+          : "A primeira coisa que se vê do site: a página inicial com o vídeo de fundo e o painel Explorar."}
       />
 
       <div className="mb-5">
         <AbasEmLinhas abas={ABAS} activa={aba} onChange={mudarAba} rotulo="Partes do site" />
       </div>
 
-      {(Object.keys(DOCS) as AbaSite[]).map((k) => {
+      {(Object.keys(DOCS) as Exclude<AbaSite, "geral">[]).map((k) => {
         const d = DOCS[k];
         return (
           <div key={k} hidden={k !== aba}>
@@ -253,6 +261,10 @@ export function EditorSite({ abaInicial }: { abaInicial: AbaSite }) {
           </div>
         );
       })}
+
+      <div hidden={aba !== "geral"}>
+        <EditorPartes chave="site.geral" pagina="/calendario" partes={PARTES_GERAL} icone={ICONES.geral} rotulo="Textos gerais" />
+      </div>
     </>
   );
 }

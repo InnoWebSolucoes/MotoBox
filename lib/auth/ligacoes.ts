@@ -9,7 +9,7 @@ import { urlSite } from "@/lib/email";
 
 /** Só caminhos do próprio site: nada de "//outro-site" nem endereços completos. */
 export function destinoSeguro(v: unknown, omissao = "/conta"): string {
-  return typeof v === "string" && /^\/(?!\/)[^\s]*$/.test(v) ? v : omissao;
+  return typeof v === "string" && /^\/(?!\/)[^\s\\]*$/.test(v) ? v : omissao;
 }
 
 export function ligacaoConfirmacao(hash: string, tipo: string, destino: string): string {

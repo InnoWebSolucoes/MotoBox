@@ -95,8 +95,8 @@ export interface Modalidade {
   /** Uma linha que dá vontade de entrar: o cartão da entrada, o cabeçalho e a descrição da página. */
   descricao: string;
   /**
-   * Fotografia: chave de lib/imagens.ts ou endereço completo do Unsplash
-   * (o `Placeholder` usa um endereço https tal como está). Ilustrativa.
+   * Fotografia: chave de lib/imagens.ts (fotografias reais do Instagram da
+   * MotoBox e dos clubes) ou endereço completo de uma imagem carregada.
    */
   imagem: string;
   /** Categorias de `Piloto.categoria` que correm nesta modalidade. */
@@ -105,9 +105,6 @@ export interface Modalidade {
 
 /** A modalidade que reúne o calendário, resultados, classificação, pilotos e equipas. */
 export const MODALIDADE_PRINCIPAL = "motocross";
-
-/** Fotografia do Unsplash já dimensionada (para as modalidades sem chave em lib/imagens.ts). */
-const unsplash = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1600&q=70`;
 
 export const MODALIDADES: Modalidade[] = [
   {
@@ -143,7 +140,7 @@ export const MODALIDADES: Modalidade[] = [
     disciplinas: ["Velocidade"],
     grupo: "competicao",
     descricao: "Motas em pista de asfalto, joelho no chão: do Autódromo de Luanda ao MotoGP.",
-    imagem: unsplash("photo-1713205136828-c3a69cfb6d7c"),
+    imagem: "desportivas",
     categorias: ["Velocidade"],
   },
   {
@@ -152,7 +149,7 @@ export const MODALIDADES: Modalidade[] = [
     disciplinas: ["Moto 4"],
     grupo: "competicao",
     descricao: "Todo-o-terreno sobre quatro rodas: quads e SSV, com campeões no rali-raid angolano.",
-    imagem: unsplash("photo-1553966012-4dce025d8e03"),
+    imagem: "moto-4",
     categorias: ["Moto 4"],
   },
   {
@@ -161,7 +158,7 @@ export const MODALIDADES: Modalidade[] = [
     disciplinas: ["Karting"],
     grupo: "competicao",
     descricao: "Do kart em Benguela às 24 Horas de Le Mans: a escada do automobilismo, com pilotos angolanos.",
-    imagem: unsplash("photo-1505570554449-69ce7d4fa36b"),
+    imagem: "dakar",
     categorias: ["Karting"],
   },
 ];

@@ -483,3 +483,141 @@ export const ESQUEMA_PAGINA_DETALHE: CampoEsquema[] = [
     ],
   },
 ];
+
+/** Textos fixos do guia em PDF de cada rota (o objecto "guia"). */
+export const ESQUEMA_PAGINA_GUIA: CampoEsquema[] = [
+  {
+    tipo: "nota",
+    texto:
+      "Cada rota tem um guia em PDF, para imprimir ou levar no telemóvel: capa com os números e os códigos QR, estado da estrada, percurso, itinerário, paragens com coordenadas, horário, informação prática, o que levar (com quadrados para marcar), clima, regras, dicas e fontes. O que é de cada rota vem do separador \"Rotas\" e o comum (emergência, documentos, regras, clima) das outras partes desta página; aqui ficam os títulos e as legendas, iguais em todos os guias.",
+  },
+  {
+    tipo: "objecto", chave: "guia", etiqueta: "Guia em PDF",
+    campos: [
+      texto("botao", "Botão na página da rota", { largura: "meia", ajuda: "Ao lado de \"Descarregar GPX\". Em branco, o botão não aparece." }),
+      texto("titulo", "Nome do documento", { largura: "meia", ajuda: "No topo da capa e no cabeçalho de cada página." }),
+      texto("rodape", "Rodapé", { ajuda: "Em todas as páginas. {site} troca-se pelo endereço do site e {data} pelo dia em que o guia foi gerado." }),
+      texto("pagina", "Número da página", { largura: "meia", ajuda: "{n} é a página e {total} o número de páginas." }),
+      {
+        tipo: "objecto", chave: "capa", etiqueta: "Capa",
+        campos: [
+          texto("rota", "Número da rota", { largura: "meia", ajuda: "{n} troca-se pela posição da rota (01, 02…)." }),
+          texto("emergencia", "Faixa da emergência", { largura: "meia" }),
+          texto("distancia", "Por baixo da distância", { largura: "meia" }), texto("rodar", "Por baixo do tempo", { largura: "meia" }),
+          texto("dia", "Por baixo de 1 dia", { largura: "meia" }), texto("dias", "Por baixo de vários dias", { largura: "meia" }),
+          texto("exigencia", "Por baixo da exigência", { largura: "meia" }), texto("piso", "Por baixo do piso", { largura: "meia" }),
+          texto("epoca", "Por baixo da melhor época", { largura: "meia" }), texto("partida", "Partida", { largura: "meia" }),
+          texto("oPiso", "O piso", { largura: "meia" }), texto("porque", "Porquê esta exigência", { largura: "meia" }),
+          texto("melhorEpoca", "Melhor época", { largura: "meia" }), texto("quantosDias", "Quantos dias", { largura: "meia" }),
+          texto("qrPagina", "Código QR da página: título", { largura: "meia" }),
+          texto("qrMapa", "Código QR da navegação: título", { largura: "meia" }),
+          area("qrPaginaTexto", "Código QR da página: texto", 2),
+          area("qrMapaTexto", "Código QR da navegação: texto", 2),
+          texto("mapa", "Ligação do Google Maps", { largura: "meia" }), texto("gpx", "Ligação do GPX", { largura: "meia" }),
+          area("gpxTexto", "Texto do GPX", 2),
+          area("offline", "Nota no fim da capa", 2),
+        ],
+      },
+      {
+        tipo: "objecto", chave: "estrada", etiqueta: "Estado da estrada",
+        campos: [
+          texto("titulo", "Título"),
+          area("texto", "Texto", 2, "{quando} troca-se pela data dos relatos de cada rota."),
+          texto("boa", "Estado \"Boa\"", { largura: "meia" }), texto("irregular", "Estado \"Irregular\"", { largura: "meia" }),
+          texto("ma", "Estado \"Má\"", { largura: "meia" }),
+        ],
+      },
+      {
+        tipo: "objecto", chave: "mapa", etiqueta: "O percurso (esquema)",
+        campos: [
+          texto("titulo", "Título"),
+          texto("norte", "Letra do norte", { largura: "meia" }), texto("escala", "\"Escala\"", { largura: "meia" }),
+          area("nota", "Nota por baixo do esquema", 2),
+        ],
+      },
+      {
+        tipo: "objecto", chave: "itinerario", etiqueta: "Itinerário",
+        campos: [
+          texto("titulo", "Título", { largura: "meia" }), texto("dia", "\"Dia\" (antes do número)", { largura: "meia" }),
+          texto("estrada", "\"Estrada\"", { largura: "meia" }), texto("peloCaminho", "\"Pelo caminho\"", { largura: "meia" }),
+          texto("aviso", "Antes de cada aviso", { largura: "meia" }),
+          texto("abrirDia", "Ligação de cada dia", { largura: "meia", ajuda: "{n} é o número do dia." }),
+          texto("total", "Por baixo da distância", { largura: "meia" }), texto("rodar", "Por baixo do tempo de mota", { largura: "meia" }),
+          texto("carro", "Por baixo do tempo de carro", { largura: "meia" }), texto("subida", "Por baixo da subida", { largura: "meia" }),
+          texto("maxima", "Por baixo da altitude máxima", { largura: "meia" }), texto("minima", "Por baixo da altitude mínima", { largura: "meia" }),
+          area("metodo", "Como calculamos", 4),
+        ],
+      },
+      {
+        tipo: "objecto", chave: "pisos", etiqueta: "Nomes do piso de cada troço",
+        campos: [
+          texto("asfalto", "Asfalto", { largura: "meia" }), texto("buracos", "Asfalto com buracos", { largura: "meia" }),
+          texto("terra", "Terra", { largura: "meia" }), texto("areia", "Areia", { largura: "meia" }),
+        ],
+      },
+      {
+        tipo: "objecto", chave: "paragens", etiqueta: "Paragens e coordenadas",
+        campos: [
+          texto("titulo", "Título"), area("texto", "Texto", 2),
+          texto("paragem", "Coluna do nome", { largura: "meia" }), texto("coordenadas", "Coluna das coordenadas", { largura: "meia" }),
+          texto("altitude", "Coluna da altitude", { largura: "meia" }), texto("nota", "Coluna da nota", { largura: "meia" }),
+          texto("pontos", "Título dos pontos de interesse", { largura: "meia" }),
+          texto("lugar", "Coluna do nome do ponto de interesse", { largura: "meia" }),
+        ],
+      },
+      {
+        tipo: "objecto", chave: "horario", etiqueta: "Horário",
+        campos: [
+          texto("titulo", "Título"), area("texto", "Texto", 3),
+          texto("luz", "Luz do dia", { largura: "meia", ajuda: "{cidade} troca-se pela cidade do clima da rota." }),
+          texto("luzNota", "Nota da luz do dia", { largura: "meia" }),
+        ],
+      },
+      {
+        tipo: "objecto", chave: "pratico", etiqueta: "Informação prática",
+        campos: [
+          texto("titulo", "Título"),
+          texto("combustivel", "Combustível", { largura: "meia" }), texto("semCombustivel", "Maior troço sem combustível", { largura: "meia" }),
+          texto("emergencia", "Emergência", { largura: "meia" }),
+          texto("contactos", "Quadro para escrever contactos", { largura: "meia", ajuda: "Em branco, o quadro não aparece." }),
+          texto("contactosTexto", "Texto do quadro dos contactos"),
+          texto("comer", "Onde comer", { largura: "meia" }), texto("dormir", "Onde dormir", { largura: "meia" }),
+          texto("saude", "Hospital mais próximo", { largura: "meia" }), texto("perigos", "Perigos na estrada", { largura: "meia" }),
+          texto("rede", "Rede móvel", { largura: "meia" }), texto("documentos", "Documentos", { largura: "meia" }),
+          texto("licencas", "Licenças e entradas", { largura: "meia" }), texto("motas", "A mota certa", { largura: "meia" }),
+        ],
+      },
+      {
+        tipo: "objecto", chave: "levar", etiqueta: "O que levar",
+        campos: [
+          texto("titulo", "Título", { largura: "meia" }), texto("texto", "Texto", { largura: "meia" }),
+          texto("rota", "Para esta rota", { largura: "meia" }), texto("sempre", "Em qualquer viagem", { largura: "meia" }),
+          texto("agua", "Água e comida", { largura: "meia" }), texto("grupo", "Sozinho ou em grupo", { largura: "meia" }),
+        ],
+      },
+      {
+        tipo: "objecto", chave: "clima", etiqueta: "Clima e luz",
+        campos: [
+          texto("titulo", "Título", { ajuda: "{cidade} troca-se pela cidade do clima da rota." }),
+          area("nota", "Nota por baixo da tabela", 3, "Vem a seguir à nota da cidade."),
+          texto("maxima", "Linha da máxima", { largura: "meia" }), texto("minima", "Linha da mínima", { largura: "meia" }),
+          texto("chuva", "Linha da chuva", { largura: "meia" }), texto("nascer", "Linha do nascer do sol", { largura: "meia" }),
+          texto("por", "Linha do pôr do sol", { largura: "meia" }),
+          {
+            tipo: "lista-texto", chave: "meses", etiqueta: "Meses", placeholder: "Ex.: Jan",
+            ajuda: "Os doze meses, em curto, de Janeiro a Dezembro. Com outro número de linhas, valem os de origem.",
+          },
+        ],
+      },
+      {
+        tipo: "objecto", chave: "regras", etiqueta: "Regras da estrada", ajuda: "As regras são as de \"Planear e regras\".",
+        campos: [texto("titulo", "Título")],
+      },
+      { tipo: "objecto", chave: "dicas", etiqueta: "Dicas", campos: [texto("titulo", "Título")] },
+      {
+        tipo: "objecto", chave: "fontes", etiqueta: "Fontes",
+        campos: [texto("titulo", "Título"), area("texto", "Texto", 2), area("nota", "Nota final", 3)],
+      },
+    ],
+  },
+];

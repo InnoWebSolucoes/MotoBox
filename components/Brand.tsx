@@ -151,9 +151,17 @@ export function Placeholder({
   );
 }
 
-/** Retrato de piloto: gradiente + iniciais grandes, ao estilo dos cartões F1. */
+/** Um endereço de imagem (e não uma chave de `lib/imagens.ts` nem um nome). */
+const eEndereco = (v: string) => /^(https?:)?\/\//i.test(v) || v.startsWith("/") || v.startsWith("data:");
+
+/**
+ * Retrato de piloto: gradiente + iniciais grandes, ao estilo dos cartões F1.
+ * `nome` é a fotografia (chave ou endereço); `pessoa`, o nome de quem lá está,
+ * para o texto alternativo ("Retrato de Nelson Kiala").
+ */
 export function Retrato({
   nome,
+  pessoa,
   iniciais,
   className = "",
   cor,
@@ -161,6 +169,8 @@ export function Retrato({
   tamanhos = "(max-width: 768px) 50vw, 25vw",
 }: {
   nome: string;
+  /** Nome da pessoa retratada. Sem ele, o texto alternativo fica vazio quando `nome` é um endereço. */
+  pessoa?: string;
   iniciais: string;
   className?: string;
   cor?: string;
@@ -172,6 +182,9 @@ export function Retrato({
   const h = hash(nome);
   const base = cor ?? `hsl(${h % 360} 40% 26%)`;
   const foto = fotoSrc(nome, { w: largura });
+  // Nunca "Retrato de https://…": sem o nome da pessoa e com um endereço, a imagem fica decorativa.
+  const quem = pessoa?.trim() || (eEndereco(nome) ? "" : nome);
+  const alt = iniciais && quem ? `Retrato de ${quem}` : "";
   // Ver a nota em Placeholder: "relative" + "absolute" do chamador colidiam e
   // deixavam a caixa com altura 0.
   const posicao = /(^|\s)(absolute|fixed|sticky|relative)(\s|$)/.test(className)
@@ -188,7 +201,7 @@ export function Retrato({
       {foto && (
         <Image
           src={foto}
-          alt={iniciais ? `Retrato de ${nome}` : ""}
+          alt={alt}
           fill
           sizes={tamanhos}
           unoptimized={!otimizavel(foto)}

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { Check, CreditCard, Landmark, Lock, Minus, Plus, Printer, QrCode, Smartphone, UserRound, type LucideIcon } from "lucide-react";
+import { Check, Landmark, Lock, Minus, Plus, Printer, QrCode, Smartphone, UserRound, Wallet, type LucideIcon } from "lucide-react";
 import { QRCode } from "@/components/QRCode";
 import { useExigirSessao } from "@/components/SessaoObrigatoria";
 import { BotaoMB, Seccao } from "@/components/painel/blocos";
@@ -14,6 +14,8 @@ import { eComunidade } from "@/lib/desporto";
 import { intervaloDatas } from "@/lib/motobox";
 import type { Evento, TipoBilhete } from "@/lib/types";
 import { Etiqueta, LigacaoSeta } from "@/app/calendario/pecas";
+import { COMPRA_PADRAO, contar, preencher, type MetodoPagamento, type TextosCompra } from "@/lib/conteudo/grupos/geral";
+import { comValores } from "@/lib/textos";
 
 /* Comissão que a MotoBox retém sobre cada bilhete vendido. */
 const TAXA_MOTOBOX = 0.07;
@@ -93,38 +95,26 @@ function escrever(loja: "session" | "local", slug: string, r: Omit<Rascunho, "gu
   } catch { /* indisponível */ }
 }
 
-function errosDe(c: Comprador): Record<string, string> {
+function errosDe(c: Comprador, frases: TextosCompra["dados"]["erros"]): Record<string, string> {
   const e: Record<string, string> = {};
-  if (c.nome.trim().length < 3) e.nome = "Indique o nome completo.";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c.email)) e.email = "Email inválido.";
-  if (c.telefone.replace(/\D/g, "").length < 9) e.telefone = "Telefone inválido.";
+  if (c.nome.trim().length < 3) e.nome = frases.nome;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c.email)) e.email = frases.email;
+  if (c.telefone.replace(/\D/g, "").length < 9) e.telefone = frases.telefone;
   return e;
 }
 
 const semSubscricao = () => () => {};
 
-type MetodoPagamento = "multicaixa" | "transferencia" | "cartao";
-
-const METODOS: { id: MetodoPagamento; nome: string; desc: string; Icone: LucideIcon }[] = [
-  {
-    id: "multicaixa",
-    nome: "Multicaixa Express",
-    desc: "Confirme no telemóvel. Pagamento verificado automaticamente.",
-    Icone: Smartphone,
-  },
-  {
-    id: "transferencia",
-    nome: "Transferência bancária",
-    desc: "Receba o IBAN e a referência. Confirmação até 24 horas.",
-    Icone: Landmark,
-  },
-  {
-    id: "cartao",
-    nome: "Cartão Visa / Mastercard",
-    desc: "Pagamento imediato com cartão internacional.",
-    Icone: CreditCard,
-  },
-]
+/*
+  Os meios de pagamento e os seus textos editam-se no painel (Provas ›
+  Páginas do campeonato › Compra de bilhetes). O pagamento com cartão saiu
+  da compra por agora, até se decidir como o integrar.
+*/
+const ICONES_METODO: Record<MetodoPagamento["tipo"], LucideIcon> = {
+  telemovel: Smartphone,
+  transferencia: Landmark,
+  outro: Wallet,
+};
 
 function gerarCodigo(eventoSlug: string) {
   const rnd = Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -132,14 +122,14 @@ function gerarCodigo(eventoSlug: string) {
   return `MBX-${pref}-${rnd}`;
 }
 
-export function Checkout({ evento }: { evento: Evento }) {
+export function Checkout({ evento, textos = COMPRA_PADRAO() }: { evento: Evento; textos?: TextosCompra }) {
   // O rascunho só existe no navegador: o servidor desenha a compra vazia e, logo
   // depois de hidratar, a compra volta a montar-se já com o que ficou guardado.
   const noNavegador = useSyncExternalStore(semSubscricao, () => true, () => false);
-  return <Compra key={noNavegador ? "navegador" : "servidor"} evento={evento} restaurar={noNavegador} />;
+  return <Compra key={noNavegador ? "navegador" : "servidor"} evento={evento} restaurar={noNavegador} textos={textos} />;
 }
 
-function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
+function Compra({ evento, restaurar, textos: tx }: { evento: Evento; restaurar: boolean; textos: TextosCompra }) {
   const tipos = evento.bilhetes!;
   const slug = evento.slug;
   const { utilizador, perfil } = useAuth();
@@ -152,7 +142,10 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
   const [comprador, setComprador] = useState<Comprador>(
     inicial?.comprador ?? { nome: "", email: "", telefone: "", bi: "" },
   );
-  const [metodo, setMetodo] = useState<MetodoPagamento>("multicaixa");
+  const metodos = useMemo(() => tx.pagamento.metodos.filter((m) => m.activo !== false), [tx.pagamento.metodos]);
+  const [metodoEscolhido, setMetodo] = useState<string>(metodos[0]?.id ?? "");
+  const metodoActual = metodos.find((m) => m.id === metodoEscolhido) ?? metodos[0];
+  const metodo = metodoActual?.id ?? "";
   const [aVerificar, setAVerificar] = useState(false);
   const [erros, setErros] = useState<Record<string, string>>({});
   const [codigos, setCodigos] = useState<{ id: string; tipo: string; codigo: string }[]>([]);
@@ -181,7 +174,7 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
   }
 
   function validarComprador() {
-    const e = errosDe(comprador);
+    const e = errosDe(comprador, tx.dados.erros);
     setErros(e);
     return Object.keys(e).length === 0;
   }
@@ -215,7 +208,7 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
   // de a página abrir e a compra segue para o pagamento, como na janela.
   if (retomar && utilizador) {
     setRetomar(false);
-    if (passo === 2 && totalBilhetes > 0 && Object.keys(errosDe(comprador)).length === 0) setPasso(3);
+    if (passo === 2 && totalBilhetes > 0 && Object.keys(errosDe(comprador, tx.dados.erros)).length === 0) setPasso(3);
   }
 
   const emailConta = utilizador?.email ?? "";
@@ -244,7 +237,7 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
     if (!validarComprador()) return;
     const jaTinhaSessao = exigirSessao(() => irParaPagamento(), {
       continuar: true,
-      motivo: "Entre ou crie conta para concluir a compra. O que escolheu e escreveu fica tudo como está.",
+      motivo: tx.dados.motivoSessao,
     });
     // Sem sessão: se criar conta, a confirmação chega por email e abre esta página
     // de novo. Fica uma cópia para essa página retomar a compra onde estava
@@ -276,10 +269,10 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
   }
 
   const passos = [
-    { n: 1, label: "Bilhetes" },
-    { n: 2, label: "Dados" },
-    { n: 3, label: "Pagamento" },
-    { n: 4, label: "Bilhete" },
+    { n: 1, label: tx.passos.bilhetes },
+    { n: 2, label: tx.passos.dados },
+    { n: 3, label: tx.passos.pagamento },
+    { n: 4, label: tx.passos.bilhete },
   ];
 
   /** Botão principal do resumo: vermelho e largo, como o BotaoMB. */
@@ -290,10 +283,10 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
 
   return (
     <Seccao>
-      <LigacaoSeta href="/bilhetes">Todos os bilhetes</LigacaoSeta>
+      <LigacaoSeta href="/bilhetes">{tx.todos}</LigacaoSeta>
 
       {/* Indicador de passos */}
-      <ol className="mt-8 flex items-center gap-2 md:gap-3" aria-label="Progresso da compra">
+      <ol className="mt-8 flex items-center gap-2 md:gap-3" aria-label={tx.passos.rotulo}>
         {passos.map((p, i) => {
           const activo = passo === p.n;
           const feito = passo > p.n;
@@ -305,7 +298,7 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                 }`}
                 aria-current={activo ? "step" : undefined}
               >
-                {feito ? <Check className="size-4" aria-label="Concluído" /> : p.n}
+                {feito ? <Check className="size-4" aria-label={tx.passos.concluido} /> : p.n}
               </span>
               <span className={`sr-only sm:not-sr-only sm:text-sm ${activo ? "text-white" : feito ? "text-white/75" : "text-white/45"}`}>
                 {p.label}
@@ -324,7 +317,7 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
           {/* PASSO 1 — escolher bilhetes */}
           {passo === 1 && (
             <section>
-              <h2 className="titulo-4">Escolha os seus bilhetes</h2>
+              <h2 className="titulo-4">{tx.escolha.titulo}</h2>
               <ul className="mt-6 grid gap-[var(--intervalo)]">
                 {tipos.map((t) => {
                   const qtd = quantidades[t.id] ?? 0;
@@ -337,7 +330,7 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                         <div className="min-w-0 flex-1 basis-64">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-lg font-semibold">{t.nome}</h3>
-                            {t.destaque && <Etiqueta tom="vermelho">Mais procurado</Etiqueta>}
+                            {t.destaque && <Etiqueta tom="vermelho">{tx.escolha.maisProcurado}</Etiqueta>}
                           </div>
                           <p className="mt-1.5 text-sm leading-relaxed text-white/70">{t.descricao}</p>
                           <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
@@ -349,7 +342,9 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                             ))}
                           </ul>
                           <p className="mt-3 text-xs text-white/45">
-                            <span className="tabular-nums">{t.disponiveis.toLocaleString("pt-PT")}</span> disponíveis · máx. 10 por compra
+                            {comValores(tx.escolha.disponiveis, {
+                              n: <span className="tabular-nums">{t.disponiveis.toLocaleString("pt-PT")}</span>,
+                            })}
                           </p>
                         </div>
 
@@ -360,7 +355,7 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                               type="button"
                               onClick={() => alterarQtd(t.id, -1)}
                               disabled={qtd === 0}
-                              aria-label={`Menos um bilhete ${t.nome}`}
+                              aria-label={preencher(tx.escolha.menos, { nome: t.nome })}
                               className="grid size-10 place-items-center rounded-[4px] bg-white/8 text-white transition-colors hover:bg-mb-red disabled:pointer-events-none disabled:opacity-30"
                             >
                               <Minus className="size-4" aria-hidden />
@@ -372,7 +367,7 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                               type="button"
                               onClick={() => alterarQtd(t.id, 1)}
                               disabled={qtd >= Math.min(t.disponiveis, 10)}
-                              aria-label={`Mais um bilhete ${t.nome}`}
+                              aria-label={preencher(tx.escolha.mais, { nome: t.nome })}
                               className="grid size-10 place-items-center rounded-[4px] bg-white/8 text-white transition-colors hover:bg-mb-red disabled:pointer-events-none disabled:opacity-30"
                             >
                               <Plus className="size-4" aria-hidden />
@@ -390,14 +385,14 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
           {/* PASSO 2 — dados do comprador */}
           {passo === 2 && (
             <section>
-              <h2 className="titulo-4">Os seus dados</h2>
+              <h2 className="titulo-4">{tx.dados.titulo}</h2>
               <div className="painel painel-escuro mt-6 space-y-5 p-6 md:p-8">
                 {(
                   [
-                    { k: "nome", label: "Nome completo", tipo: "text", ph: "Como aparece no seu BI", req: true },
-                    { k: "email", label: "Email", tipo: "email", ph: "nome@exemplo.com", req: true },
-                    { k: "telefone", label: "Telemóvel", tipo: "tel", ph: "+244 9xx xxx xxx", req: true },
-                    { k: "bi", label: "Nº do BI (opcional)", tipo: "text", ph: "para validação à entrada", req: false },
+                    { k: "nome", label: tx.dados.nome.rotulo, tipo: "text", ph: tx.dados.nome.exemplo, req: true },
+                    { k: "email", label: tx.dados.email.rotulo, tipo: "email", ph: tx.dados.email.exemplo, req: true },
+                    { k: "telefone", label: tx.dados.telefone.rotulo, tipo: "tel", ph: tx.dados.telefone.exemplo, req: true },
+                    { k: "bi", label: tx.dados.bi.rotulo, tipo: "text", ph: tx.dados.bi.exemplo, req: false },
                   ] as const
                 ).map((c) => (
                   <div key={c.k}>
@@ -429,14 +424,14 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                   <p className="flex gap-2.5 text-sm leading-relaxed text-white/60">
                     <UserRound className="size-4 shrink-0 translate-y-0.5 text-white/45" aria-hidden />
                     <span>
-                      <span>Sessão iniciada como</span> <span className="text-white">{emailConta}</span>
+                      <span>{tx.dados.sessao}</span> <span className="text-white">{emailConta}</span>
                     </span>
                   </p>
                 )}
 
                 <p className="flex gap-2.5 border-t border-white/8 pt-5 text-sm leading-relaxed text-white/60">
                   <Lock className="size-4 shrink-0 translate-y-0.5 text-white/45" aria-hidden />
-                  Os seus dados servem apenas para emitir e validar o bilhete. Não são partilhados com terceiros.
+                  {tx.dados.privacidade}
                 </p>
               </div>
             </section>
@@ -445,87 +440,50 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
           {/* PASSO 3 — pagamento */}
           {passo === 3 && (
             <section>
-              <h2 className="titulo-4">Método de pagamento</h2>
-              <div className="mt-6 grid gap-[var(--intervalo)]">
-                {METODOS.map((m) => (
-                  <label
-                    key={m.id}
-                    className={`painel painel-escuro flex cursor-pointer items-start gap-4 p-5 transition-colors ${
-                      metodo === m.id ? "ring-2 ring-inset ring-mb-red" : "hover:bg-white/5"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="metodo"
-                      checked={metodo === m.id}
-                      onChange={() => setMetodo(m.id)}
-                      className="mt-3 size-4 shrink-0 accent-[#e10600]"
-                    />
-                    <span className="grid size-10 shrink-0 place-items-center rounded-[4px] bg-white/8 text-mb-red-light">
-                      <m.Icone className="size-5" aria-hidden />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-semibold">{m.nome}</span>
-                      <span className="mt-0.5 block text-sm text-white/60">{m.desc}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
+              <h2 className="titulo-4">{tx.pagamento.titulo}</h2>
+              {metodos.length === 0 ? (
+                <p className="painel painel-escuro mt-6 p-6 text-sm leading-relaxed text-white/70">{tx.pagamento.semMetodos}</p>
+              ) : (
+                <>
+                  <div className="mt-6 grid gap-[var(--intervalo)]">
+                    {metodos.map((m) => {
+                      const Icone = ICONES_METODO[m.tipo] ?? Wallet;
+                      return (
+                        <label
+                          key={m.id}
+                          className={`painel painel-escuro flex cursor-pointer items-start gap-4 p-5 transition-colors ${
+                            metodo === m.id ? "ring-2 ring-inset ring-mb-red" : "hover:bg-white/5"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="metodo"
+                            checked={metodo === m.id}
+                            onChange={() => setMetodo(m.id)}
+                            className="mt-3 size-4 shrink-0 accent-[#e10600]"
+                          />
+                          <span className="grid size-10 shrink-0 place-items-center rounded-[4px] bg-white/8 text-mb-red-light">
+                            <Icone className="size-5" aria-hidden />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block font-semibold">{m.nome}</span>
+                            {m.descricao && <span className="mt-0.5 block text-sm text-white/60">{m.descricao}</span>}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
 
-              {/* Detalhe por método */}
-              <div className="painel painel-escuro mt-[var(--intervalo)] p-6">
-                {metodo === "multicaixa" && (
-                  <>
-                    <p className="mb-3 font-semibold">Multicaixa Express</p>
-                    <p className="text-sm leading-relaxed text-white/70">
-                      Ao confirmar, enviamos um pedido de pagamento para o número{" "}
-                      <span className="text-white">{comprador.telefone || "que indicou"}</span>. Aprove no telemóvel e o
-                      bilhete é emitido automaticamente.
-                    </p>
-                  </>
-                )}
-                {metodo === "transferencia" && (
-                  <>
-                    <p className="mb-3 font-semibold">Dados para transferência</p>
-                    <dl className="divide-y divide-white/8 text-sm">
-                      {[
-                        ["Beneficiário", "MotoBox Angola"],
-                        ["IBAN", "AO06 0000 0000 0000 0000 0000 0"],
-                        ["Banco", "Banco Atlântico"],
-                        ["Referência", `MBX-${evento.slug.slice(0, 6).toUpperCase()}`],
-                      ].map(([k, v]) => (
-                        <div key={k} className="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
-                          <dt className="shrink-0 text-white/55">{k}</dt>
-                          <dd className="min-w-0 break-words text-right font-mono text-white">{v}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                    <p className="mt-4 text-xs text-white/50">
-                      Envie o comprovativo para geral@motobox.ao. O bilhete é emitido após confirmação.
-                    </p>
-                  </>
-                )}
-                {metodo === "cartao" && (
-                  <>
-                    <p className="mb-3 font-semibold">Dados do cartão</p>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <input
-                        placeholder="Número do cartão"
-                        aria-label="Número do cartão"
-                        inputMode="numeric"
-                        autoComplete="off"
-                        className="campo sm:col-span-2"
-                      />
-                      <input placeholder="MM / AA" aria-label="Validade (MM / AA)" inputMode="numeric" autoComplete="off" className="campo" />
-                      <input placeholder="CVV" aria-label="CVV" inputMode="numeric" autoComplete="off" className="campo" />
-                    </div>
-                    <p className="mt-3 flex items-center gap-2 text-xs text-white/50">
-                      <Lock className="size-3.5" aria-hidden />
-                      Ligação encriptada. A MotoBox não guarda dados de cartão.
-                    </p>
-                  </>
-                )}
-              </div>
+                  {/* Detalhe do meio escolhido */}
+                  {metodoActual && (metodoActual.detalheTitulo || metodoActual.detalheTexto || metodoActual.linhas.length > 0 || metodoActual.nota) && (
+                    <DetalheMetodo
+                      metodo={metodoActual}
+                      telefone={comprador.telefone || tx.pagamento.semTelefone}
+                      referencia={`MBX-${evento.slug.slice(0, 6).toUpperCase()}`}
+                    />
+                  )}
+                </>
+              )}
             </section>
           )}
 
@@ -548,12 +506,12 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                   <Check />
                 </Chip>
                 <div>
-                  <h2 className="titulo-3">Pagamento confirmado</h2>
+                  <h2 className="titulo-3">{tx.emitidos.titulo}</h2>
                   <p className="mt-3 text-[15px] text-white/75">
-                    Emitimos {codigos.length} {codigos.length === 1 ? "bilhete" : "bilhetes"}.
+                    {contar(codigos.length, tx.emitidos.emitimosUm, tx.emitidos.emitimosVarios)}
                   </p>
                   {/* Nada é enviado nem gravado (ver `pagar`): esta página é a única cópia. */}
-                  <p className="mt-1 text-[15px] text-white/75">Guarde ou imprima esta página agora: é a sua única cópia.</p>
+                  <p className="mt-1 text-[15px] text-white/75">{tx.emitidos.guardar}</p>
                 </div>
               </div>
 
@@ -575,14 +533,14 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                       <h3 className="mt-5 text-xl font-semibold leading-tight">{evento.titulo}</h3>
                       <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4">
                         {[
-                          ["Data", intervaloDatas(evento.dataInicio, evento.dataFim)],
-                          ["Local", evento.circuito],
-                          ["Portador", comprador.nome],
-                          ["Código", b.codigo],
-                        ].map(([k, v]) => (
-                          <div key={k} className="min-w-0">
+                          ["data", tx.emitidos.data, intervaloDatas(evento.dataInicio, evento.dataFim)],
+                          ["local", tx.emitidos.local, evento.circuito],
+                          ["portador", tx.emitidos.portador, comprador.nome],
+                          ["codigo", tx.emitidos.codigo, b.codigo],
+                        ].map(([id, k, v]) => (
+                          <div key={id} className="min-w-0">
                             <dt className="text-xs text-white/50">{k}</dt>
-                            <dd className={`mt-0.5 break-words text-sm ${k === "Código" ? "font-mono" : ""}`}>{v}</dd>
+                            <dd className={`mt-0.5 break-words text-sm ${id === "codigo" ? "font-mono" : ""}`}>{v}</dd>
                           </div>
                         ))}
                       </dl>
@@ -605,23 +563,23 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
                   onClick={() => window.print()}
                   className="group inline-flex h-14 w-full max-w-[20.5rem] items-center justify-between gap-6 rounded-[var(--raio)] bg-mb-red px-5 text-[15px] text-white transition-colors hover:bg-mb-red-dark"
                 >
-                  Guardar / imprimir
+                  {tx.emitidos.imprimir}
                   <Printer className="size-4" aria-hidden />
                 </button>
                 {eComunidade(evento.disciplina) ? (
                   <BotaoMB href="/eventos" variante="escuro">
-                    Voltar aos eventos
+                    {tx.emitidos.voltarEventos}
                   </BotaoMB>
                 ) : (
                   <BotaoMB href="/calendario" variante="escuro">
-                    Voltar ao calendário
+                    {tx.emitidos.voltarCalendario}
                   </BotaoMB>
                 )}
               </div>
 
               <p className="mt-6 flex gap-2.5 text-sm leading-relaxed text-white/60">
                 <QrCode className="size-4 shrink-0 translate-y-0.5 text-white/45" aria-hidden />
-                Apresente o código QR à entrada, no telemóvel ou impresso. Cada código só pode ser validado uma vez.
+                {tx.emitidos.entrada}
               </p>
             </section>
           )}
@@ -631,10 +589,10 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
         {passo < 4 && (
           <aside className="lg:sticky lg:top-8">
             <div className="painel painel-escuro p-6">
-              <h2 className="text-lg font-semibold">Resumo</h2>
+              <h2 className="text-lg font-semibold">{tx.resumo.titulo}</h2>
 
               {linhas.length === 0 ? (
-                <p className="py-6 text-sm text-white/50">Ainda não escolheu bilhetes.</p>
+                <p className="py-6 text-sm text-white/50">{tx.resumo.vazio}</p>
               ) : (
                 <>
                   <ul className="mt-4 space-y-3">
@@ -653,26 +611,23 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
 
                   <dl className="mt-5 space-y-2.5 border-t border-white/8 pt-4 text-sm">
                     <div className="flex justify-between gap-3">
-                      <dt className="text-white/55">Subtotal</dt>
+                      <dt className="text-white/55">{tx.resumo.subtotal}</dt>
                       <dd className="tabular-nums text-white/85">{formatKz(subtotal)}</dd>
                     </div>
                     <div className="flex justify-between gap-3">
                       <dt className="text-white/55">
-                        Taxa de serviço
+                        {tx.resumo.taxa}
                         <span className="ml-1 text-xs text-white/40">({(TAXA_MOTOBOX * 100).toFixed(0)}%)</span>
                       </dt>
                       <dd className="tabular-nums text-white/85">{formatKz(taxa)}</dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-3 border-t border-white/8 pt-3">
-                      <dt className="font-semibold">Total</dt>
+                      <dt className="font-semibold">{tx.resumo.total}</dt>
                       <dd className="text-2xl font-semibold tabular-nums">{formatKz(total)}</dd>
                     </div>
                   </dl>
 
-                  <p className="mt-3 text-xs leading-relaxed text-white/45">
-                    A taxa de serviço sustenta a plataforma e é retida pela MotoBox. O restante reverte para o
-                    organizador da prova.
-                  </p>
+                  {tx.resumo.notaTaxa && <p className="mt-3 text-xs leading-relaxed text-white/45">{tx.resumo.notaTaxa}</p>}
                 </>
               )}
 
@@ -680,51 +635,82 @@ function Compra({ evento, restaurar }: { evento: Evento; restaurar: boolean }) {
               <div className="mt-6 space-y-[var(--intervalo)]">
                 {passo === 1 && (
                   <button type="button" className={botaoPrincipal} disabled={totalBilhetes === 0} onClick={irParaDados}>
-                    Continuar
+                    {tx.resumo.continuar}
                     <Seta para="direita" className="size-3.5" />
                   </button>
                 )}
                 {passo === 2 && (
                   <>
                     <button type="button" className={botaoPrincipal} onClick={seguirParaPagamento}>
-                      Ir para pagamento
+                      {tx.resumo.irPagamento}
                       <Seta para="direita" className="size-3.5" />
                     </button>
                     <button type="button" className={botaoVoltar} onClick={() => setPasso(1)}>
-                      Voltar
+                      {tx.resumo.voltar}
                     </button>
                   </>
                 )}
                 {passo === 3 && (
                   <>
-                    <button type="button" className={botaoPrincipal} disabled={aVerificar} onClick={pagar}>
+                    <button type="button" className={botaoPrincipal} disabled={aVerificar || metodos.length === 0} onClick={pagar}>
                       {aVerificar ? (
                         <>
-                          A verificar pagamento…
+                          {tx.resumo.aVerificar}
                           <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden />
                         </>
                       ) : (
                         <>
-                          <span className="tabular-nums">Pagar {formatKz(total)}</span>
+                          <span className="tabular-nums">{preencher(tx.resumo.pagar, { valor: formatKz(total) })}</span>
                           <Lock className="size-4" aria-hidden />
                         </>
                       )}
                     </button>
                     <button type="button" className={botaoVoltar} disabled={aVerificar} onClick={() => setPasso(2)}>
-                      Voltar
+                      {tx.resumo.voltar}
                     </button>
                   </>
                 )}
               </div>
 
-              <p className="mt-4 flex items-center justify-center gap-2 text-xs text-white/45">
-                <Lock className="size-3.5" aria-hidden />
-                Pagamento seguro · Bilhete digital imediato
-              </p>
+              {tx.resumo.seguro && (
+                <p className="mt-4 flex items-center justify-center gap-2 text-xs text-white/45">
+                  <Lock className="size-3.5" aria-hidden />
+                  {tx.resumo.seguro}
+                </p>
+              )}
             </div>
           </aside>
         )}
       </div>
     </Seccao>
+  );
+}
+
+/**
+ * O que aparece por baixo dos meios de pagamento quando um está escolhido:
+ * o título, o texto ({telefone} é o telemóvel do comprador, a branco), as
+ * linhas de dados ({referencia} é a referência da prova) e a nota.
+ */
+function DetalheMetodo({ metodo: m, telefone, referencia }: { metodo: MetodoPagamento; telefone: string; referencia: string }) {
+  return (
+    <div className="painel painel-escuro mt-[var(--intervalo)] p-6">
+      {m.detalheTitulo && <p className="mb-3 font-semibold">{m.detalheTitulo}</p>}
+      {m.detalheTexto && (
+        <p className="text-sm leading-relaxed text-white/70">
+          {comValores(m.detalheTexto, { telefone: <span className="text-white">{telefone}</span> })}
+        </p>
+      )}
+      {m.linhas.length > 0 && (
+        <dl className={`divide-y divide-white/8 text-sm ${m.detalheTexto ? "mt-4" : ""}`}>
+          {m.linhas.map((l, i) => (
+            <div key={i} className="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+              <dt className="shrink-0 text-white/55">{l.rotulo}</dt>
+              <dd className="min-w-0 break-words text-right font-mono text-white">{preencher(l.valor, { referencia })}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {m.nota && <p className={`${m.detalheTexto || m.linhas.length > 0 ? "mt-4" : ""} text-xs text-white/50`}>{m.nota}</p>}
+    </div>
   );
 }
