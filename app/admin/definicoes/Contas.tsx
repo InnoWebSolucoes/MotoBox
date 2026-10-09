@@ -22,6 +22,10 @@ import type { CampoEsquema, Valor } from "@/components/admin/editor/esquema";
 
 const ESQUEMA: CampoEsquema[] = [
   {
+    tipo: "booleano", chave: "exigirConfirmacao", etiqueta: "Confirmar as contas por email",
+    descricao: "Ligado: quem cria conta tem de abrir a ligação que chega por email antes de entrar. Desligado: a conta fica pronta logo e a pessoa entra de imediato (use enquanto o domínio de envio não estiver verificado, porque os emails não chegam).",
+  },
+  {
     tipo: "objecto", chave: "entrar", etiqueta: "Página Entrar (/entrar)",
     ajuda: "O quadro da fotografia, à esquerda, nos ecrãs largos. O formulário (entrar, criar conta, recuperar) tem os textos traduzidos do site.",
     campos: [

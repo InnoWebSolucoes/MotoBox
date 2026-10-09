@@ -62,8 +62,10 @@ export function FormularioSessao({
       if (palavra.length < 8) {
         falha = t("auth.palavraCurta");
       } else {
-        falha = await registar({ nome, email, palavra, newsletter, destino });
-        if (!falha) setAviso(compacto ? t("auth.verifiqueEmailModal") : t("auth.verifiqueEmail"));
+        const r = await registar({ nome, email, palavra, newsletter, destino });
+        falha = r.erro;
+        if (!falha && r.entrou) aoEntrar?.();
+        else if (!falha) setAviso(compacto ? t("auth.verifiqueEmailModal") : t("auth.verifiqueEmail"));
       }
     } else {
       falha = await recuperar(email);

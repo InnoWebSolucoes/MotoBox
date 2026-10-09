@@ -351,6 +351,11 @@ export const EMAILS_PADRAO: ConteudoEmails = {
 /* ---------------- Contas: textos das páginas ---------------- */
 
 export interface ConteudoContas {
+  /**
+   * Ligado: a conta só entra depois de abrir a ligação do email de confirmação.
+   * Desligado: a conta fica pronta logo ao criar (útil enquanto os emails não chegam).
+   */
+  exigirConfirmacao: boolean;
   entrar: {
     sobretitulo: string;
     titulo: string;
@@ -377,6 +382,7 @@ export interface ConteudoContas {
 }
 
 export const CONTAS_PADRAO: ConteudoContas = {
+  exigirConfirmacao: true,
   entrar: {
     sobretitulo: "MotoBox Angola",
     titulo: "A comunidade motard, na sua conta",

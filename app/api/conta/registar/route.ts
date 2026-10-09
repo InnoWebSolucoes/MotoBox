@@ -15,6 +15,8 @@ import { enviarConfirmacao, erroPublico, textosContas } from "@/lib/auth/emails-
    ligação volta a seguir e a palavra-passe passa a ser a nova.
    Uma conta já confirmada nunca recebe nada por esta via.
    "Criar conta" desligado nas Definições fecha o registo.
+   Com "Confirmar as contas por email" desligado, a conta nasce
+   confirmada e quem a criou entra logo (sem email).
    ============================================================ */
 
 export const dynamic = "force-dynamic";
@@ -40,12 +42,41 @@ export async function POST(req: NextRequest) {
   if (!EMAIL_VALIDO.test(email)) return erro("Endereço de email inválido.");
   if (palavra.length < 8) return erro("A palavra-passe tem de ter pelo menos 8 caracteres.");
 
-  const textos = (await textosContas()).mensagens;
+  const contas = await textosContas();
+  const textos = contas.mensagens;
   const db = supabaseAdmin();
   if (!db) return erro(textos.servicoIndisponivel, 503);
 
   const { data: def } = await db.from("definicoes").select("registos_abertos").eq("id", 1).maybeSingle();
   if (def && def.registos_abertos === false) return erro(textos.registosFechados, 403);
+
+  // Confirmação desligada (Definições → Contas): a conta nasce confirmada e
+  // a pessoa entra logo. Uma conta por confirmar que já existia fica confirmada
+  // com a palavra-passe nova; uma conta confirmada nunca é mexida.
+  if (!contas.exigirConfirmacao) {
+    const criada = await db.auth.admin.createUser({
+      email, password: palavra, email_confirm: true,
+      user_metadata: { nome, newsletter },
+    });
+    if (!criada.error) return NextResponse.json({ ok: true, confirmada: true });
+    if (criada.error.code === "email_exists" || /already|registered|exists/i.test(criada.error.message)) {
+      const existente = await db.auth.admin.generateLink({ type: "magiclink", email });
+      if (existente.error) return erro("Não foi possível criar a conta. Tente de novo.", 500);
+      const u = existente.data.user;
+      if (u.email_confirmed_at) return erro(textos.contaExiste, 409);
+      const r = await db.auth.admin.updateUserById(u.id, {
+        password: palavra, email_confirm: true,
+        user_metadata: { ...u.user_metadata, nome, newsletter },
+      });
+      if (r.error) return erro("Não foi possível criar a conta. Tente de novo.", 500);
+      return NextResponse.json({ ok: true, confirmada: true });
+    }
+    if (/password/i.test(criada.error.message)) {
+      return erro("Escolha uma palavra-passe mais forte (pelo menos 8 caracteres, com letras e números).");
+    }
+    console.error("[registar] createUser:", criada.error.message);
+    return erro("Não foi possível criar a conta. Tente de novo.", 500);
+  }
 
   // Sem envio de emails, a conta ficaria por confirmar para sempre.
   if (!emailConfigurado()) {

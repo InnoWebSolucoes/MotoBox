@@ -54,7 +54,7 @@ interface ContextoAuth {
     nome: string; email: string; palavra: string; newsletter: boolean;
     /** Página para onde a ligação de confirmação traz a pessoa. */
     destino?: string;
-  }) => Promise<string | null>;
+  }) => Promise<{ erro: string | null; entrou: boolean }>;
   /** Verdadeiro só quando o Google está activo no Supabase. */
   googleActivo: boolean;
   entrarComGoogle: () => Promise<string | null>;
@@ -169,12 +169,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const registar = useCallback<ContextoAuth["registar"]>(async (d) => {
-    if (!cliente) return semAuth;
-    return pedirAoServidor("/api/conta/registar", {
-      nome: d.nome, email: d.email, palavra: d.palavra, newsletter: d.newsletter,
-      destino: d.destino ?? "/conta",
-    });
-  }, [cliente, pedirAoServidor]);
+    if (!cliente) return { erro: semAuth, entrou: false };
+    try {
+      const r = await fetch(comBase("/api/conta/registar"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: d.nome, email: d.email, palavra: d.palavra, newsletter: d.newsletter,
+          destino: d.destino ?? "/conta",
+        }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) return { erro: String(j.erro ?? `Erro ${r.status}. Tente de novo.`), entrou: false };
+      // Conta criada já confirmada (confirmação por email desligada): entra logo.
+      if (j.confirmada) {
+        const { error } = await cliente.auth.signInWithPassword({ email: d.email.trim().toLowerCase(), password: d.palavra });
+        return { erro: error ? mensagem(error.message) : null, entrou: !error };
+      }
+      return { erro: null, entrou: false };
+    } catch {
+      return { erro: "Sem ligação à internet. Tente de novo.", entrou: false };
+    }
+  }, [cliente]);
 
   const reenviarConfirmacao = useCallback<ContextoAuth["reenviarConfirmacao"]>(async (email, destino) => {
     if (!cliente) return semAuth;
