@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { lerClubes, lerEventos, lerNoticias, lerPilotos } from "@/lib/supabase/publico";
 import { classificacaoPilotos } from "@/lib/data";
-import { doCampeonatoDe, eComunidade, eProva } from "@/lib/desporto";
+import { doCampeonatoDe, eComunidade, eProva, hrefEvento } from "@/lib/desporto";
 import { lerPaginaDesporto } from "@/app/desporto/dados";
 import { lerRedes } from "@/lib/redes";
 import { diaMes, eventosFuturos } from "@/lib/motobox";
@@ -126,10 +126,24 @@ export default async function Painel() {
           foto={[p.desporto.foto, "competicao", "kilamba"]}
           icone={<Trophy />}
           titulo={p.desporto.titulo}
-          texto={[
-            lider ? preencher(p.desporto.textoLider, { piloto: lider.nome, pontos: lider.estatisticas.pontos }) : p.desporto.textoVazio,
-            proximaProva ? preencher(p.desporto.textoProva, { prova: proximaProva.titulo, data: data(proximaProva.dataInicio) }) : "",
-          ].filter(Boolean).join(". ")}
+          // O piloto e a prova levam à sua própria página; o resto da ficha, ao Desporto.
+          texto={
+            <>
+              {lider
+                ? comLigacoes(p.desporto.textoLider, { piloto: lider.nome, pontos: lider.estatisticas.pontos }, { piloto: `/pilotos/${lider.slug}` })
+                : p.desporto.textoVazio}
+              {proximaProva && (
+                <>
+                  {". "}
+                  {comLigacoes(
+                    p.desporto.textoProva,
+                    { prova: proximaProva.titulo, data: data(proximaProva.dataInicio) },
+                    { prova: hrefEvento(proximaProva) },
+                  )}
+                </>
+              )}
+            </>
+          }
           className="order-3 col-span-full h-64 lg:order-none lg:col-[5/9] lg:row-[3/4] lg:h-auto"
           i={2}
         />
@@ -202,7 +216,34 @@ export default async function Painel() {
   );
 }
 
-/** Painel com fotografia, quadrado de ícone e título em cima à esquerda. */
+/**
+ * Um texto do conteúdo editável com {chaves} preenchidas, em que as chaves
+ * com ligação passam a ligações (o nome do piloto, o título da prova…).
+ */
+function comLigacoes(modelo: string, valores: Record<string, string | number>, ligacoes: Record<string, string>): ReactNode {
+  return modelo.split(/(\{\w+\})/).map((parte, n) => {
+    const k = /^\{(\w+)\}$/.exec(parte)?.[1];
+    if (!k || !(k in valores)) return parte;
+    const valor = String(valores[k]);
+    return ligacoes[k] ? (
+      <Link
+        key={n}
+        href={ligacoes[k]}
+        className="pointer-events-auto relative z-10 font-medium text-white underline decoration-white/50 underline-offset-[3px] transition-colors hover:decoration-mb-red-light"
+      >
+        {valor}
+      </Link>
+    ) : (
+      valor
+    );
+  });
+}
+
+/**
+ * Painel com fotografia, quadrado de ícone e título em cima à esquerda. A
+ * ficha inteira leva à secção (ou ao item); as ligações dentro do texto
+ * levam cada uma ao seu sítio, por cima da ligação da ficha.
+ */
 function PainelFoto({
   href,
   foto,
@@ -216,21 +257,31 @@ function PainelFoto({
   foto: string | (string | undefined)[];
   icone: ReactNode;
   titulo: string;
-  texto?: string;
+  texto?: ReactNode;
   className: string;
   i: number;
 }) {
   return (
-    <Link href={href} className={`painel revelar group flex flex-col p-6 baixo:p-5 mbaixo:p-4 ${className}`} style={ordem(i)}>
+    <div className={`painel revelar group flex flex-col p-6 baixo:p-5 mbaixo:p-4 ${className}`} style={ordem(i)}>
       <FotoFundo nome={foto} veu="cima" tamanhos="(max-width: 1024px) 100vw, 35vw" />
       <div className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-black/80 to-transparent" aria-hidden />
-      <div className="flex items-start justify-between gap-4">
+      {/* A ligação da ficha cobre-a toda; o conteúdo deixa passar os cliques, menos as ligações do texto. */}
+      <Link
+        href={href}
+        className="absolute inset-0 rounded-[inherit] focus-visible:-outline-offset-4"
+        aria-label={typeof texto === "string" ? `${titulo}: ${texto}` : titulo}
+      />
+      <div className="pointer-events-none flex items-start justify-between gap-4">
         <h2 className="titulo-4 max-w-[12ch]">{titulo}</h2>
         <Chip>{icone}</Chip>
       </div>
-      <Seta className="mt-4 size-5 baixo:mt-2 mbaixo:hidden" />
-      {texto && <p className="mt-auto line-clamp-3 max-w-[34ch] pt-2 text-sm leading-snug text-white/85 baixo:line-clamp-2">{texto}</p>}
-    </Link>
+      <Seta className="pointer-events-none mt-4 size-5 baixo:mt-2 mbaixo:hidden" />
+      {texto && (
+        <p className="pointer-events-none mt-auto line-clamp-3 max-w-[34ch] pt-2 text-sm leading-snug text-white/85 baixo:line-clamp-2">
+          {texto}
+        </p>
+      )}
+    </div>
   );
 }
 

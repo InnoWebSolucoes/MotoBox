@@ -300,7 +300,8 @@
     transition: transform 1.2s var(--ease-out-expo);
   }
   .group:hover .foto-painel,
-  .group:focus-visible .foto-painel {
+  .group:focus-visible .foto-painel,
+  .group:has(> a:focus-visible) .foto-painel {
     transform: scale(1.04);
   }
 
